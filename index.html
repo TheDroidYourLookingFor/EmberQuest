@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.0.8</title>
+    1.1.0</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -332,7 +332,9 @@
     #tab-inv,
     #tab-runes,
     #tab-shop,
-    #tab-spells {
+    #tab-spells,
+    #tab-aa,
+    #tab-prestige {
       min-width: 0;
       overflow-x: auto;
     }
@@ -1074,7 +1076,7 @@
     id="screen-charselect"
     class="screen active">
     <h1>EmberQuest -
-      Version 1.0.8
+      Version 1.1.0
     </h1>
     <p
       class="subtitle">
@@ -1183,7 +1185,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.0.8</span>
+        1.1.0</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -1491,6 +1493,11 @@
               Gem 2
             </button>
 
+            <div
+              id="extra-skill-gems"
+              style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+            </div>
+
             <button
               class="btn"
               onclick="meditate()"
@@ -1574,6 +1581,11 @@
             onclick="switchTab('aa')">
             <span
               id="aa-tab-label">AA</span>
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('prestige')">
+            Prestige
           </div>
         </div>
         <div
@@ -2040,6 +2052,18 @@
             id="aa-list">
           </div>
         </div>
+        <div
+          id="tab-prestige"
+          style="display:none">
+          <h3>
+            Prestige
+            and
+            Ascension
+          </h3>
+          <div
+            id="prestige-list">
+          </div>
+        </div>
       </div>
 
       <!-- Right: Auto-Battle + Zone info -->
@@ -2076,6 +2100,50 @@
               onchange="setAfkGoalFromUI()"
               style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
             </select>
+          </div>
+          <div
+            style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 8px 0">
+            <label
+              for="afk-profile-select"
+              style="font-size:11px;color:var(--text-secondary)">AFK Profile:</label>
+            <select
+              id="afk-profile-select"
+              style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+              <option value="slot1">Profile 1</option>
+              <option value="slot2">Profile 2</option>
+              <option value="slot3">Profile 3</option>
+            </select>
+            <button
+              class="btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="saveAfkProfileFromUI()">Save</button>
+            <button
+              class="btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="loadAfkProfileFromUI()">Load</button>
+          </div>
+          <div
+            style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 8px 0">
+            <button
+              class="btn active"
+              id="rule-buy-pots-btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="toggleAfkRule('autoBuyPots')">Auto-Buy Pots: On</button>
+            <label
+              style="font-size:10px;color:var(--text-secondary)">Min Pots</label>
+            <input
+              id="rule-pot-min"
+              type="number"
+              min="0"
+              max="99"
+              value="5"
+              onchange="setAfkPotRuleMin(this.value)"
+              style="width:52px;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-md);border-radius:4px;padding:2px">
+            <button
+              class="btn active"
+              id="rule-contract-advance-btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="toggleAfkRule('autoAdvanceContract')">Auto-Advance Contract: On</button>
           </div>
           <div
             style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">
@@ -2401,7 +2469,21 @@
       { name: 'Blackburrow', desc: 'Gnoll warrens filled with danger.', minLvl: 3, mobs: ['Gnoll Pup', 'Gnoll Warrior', 'Gnoll Shaman'], xpMult: 1.5, goldMult: 1.4, rare: 'Gnoll Fang Earring' },
       { name: 'Unrest Manor', desc: 'Haunted estate, undead everywhere.', minLvl: 7, mobs: ['Restless Zombie', 'Decaying Spectre', 'Wraith'], xpMult: 2.2, goldMult: 2, rare: 'Ghoul-Touched Cloak' },
       { name: 'Cazic-Thule', desc: 'Temple of Fear. Extremely deadly.', minLvl: 15, mobs: ['Froglok Slave', 'Fear Elemental', 'Amygdalan'], xpMult: 4, goldMult: 3.5, rare: 'Cazic Quill' },
-      { name: 'Plane of Hate', desc: 'Realm of Innoruuk. Legendary loot.', minLvl: 30, mobs: ['Innoruuk Servant', 'Ebon Mace Wielder', 'Demi-Lich'], xpMult: 8, goldMult: 7, rare: 'Hate Infused Plate' }
+      { name: 'Plane of Hate', desc: 'Realm of Innoruuk. Legendary loot.', minLvl: 30, mobs: ['Innoruuk Servant', 'Ebon Mace Wielder', 'Demi-Lich'], xpMult: 8, goldMult: 7, rare: 'Hate Infused Plate' },
+      { name: 'Mistmoore Catacombs', desc: 'Vampiric nobles and cursed crypt guards.', minLvl: 34, mobs: ['Mistmoore Thrall', 'Bloodbound Sentry', 'Crypt Warden'], xpMult: 9, goldMult: 7.6, rare: 'Mithril Ingot' },
+      { name: 'Karnor Ruins', desc: 'Ancient citadel crawling with scaled undead.', minLvl: 38, mobs: ['Sarnak Reaver', 'Bone Sentinel', 'Iksar Spiritcaller'], xpMult: 10.1, goldMult: 8.2, rare: 'Spider Silk' },
+      { name: 'Velketor Labyrinth', desc: 'Frozen tunnels and predatory ice horrors.', minLvl: 42, mobs: ['Crystal Spider', 'Frost Wisp', 'Velium Stalker'], xpMult: 11.3, goldMult: 8.9, rare: 'Animal Pelt' },
+      { name: 'Dragon Necropolis', desc: 'Ancient drakes and their eternal dead.', minLvl: 46, mobs: ['Skeletal Wyrm', 'Necrotic Drake', 'Cryptflame Adept'], xpMult: 12.6, goldMult: 9.6, rare: 'Orc Tooth' },
+      { name: 'Ssraeshza Temple', desc: 'Alien halls ruled by serpent fanatics.', minLvl: 50, mobs: ['Ssra Acolyte', 'Shissar Inquisitor', 'Temple Coilguard'], xpMult: 14, goldMult: 10.4, rare: 'Bone Chip' },
+      { name: 'Plane of Disease', desc: 'Pestilent marshes of rot and suffering.', minLvl: 54, mobs: ['Plaguebearer', 'Blight Horror', 'Poxbound Ritualist'], xpMult: 15.5, goldMult: 11.3, rare: 'Giant Snake Fang' },
+      { name: 'Plane of Storms', desc: 'Thunder peaks where giants wage war.', minLvl: 58, mobs: ['Storm Giant Scout', 'Thunder Zealot', 'Cloudbreaker Adept'], xpMult: 17.1, goldMult: 12.2, rare: 'Steel Longsword' },
+      { name: 'Bastion of Thunder', desc: 'Tempest forges charged with skyfire.', minLvl: 62, mobs: ['Tempest Smith', 'Skyfire Warden', 'Cyclone Champion'], xpMult: 18.8, goldMult: 13.2, rare: 'Knight Chestplate' },
+      { name: 'Crypt of Decay', desc: 'Plague crypts guarded by death priests.', minLvl: 66, mobs: ['Rot Priest', 'Moldering Abomination', 'Decay Archivist'], xpMult: 20.6, goldMult: 14.3, rare: 'Ghoul-Touched Cloak' },
+      { name: 'Plane of Valor', desc: 'Celestial battleground of honor and steel.', minLvl: 70, mobs: ['Valor Knight', 'Aegis Herald', 'Banner Captain'], xpMult: 22.5, goldMult: 15.5, rare: 'Cazic Quill' },
+      { name: 'Plane of Fire', desc: 'Living flame, ash storms, and infernal hosts.', minLvl: 74, mobs: ['Cinder Fiend', 'Magma Sentinel', 'Ashen Arcanist'], xpMult: 24.5, goldMult: 16.8, rare: 'Hate Infused Plate' },
+      { name: 'Anguish Vestibule', desc: 'A brutal proving ground of anguish and pain.', minLvl: 78, mobs: ['Anguish Torturer', 'Painforged Guard', 'Dread Supplicant'], xpMult: 26.6, goldMult: 18.1, rare: 'Steel Longsword' },
+      { name: 'Ashengate Depths', desc: 'Molten vaults where elder drakes sleep.', minLvl: 83, mobs: ['Ash Drake', 'Ember Devourer', 'Pyre Channeler'], xpMult: 28.8, goldMult: 19.5, rare: 'Knight Chestplate' },
+      { name: 'Citadel of Eternity', desc: 'Reality-thin stronghold beyond mortal time.', minLvl: 88, mobs: ['Chrono Warden', 'Eternal Myrmidon', 'Void Archivist'], xpMult: 31, goldMult: 21, rare: 'Hate Infused Plate' }
     ];
 
     const ITEM_DATA = {
@@ -2534,7 +2616,21 @@
       1: ['an enraged gnoll packlord', 'a blackburrow bloodshaman'],
       2: ['a restless butler', 'a manor revenant'],
       3: ['a fearbound high priest', 'a thule warbringer'],
-      4: ['a hand of Innoruuk', 'an ebon oathkeeper']
+      4: ['a hand of Innoruuk', 'an ebon oathkeeper'],
+      5: ['countess of the crypt', 'an ancient mistmoore duelist'],
+      6: ['the sarnak bone marshal', 'an iksar tombseer'],
+      7: ['velketors broodmother', 'an icebound shadeweaver'],
+      8: ['an ossified wyrm-lord', 'the necropolis gravewing'],
+      9: ['a ssra high oracle', 'the coiled adjudicator'],
+      10: ['lord of blighted lungs', 'a plague-tide harbinger'],
+      11: ['thunder fist warmaster', 'a cloud titan emissary'],
+      12: ['the skyforge executioner', 'an avatar of forked lightning'],
+      13: ['high prelate of rot', 'the mold sovereign'],
+      14: ['ser valorshield', 'the oathbound vanguard'],
+      15: ['the pyre regent', 'an inferno herald'],
+      16: ['the chainbreaker inquisitor', 'an apostle of anguish'],
+      17: ['the ashen brood patriarch', 'a molten worldeater'],
+      18: ['the timeless adjudicator', 'a herald of the final hour']
     };
 
     const NAMED_MECHANICS = [
@@ -2562,84 +2658,244 @@
       Warrior: [
         { id: 'shield_slam', name: 'Shield Slam', mp: 20, cooldown: 9, levelReq: 1, cost: 0, desc: 'Heavy blow that weakens enemy ATK.', target: 'enemy', kind: 'damage_weaken', power: 2.1, variance: 12, weaken: 2 },
         { id: 'taunting_blow', name: 'Taunting Blow', mp: 14, cooldown: 6, levelReq: 4, cost: 40, desc: 'Reliable melee strike.', target: 'enemy', kind: 'damage', power: 1.6, variance: 8 },
-        { id: 'second_wind', name: 'Second Wind', mp: 18, cooldown: 14, levelReq: 8, cost: 110, desc: 'Battle recovery for HP.', target: 'self', kind: 'heal', healPct: 0.3, variance: 10 }
+        { id: 'second_wind', name: 'Second Wind', mp: 18, cooldown: 14, levelReq: 8, cost: 110, desc: 'Battle recovery for HP.', target: 'self', kind: 'heal', healPct: 0.3, variance: 10 },
+        { id: 'war_iron_breaker', name: 'Iron Breaker', mp: 24, cooldown: 11, levelReq: 12, cost: 185, desc: 'Crushing strike that heavily weakens the target.', target: 'enemy', kind: 'damage_weaken', power: 2.7, variance: 14, weaken: 4 },
+        { id: 'war_colossus_strike', name: 'Colossus Strike', mp: 30, cooldown: 10, levelReq: 16, cost: 260, desc: 'A massive weapon blow with brutal impact.', target: 'enemy', kind: 'damage', power: 3.3, variance: 16 },
+        { id: 'war_last_stand', name: 'Last Stand', mp: 24, cooldown: 16, levelReq: 20, cost: 360, desc: 'Battle-forged resolve restores heavy health.', target: 'self', kind: 'heal', healPct: 0.44, variance: 12 }
       ],
       Cleric: [
         { id: 'holy_bolt', name: 'Holy Bolt', mp: 18, cooldown: 6, levelReq: 1, cost: 0, desc: 'Divine ranged damage.', target: 'enemy', kind: 'damage', power: 1.9, variance: 10 },
         { id: 'greater_heal', name: 'Greater Heal', mp: 30, cooldown: 14, levelReq: 5, cost: 65, desc: 'Large restorative prayer.', target: 'self', kind: 'heal', healPct: 0.5, variance: 12 },
-        { id: 'benediction', name: 'Benediction', mp: 22, cooldown: 16, levelReq: 9, cost: 120, desc: 'Restores mana through devotion.', target: 'self', kind: 'mana', manaPct: 0.28, variance: 8 }
+        { id: 'benediction', name: 'Benediction', mp: 22, cooldown: 16, levelReq: 9, cost: 120, desc: 'Restores mana through devotion.', target: 'self', kind: 'mana', manaPct: 0.28, variance: 8 },
+        { id: 'clr_sanctuary', name: 'Sanctuary', mp: 30, cooldown: 13, levelReq: 12, cost: 185, desc: 'A radiant prayer that restores a large amount of health.', target: 'self', kind: 'heal', healPct: 0.62, variance: 14 },
+        { id: 'clr_holy_lance', name: 'Holy Lance', mp: 30, cooldown: 10, levelReq: 16, cost: 260, desc: 'A concentrated spear of divine judgment.', target: 'enemy', kind: 'damage', power: 3.1, variance: 15 },
+        { id: 'clr_divine_reserve', name: 'Divine Reserve', mp: 20, cooldown: 15, levelReq: 20, cost: 360, desc: 'A blessing that replenishes deep mana reserves.', target: 'self', kind: 'mana', manaPct: 0.48, variance: 12 }
       ],
       Paladin: [
         { id: 'pal_holy_strike', name: 'Holy Strike', mp: 20, cooldown: 8, levelReq: 1, cost: 0, desc: 'Sanctified weapon strike.', target: 'enemy', kind: 'damage', power: 2.0, variance: 11 },
         { id: 'pal_lay_hands', name: 'Lay on Hands', mp: 30, cooldown: 16, levelReq: 5, cost: 70, desc: 'Strong emergency heal.', target: 'self', kind: 'heal', healPct: 0.45, variance: 10 },
-        { id: 'pal_aegis', name: 'Aegis of Light', mp: 24, cooldown: 12, levelReq: 9, cost: 130, desc: 'Smite and weaken enemy offense.', target: 'enemy', kind: 'damage_weaken', power: 1.8, variance: 9, weaken: 3 }
+        { id: 'pal_aegis', name: 'Aegis of Light', mp: 24, cooldown: 12, levelReq: 9, cost: 130, desc: 'Smite and weaken enemy offense.', target: 'enemy', kind: 'damage_weaken', power: 1.8, variance: 9, weaken: 3 },
+        { id: 'pal_zeal_judgment', name: 'Zeal Judgment', mp: 28, cooldown: 11, levelReq: 12, cost: 185, desc: 'Holy verdict that deals heavy damage.', target: 'enemy', kind: 'damage', power: 2.9, variance: 16 },
+        { id: 'pal_vindicator', name: 'Vindicator', mp: 30, cooldown: 10, levelReq: 16, cost: 260, desc: 'A righteous strike that shatters enemy offense.', target: 'enemy', kind: 'damage_weaken', power: 3.1, variance: 15, weaken: 4 },
+        { id: 'pal_sacred_vigor', name: 'Sacred Vigor', mp: 24, cooldown: 15, levelReq: 20, cost: 360, desc: 'Divine vigor surges through your body.', target: 'self', kind: 'heal', healPct: 0.5, variance: 12 }
       ],
       Ranger: [
         { id: 'rng_double_shot', name: 'Double Shot', mp: 16, cooldown: 7, levelReq: 1, cost: 0, desc: 'Two rapid ranged strikes.', target: 'enemy', kind: 'damage', power: 2.2, variance: 12 },
         { id: 'rng_vine_snare', name: 'Vine Snare', mp: 20, cooldown: 10, levelReq: 4, cost: 55, desc: 'Nature shot that hinders attacks.', target: 'enemy', kind: 'damage_weaken', power: 1.7, variance: 8, weaken: 2 },
-        { id: 'rng_field_dress', name: 'Field Dress', mp: 18, cooldown: 13, levelReq: 8, cost: 110, desc: 'Quick wilderness recovery.', target: 'self', kind: 'heal', healPct: 0.28, variance: 9 }
+        { id: 'rng_field_dress', name: 'Field Dress', mp: 18, cooldown: 13, levelReq: 8, cost: 110, desc: 'Quick wilderness recovery.', target: 'self', kind: 'heal', healPct: 0.28, variance: 9 },
+        { id: 'rng_falcon_barrage', name: 'Falcon Barrage', mp: 24, cooldown: 10, levelReq: 12, cost: 185, desc: 'A storm of arrows tears through the enemy.', target: 'enemy', kind: 'damage', power: 2.8, variance: 15 },
+        { id: 'rng_predator_volley', name: 'Predator Volley', mp: 28, cooldown: 9, levelReq: 16, cost: 260, desc: 'A lethal burst of precision shots.', target: 'enemy', kind: 'damage', power: 3.2, variance: 16 },
+        { id: 'rng_natures_refuge', name: "Nature's Refuge", mp: 22, cooldown: 14, levelReq: 20, cost: 360, desc: 'Wild growth mends wounds in moments.', target: 'self', kind: 'heal', healPct: 0.43, variance: 11 }
       ],
       'Shadow Knight': [
         { id: 'sk_drain_strike', name: 'Drain Strike', mp: 22, cooldown: 8, levelReq: 1, cost: 0, desc: 'Unholy hit that restores life.', target: 'enemy', kind: 'damage', power: 2.1, variance: 11 },
         { id: 'sk_disease_touch', name: 'Disease Touch', mp: 24, cooldown: 11, levelReq: 5, cost: 65, desc: 'Cursed blade with poison follow-up.', target: 'enemy', kind: 'damage_poison', power: 2.3, variance: 10, poisonMin: 8, poisonMax: 16 },
-        { id: 'sk_grim_guard', name: 'Grim Guard', mp: 20, cooldown: 12, levelReq: 9, cost: 125, desc: 'Dark blow that weakens the foe.', target: 'enemy', kind: 'damage_weaken', power: 1.9, variance: 9, weaken: 3 }
+        { id: 'sk_grim_guard', name: 'Grim Guard', mp: 20, cooldown: 12, levelReq: 9, cost: 125, desc: 'Dark blow that weakens the foe.', target: 'enemy', kind: 'damage_weaken', power: 1.9, variance: 9, weaken: 3 },
+        { id: 'sk_nightfall_brand', name: 'Nightfall Brand', mp: 28, cooldown: 11, levelReq: 12, cost: 185, desc: 'Unholy brand that inflicts heavy poison damage.', target: 'enemy', kind: 'damage_poison', power: 2.7, variance: 13, poisonMin: 12, poisonMax: 22 },
+        { id: 'sk_abyssal_reap', name: 'Abyssal Reap', mp: 32, cooldown: 10, levelReq: 16, cost: 260, desc: 'A dread slash infused with abyssal rot.', target: 'enemy', kind: 'damage_poison', power: 3.1, variance: 15, poisonMin: 14, poisonMax: 24 },
+        { id: 'sk_blood_pact', name: 'Blood Pact', mp: 24, cooldown: 15, levelReq: 20, cost: 360, desc: 'Dark power siphons life back to you.', target: 'self', kind: 'heal', healPct: 0.46, variance: 12 }
       ],
       Druid: [
         { id: 'dru_solar_wrath', name: 'Solar Wrath', mp: 20, cooldown: 7, levelReq: 1, cost: 0, desc: 'Nature-fueled spell damage.', target: 'enemy', kind: 'damage', power: 2.0, variance: 11 },
         { id: 'dru_regrowth', name: 'Regrowth', mp: 24, cooldown: 13, levelReq: 5, cost: 60, desc: 'Steady healing from nature.', target: 'self', kind: 'heal', healPct: 0.34, variance: 10 },
-        { id: 'dru_spirit_tap', name: 'Spirit Tap', mp: 16, cooldown: 12, levelReq: 8, cost: 115, desc: 'Draws mana from natural currents.', target: 'self', kind: 'mana', manaPct: 0.32, variance: 9 }
+        { id: 'dru_spirit_tap', name: 'Spirit Tap', mp: 16, cooldown: 12, levelReq: 8, cost: 115, desc: 'Draws mana from natural currents.', target: 'self', kind: 'mana', manaPct: 0.32, variance: 9 },
+        { id: 'dru_stormthorn', name: 'Stormthorn', mp: 26, cooldown: 10, levelReq: 12, cost: 185, desc: 'Nature wrath lashes the enemy and saps strength.', target: 'enemy', kind: 'damage_weaken', power: 2.5, variance: 12, weaken: 3 },
+        { id: 'dru_solar_tempest', name: 'Solar Tempest', mp: 30, cooldown: 10, levelReq: 16, cost: 260, desc: 'A radiant storm scorches your foe.', target: 'enemy', kind: 'damage', power: 3.2, variance: 17 },
+        { id: 'dru_verdant_well', name: 'Verdant Well', mp: 22, cooldown: 14, levelReq: 20, cost: 360, desc: 'Nature spirits refill your mana flow.', target: 'self', kind: 'mana', manaPct: 0.46, variance: 11 }
       ],
       Monk: [
         { id: 'mnk_tiger_claw', name: 'Tiger Claw', mp: 16, cooldown: 6, levelReq: 1, cost: 0, desc: 'Disciplined crushing strike.', target: 'enemy', kind: 'damage', power: 2.4, variance: 12 },
         { id: 'mnk_stunning_palm', name: 'Stunning Palm', mp: 18, cooldown: 9, levelReq: 4, cost: 50, desc: 'Palm strike that weakens response.', target: 'enemy', kind: 'damage_weaken', power: 1.8, variance: 8, weaken: 2 },
-        { id: 'mnk_centering', name: 'Centering', mp: 14, cooldown: 12, levelReq: 8, cost: 100, desc: 'Inner focus restores vitality.', target: 'self', kind: 'heal', healPct: 0.27, variance: 8 }
+        { id: 'mnk_centering', name: 'Centering', mp: 14, cooldown: 12, levelReq: 8, cost: 100, desc: 'Inner focus restores vitality.', target: 'self', kind: 'heal', healPct: 0.27, variance: 8 },
+        { id: 'mnk_quivering_palm', name: 'Quivering Palm', mp: 22, cooldown: 10, levelReq: 12, cost: 185, desc: 'A devastating strike with disciplined force.', target: 'enemy', kind: 'damage', power: 3.0, variance: 14 },
+        { id: 'mnk_hundred_fists', name: 'Hundred Fists', mp: 26, cooldown: 9, levelReq: 16, cost: 260, desc: 'A flurry of blindingly fast strikes.', target: 'enemy', kind: 'damage', power: 3.3, variance: 15 },
+        { id: 'mnk_zen_breath', name: 'Zen Breath', mp: 18, cooldown: 14, levelReq: 20, cost: 360, desc: 'Inner discipline restores body and mind.', target: 'self', kind: 'heal', healPct: 0.4, variance: 10 }
       ],
       Bard: [
         { id: 'brd_sonic_slash', name: 'Sonic Slash', mp: 18, cooldown: 7, levelReq: 1, cost: 0, desc: 'Blade strike driven by song.', target: 'enemy', kind: 'damage', power: 1.9, variance: 10 },
         { id: 'brd_harmony', name: 'Harmony Verse', mp: 16, cooldown: 11, levelReq: 4, cost: 55, desc: 'Restorative tune for HP.', target: 'self', kind: 'heal', healPct: 0.25, variance: 8 },
-        { id: 'brd_mana_ballad', name: 'Mana Ballad', mp: 16, cooldown: 13, levelReq: 8, cost: 105, desc: 'Song that replenishes mana.', target: 'self', kind: 'mana', manaPct: 0.3, variance: 8 }
+        { id: 'brd_mana_ballad', name: 'Mana Ballad', mp: 16, cooldown: 13, levelReq: 8, cost: 105, desc: 'Song that replenishes mana.', target: 'self', kind: 'mana', manaPct: 0.3, variance: 8 },
+        { id: 'brd_dirge_breaker', name: 'Dirge Breaker', mp: 24, cooldown: 11, levelReq: 12, cost: 185, desc: 'A war chant that damages and rattles the foe.', target: 'enemy', kind: 'damage_weaken', power: 2.4, variance: 12, weaken: 3 },
+        { id: 'brd_resonant_crescendo', name: 'Resonant Crescendo', mp: 28, cooldown: 10, levelReq: 16, cost: 260, desc: 'A rising chorus batters enemy defenses.', target: 'enemy', kind: 'damage_weaken', power: 2.9, variance: 14, weaken: 4 },
+        { id: 'brd_majors_refrain', name: "Major's Refrain", mp: 20, cooldown: 14, levelReq: 20, cost: 360, desc: 'An uplifting verse restores mana quickly.', target: 'self', kind: 'mana', manaPct: 0.44, variance: 10 }
       ],
       Wizard: [
         { id: 'fireball', name: 'Fireball', mp: 26, cooldown: 8, levelReq: 1, cost: 0, desc: 'Focused burst of fire.', target: 'enemy', kind: 'damage', power: 2.8, variance: 18 },
         { id: 'ice_comet', name: 'Ice Comet', mp: 42, cooldown: 16, levelReq: 7, cost: 95, desc: 'Massive long-cast nuke.', target: 'enemy', kind: 'damage', power: 4.3, variance: 28 },
-        { id: 'clarity', name: 'Clarity', mp: 14, cooldown: 12, levelReq: 4, cost: 50, desc: 'Converts focus into mana.', target: 'self', kind: 'mana', manaPct: 0.35, variance: 10 }
+        { id: 'clarity', name: 'Clarity', mp: 14, cooldown: 12, levelReq: 4, cost: 50, desc: 'Converts focus into mana.', target: 'self', kind: 'mana', manaPct: 0.35, variance: 10 },
+        { id: 'wiz_chain_lightning', name: 'Chain Lightning', mp: 36, cooldown: 12, levelReq: 12, cost: 185, desc: 'Explosive arcane lightning strike.', target: 'enemy', kind: 'damage', power: 3.7, variance: 22 },
+        { id: 'wiz_starfire', name: 'Starfire', mp: 42, cooldown: 11, levelReq: 16, cost: 260, desc: 'A star-hot blast engulfs the target.', target: 'enemy', kind: 'damage', power: 4.1, variance: 24 },
+        { id: 'wiz_arcane_well', name: 'Arcane Well', mp: 18, cooldown: 15, levelReq: 20, cost: 360, desc: 'Pure arcana rapidly replenishes mana.', target: 'self', kind: 'mana', manaPct: 0.5, variance: 12 }
       ],
       Magician: [
         { id: 'mag_flame_orb', name: 'Flame Orb', mp: 24, cooldown: 8, levelReq: 1, cost: 0, desc: 'Summoned orb detonates on impact.', target: 'enemy', kind: 'damage', power: 2.5, variance: 14 },
         { id: 'mag_shock_lance', name: 'Shock Lance', mp: 28, cooldown: 11, levelReq: 5, cost: 75, desc: 'Elemental lance with heavy burst.', target: 'enemy', kind: 'damage', power: 3.1, variance: 18 },
-        { id: 'mag_essence_draw', name: 'Essence Draw', mp: 16, cooldown: 12, levelReq: 9, cost: 130, desc: 'Arcane conversion restores mana.', target: 'self', kind: 'mana', manaPct: 0.34, variance: 9 }
+        { id: 'mag_essence_draw', name: 'Essence Draw', mp: 16, cooldown: 12, levelReq: 9, cost: 130, desc: 'Arcane conversion restores mana.', target: 'self', kind: 'mana', manaPct: 0.34, variance: 9 },
+        { id: 'mag_prismatic_lance', name: 'Prismatic Lance', mp: 32, cooldown: 11, levelReq: 12, cost: 185, desc: 'Concentrated elemental beam of destructive force.', target: 'enemy', kind: 'damage', power: 3.4, variance: 19 },
+        { id: 'mag_ether_nova', name: 'Ether Nova', mp: 38, cooldown: 10, levelReq: 16, cost: 260, desc: 'A volatile elemental nova detonates on impact.', target: 'enemy', kind: 'damage', power: 3.9, variance: 22 },
+        { id: 'mag_planar_siphon', name: 'Planar Siphon', mp: 18, cooldown: 14, levelReq: 20, cost: 360, desc: 'Draws deep mana from planar currents.', target: 'self', kind: 'mana', manaPct: 0.47, variance: 11 }
       ],
       Enchanter: [
         { id: 'enc_mind_spike', name: 'Mind Spike', mp: 20, cooldown: 7, levelReq: 1, cost: 0, desc: 'Psychic damage attack.', target: 'enemy', kind: 'damage', power: 2.1, variance: 12 },
         { id: 'enc_daze', name: 'Daze', mp: 18, cooldown: 10, levelReq: 4, cost: 55, desc: 'Mental shock weakens enemy attacks.', target: 'enemy', kind: 'damage_weaken', power: 1.7, variance: 8, weaken: 3 },
-        { id: 'enc_gift_of_mind', name: 'Gift of Mind', mp: 14, cooldown: 12, levelReq: 8, cost: 115, desc: 'Harnessed focus restores mana.', target: 'self', kind: 'mana', manaPct: 0.36, variance: 10 }
+        { id: 'enc_gift_of_mind', name: 'Gift of Mind', mp: 14, cooldown: 12, levelReq: 8, cost: 115, desc: 'Harnessed focus restores mana.', target: 'self', kind: 'mana', manaPct: 0.36, variance: 10 },
+        { id: 'enc_psychic_lance', name: 'Psychic Lance', mp: 24, cooldown: 10, levelReq: 12, cost: 185, desc: 'A mental spear that breaks enemy resolve.', target: 'enemy', kind: 'damage_weaken', power: 2.5, variance: 12, weaken: 4 },
+        { id: 'enc_ego_shatter', name: 'Ego Shatter', mp: 30, cooldown: 10, levelReq: 16, cost: 260, desc: 'Shatters the enemy mind with focused force.', target: 'enemy', kind: 'damage_weaken', power: 3.0, variance: 14, weaken: 5 },
+        { id: 'enc_mind_spring', name: 'Mind Spring', mp: 18, cooldown: 14, levelReq: 20, cost: 360, desc: 'A deep meditative pulse restores mana.', target: 'self', kind: 'mana', manaPct: 0.48, variance: 11 }
       ],
       Shaman: [
         { id: 'shm_spirit_spear', name: 'Spirit Spear', mp: 18, cooldown: 7, levelReq: 1, cost: 0, desc: 'Totemic force strikes the enemy.', target: 'enemy', kind: 'damage', power: 2.0, variance: 11 },
         { id: 'shm_fetid_bite', name: 'Fetid Bite', mp: 22, cooldown: 10, levelReq: 4, cost: 60, desc: 'Venom curse applies poison.', target: 'enemy', kind: 'damage_poison', power: 2.1, variance: 10, poisonMin: 7, poisonMax: 16 },
-        { id: 'shm_ancestral_mend', name: 'Ancestral Mend', mp: 20, cooldown: 13, levelReq: 8, cost: 110, desc: 'Calls spirits for healing.', target: 'self', kind: 'heal', healPct: 0.33, variance: 10 }
+        { id: 'shm_ancestral_mend', name: 'Ancestral Mend', mp: 20, cooldown: 13, levelReq: 8, cost: 110, desc: 'Calls spirits for healing.', target: 'self', kind: 'heal', healPct: 0.33, variance: 10 },
+        { id: 'shm_hexstorm', name: 'Hexstorm', mp: 28, cooldown: 11, levelReq: 12, cost: 185, desc: 'A storm of curses and venom tears at the enemy.', target: 'enemy', kind: 'damage_poison', power: 2.6, variance: 13, poisonMin: 11, poisonMax: 21 },
+        { id: 'shm_totem_blight', name: 'Totem Blight', mp: 32, cooldown: 10, levelReq: 16, cost: 260, desc: 'A malignant totem curse ravages the foe.', target: 'enemy', kind: 'damage_poison', power: 3.0, variance: 15, poisonMin: 13, poisonMax: 24 },
+        { id: 'shm_ancestral_tide', name: 'Ancestral Tide', mp: 22, cooldown: 14, levelReq: 20, cost: 360, desc: 'Spirits surge to restore major health.', target: 'self', kind: 'heal', healPct: 0.47, variance: 12 }
       ],
       Necromancer: [
         { id: 'nec_bone_shard', name: 'Bone Shard', mp: 22, cooldown: 8, levelReq: 1, cost: 0, desc: 'Dark shard tears into the enemy.', target: 'enemy', kind: 'damage', power: 2.4, variance: 13 },
         { id: 'nec_plague_touch', name: 'Plague Touch', mp: 24, cooldown: 11, levelReq: 5, cost: 70, desc: 'Disease-infused strike with poison ticks.', target: 'enemy', kind: 'damage_poison', power: 2.2, variance: 10, poisonMin: 9, poisonMax: 19 },
-        { id: 'nec_life_tap', name: 'Life Tap', mp: 18, cooldown: 12, levelReq: 9, cost: 125, desc: 'Steals life to heal the caster.', target: 'self', kind: 'heal', healPct: 0.3, variance: 9 }
+        { id: 'nec_life_tap', name: 'Life Tap', mp: 18, cooldown: 12, levelReq: 9, cost: 125, desc: 'Steals life to heal the caster.', target: 'self', kind: 'heal', healPct: 0.3, variance: 9 },
+        { id: 'nec_grave_burst', name: 'Grave Burst', mp: 30, cooldown: 11, levelReq: 12, cost: 185, desc: 'An eruption of grave rot devastates the target.', target: 'enemy', kind: 'damage_poison', power: 2.8, variance: 14, poisonMin: 12, poisonMax: 24 },
+        { id: 'nec_marrow_blight', name: 'Marrow Blight', mp: 34, cooldown: 10, levelReq: 16, cost: 260, desc: 'A soul-sickening plague consumes the enemy.', target: 'enemy', kind: 'damage_poison', power: 3.2, variance: 16, poisonMin: 15, poisonMax: 26 },
+        { id: 'nec_soul_feast', name: 'Soul Feast', mp: 22, cooldown: 14, levelReq: 20, cost: 360, desc: 'Devours lingering essence to restore health.', target: 'self', kind: 'heal', healPct: 0.48, variance: 12 }
       ],
       Rogue: [
         { id: 'backstab', name: 'Backstab', mp: 20, cooldown: 7, levelReq: 1, cost: 0, desc: 'High burst precision strike.', target: 'enemy', kind: 'damage', power: 3.0, variance: 16 },
         { id: 'poison_strike', name: 'Poison Strike', mp: 24, cooldown: 10, levelReq: 5, cost: 70, desc: 'Strike plus poison follow-up chance.', target: 'enemy', kind: 'damage_poison', power: 2.6, variance: 12, poisonMin: 8, poisonMax: 18 },
-        { id: 'shadow_mend', name: 'Shadow Mend', mp: 16, cooldown: 13, levelReq: 8, cost: 105, desc: 'Recover while staying elusive.', target: 'self', kind: 'heal', healPct: 0.26, variance: 9 }
+        { id: 'shadow_mend', name: 'Shadow Mend', mp: 16, cooldown: 13, levelReq: 8, cost: 105, desc: 'Recover while staying elusive.', target: 'self', kind: 'heal', healPct: 0.26, variance: 9 },
+        { id: 'rog_heartseeker', name: 'Heartseeker', mp: 24, cooldown: 10, levelReq: 12, cost: 185, desc: 'A lethal precision strike from the shadows.', target: 'enemy', kind: 'damage', power: 3.4, variance: 17 },
+        { id: 'rog_eviscerate', name: 'Eviscerate', mp: 28, cooldown: 9, levelReq: 16, cost: 260, desc: 'A vicious finishing strike tears through armor.', target: 'enemy', kind: 'damage', power: 3.7, variance: 18 },
+        { id: 'rog_smoke_recovery', name: 'Smoke Recovery', mp: 18, cooldown: 14, levelReq: 20, cost: 360, desc: 'Fade and recover while cloaked in smoke.', target: 'self', kind: 'heal', healPct: 0.42, variance: 10 }
       ],
       Beastlord: [
         { id: 'bst_claw_fury', name: 'Claw Fury', mp: 18, cooldown: 7, levelReq: 1, cost: 0, desc: 'Primal strike from beast training.', target: 'enemy', kind: 'damage', power: 2.3, variance: 12 },
         { id: 'bst_feral_venom', name: 'Feral Venom', mp: 20, cooldown: 10, levelReq: 5, cost: 65, desc: 'Savage attack with poison.', target: 'enemy', kind: 'damage_poison', power: 2.2, variance: 10, poisonMin: 8, poisonMax: 17 },
-        { id: 'bst_spirit_howl', name: 'Spirit Howl', mp: 16, cooldown: 12, levelReq: 9, cost: 120, desc: 'Primal call restores vitality.', target: 'self', kind: 'heal', healPct: 0.29, variance: 9 }
+        { id: 'bst_spirit_howl', name: 'Spirit Howl', mp: 16, cooldown: 12, levelReq: 9, cost: 120, desc: 'Primal call restores vitality.', target: 'self', kind: 'heal', healPct: 0.29, variance: 9 },
+        { id: 'bst_primal_maul', name: 'Primal Maul', mp: 24, cooldown: 10, levelReq: 12, cost: 185, desc: 'Savage mauling strike empowered by wild spirits.', target: 'enemy', kind: 'damage', power: 3.0, variance: 15 },
+        { id: 'bst_apex_rend', name: 'Apex Rend', mp: 28, cooldown: 9, levelReq: 16, cost: 260, desc: 'A feral tear backed by primal force.', target: 'enemy', kind: 'damage', power: 3.4, variance: 16 },
+        { id: 'bst_spirit_pack', name: 'Spirit Pack', mp: 20, cooldown: 14, levelReq: 20, cost: 360, desc: 'Pack spirits mend your wounds quickly.', target: 'self', kind: 'heal', healPct: 0.45, variance: 11 }
       ],
       Berserker: [
         { id: 'brs_whirl_axe', name: 'Whirling Axe', mp: 14, cooldown: 6, levelReq: 1, cost: 0, desc: 'Axe rush for brutal damage.', target: 'enemy', kind: 'damage', power: 2.5, variance: 13 },
         { id: 'brs_bloodrage', name: 'Bloodrage', mp: 16, cooldown: 9, levelReq: 4, cost: 55, desc: 'Frenzied strike that weakens foe.', target: 'enemy', kind: 'damage_weaken', power: 2.1, variance: 9, weaken: 2 },
-        { id: 'brs_war_cry', name: 'War Cry', mp: 12, cooldown: 12, levelReq: 8, cost: 100, desc: 'Battle roar restores fighting spirit.', target: 'self', kind: 'heal', healPct: 0.24, variance: 8 }
+        { id: 'brs_war_cry', name: 'War Cry', mp: 12, cooldown: 12, levelReq: 8, cost: 100, desc: 'Battle roar restores fighting spirit.', target: 'self', kind: 'heal', healPct: 0.24, variance: 8 },
+        { id: 'brs_onslaught', name: 'Onslaught', mp: 22, cooldown: 9, levelReq: 12, cost: 185, desc: 'A frenzied charge that tears through defenses.', target: 'enemy', kind: 'damage_weaken', power: 2.8, variance: 13, weaken: 3 },
+        { id: 'brs_butchers_fury', name: "Butcher's Fury", mp: 26, cooldown: 8, levelReq: 16, cost: 260, desc: 'Relentless attacks crash into the target.', target: 'enemy', kind: 'damage', power: 3.5, variance: 16 },
+        { id: 'brs_blood_recovery', name: 'Blood Recovery', mp: 18, cooldown: 14, levelReq: 20, cost: 360, desc: 'Rage-fueled resilience restores health.', target: 'self', kind: 'heal', healPct: 0.41, variance: 10 }
       ]
     };
+
+    const PRESTIGE_LEVEL_REQ = 100;
+    const PRESTIGE_PERKS = {
+      xp: { label: 'Veteran Lore', desc: '+5% all XP gain per rank.', maxRank: 10, xpMultPerRank: 0.05 },
+      gold: { label: 'Golden Touch', desc: '+5% gold gain from combat/contracts/quests per rank.', maxRank: 10, goldMultPerRank: 0.05 },
+      loot: { label: 'Relic Hunter', desc: '+4% loot chance multiplier per rank.', maxRank: 10, lootMultPerRank: 0.04 },
+      power: { label: 'Battle Legacy', desc: '+3% outgoing damage per rank.', maxRank: 10, playerDamageMultPerRank: 0.03 },
+      ward: { label: 'Ancestral Ward', desc: '-2% incoming damage per rank.', maxRank: 10, mobDamageMultPerRank: -0.02 }
+    };
+
+    const CLASS_EPIC_CONTENT = {
+      Warrior: {
+        questName: 'Epic Trial: Steel Oath', target: 'Innoruuk Servant', count: 30,
+        desc: 'Defeat Innoruuk Servants and forge your final oath.',
+        spell: { id: 'epic_warrior_oathbreaker', name: 'Epic: Oathbreaker', mp: 40, cooldown: 12, levelReq: 1, cost: 0, epic: true, desc: 'Legendary cleave that crushes enemy guard.', target: 'enemy', kind: 'damage_weaken', power: 4.1, variance: 20, weaken: 6 }
+      },
+      Cleric: {
+        questName: 'Epic Trial: Light Everlasting', target: 'Aegis Herald', count: 28,
+        desc: 'Purge Aegis Heralds to unlock divine restoration.',
+        spell: { id: 'epic_cleric_seraphim', name: 'Epic: Seraphim Grace', mp: 42, cooldown: 14, levelReq: 1, cost: 0, epic: true, desc: 'Miraculous healing beyond mortal limits.', target: 'self', kind: 'heal', healPct: 0.82, variance: 16 }
+      },
+      Paladin: {
+        questName: 'Epic Trial: Righteous Flame', target: 'Valor Knight', count: 30,
+        desc: 'Prove your valor against celestial champions.',
+        spell: { id: 'epic_paladin_verdict', name: 'Epic: Final Verdict', mp: 40, cooldown: 12, levelReq: 1, cost: 0, epic: true, desc: 'Holy execution with overwhelming force.', target: 'enemy', kind: 'damage', power: 4.0, variance: 20 }
+      },
+      Ranger: {
+        questName: 'Epic Trial: Wild Hunt', target: 'Velium Stalker', count: 32,
+        desc: 'Hunt Velium Stalkers and master the apex shot.',
+        spell: { id: 'epic_ranger_godshot', name: 'Epic: Godshot', mp: 38, cooldown: 11, levelReq: 1, cost: 0, epic: true, desc: 'An unmatched hunt shot that pierces all defenses.', target: 'enemy', kind: 'damage', power: 4.2, variance: 21 }
+      },
+      'Shadow Knight': {
+        questName: 'Epic Trial: Grave Dominion', target: 'Demi-Lich', count: 26,
+        desc: 'Harvest the might of Demi-Liches in dark ritual.',
+        spell: { id: 'epic_shadow_knight_voidbrand', name: 'Epic: Voidbrand', mp: 42, cooldown: 12, levelReq: 1, cost: 0, epic: true, desc: 'Corrupting strike with devastating plague.', target: 'enemy', kind: 'damage_poison', power: 3.9, variance: 18, poisonMin: 22, poisonMax: 34 }
+      },
+      Druid: {
+        questName: 'Epic Trial: Verdant Tempest', target: 'Blight Horror', count: 30,
+        desc: 'Cleanse Blight Horrors to command primal storms.',
+        spell: { id: 'epic_druid_worldbloom', name: 'Epic: Worldbloom', mp: 40, cooldown: 13, levelReq: 1, cost: 0, epic: true, desc: 'A worldroot surge that restores and renews mana.', target: 'self', kind: 'mana', manaPct: 0.68, variance: 15 }
+      },
+      Monk: {
+        questName: 'Epic Trial: Perfect Form', target: 'Cyclone Champion', count: 30,
+        desc: 'Defeat Cyclone Champions to complete the final kata.',
+        spell: { id: 'epic_monk_thousand_palms', name: 'Epic: Thousand Palms', mp: 36, cooldown: 10, levelReq: 1, cost: 0, epic: true, desc: 'A legendary barrage of flawless strikes.', target: 'enemy', kind: 'damage', power: 4.0, variance: 19 }
+      },
+      Bard: {
+        questName: 'Epic Trial: Anthem of Ages', target: 'Cloudbreaker Adept', count: 30,
+        desc: 'Gather lost verses from Cloudbreaker Adepts.',
+        spell: { id: 'epic_bard_anthem_ruin', name: 'Epic: Anthem of Ruin', mp: 38, cooldown: 12, levelReq: 1, cost: 0, epic: true, desc: 'A ruinous anthem that cripples enemy offense.', target: 'enemy', kind: 'damage_weaken', power: 3.7, variance: 17, weaken: 6 }
+      },
+      Wizard: {
+        questName: 'Epic Trial: Starfire Codex', target: 'Magma Sentinel', count: 28,
+        desc: 'Study the cores of Magma Sentinels to finish the codex.',
+        spell: { id: 'epic_wizard_supernova', name: 'Epic: Supernova', mp: 52, cooldown: 14, levelReq: 1, cost: 0, epic: true, desc: 'Cataclysmic arcane detonation.', target: 'enemy', kind: 'damage', power: 4.8, variance: 28 }
+      },
+      Magician: {
+        questName: 'Epic Trial: Planar Core', target: 'Ash Drake', count: 28,
+        desc: 'Harvest planar embers from Ash Drakes.',
+        spell: { id: 'epic_magician_prismatic_collapse', name: 'Epic: Prismatic Collapse', mp: 48, cooldown: 13, levelReq: 1, cost: 0, epic: true, desc: 'Elemental collapse tearing through reality.', target: 'enemy', kind: 'damage', power: 4.5, variance: 24 }
+      },
+      Enchanter: {
+        questName: 'Epic Trial: Mind Dominion', target: 'Void Archivist', count: 26,
+        desc: 'Break the will of Void Archivists.',
+        spell: { id: 'epic_enchanter_neural_break', name: 'Epic: Neural Break', mp: 40, cooldown: 12, levelReq: 1, cost: 0, epic: true, desc: 'Absolute psychic rupture and suppression.', target: 'enemy', kind: 'damage_weaken', power: 3.9, variance: 18, weaken: 7 }
+      },
+      Shaman: {
+        questName: 'Epic Trial: Spirit Pact', target: 'Poxbound Ritualist', count: 30,
+        desc: 'Silence Poxbound Ritualists to secure spirit favor.',
+        spell: { id: 'epic_shaman_ancestral_storm', name: 'Epic: Ancestral Storm', mp: 42, cooldown: 12, levelReq: 1, cost: 0, epic: true, desc: 'Totemic plague storm with massive poison output.', target: 'enemy', kind: 'damage_poison', power: 4.0, variance: 18, poisonMin: 20, poisonMax: 34 }
+      },
+      Necromancer: {
+        questName: 'Epic Trial: Death Choir', target: 'Cryptflame Adept', count: 30,
+        desc: 'Collect soul-echoes from Cryptflame Adepts.',
+        spell: { id: 'epic_necromancer_requiem', name: 'Epic: Grave Requiem', mp: 44, cooldown: 12, levelReq: 1, cost: 0, epic: true, desc: 'A funeral hymn that rots and withers enemies.', target: 'enemy', kind: 'damage_poison', power: 4.1, variance: 19, poisonMin: 22, poisonMax: 36 }
+      },
+      Rogue: {
+        questName: 'Epic Trial: Night Contract', target: 'Painforged Guard', count: 30,
+        desc: 'Fulfill silent contracts against Painforged Guards.',
+        spell: { id: 'epic_rogue_midnight_execution', name: 'Epic: Midnight Execution', mp: 36, cooldown: 9, levelReq: 1, cost: 0, epic: true, desc: 'Execution-level critical assault.', target: 'enemy', kind: 'damage', power: 4.3, variance: 22 }
+      },
+      Beastlord: {
+        questName: 'Epic Trial: Apex Bond', target: 'Ember Devourer', count: 30,
+        desc: 'Defeat Ember Devourers to awaken the primal pact.',
+        spell: { id: 'epic_beastlord_pack_alpha', name: 'Epic: Pack Alpha', mp: 38, cooldown: 10, levelReq: 1, cost: 0, epic: true, desc: 'Alpha strike empowered by a spectral pack.', target: 'enemy', kind: 'damage', power: 4.0, variance: 20 }
+      },
+      Berserker: {
+        questName: 'Epic Trial: Crimson End', target: 'Anguish Torturer', count: 30,
+        desc: 'End Anguish Torturers in a whirlwind of rage.',
+        spell: { id: 'epic_berserker_redline', name: 'Epic: Redline Frenzy', mp: 36, cooldown: 9, levelReq: 1, cost: 0, epic: true, desc: 'Unhinged berserker assault that breaks enemy might.', target: 'enemy', kind: 'damage_weaken', power: 4.1, variance: 20, weaken: 5 }
+      }
+    };
+
+    function getClassEpicContent(cls) {
+      return CLASS_EPIC_CONTENT[cls] || null;
+    }
+
+    function createClassQuestState(cls) {
+      const epic = getClassEpicContent(cls);
+      if (!epic) return null;
+      return {
+        cls,
+        name: epic.questName,
+        desc: epic.desc,
+        target: epic.target,
+        count: Math.max(1, Math.floor(Number(epic.count || 25))),
+        progress: 0,
+        completed: false,
+        claimed: false,
+        rewardSpellId: epic.spell.id
+      };
+    }
 
     function getFactionTier(value) {
       if (value >= 200) return 'Ally';
@@ -2694,7 +2950,31 @@
         Rogue: 'Rogue', Cleric: 'Cleric', Druid: 'Cleric', Shaman: 'Cleric', Necromancer: 'Wizard', Wizard: 'Wizard',
         Magician: 'Wizard', Enchanter: 'Wizard', Beastlord: 'Rogue', Berserker: 'Warrior'
       };
-      return SPELLBOOK_BY_CLASS[cls] || SPELLBOOK_BY_CLASS[fallback[cls]] || [];
+      const base = SPELLBOOK_BY_CLASS[cls] || SPELLBOOK_BY_CLASS[fallback[cls]] || [];
+      const epic = getClassEpicContent(cls);
+      return epic && epic.spell ? base.concat([epic.spell]) : base;
+    }
+
+    function getPrestigeModifiers(targetChar) {
+      const out = {
+        xpMult: 1,
+        goldMult: 1,
+        lootMult: 1,
+        playerDamageMult: 1,
+        mobDamageMult: 1
+      };
+      if (!targetChar || !targetChar.prestige || typeof targetChar.prestige !== 'object') return out;
+      const perks = targetChar.prestige.perks || {};
+      Object.entries(PRESTIGE_PERKS).forEach(([id, perk]) => {
+        const rank = Math.max(0, Math.min(perk.maxRank || 0, Math.floor(Number(perks[id] || 0))));
+        if (!rank) return;
+        if (perk.xpMultPerRank) out.xpMult *= (1 + perk.xpMultPerRank * rank);
+        if (perk.goldMultPerRank) out.goldMult *= (1 + perk.goldMultPerRank * rank);
+        if (perk.lootMultPerRank) out.lootMult *= (1 + perk.lootMultPerRank * rank);
+        if (perk.playerDamageMultPerRank) out.playerDamageMult *= (1 + perk.playerDamageMultPerRank * rank);
+        if (perk.mobDamageMultPerRank) out.mobDamageMult *= (1 + perk.mobDamageMultPerRank * rank);
+      });
+      return out;
     }
 
     function getSpellById(id) {
@@ -2707,6 +2987,13 @@
       const readyAt = Number(char.spellCooldowns[id] || 0);
       if (!Number.isFinite(readyAt) || readyAt <= Date.now()) return 0;
       return Math.ceil((readyAt - Date.now()) / 1000);
+    }
+
+    function getMaxMemorizedSpellSlots(targetChar) {
+      if (!targetChar) return 2;
+      const aa = getAACombatModifiers(targetChar);
+      const bonus = Math.max(0, Math.floor(Number(aa.extraSpellSlots || 0)));
+      return Math.max(2, Math.min(6, 2 + bonus));
     }
 
     function ensureSpellState(targetChar) {
@@ -2725,14 +3012,21 @@
         targetChar.spellShopInitialized = true;
       }
 
-      if (!Array.isArray(targetChar.memorizedSpells) || targetChar.memorizedSpells.length < 2) {
-        targetChar.memorizedSpells = [targetChar.knownSpells[0] || null, targetChar.knownSpells[1] || null];
-      } else {
-        const known = new Set(targetChar.knownSpells);
-        const gem1 = known.has(targetChar.memorizedSpells[0]) ? targetChar.memorizedSpells[0] : (targetChar.knownSpells[0] || null);
-        const gem2 = known.has(targetChar.memorizedSpells[1]) ? targetChar.memorizedSpells[1] : (targetChar.knownSpells[1] || null);
-        targetChar.memorizedSpells = [gem1, gem2];
+      const maxSlots = getMaxMemorizedSpellSlots(targetChar);
+      if (!Array.isArray(targetChar.memorizedSpells)) {
+        targetChar.memorizedSpells = [];
       }
+      const known = new Set(targetChar.knownSpells);
+      const normalizedGems = [];
+      for (let i = 0; i < maxSlots; i++) {
+        const existing = targetChar.memorizedSpells[i] || null;
+        if (existing && known.has(existing)) {
+          normalizedGems.push(existing);
+        } else {
+          normalizedGems.push(targetChar.knownSpells[i] || null);
+        }
+      }
+      targetChar.memorizedSpells = normalizedGems;
 
       if (!targetChar.spellCooldowns || typeof targetChar.spellCooldowns !== 'object') {
         targetChar.spellCooldowns = {};
@@ -3315,6 +3609,9 @@
       mythic: { label: 'Mythic', countMult: 1.75, rewardMult: 2.1 }
     };
     const CONTRACT_CHAIN_TOTAL = 3;
+    const AA_UNLOCK_LEVEL = 51;
+    const AA_XP_PER_POINT = 2000;
+    const CRAFTING_REROLL_COST = { common: 10, magic: 6, rare: 2, gold: 120 };
     const LOOT_FILTER_PRESETS = {
       balanced: { label: 'Balanced', autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true },
       gold: { label: 'Gold Farm', autoSellJunk: true, autoSellNormalGear: true, protectRarePlus: true },
@@ -3339,22 +3636,26 @@
       melee: [
         { id: 'discipline', name: 'Discipline', desc: '+2 ATK per rank.', maxRank: 5, atkBonusPerRank: 2 },
         { id: 'bulwark', name: 'Bulwark', desc: '+2 DEF per rank.', maxRank: 5, defBonusPerRank: 2 },
-        { id: 'slayer', name: 'Slayer Instinct', desc: '+3% melee damage and +2% loot chance multiplier per rank.', maxRank: 5, playerDamageMultPerRank: 0.03, lootMultPerRank: 0.02 }
+        { id: 'slayer', name: 'Slayer Instinct', desc: '+3% melee damage and +2% loot chance multiplier per rank.', maxRank: 5, playerDamageMultPerRank: 0.03, lootMultPerRank: 0.02 },
+        { id: 'spell_slots', name: 'Arcane Capacity', desc: '+1 memorized spell slot per rank (up to 6 total gems).', maxRank: 4, extraSpellSlotsPerRank: 1 }
       ],
       hybrid: [
         { id: 'pathblade', name: 'Pathblade', desc: '+1 ATK and +1 DEF per rank.', maxRank: 5, atkBonusPerRank: 1, defBonusPerRank: 1 },
         { id: 'spirit', name: 'Spiritual Focus', desc: '+3% spell power, healing, and mana recovery per rank.', maxRank: 5, spellPowerMultPerRank: 0.03, healMultPerRank: 0.03, manaMultPerRank: 0.03 },
-        { id: 'tempo', name: 'Battle Tempo', desc: '-2% incoming damage and +1 MP regen per rank.', maxRank: 5, mobDamageMultPerRank: -0.02, mpRegenPerRank: 1 }
+        { id: 'tempo', name: 'Battle Tempo', desc: '-2% incoming damage and +1 MP regen per rank.', maxRank: 5, mobDamageMultPerRank: -0.02, mpRegenPerRank: 1 },
+        { id: 'spell_slots', name: 'Arcane Capacity', desc: '+1 memorized spell slot per rank (up to 6 total gems).', maxRank: 4, extraSpellSlotsPerRank: 1 }
       ],
       priest: [
         { id: 'benediction', name: 'Benediction', desc: '+4% healing and +4% mana recovery per rank.', maxRank: 5, healMultPerRank: 0.04, manaMultPerRank: 0.04 },
         { id: 'ward', name: 'Divine Ward', desc: '+2 DEF per rank and -2% incoming damage per rank.', maxRank: 5, defBonusPerRank: 2, mobDamageMultPerRank: -0.02 },
-        { id: 'judgment', name: 'Judgment', desc: '+2% spell power and +1 ATK per rank.', maxRank: 5, spellPowerMultPerRank: 0.02, atkBonusPerRank: 1 }
+        { id: 'judgment', name: 'Judgment', desc: '+2% spell power and +1 ATK per rank.', maxRank: 5, spellPowerMultPerRank: 0.02, atkBonusPerRank: 1 },
+        { id: 'spell_slots', name: 'Arcane Capacity', desc: '+1 memorized spell slot per rank (up to 6 total gems).', maxRank: 4, extraSpellSlotsPerRank: 1 }
       ],
       caster: [
         { id: 'arcanum', name: 'Deep Arcanum', desc: '+5% spell power per rank.', maxRank: 5, spellPowerMultPerRank: 0.05 },
         { id: 'clarity', name: 'Clarity Well', desc: '+4% mana recovery and +1 MP regen per rank.', maxRank: 5, manaMultPerRank: 0.04, mpRegenPerRank: 1 },
-        { id: 'barrier', name: 'Arcane Barrier', desc: '+1 DEF and -2% incoming damage per rank.', maxRank: 5, defBonusPerRank: 1, mobDamageMultPerRank: -0.02 }
+        { id: 'barrier', name: 'Arcane Barrier', desc: '+1 DEF and -2% incoming damage per rank.', maxRank: 5, defBonusPerRank: 1, mobDamageMultPerRank: -0.02 },
+        { id: 'spell_slots', name: 'Arcane Capacity', desc: '+1 memorized spell slot per rank (up to 6 total gems).', maxRank: 4, extraSpellSlotsPerRank: 1 }
       ]
     };
 
@@ -3518,6 +3819,7 @@
       const gains = [];
       if (node.atkBonusPerRank) gains.push('+' + node.atkBonusPerRank + ' ATK');
       if (node.defBonusPerRank) gains.push('+' + node.defBonusPerRank + ' DEF');
+      if (node.extraSpellSlotsPerRank) gains.push('+' + node.extraSpellSlotsPerRank + ' Spell Gem Slot');
       if (node.mpRegenPerRank) gains.push('+' + node.mpRegenPerRank + ' MP Regen');
       if (node.playerDamageMultPerRank) gains.push('+' + Math.round(node.playerDamageMultPerRank * 100) + '% Melee Damage');
       if (node.spellPowerMultPerRank) gains.push('+' + Math.round(node.spellPowerMultPerRank * 100) + '% Spell Power');
@@ -3718,6 +4020,40 @@
     }
 
     function ensureExtendedSystems(targetChar) {
+      if (!targetChar.classQuest || typeof targetChar.classQuest !== 'object') {
+        targetChar.classQuest = createClassQuestState(targetChar.cls);
+      }
+      if (targetChar.classQuest && targetChar.classQuest.cls !== targetChar.cls) {
+        targetChar.classQuest = createClassQuestState(targetChar.cls);
+      }
+      if (targetChar.classQuest) {
+        const cq = targetChar.classQuest;
+        const fallback = createClassQuestState(targetChar.cls);
+        cq.cls = targetChar.cls;
+        cq.name = typeof cq.name === 'string' && cq.name ? cq.name : fallback.name;
+        cq.desc = typeof cq.desc === 'string' && cq.desc ? cq.desc : fallback.desc;
+        cq.target = typeof cq.target === 'string' && cq.target ? cq.target : fallback.target;
+        cq.count = Math.max(1, Math.floor(Number(cq.count || fallback.count || 25)));
+        cq.progress = Math.max(0, Math.min(cq.count, Math.floor(Number(cq.progress || 0))));
+        cq.completed = !!cq.completed || cq.progress >= cq.count;
+        cq.claimed = !!cq.claimed;
+        cq.rewardSpellId = typeof cq.rewardSpellId === 'string' && cq.rewardSpellId ? cq.rewardSpellId : (fallback ? fallback.rewardSpellId : '');
+      }
+
+      if (!targetChar.prestige || typeof targetChar.prestige !== 'object' || Array.isArray(targetChar.prestige)) {
+        targetChar.prestige = { rank: 0, points: 0, spent: 0, perks: { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 } };
+      }
+      if (!targetChar.prestige.perks || typeof targetChar.prestige.perks !== 'object' || Array.isArray(targetChar.prestige.perks)) {
+        targetChar.prestige.perks = { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 };
+      }
+      targetChar.prestige.rank = Math.max(0, Math.floor(Number(targetChar.prestige.rank || 0)));
+      Object.entries(PRESTIGE_PERKS).forEach(([id, perk]) => {
+        const cur = Math.max(0, Math.min(perk.maxRank || 0, Math.floor(Number(targetChar.prestige.perks[id] || 0))));
+        targetChar.prestige.perks[id] = cur;
+      });
+      targetChar.prestige.spent = Object.keys(PRESTIGE_PERKS).reduce((sum, id) => sum + Math.max(0, Math.floor(Number(targetChar.prestige.perks[id] || 0))), 0);
+      targetChar.prestige.points = Math.max(0, Math.floor(Number(targetChar.prestige.points || 0)));
+
       if (!Array.isArray(targetChar.statusEffects)) targetChar.statusEffects = [];
       targetChar.statusEffects = targetChar.statusEffects
         .filter(e => e && typeof e === 'object' && typeof e.id === 'string' && Number.isFinite(Number(e.expiresAt)))
@@ -3784,6 +4120,44 @@
         targetChar.afkGoal = 'balanced';
       }
 
+      if (!targetChar.afkProfiles || typeof targetChar.afkProfiles !== 'object' || Array.isArray(targetChar.afkProfiles)) {
+        targetChar.afkProfiles = { slot1: null, slot2: null, slot3: null };
+      }
+      ['slot1', 'slot2', 'slot3'].forEach(slot => {
+        const p = targetChar.afkProfiles[slot];
+        if (!p || typeof p !== 'object') {
+          targetChar.afkProfiles[slot] = null;
+          return;
+        }
+        if (!Array.isArray(p.queue)) p.queue = ['attack', 'skill', 'potion_heal', 'potion_mana', 'auto_loot', 'heal_if_low', 'rest_if_oom', 'respawn_mob'];
+        p.autoUseSkills = p.autoUseSkills !== false;
+        p.autoUseHpPotions = p.autoUseHpPotions !== false;
+        p.autoUseMpPotions = p.autoUseMpPotions !== false;
+        p.autoRestHpPercent = Math.max(5, Math.min(95, Math.floor(Number(p.autoRestHpPercent || 40))));
+        p.autoRestMpPercent = Math.max(5, Math.min(95, Math.floor(Number(p.autoRestMpPercent || 20))));
+        p.autoHpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(p.autoHpPotionPercent || 35))));
+        p.autoMpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(p.autoMpPotionPercent || 20))));
+        p.afkGoal = AFK_GOALS[p.afkGoal] ? p.afkGoal : 'balanced';
+      });
+
+      if (!targetChar.afkRules || typeof targetChar.afkRules !== 'object' || Array.isArray(targetChar.afkRules)) {
+        targetChar.afkRules = { autoBuyPots: true, potMin: 5, autoAdvanceContract: true };
+      }
+      targetChar.afkRules.autoBuyPots = targetChar.afkRules.autoBuyPots !== false;
+      targetChar.afkRules.autoAdvanceContract = targetChar.afkRules.autoAdvanceContract !== false;
+      targetChar.afkRules.potMin = Math.max(0, Math.min(99, Math.floor(Number(targetChar.afkRules.potMin || 5))));
+
+      if (!targetChar.crafting || typeof targetChar.crafting !== 'object' || Array.isArray(targetChar.crafting)) {
+        targetChar.crafting = { shards: { common: 0, magic: 0, rare: 0, unique: 0 } };
+      }
+      if (!targetChar.crafting.shards || typeof targetChar.crafting.shards !== 'object' || Array.isArray(targetChar.crafting.shards)) {
+        targetChar.crafting.shards = { common: 0, magic: 0, rare: 0, unique: 0 };
+      }
+      targetChar.crafting.shards.common = Math.max(0, Math.floor(Number(targetChar.crafting.shards.common || 0)));
+      targetChar.crafting.shards.magic = Math.max(0, Math.floor(Number(targetChar.crafting.shards.magic || 0)));
+      targetChar.crafting.shards.rare = Math.max(0, Math.floor(Number(targetChar.crafting.shards.rare || 0)));
+      targetChar.crafting.shards.unique = Math.max(0, Math.floor(Number(targetChar.crafting.shards.unique || 0)));
+
       if (!targetChar.logFilters || typeof targetChar.logFilters !== 'object' || Array.isArray(targetChar.logFilters)) {
         targetChar.logFilters = { dmg: true, loot: true, info: true };
       }
@@ -3814,6 +4188,8 @@
       }
       targetChar.aa.points = Math.max(0, Math.floor(Number(targetChar.aa.points || 0)));
       targetChar.aa.spent = Math.max(0, Math.floor(Number(targetChar.aa.spent || 0)));
+      targetChar.aa.xpProgress = Math.max(0, Math.floor(Number(targetChar.aa.xpProgress || 0)));
+      targetChar.aa.xpAllocPct = Math.max(0, Math.min(100, Math.floor(Number(targetChar.aa.xpAllocPct || 0))));
       if (!targetChar.aa.nodes || typeof targetChar.aa.nodes !== 'object' || Array.isArray(targetChar.aa.nodes)) {
         targetChar.aa.nodes = {};
       }
@@ -3907,6 +4283,7 @@
       const out = {
         atkBonus: 0,
         defBonus: 0,
+        extraSpellSlots: 0,
         playerDamageMult: 1,
         mobDamageMult: 1,
         spellPowerMult: 1,
@@ -3923,6 +4300,7 @@
         if (!rank) return;
         out.atkBonus += Math.floor((node.atkBonusPerRank || 0) * rank);
         out.defBonus += Math.floor((node.defBonusPerRank || 0) * rank);
+        out.extraSpellSlots += Math.floor((node.extraSpellSlotsPerRank || 0) * rank);
         out.mpRegenBonus += Math.floor((node.mpRegenPerRank || 0) * rank);
         out.playerDamageMult *= (1 + (node.playerDamageMultPerRank || 0) * rank);
         out.mobDamageMult *= (1 + (node.mobDamageMultPerRank || 0) * rank);
@@ -3934,10 +4312,45 @@
       return out;
     }
 
+    function awardExperience(rawXp, source = 'xp') {
+      if (!char) return { totalXp: 0, regularXp: 0, aaXp: 0, aaPoints: 0 };
+      ensureExtendedSystems(char);
+      const prestige = getPrestigeModifiers(char);
+
+      const totalXp = Math.max(0, Math.floor(Number(rawXp || 0) * (prestige.xpMult || 1)));
+      if (totalXp <= 0) return { totalXp: 0, regularXp: 0, aaXp: 0, aaPoints: 0 };
+
+      let aaXp = 0;
+      let regularXp = totalXp;
+      let aaPoints = 0;
+
+      if (char.level >= AA_UNLOCK_LEVEL) {
+        const pct = Math.max(0, Math.min(100, Math.floor(Number(char.aa.xpAllocPct || 0))));
+        aaXp = Math.floor(totalXp * pct / 100);
+        regularXp = totalXp - aaXp;
+        char.aa.xpProgress = Math.max(0, Math.floor(Number(char.aa.xpProgress || 0))) + aaXp;
+
+        while (char.aa.xpProgress >= AA_XP_PER_POINT) {
+          char.aa.xpProgress -= AA_XP_PER_POINT;
+          char.aa.points += 1;
+          aaPoints += 1;
+        }
+      }
+
+      char.xp += regularXp;
+
+      if (aaPoints > 0) {
+        log('AA gain from ' + source + ': +' + aaPoints + ' AA point' + (aaPoints === 1 ? '' : 's') + '.', 'lvl');
+      }
+
+      return { totalXp, regularXp, aaXp, aaPoints };
+    }
+
     function getAACombatModifiersForNodes(targetChar, nodeRanks) {
       const out = {
         atkBonus: 0,
         defBonus: 0,
+        extraSpellSlots: 0,
         playerDamageMult: 1,
         mobDamageMult: 1,
         spellPowerMult: 1,
@@ -3954,6 +4367,7 @@
         if (!rank) return;
         out.atkBonus += Math.floor((node.atkBonusPerRank || 0) * rank);
         out.defBonus += Math.floor((node.defBonusPerRank || 0) * rank);
+        out.extraSpellSlots += Math.floor((node.extraSpellSlotsPerRank || 0) * rank);
         out.mpRegenBonus += Math.floor((node.mpRegenPerRank || 0) * rank);
         out.playerDamageMult *= (1 + (node.playerDamageMultPerRank || 0) * rank);
         out.mobDamageMult *= (1 + (node.mobDamageMultPerRank || 0) * rank);
@@ -3970,6 +4384,7 @@
       return {
         atk: m.atkBonus,
         def: m.defBonus,
+        memSlots: Math.max(2, Math.min(6, 2 + Math.floor(Number(m.extraSpellSlots || 0)))),
         mpRegen: m.mpRegenBonus,
         meleePct: Math.round((m.playerDamageMult - 1) * 100),
         spellPct: Math.round((m.spellPowerMult - 1) * 100),
@@ -4447,13 +4862,13 @@
       }
       ensureExtendedSystems(char);
       const mastery = getContractMasteryState(char);
+      const prestige = getPrestigeModifiers(char);
       const masteryRewardMult = 1 + mastery.level * 0.05;
       const totalSteps = Math.max(2, Number(c.chainTotal || CONTRACT_CHAIN_TOTAL));
       const step = Math.max(1, Number(c.chainStep || 1));
       const isFinalStep = step >= totalSteps;
       const baseXpReward = Math.floor(c.rewardXp * masteryRewardMult);
-      const baseGoldReward = Math.floor(c.rewardGold * masteryRewardMult);
-      char.xp += baseXpReward;
+      const baseGoldReward = Math.floor(c.rewardGold * masteryRewardMult * (prestige.goldMult || 1));
       char.gold += baseGoldReward;
       let bonusXp = 0;
       let bonusGold = 0;
@@ -4461,7 +4876,6 @@
         const mult = Math.min(0.3, c.streakAtComplete * 0.02);
         bonusXp = Math.floor(baseXpReward * mult);
         bonusGold = Math.floor(baseGoldReward * mult);
-        char.xp += bonusXp;
         char.gold += bonusGold;
       }
       let chainBonusXp = 0;
@@ -4469,7 +4883,6 @@
       if (isFinalStep) {
         chainBonusXp = Math.floor(baseXpReward * (0.25 + mastery.level * 0.02));
         chainBonusGold = Math.floor(baseGoldReward * (0.25 + mastery.level * 0.02));
-        char.xp += chainBonusXp;
         char.gold += chainBonusGold;
 
         char.contractMastery.totalChains += 1;
@@ -4484,7 +4897,8 @@
           log('Contract Mastery increased to Lv ' + char.contractMastery.level + '!', 'lvl');
         }
       }
-      log('Elite contract step complete! +' + baseXpReward + ' XP, +' + baseGoldReward + 'g' +
+      const xpSplit = awardExperience(baseXpReward + bonusXp + chainBonusXp, 'contract');
+      log('Elite contract step complete! +' + xpSplit.regularXp + ' XP' + (xpSplit.aaXp > 0 ? (' (+' + xpSplit.aaXp + ' AA XP)') : '') + ', +' + baseGoldReward + 'g' +
         (bonusXp > 0 ? (' + streak bonus +' + bonusXp + ' XP, +' + bonusGold + 'g') : '') +
         (chainBonusXp > 0 ? (' + chain bonus +' + chainBonusXp + ' XP, +' + chainBonusGold + 'g') : '') + '.', 'loot');
 
@@ -4561,7 +4975,7 @@
     let bagInstallTargetIndex = 0;
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
-    const CURRENT_VERSION = '1.0.8';
+    const CURRENT_VERSION = '1.1.0';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -5081,7 +5495,11 @@
         spellCooldowns: {},
         quests: freshQuests(),
         statusEffects: [],
-        aa: { points: 0, spent: 0, nodes: {} },
+        prestige: { rank: 0, points: 0, spent: 0, perks: { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 } },
+        aa: { points: 0, spent: 0, nodes: {}, xpProgress: 0, xpAllocPct: 0 },
+        afkProfiles: { slot1: null, slot2: null, slot3: null },
+        afkRules: { autoBuyPots: true, potMin: 5, autoAdvanceContract: true },
+        crafting: { shards: { common: 0, magic: 0, rare: 0, unique: 0 } },
         contractTierPref: 'normal',
         eliteContract: generateEliteContract(0, 'normal', 1, CONTRACT_CHAIN_TOTAL),
         eliteContracts: [
@@ -5099,6 +5517,7 @@
         afkGoal: 'balanced',
         logFilters: { dmg: true, loot: true, info: true },
         dungeon: { active: false, floor: 1, best: 1, modifier: 'balanced' },
+        classQuest: createClassQuestState(selectedClass),
         afkEnabled: false, lastAfkAt: null, lastSaved: Date.now()
       };
       slots[pendingSlot] = newChar;
@@ -5259,8 +5678,18 @@
       }
 
       if (oldChar.version === '1.0.7') {
-        oldChar.version = '1.0.8';
-        if (!silent) log('Upgraded save data to v1.0.8.', 'info');
+        oldChar.version = '1.0.9';
+        if (!silent) log('Upgraded save data to v1.0.9.', 'info');
+      }
+
+      if (oldChar.version === '1.0.8') {
+        oldChar.version = '1.0.9';
+        if (!silent) log('Upgraded save data to v1.0.9.', 'info');
+      }
+
+      if (oldChar.version === '1.0.9') {
+        oldChar.version = '1.1.0';
+        if (!silent) log('Upgraded save data to v1.1.0.', 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -5364,6 +5793,7 @@
 
       document.getElementById('skill-name-btn').textContent = spellOne ? (spellOne.name + ' (' + spellOne.mp + ' MP)' + (cdOne > 0 ? ' [' + cdOne + 's]' : '')) : 'Gem 1 Empty';
       document.getElementById('skill2-btn').textContent = spellTwo ? (spellTwo.name + ' (' + spellTwo.mp + ' MP)' + (cdTwo > 0 ? ' [' + cdTwo + 's]' : '')) : 'Gem 2 Empty';
+      renderSpellGemButtons();
       document.getElementById('skill-desc').textContent = spellOne ? spellOne.desc : 'Memorize spells in the Spells tab.';
 
       document.getElementById('hp-bar').style.width = Math.max(0, char.hp / char.maxHp * 100) + '%';
@@ -5371,6 +5801,7 @@
       document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
       renderMob(); renderInv(); renderShop(); renderSpellbook();
       renderAATab();
+      renderPrestigeTab();
       const afkGoalSelect = document.getElementById('afk-goal-select');
       if (afkGoalSelect) {
         if (!afkGoalSelect.options.length) {
@@ -5383,11 +5814,35 @@
         }
         afkGoalSelect.value = getAfkGoalState(char);
       }
+      const afkProfileSelect = document.getElementById('afk-profile-select');
+      if (afkProfileSelect && !afkProfileSelect.value) afkProfileSelect.value = 'slot1';
+      refreshAutoBattleButtons();
+      refreshAfkRuleButtons();
       renderCombatLogFilterUI();
       applyCombatLogFilterVisibility();
       renderAfkGoalStatus();
       renderStatusEffects();
       requestAnimationFrame(syncCombatLogSize);
+    }
+
+    function renderSpellGemButtons() {
+      const host = document.getElementById('extra-skill-gems');
+      if (!host || !char) return;
+      ensureSpellState(char);
+      const maxSlots = getMaxMemorizedSpellSlots(char);
+      host.innerHTML = '';
+
+      for (let slot = 2; slot < maxSlots; slot++) {
+        const spell = getSpellById(char.memorizedSpells[slot]);
+        const cd = spell ? getSpellCooldownRemaining(spell.id) : 0;
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.width = '100%';
+        btn.style.justifyContent = 'center';
+        btn.innerHTML = '<i class="ti ti-bolt"></i> ' + (spell ? (spell.name + ' (' + spell.mp + ' MP)' + (cd > 0 ? (' [' + cd + 's]') : '')) : ('Gem ' + (slot + 1) + ' Empty'));
+        btn.onclick = () => castMemorizedSpell(slot);
+        host.appendChild(btn);
+      }
     }
 
     function renderMob() {
@@ -6055,6 +6510,29 @@
 
       shopHtml += `
         <div class="eq-item-card">
+          <div class="eq-item-name">Crafting Bench</div>
+          <div class="eq-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Unique ${char.crafting.shards.unique}</div>
+          <div class="eq-item-bonus">Salvage unlocked gear in inventory and reroll target slot using shards.</div>
+          <div class="eq-item-actions">
+            <button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button>
+          </div>
+          <div class="eq-item-actions" style="margin-top:6px">
+            <select id="craft-reroll-slot" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+              <option value="weapon">Weapon</option>
+              <option value="chest">Chest</option>
+              <option value="legs">Legs</option>
+              <option value="feet">Feet</option>
+              <option value="offhand">Offhand</option>
+              <option value="charm">Charm</option>
+            </select>
+            <button class="btn" onclick="craftTargetedRerollFromUI()">Targeted Reroll</button>
+          </div>
+          <div class="eq-item-bonus" style="margin-top:6px">Cost: 10 Common + 6 Magic + 2 Rare + 120g</div>
+        </div>
+      `;
+
+      shopHtml += `
+        <div class="eq-item-card">
           <div class="eq-item-name">Steel Longsword</div>
           <div class="eq-item-type">Weapon</div>
           <div class="eq-item-bonus">+12 ATK · ${steelPrice} Gold</div>
@@ -6141,6 +6619,21 @@
         '<div class="quest-prog">Progress: ' + mastery.xp + '/' + masteryNeed + ' chains to next level · Bonus contract rewards: +' + (mastery.level * 5) + '%</div>';
       el.appendChild(masteryCard);
 
+      const cq = char.classQuest;
+      if (cq) {
+        const epicSpell = getSpellById(cq.rewardSpellId);
+        const questCard = document.createElement('div');
+        questCard.className = 'quest';
+        questCard.innerHTML = '<div class="quest-name">Class Epic Quest · ' + cq.name + (cq.claimed ? ' ✓' : '') + '</div>' +
+          '<div class="quest-prog">' + cq.desc + '</div>' +
+          '<div class="quest-prog">Target: ' + cq.target + ' (' + cq.progress + '/' + cq.count + ')' + (cq.completed ? ' — Complete!' : '') + '</div>' +
+          '<div class="quest-prog">Reward: ' + (epicSpell ? epicSpell.name : 'Epic Spell') + '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
+          '<button class="btn" onclick="claimClassQuestReward()" ' + ((cq.completed && !cq.claimed) ? '' : 'disabled') + '>Claim Epic Spell</button>' +
+          '</div>';
+        el.appendChild(questCard);
+      }
+
       (char.eliteContracts || []).forEach((c, idx) => {
         if (!c || !c.active) return;
         const zoneName = ZONES[c.zone] ? ZONES[c.zone].name : 'Unknown';
@@ -6182,8 +6675,28 @@
         : ((char.aa && Number.isFinite(Number(char.aa.points))) ? char.aa.points : 0);
       const investAction = simActive ? 'simSpendAAPoint' : 'spendAAPoint';
       const aaRespecCost = getAARespecCost(char);
+      const aaUnlocked = char.level >= AA_UNLOCK_LEVEL;
+      const allocPct = Math.max(0, Math.min(100, Math.floor(Number((char.aa && char.aa.xpAllocPct) || 0))));
+      const aaXpProgress = Math.max(0, Math.floor(Number((char.aa && char.aa.xpProgress) || 0)));
+      const aaXpToNext = Math.max(0, AA_XP_PER_POINT - aaXpProgress);
       let aaHtml = '<div class="quest-name">Alternate Advancement</div>' +
-        '<div class="quest-prog">Class: ' + char.cls + ' · ' + (simActive ? 'Simulator Points: ' : 'Unspent Points: ') + aaPoints + ' · Earn 1 point each level from 10+</div>';
+        '<div class="quest-prog">Class: ' + char.cls + ' · ' + (simActive ? 'Simulator Points: ' : 'Unspent Points: ') + aaPoints + ' · Unlocks at level ' + AA_UNLOCK_LEVEL + '+</div>';
+
+      aaHtml += '<div class="quest-prog" style="margin-top:6px">Prestige and Ascension are now in the Prestige tab.</div>';
+
+      aaHtml += '<div class="quest-prog">AA XP Progress: ' + aaXpProgress + '/' + AA_XP_PER_POINT + ' · Next point in ' + aaXpToNext + ' AA XP</div>' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">' +
+        '<label style="font-size:11px;color:var(--text-secondary)">XP to AA: ' + allocPct + '%</label>' +
+        '<input type="range" min="0" max="100" step="5" value="' + allocPct + '" oninput="setAAXpAllocationFromUI(this.value)" style="width:180px">' +
+        '<button class="btn" style="font-size:10px;padding:2px 8px" onclick="setAAXpAllocationFromUI(0)">0%</button>' +
+        '<button class="btn" style="font-size:10px;padding:2px 8px" onclick="setAAXpAllocationFromUI(50)">50%</button>' +
+        '<button class="btn" style="font-size:10px;padding:2px 8px" onclick="setAAXpAllocationFromUI(100)">100%</button>' +
+        '</div>' +
+        '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">Regular XP receives ' + (100 - allocPct) + '% of earned XP once level ' + AA_UNLOCK_LEVEL + '+ is reached.</div>';
+
+      if (!aaUnlocked) {
+        aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">AA is locked until level ' + AA_UNLOCK_LEVEL + '. Your allocation is saved now and activates automatically at unlock.</div>';
+      }
 
       aaHtml += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
         '<button class="btn" onclick="respecAA()">Respec (' + aaRespecCost + 'g)</button>' +
@@ -6225,6 +6738,7 @@
         '<div class="quest-name" style="margin:0 0 6px 0">Build Compare Overlay</div>' +
         row('ATK Bonus', 'atk') +
         row('DEF Bonus', 'def') +
+        row('Spell Gems', 'memSlots') +
         row('MP Regen', 'mpRegen') +
         row('Melee Damage', 'meleePct', '%') +
         row('Spell Power', 'spellPct', '%') +
@@ -6274,8 +6788,169 @@
       el.appendChild(aa);
     }
 
+    function renderPrestigeTab() {
+      const el = document.getElementById('prestige-list');
+      if (!el || !char) return;
+      ensureExtendedSystems(char);
+      el.innerHTML = '';
+
+      const wrap = document.createElement('div');
+      wrap.className = 'quest';
+      const prestige = char.prestige || { rank: 0, points: 0, spent: 0, perks: {} };
+      const prestigeMods = getPrestigeModifiers(char);
+
+      let html = '<div class="quest-name">Prestige / Ascension</div>' +
+        '<div class="quest-prog">Prestige Rank: ' + prestige.rank + ' · Unspent Prestige Points: ' + prestige.points + '</div>' +
+        '<div class="quest-prog">Ascension requirement: Level ' + PRESTIGE_LEVEL_REQ + '+</div>' +
+        '<div class="quest-prog">Current bonuses: +' + Math.round((prestigeMods.xpMult - 1) * 100) + '% XP · +' + Math.round((prestigeMods.goldMult - 1) * 100) + '% Gold · +' + Math.round((prestigeMods.lootMult - 1) * 100) + '% Loot · +' + Math.round((prestigeMods.playerDamageMult - 1) * 100) + '% Damage · ' + Math.round((prestigeMods.mobDamageMult - 1) * 100) + '% Incoming</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
+        '<button class="btn" onclick="ascendCharacter()" ' + ((char.level >= PRESTIGE_LEVEL_REQ) ? '' : 'disabled') + '>Ascend (Lv ' + PRESTIGE_LEVEL_REQ + '+)</button>' +
+        '</div>';
+
+      html += '<div style="margin-top:8px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary)">' +
+        '<div class="quest-name" style="margin:0 0 6px 0">Prestige Perks</div>';
+      Object.entries(PRESTIGE_PERKS).forEach(([id, perk]) => {
+        const rank = Math.max(0, Math.floor(Number((prestige.perks && prestige.perks[id]) || 0)));
+        html += '<div style="margin-top:6px;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--bg-primary)">' +
+          '<div class="quest-prog" style="margin-top:0">' + perk.label + ' (' + rank + '/' + perk.maxRank + ') — ' + perk.desc + '</div>' +
+          '<div style="margin-top:4px"><button class="btn" onclick="spendPrestigePoint(\'' + id + '\')" ' + ((prestige.points > 0 && rank < perk.maxRank) ? '' : 'disabled') + '>Invest 1 Prestige</button></div>' +
+        '</div>';
+      });
+      html += '</div>';
+
+      wrap.innerHTML = html;
+      el.appendChild(wrap);
+    }
+
+    function claimClassQuestReward() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const cq = char.classQuest;
+      if (!cq) return;
+      if (cq.claimed) {
+        log('You already claimed your class epic reward.', 'info');
+        return;
+      }
+      if (!cq.completed) {
+        log('Class epic quest is not complete yet.', 'info');
+        return;
+      }
+      const sp = getSpellById(cq.rewardSpellId);
+      if (!sp) {
+        log('Epic spell data is missing for this class.', 'info');
+        return;
+      }
+      if (!Array.isArray(char.knownSpells)) char.knownSpells = [];
+      if (!char.knownSpells.includes(sp.id)) {
+        char.knownSpells.push(sp.id);
+      }
+      cq.claimed = true;
+      log('Epic spell learned: ' + sp.name + '!', 'lvl');
+      renderAll();
+      renderQuests();
+      autoSave();
+    }
+
+    function spendPrestigePoint(perkId) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const perk = PRESTIGE_PERKS[perkId];
+      if (!perk) return;
+      const p = char.prestige;
+      if ((p.points || 0) <= 0) {
+        log('No unspent prestige points.', 'info');
+        return;
+      }
+      const rank = Math.max(0, Math.floor(Number((p.perks && p.perks[perkId]) || 0)));
+      if (rank >= perk.maxRank) {
+        log(perk.label + ' is already max rank.', 'info');
+        return;
+      }
+      p.perks[perkId] = rank + 1;
+      p.points -= 1;
+      p.spent += 1;
+      log('Prestige upgraded: ' + perk.label + ' (' + (rank + 1) + '/' + perk.maxRank + ').', 'lvl');
+      renderAll();
+      renderAATab();
+      autoSave();
+    }
+
+    function ascendCharacter() {
+      if (!char) return;
+      if (mob) {
+        log('You cannot ascend during combat.', 'info');
+        return;
+      }
+      if (char.level < PRESTIGE_LEVEL_REQ) {
+        log('Reach level ' + PRESTIGE_LEVEL_REQ + ' to ascend.', 'info');
+        return;
+      }
+
+      ensureExtendedSystems(char);
+      const p = char.prestige;
+      p.rank = Math.max(0, Math.floor(Number(p.rank || 0))) + 1;
+      p.points = Math.max(0, Math.floor(Number(p.points || 0))) + 1;
+
+      const base = CLASSES[char.cls] || CLASSES.Warrior;
+      char.level = 1;
+      char.xp = 0;
+      char.xpNext = 100;
+      char.maxHp = base.hp;
+      char.maxMp = base.mp;
+      char.atk = base.atk;
+      char.def = base.def;
+      char.mpRegen = base.mpRegen;
+
+      ['weapon', 'chest', 'legs', 'feet', 'offhand', 'charm'].forEach(slot => {
+        if (char.equipment && char.equipment[slot]) applyItemStats(char.equipment[slot]);
+      });
+
+      char.hp = char.maxHp;
+      char.mp = char.maxMp;
+      char.zone = 0;
+      char.bindZone = 0;
+      char.quests = freshQuests();
+      char.eliteContracts = [
+        generateEliteContract(0, char.contractTierPref || 'normal', 1, CONTRACT_CHAIN_TOTAL),
+        generateEliteContract(0, char.contractTierPref || 'normal', 1, CONTRACT_CHAIN_TOTAL),
+        generateEliteContract(0, char.contractTierPref || 'normal', 1, CONTRACT_CHAIN_TOTAL)
+      ];
+      char.contractPrimaryIdx = 0;
+      char.afkPinnedContractIdx = 0;
+      char.eliteContract = char.eliteContracts[0];
+      char.huntStreak = { zone: null, target: '', count: 0 };
+      if (char.dungeon) {
+        char.dungeon.active = false;
+        char.dungeon.floor = 1;
+      }
+      if (char.spellCooldowns && typeof char.spellCooldowns === 'object') {
+        char.spellCooldowns = {};
+      }
+      mob = null;
+
+      log('Ascension complete. Prestige Rank ' + p.rank + ' achieved and +1 prestige point earned.', 'lvl');
+      renderAll();
+      renderZones();
+      renderQuests();
+      autoSave();
+    }
+
+    function setAAXpAllocationFromUI(value) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const pct = Math.max(0, Math.min(100, Math.floor(Number(value || 0))));
+      char.aa.xpAllocPct = pct;
+      renderAATab();
+      autoSave();
+    }
+
     function setMemorizedSpell(slotIdx, spellId) {
       ensureSpellState(char);
+      const maxSlots = getMaxMemorizedSpellSlots(char);
+      if (slotIdx < 0 || slotIdx >= maxSlots) {
+        log('That spell gem is not unlocked yet.', 'info');
+        return;
+      }
       char.memorizedSpells[slotIdx] = spellId;
       log('Memorized ' + (getSpellById(spellId)?.name || spellId) + ' in gem ' + (slotIdx + 1) + '.', 'info');
       renderAll();
@@ -6307,16 +6982,20 @@
         const sp = getSpellById(spellId);
         if (!sp) return;
         const cd = getSpellCooldownRemaining(sp.id);
+        const maxSlots = getMaxMemorizedSpellSlots(char);
 
         const card = document.createElement('div');
         card.className = 'eq-item-card';
+        const memBtns = [];
+        for (let i = 0; i < maxSlots; i++) {
+          memBtns.push('<button class="btn" onclick="setMemorizedSpell(' + i + ', \'' + sp.id + '\')">Mem Gem ' + (i + 1) + '</button>');
+        }
         card.innerHTML = `
           <div class="eq-item-name">${sp.name}</div>
           <div class="eq-item-type">${sp.mp} MP · ${sp.cooldown}s cooldown${cd > 0 ? ' · Ready in ' + cd + 's' : ''}</div>
           <div class="eq-item-bonus">${sp.desc}</div>
           <div class="eq-item-actions">
-            <button class="btn" onclick="setMemorizedSpell(0, '${sp.id}')">Mem Gem 1</button>
-            <button class="btn" onclick="setMemorizedSpell(1, '${sp.id}')">Mem Gem 2</button>
+            ${memBtns.join('')}
           </div>
         `;
         knownCards.appendChild(card);
@@ -6335,6 +7014,21 @@
 
       allClassSpells.forEach(sp => {
         if (knownSet.has(sp.id)) return;
+
+        if (sp.epic) {
+          const card = document.createElement('div');
+          card.className = 'eq-item-card';
+          card.innerHTML = `
+            <div class="eq-item-name rarity-unique">${sp.name}</div>
+            <div class="eq-item-type">Epic class spell</div>
+            <div class="eq-item-bonus">Complete your Class Epic Quest in the Quests tab to unlock this spell.</div>
+            <div class="eq-item-actions">
+              <button class="btn" disabled>Quest Reward</button>
+            </div>
+          `;
+          vendorCards.appendChild(card);
+          return;
+        }
 
         const levelReq = sp.levelReq || 1;
         const canBuyByLevel = char.level >= levelReq;
@@ -6371,6 +7065,11 @@
         return;
       }
 
+      if (sp.epic) {
+        log('Epic spells are unlocked through your Class Epic Quest.', 'info');
+        return;
+      }
+
       ensureSpellState(char);
 
       if (char.knownSpells.includes(sp.id)) {
@@ -6398,8 +7097,13 @@
 
       char.gold -= cost;
       char.knownSpells.push(sp.id);
-      if (!char.memorizedSpells[0]) char.memorizedSpells[0] = sp.id;
-      else if (!char.memorizedSpells[1]) char.memorizedSpells[1] = sp.id;
+      const maxSlots = getMaxMemorizedSpellSlots(char);
+      for (let i = 0; i < maxSlots; i++) {
+        if (!char.memorizedSpells[i]) {
+          char.memorizedSpells[i] = sp.id;
+          break;
+        }
+      }
 
       log('Purchased spell: ' + sp.name + ' for ' + cost + 'g.', 'loot');
       renderAll();
@@ -6413,6 +7117,11 @@
     function castMemorizedSpell(slotIdx, silent = false) {
       if (!char) return false;
       ensureSpellState(char);
+      const maxSlots = getMaxMemorizedSpellSlots(char);
+      if (slotIdx < 0 || slotIdx >= maxSlots) {
+        if (!silent) log('That spell gem is not unlocked yet.', 'info');
+        return false;
+      }
 
       const spellId = char.memorizedSpells[slotIdx];
       const sp = getSpellById(spellId);
@@ -6441,10 +7150,11 @@
       const event = getActiveZoneEvent(char.zone);
       const fx = getStatusEffectModifiers(char);
       const aa = getAACombatModifiers(char);
+      const prestige = getPrestigeModifiers(char);
       const dungeonMod = char.dungeon && char.dungeon.active ? getDungeonModifierData(char.dungeon.modifier) : getDungeonModifierData('balanced');
 
       if (sp.kind === 'damage' || sp.kind === 'damage_weaken' || sp.kind === 'damage_poison') {
-        const dmg = Math.max(1, Math.floor((char.atk * sp.power + Math.random() * sp.variance) * aa.spellPowerMult * (event.spellDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
+        const dmg = Math.max(1, Math.floor((char.atk * sp.power + Math.random() * sp.variance) * aa.spellPowerMult * (prestige.playerDamageMult || 1) * (event.spellDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
         mob.hp -= dmg;
         log(sp.name + ' hits ' + mob.name + ' for ' + dmg + ' damage!', 'dmg');
 
@@ -6619,13 +7329,14 @@
       const event = getActiveZoneEvent(char.zone);
       const fx = getStatusEffectModifiers(char);
       const aa = getAACombatModifiers(char);
+      const prestige = getPrestigeModifiers(char);
       const dungeonMod = char.dungeon && char.dungeon.active ? getDungeonModifierData(char.dungeon.modifier) : getDungeonModifierData('balanced');
       const setBonus = getActiveSetBonusStats();
       const playerAtk = char.atk + aa.atkBonus + (setBonus.atk || 0) + (fx.atkBonus || 0);
       const playerDef = char.def + aa.defBonus + (setBonus.def || 0) + (fx.defBonus || 0);
 
       let dmg = Math.max(1, playerAtk - mob.def + Math.floor(Math.random() * 6) - 2);
-      dmg = Math.max(1, Math.floor(dmg * aa.playerDamageMult * (event.playerDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
+      dmg = Math.max(1, Math.floor(dmg * aa.playerDamageMult * prestige.playerDamageMult * (event.playerDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
 
       if (mob.namedMechanic && mob.namedMechanic.id === 'ward' && mob.wardReady) {
         dmg = Math.max(1, Math.floor(dmg * 0.55));
@@ -6651,7 +7362,7 @@
       mob.turnCount = (mob.turnCount || 0) + 1;
 
       let md = Math.max(1, mob.atk - playerDef + Math.floor(Math.random() * 4) - 1);
-      md = Math.max(1, Math.floor(md * aa.mobDamageMult * (event.mobDamageMult || 1) * (fx.mobDamageMult || 1) * (dungeonMod.mobDamageMult || 1)));
+      md = Math.max(1, Math.floor(md * aa.mobDamageMult * prestige.mobDamageMult * (event.mobDamageMult || 1) * (fx.mobDamageMult || 1) * (dungeonMod.mobDamageMult || 1)));
       char.hp -= md;
       log(mob.name + ' hits back for ' + md + '!', 'dmg');
 
@@ -6720,16 +7431,18 @@
       const event = getActiveZoneEvent(char.zone);
       ensureExtendedSystems(char);
       const aa = getAACombatModifiers(char);
+      const prestige = getPrestigeModifiers(char);
       const inDungeon = !!char.dungeon.active;
       const floor = char.dungeon.floor || 1;
       const dungeonMod = inDungeon ? getDungeonModifierData(char.dungeon.modifier) : getDungeonModifierData('balanced');
       const namedMult = mob.named ? 2.5 : 1;
       const dungeonMult = inDungeon ? (1 + floor * 0.08) : 1;
       const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1));
-      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1));
-      char.xp += xp; char.gold += gold;
+      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult);
+      const killXp = awardExperience(xp, 'combat');
+      char.gold += gold;
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
-      log(mob.name + ' is slain! +' + xp + ' XP, +' + gold + 'g', 'loot');
+      log(mob.name + ' is slain! +' + killXp.regularXp + ' XP' + (killXp.aaXp > 0 ? (' (+' + killXp.aaXp + ' AA XP)') : '') + ', +' + gold + 'g', 'loot');
 
       const contract = getPrimaryContract(char);
       const contractMatch = contract && contract.active && !contract.complete && contract.zone === char.zone && (
@@ -6743,6 +7456,15 @@
           const hs = char.huntStreak || {};
           contract.streakAtComplete = (hs.zone === char.zone && hs.target === contract.target) ? (hs.count || 0) : 0;
           log('Elite contract step complete. Return to quests to claim reward.', 'lvl');
+        }
+      }
+
+      const classQuest = char.classQuest;
+      if (classQuest && !classQuest.completed && mob.baseName === classQuest.target) {
+        classQuest.progress = Math.min(classQuest.count, Math.max(0, Number(classQuest.progress || 0)) + 1);
+        if (classQuest.progress >= classQuest.count) {
+          classQuest.completed = true;
+          log('Class Epic Quest complete. Claim your epic spell in the Quests tab.', 'lvl');
         }
       }
 
@@ -6767,10 +7489,16 @@
       char.quests.forEach(q => {
         if (!q.done && mob.baseName === q.mob) {
           q.prog = Math.min(q.count, q.prog + 1);
-          if (q.prog >= q.count) { q.done = true; char.xp += q.xp; char.gold += q.gold; log('Quest complete: ' + q.name + '! +' + q.xp + ' XP, +' + q.gold + 'g', 'lvl'); }
+          if (q.prog >= q.count) {
+            q.done = true;
+            const questXp = awardExperience(q.xp, 'quest');
+            const qGold = Math.floor(q.gold * prestige.goldMult);
+            char.gold += qGold;
+            log('Quest complete: ' + q.name + '! +' + questXp.regularXp + ' XP' + (questXp.aaXp > 0 ? (' (+' + questXp.aaXp + ' AA XP)') : '') + ', +' + qGold + 'g', 'lvl');
+          }
         }
       });
-      if (Math.random() < ((mob.named ? 0.8 : 0.4) * (event.lootMult || 1) * (dungeonMod.lootMult || 1) * (aa.lootMult || 1) * streakLootMult)) {
+      if (Math.random() < ((mob.named ? 0.8 : 0.4) * (event.lootMult || 1) * (dungeonMod.lootMult || 1) * (aa.lootMult || 1) * (prestige.lootMult || 1) * streakLootMult)) {
         const lootBase = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
         const loot = rollItemVariant(lootBase, mob.named ? 'loot_named' : 'loot');
         processLootDrop(loot, 'Looted');
@@ -6797,15 +7525,19 @@
       while (char.xp >= char.xpNext) {
         ensureExtendedSystems(char);
         char.xp -= char.xpNext; char.level++;
-        char.xpNext = Math.floor(char.xpNext * 1.6);
+        const xpScale = char.level < 30
+          ? 1.48
+          : (char.level < 60
+            ? 1.54
+            : (char.level < 85 ? 1.58 : 1.6));
+        char.xpNext = Math.floor(char.xpNext * xpScale);
         char.maxHp = Math.floor(char.maxHp * 1.12);
         char.maxMp = Math.floor(char.maxMp * 1.1);
         char.hp = char.maxHp; char.mp = char.maxMp;
         char.atk += 2; char.def += 1;
         log('*** LEVEL UP! You are now level ' + char.level + '! ***', 'lvl');
-        if (char.level >= 10) {
-          char.aa.points = Math.max(0, Number(char.aa.points || 0)) + 1;
-          log('You gained 1 AA point.', 'lvl');
+        if (char.level === AA_UNLOCK_LEVEL) {
+          log('Alternate Advancement unlocked. Configure XP diversion in the AA tab.', 'lvl');
         }
         renderZones();
       }
@@ -7189,6 +7921,97 @@
       autoSave();
     }
 
+    function getCraftShardYieldByQuality(entry) {
+      const quality = getItemQuality(entry);
+      if (quality === 'Unique') return { unique: 1 };
+      if (quality === 'Rare' || quality === 'Runeword') return { rare: 2, magic: 2 };
+      if (quality === 'Magic') return { magic: 2, common: 2 };
+      return { common: 3 };
+    }
+
+    function addCraftShards(yieldMap) {
+      ensureExtendedSystems(char);
+      Object.entries(yieldMap || {}).forEach(([key, val]) => {
+        if (!Object.prototype.hasOwnProperty.call(char.crafting.shards, key)) return;
+        char.crafting.shards[key] += Math.max(0, Math.floor(Number(val || 0)));
+      });
+    }
+
+    function salvageInventoryGear() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+
+      const keep = [];
+      let salvaged = 0;
+      char.inventory.forEach(entry => {
+        if (!getItemData(entry)) {
+          keep.push(entry);
+          return;
+        }
+        if (isItemLocked(entry) || isItemFavorite(entry)) {
+          keep.push(entry);
+          return;
+        }
+        addCraftShards(getCraftShardYieldByQuality(entry));
+        salvaged += 1;
+      });
+
+      if (!salvaged) {
+        log('No eligible gear to salvage (locked/favorite items are protected).', 'info');
+        return;
+      }
+
+      char.inventory = keep;
+      log('Salvaged ' + salvaged + ' gear piece' + (salvaged === 1 ? '' : 's') + ' into crafting shards.', 'loot');
+      renderAll();
+      autoSave();
+    }
+
+    function craftTargetedRerollFromUI() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const sel = document.getElementById('craft-reroll-slot');
+      const targetSlot = sel ? String(sel.value || '') : 'weapon';
+      if (!targetSlot) return;
+
+      const candidates = [];
+      char.inventory.forEach((entry, idx) => {
+        const data = getItemData(entry);
+        if (!data || data.slot !== targetSlot) return;
+        const q = getItemQuality(entry);
+        if (q === 'Unique' || q === 'Runeword') return;
+        if (isItemLocked(entry) || isItemFavorite(entry)) return;
+        candidates.push(idx);
+      });
+
+      if (!candidates.length) {
+        log('No eligible ' + targetSlot + ' item found for targeted reroll.', 'info');
+        return;
+      }
+
+      const shards = char.crafting.shards;
+      if (shards.common < CRAFTING_REROLL_COST.common || shards.magic < CRAFTING_REROLL_COST.magic || shards.rare < CRAFTING_REROLL_COST.rare || char.gold < CRAFTING_REROLL_COST.gold) {
+        log('Not enough resources. Need 10 Common, 6 Magic, 2 Rare shards and 120g.', 'info');
+        return;
+      }
+
+      const pick = candidates[Math.floor(Math.random() * candidates.length)];
+      const oldEntry = char.inventory[pick];
+      const oldName = getItemDisplayName(oldEntry);
+
+      shards.common -= CRAFTING_REROLL_COST.common;
+      shards.magic -= CRAFTING_REROLL_COST.magic;
+      shards.rare -= CRAFTING_REROLL_COST.rare;
+      char.gold -= CRAFTING_REROLL_COST.gold;
+
+      const rerolled = rollItemVariant(getItemBaseName(oldEntry), 'reroll');
+      char.inventory[pick] = rerolled;
+
+      log('Crafting bench rerolled ' + oldName + ' into ' + getItemDisplayName(rerolled) + '.', 'loot');
+      renderAll();
+      autoSave();
+    }
+
     function addSocketToItem(index) {
       if (index < 0 || index >= char.inventory.length) return;
       const entry = char.inventory[index];
@@ -7378,6 +8201,234 @@
 
     function getQueueOrder() { return Array.from(document.querySelectorAll('#action-queue .queue-item')).map(el => el.dataset.action); }
 
+    function setQueueOrder(order) {
+      const queue = document.getElementById('action-queue');
+      if (!queue || !Array.isArray(order)) return;
+
+      const itemByAction = {};
+      Array.from(queue.querySelectorAll('.queue-item')).forEach(node => {
+        if (!node || !node.dataset || !node.dataset.action) return;
+        itemByAction[node.dataset.action] = node;
+      });
+
+      const seen = new Set();
+      order.forEach(action => {
+        const node = itemByAction[action];
+        if (!node || seen.has(action)) return;
+        queue.appendChild(node);
+        seen.add(action);
+      });
+
+      Object.keys(itemByAction).forEach(action => {
+        if (seen.has(action)) return;
+        queue.appendChild(itemByAction[action]);
+      });
+    }
+
+    function getAutoThresholdInputs() {
+      const queue = document.getElementById('action-queue');
+      if (!queue) return null;
+      return {
+        hpPotion: queue.querySelector('[data-action="potion_heal"] input[type="number"]'),
+        mpPotion: queue.querySelector('[data-action="potion_mana"] input[type="number"]'),
+        hpRest: queue.querySelector('[data-action="heal_if_low"] input[type="number"]'),
+        mpRest: queue.querySelector('[data-action="rest_if_oom"] input[type="number"]')
+      };
+    }
+
+    function setAutoToggleButtonState(btnId, enabled) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.textContent = enabled ? 'ON' : 'OFF';
+      btn.classList.toggle('active', !!enabled);
+    }
+
+    function refreshAutoBattleButtons() {
+      setAutoToggleButtonState('skill-auto-btn', autoUseSkills);
+      setAutoToggleButtonState('hp-potion-auto-btn', autoUseHpPotions);
+      setAutoToggleButtonState('mp-potion-auto-btn', autoUseMpPotions);
+    }
+
+    function getCurrentAfkProfileSnapshot() {
+      ensureExtendedSystems(char);
+      const thresholdInputs = getAutoThresholdInputs();
+      return {
+        queue: getQueueOrder(),
+        autoUseSkills: !!autoUseSkills,
+        autoUseHpPotions: !!autoUseHpPotions,
+        autoUseMpPotions: !!autoUseMpPotions,
+        autoRestHpPercent: Math.max(5, Math.min(95, Math.floor(Number(autoRestHpPercent || 40)))),
+        autoRestMpPercent: Math.max(5, Math.min(95, Math.floor(Number(autoRestMpPercent || 20)))),
+        autoHpPotionPercent: Math.max(5, Math.min(95, Math.floor(Number(autoHpPotionPercent || 35)))),
+        autoMpPotionPercent: Math.max(5, Math.min(95, Math.floor(Number(autoMpPotionPercent || 20)))),
+        afkGoal: getAfkGoalState(char),
+        hpInput: thresholdInputs && thresholdInputs.hpPotion ? Math.max(5, Math.min(95, Math.floor(Number(thresholdInputs.hpPotion.value || autoHpPotionPercent || 35)))) : autoHpPotionPercent,
+        mpInput: thresholdInputs && thresholdInputs.mpPotion ? Math.max(5, Math.min(95, Math.floor(Number(thresholdInputs.mpPotion.value || autoMpPotionPercent || 20)))) : autoMpPotionPercent,
+        restHpInput: thresholdInputs && thresholdInputs.hpRest ? Math.max(5, Math.min(95, Math.floor(Number(thresholdInputs.hpRest.value || autoRestHpPercent || 40)))) : autoRestHpPercent,
+        restMpInput: thresholdInputs && thresholdInputs.mpRest ? Math.max(5, Math.min(95, Math.floor(Number(thresholdInputs.mpRest.value || autoRestMpPercent || 20)))) : autoRestMpPercent
+      };
+    }
+
+    function applyAfkProfileSnapshot(profile, silent = false) {
+      if (!profile || typeof profile !== 'object') return false;
+
+      autoUseSkills = profile.autoUseSkills !== false;
+      autoUseHpPotions = profile.autoUseHpPotions !== false;
+      autoUseMpPotions = profile.autoUseMpPotions !== false;
+
+      autoRestHpPercent = Math.max(5, Math.min(95, Math.floor(Number(profile.autoRestHpPercent || 40))));
+      autoRestMpPercent = Math.max(5, Math.min(95, Math.floor(Number(profile.autoRestMpPercent || 20))));
+      autoHpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(profile.autoHpPotionPercent || 35))));
+      autoMpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(profile.autoMpPotionPercent || 20))));
+
+      const thresholdInputs = getAutoThresholdInputs();
+      if (thresholdInputs) {
+        if (thresholdInputs.hpPotion) thresholdInputs.hpPotion.value = profile.hpInput || autoHpPotionPercent;
+        if (thresholdInputs.mpPotion) thresholdInputs.mpPotion.value = profile.mpInput || autoMpPotionPercent;
+        if (thresholdInputs.hpRest) thresholdInputs.hpRest.value = profile.restHpInput || autoRestHpPercent;
+        if (thresholdInputs.mpRest) thresholdInputs.mpRest.value = profile.restMpInput || autoRestMpPercent;
+      }
+
+      if (Array.isArray(profile.queue) && profile.queue.length) {
+        setQueueOrder(profile.queue);
+      }
+
+      if (AFK_GOALS[profile.afkGoal]) {
+        char.afkGoal = profile.afkGoal;
+      }
+
+      refreshAutoBattleButtons();
+      if (!silent) {
+        setAfkGoalAction('Loaded AFK profile');
+        applySmartAfkGoal(false);
+      }
+      return true;
+    }
+
+    function saveAfkProfileFromUI() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const sel = document.getElementById('afk-profile-select');
+      const slot = sel ? sel.value : 'slot1';
+      if (!char.afkProfiles[slot] && slot !== 'slot1' && slot !== 'slot2' && slot !== 'slot3') return;
+
+      char.afkProfiles[slot] = getCurrentAfkProfileSnapshot();
+      log('Saved AFK profile ' + slot.replace('slot', '#') + '.', 'info');
+      autoSave();
+    }
+
+    function loadAfkProfileFromUI() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const sel = document.getElementById('afk-profile-select');
+      const slot = sel ? sel.value : 'slot1';
+      const profile = char.afkProfiles[slot];
+      if (!profile) {
+        log('That AFK profile is empty.', 'info');
+        return;
+      }
+
+      applyAfkProfileSnapshot(profile, false);
+      log('Loaded AFK profile ' + slot.replace('slot', '#') + '.', 'info');
+      renderAll();
+      autoSave();
+    }
+
+    function refreshAfkRuleButtons() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const buyBtn = document.getElementById('rule-buy-pots-btn');
+      const contractBtn = document.getElementById('rule-contract-advance-btn');
+      const potMinInput = document.getElementById('rule-pot-min');
+
+      if (buyBtn) {
+        buyBtn.classList.toggle('active', !!char.afkRules.autoBuyPots);
+        buyBtn.textContent = 'Auto-Buy Pots: ' + (char.afkRules.autoBuyPots ? 'On' : 'Off');
+      }
+      if (contractBtn) {
+        contractBtn.classList.toggle('active', !!char.afkRules.autoAdvanceContract);
+        contractBtn.textContent = 'Auto-Advance Contract: ' + (char.afkRules.autoAdvanceContract ? 'On' : 'Off');
+      }
+      if (potMinInput) potMinInput.value = char.afkRules.potMin;
+    }
+
+    function toggleAfkRule(rule) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (rule !== 'autoBuyPots' && rule !== 'autoAdvanceContract') return;
+      char.afkRules[rule] = !char.afkRules[rule];
+      refreshAfkRuleButtons();
+      log((rule === 'autoBuyPots' ? 'Auto-buy potions' : 'Auto-advance contract') + ' ' + (char.afkRules[rule] ? 'enabled' : 'disabled') + '.', 'info');
+      autoSave();
+    }
+
+    function setAfkPotRuleMin(value) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      char.afkRules.potMin = Math.max(0, Math.min(99, Math.floor(Number(value || 0))));
+      refreshAfkRuleButtons();
+      autoSave();
+    }
+
+    function runAfkAutomationRules() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const rules = char.afkRules;
+
+      if (rules.autoBuyPots) {
+        const target = Math.max(0, Math.floor(Number(rules.potMin || 0)));
+        const hpTotal = Math.max(0, Number(char.healpotions || 0) + Number(char.healpotions_lhp || 0));
+        const mpTotal = Math.max(0, Number(char.manapotions || 0) + Number(char.manapotions_lmp || 0));
+        const hpNeed = Math.max(0, target - hpTotal);
+        const mpNeed = Math.max(0, target - mpTotal);
+        const hpCost = getMerchantPrice(SHOP_BASE_PRICES.hpMinor);
+        const mpCost = getMerchantPrice(SHOP_BASE_PRICES.mpMinor);
+
+        if (hpNeed > 0 && char.gold >= hpCost) {
+          const buyCount = Math.min(hpNeed, Math.floor(char.gold / hpCost));
+          if (buyCount > 0) {
+            char.gold -= buyCount * hpCost;
+            char.healpotions = Number(char.healpotions || 0) + buyCount;
+            setAfkGoalAction('Auto-bought ' + buyCount + ' HP potion' + (buyCount === 1 ? '' : 's'));
+          }
+        }
+
+        if (mpNeed > 0 && char.gold >= mpCost) {
+          const buyCount = Math.min(mpNeed, Math.floor(char.gold / mpCost));
+          if (buyCount > 0) {
+            char.gold -= buyCount * mpCost;
+            char.manapotions = Number(char.manapotions || 0) + buyCount;
+            setAfkGoalAction('Auto-bought ' + buyCount + ' MP potion' + (buyCount === 1 ? '' : 's'));
+          }
+        }
+      }
+
+      if (rules.autoAdvanceContract) {
+        const board = Array.isArray(char.eliteContracts) ? char.eliteContracts : [];
+        if (board.length > 1) {
+          const pinnedIdx = Math.max(0, Math.min(board.length - 1, Number(char.afkPinnedContractIdx || 0)));
+          const pinned = board[pinnedIdx];
+          if (pinned && pinned.active && pinned.completed) {
+            let nextIdx = -1;
+            for (let i = 1; i <= board.length; i++) {
+              const idx = (pinnedIdx + i) % board.length;
+              const c = board[idx];
+              if (c && c.active && !c.completed) {
+                nextIdx = idx;
+                break;
+              }
+            }
+            if (nextIdx >= 0 && nextIdx !== pinnedIdx) {
+              char.afkPinnedContractIdx = nextIdx;
+              char.contractPrimaryIdx = nextIdx;
+              char.eliteContract = board[nextIdx];
+              setAfkGoalAction('Switched AFK contract to slot ' + (nextIdx + 1));
+            }
+          }
+        }
+      }
+    }
+
     function setAfkGoalAction(message) {
       if (!message || message === afkGoalLastAction) return;
       afkGoalLastAction = message;
@@ -7458,6 +8509,7 @@
     function afkTick() {
       if (!char) return;
       applySmartAfkGoal(true);
+      runAfkAutomationRules();
 
       char.mp = Math.min(char.maxMp, char.mp + char.mpRegen);
 
@@ -7496,8 +8548,11 @@
 
           // Skill usage is now part of attack behavior
           if (autoUseSkills) {
-            if (castMemorizedSpell(0, true) || castMemorizedSpell(1, true)) {
-              return;
+            const maxSlots = getMaxMemorizedSpellSlots(char);
+            for (let i = 0; i < maxSlots; i++) {
+              if (castMemorizedSpell(i, true)) {
+                return;
+              }
             }
           }
 
@@ -7512,6 +8567,7 @@
     function simulateAfkReturn(elapsedMs, opts = {}) {
       if (!char || !afkOn) return;
       applySmartAfkGoal(true);
+      runAfkAutomationRules();
 
       const elapsedTicks = Math.floor(elapsedMs / tickMs);
       if (elapsedTicks < 3) return;
@@ -7593,7 +8649,7 @@
         }
       }
 
-      char.xp += totalXp;
+      const afkXp = awardExperience(totalXp, 'afk');
       char.gold += totalGold;
       const factionGain = Math.max(1, Math.floor(fights / 6));
       adjustFaction(factionGain, 'AFK hunting');
@@ -7604,13 +8660,13 @@
       const awayLabel = minutes > 0 ? (minutes + 'm ' + seconds + 's') : (seconds + 's');
 
       const sourcePrefix = opts.source === 'resume' ? 'AFK resume' : 'AFK return';
-      log(sourcePrefix + ' (' + awayLabel + '): simulated ' + fights + ' fights, +' + totalXp + ' XP, +' + totalGold + 'g, ' + totalLoot + ' items, ' + totalRunes + ' runes, +' + factionGain + ' faction.', 'loot');
+      log(sourcePrefix + ' (' + awayLabel + '): simulated ' + fights + ' fights, +' + afkXp.regularXp + ' XP' + (afkXp.aaXp > 0 ? (' (+' + afkXp.aaXp + ' AA XP)') : '') + ', +' + totalGold + 'g, ' + totalLoot + ' items, ' + totalRunes + ' runes, +' + factionGain + ' faction.', 'loot');
       if (questCompletions > 0) log('AFK quests completed: ' + questCompletions + '.', 'lvl');
       if (elapsedTicks > simTicks) {
         log('AFK simulation capped at ' + maxTicks + ' ticks for performance.', 'info');
       }
 
-      showToast('AFK rewards: +' + totalXp + ' XP, +' + totalGold + 'g, ' + totalLoot + ' items, ' + totalRunes + ' runes, +' + factionGain + ' faction', 'success', 4200);
+      showToast('AFK rewards: +' + afkXp.regularXp + ' XP' + (afkXp.aaXp > 0 ? (' (+' + afkXp.aaXp + ' AA XP)') : '') + ', +' + totalGold + 'g, ' + totalLoot + ' items, ' + totalRunes + ' runes, +' + factionGain + ' faction', 'success', 4200);
 
       char.lastAfkAt = Date.now();
       renderQuests();
@@ -7974,10 +9030,11 @@
     //  UI HELPERS
     // ══════════════════════════════════════════════
     function switchTab(tab) {
-      ['combat', 'zone', 'quests', 'inv', 'runes', 'shop', 'spells', 'aa'].forEach(t => {
+      const tabs = ['combat', 'zone', 'quests', 'inv', 'runes', 'shop', 'spells', 'aa', 'prestige'];
+      tabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
       });
-      document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', ['combat', 'zone', 'quests', 'inv', 'runes', 'shop', 'spells', 'aa'][i] === tab); });
+      document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', tabs[i] === tab); });
       if (tab === 'combat') requestAnimationFrame(syncCombatLogSize);
       if (tab === 'zone') renderZones();
       if (tab === 'quests') renderQuests();
@@ -7986,6 +9043,7 @@
       if (tab === 'shop') renderShop();
       if (tab === 'spells') renderSpellbook();
       if (tab === 'aa') renderAATab();
+      if (tab === 'prestige') renderPrestigeTab();
     }
 
     function setupDrag() {
