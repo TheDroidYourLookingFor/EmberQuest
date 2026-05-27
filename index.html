@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EmberQuest RPG - Version 1.0.0</title>
+<title>EmberQuest RPG - Version 1.0.1</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -203,7 +203,7 @@ input[type=range]{width:100%;margin:4px 0;accent-color:#378ADD;}
      SCREEN 1: Character Select / Slot Picker
 ════════════════════════════════════════════════════ -->
 <div id="screen-charselect" class="screen active">
-  <h1>EmberQuest - Version 1.0.0</h1>
+  <h1>EmberQuest - Version 1.0.1</h1>
   <p class="subtitle">Select a character slot to play or create a new adventurer</p>
 
   <div class="slot-grid" id="slot-grid"></div>
@@ -248,7 +248,7 @@ input[type=range]{width:100%;margin:4px 0;accent-color:#378ADD;}
 ════════════════════════════════════════════════════ -->
 <div id="screen-game" class="screen">
   <div id="game-topbar">
-    <span class="title">EmberQuest - Version 1.0.0</span>
+    <span class="title">EmberQuest - Version 1.0.1</span>
     <span class="save-indicator" id="save-indicator"><i class="ti ti-device-floppy"></i> Saved</span>
     <button class="btn" onclick="manualSave()" style="font-size:11px;padding:4px 10px"><i class="ti ti-device-floppy"></i> Save</button>
     <button class="btn" onclick="goToCharSelect()" style="font-size:11px;padding:4px 10px"><i class="ti ti-users"></i> Characters</button>
@@ -430,7 +430,7 @@ input[type=range]{width:100%;margin:4px 0;accent-color:#378ADD;}
                min="5"
                max="95"
                value="35"
-               onchange="autoPotionPercent=parseInt(this.value)||35"
+               onchange="autoHpPotionPercent=parseInt(this.value)||35"
                style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px">
         % HP
       </span>
@@ -621,7 +621,7 @@ let autoUseHpPotions = true;
 let autoUseMpPotions = true;
 let autoRestHpPercent = 40;
 let autoRestMpPercent = 20;
-let autoPotionPercent = 35;
+let autoHpPotionPercent = 35;
 let autoMpPotionPercent = 20;
 
 // ══════════════════════════════════════════════
@@ -1237,7 +1237,12 @@ function afkTick(){
 
     if(action==='attack' && mob){
       // Check Health First
-      if (autoUseHpPotions && char.hp < char.maxHp * (autoPotionPercent / 100) && char.potions > 0) {
+      if (autoUseHpPotions && char.hp < char.maxHp * (autoHpPotionPercent / 100) && char.potions > 0) {
+        usePotion();
+        return;
+      }
+
+      if (autoUseMpPotions && char.mp < char.maxMp * (autoMpPotionPercent / 100) && char.potions > 0) {
         usePotion();
         return;
       }
