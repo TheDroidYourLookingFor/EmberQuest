@@ -1096,106 +1096,78 @@
         Character
       </h2>
       <div
-        class="class-grid">
+        id="create-step-race">
         <div
-          class="class-card"
-          data-class="Warrior"
-          onclick="selectClass(this)">
-          <i class="ti ti-shield"
-            style="font-size:20px;color:#E24B4A"></i>
-          <div
-            class="class-name">
-            Warrior
-          </div>
-          <div
-            class="class-desc">
-            High HP,
-            melee
-            tank.
-            Taunts
-            enemies.
-          </div>
+          style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;font-weight:500">
+          Choose Race
         </div>
         <div
-          class="class-card"
-          data-class="Cleric"
-          onclick="selectClass(this)">
-          <i class="ti ti-heart"
-            style="font-size:20px;color:#1D9E75"></i>
-          <div
-            class="class-name">
-            Cleric
-          </div>
-          <div
-            class="class-desc">
-            Healer &
-            buffer.
-            Divine
-            magic
-            user.
-          </div>
+          class="class-grid"
+          id="race-grid">
         </div>
         <div
-          class="class-card"
-          data-class="Wizard"
-          onclick="selectClass(this)">
-          <i class="ti ti-wand"
-            style="font-size:20px;color:#7F77DD"></i>
-          <div
-            class="class-name">
-            Wizard
-          </div>
-          <div
-            class="class-desc">
-            Massive
-            spell
-            damage.
-            Low HP.
-          </div>
-        </div>
-        <div
-          class="class-card"
-          data-class="Rogue"
-          onclick="selectClass(this)">
-          <i class="ti ti-knife"
-            style="font-size:20px;color:#BA7517"></i>
-          <div
-            class="class-name">
-            Rogue
-          </div>
-          <div
-            class="class-desc">
-            Backstab
-            & sneak.
-            High
-            burst
-            damage.
-          </div>
+          class="form-btns"
+          style="margin-top:10px">
+          <button
+            class="btn"
+            onclick="cancelCreate()">Cancel</button>
         </div>
       </div>
+
       <div
-        class="name-row">
-        <label
-          style="font-size:13px;white-space:nowrap">Character
-          name:</label>
-        <input
-          id="pname"
-          type="text"
-          placeholder="Enter name"
-          style="flex:1">
-      </div>
-      <div
-        class="form-btns">
-        <button
-          class="btn active"
-          onclick="createCharacter()"
-          style="font-size:13px;padding:7px 20px"><i
-            class="ti ti-sword"></i>
-          Enter
-          World</button>
-        <button
-          class="btn"
-          onclick="cancelCreate()">Cancel</button>
+        id="create-step-class"
+        style="display:none">
+        <div
+          style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <div
+            style="font-size:12px;color:var(--text-secondary);font-weight:500">
+            Choose Class
+          </div>
+          <button
+            class="btn"
+            style="font-size:11px;padding:4px 10px"
+            onclick="goBackToRaceSelection()"><i
+              class="ti ti-arrow-left"></i>
+            Back
+            to Race</button>
+        </div>
+        <div
+          id="create-selected-race"
+          style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
+        </div>
+        <div
+          class="class-grid"
+          id="class-grid">
+        </div>
+        <div
+          id="class-filter-note"
+          style="font-size:11px;color:var(--text-secondary);margin-top:6px">
+        </div>
+
+        <div
+          class="name-row">
+          <label
+            style="font-size:13px;white-space:nowrap">Character
+            name:</label>
+          <input
+            id="pname"
+            type="text"
+            placeholder="Enter name"
+            style="flex:1">
+        </div>
+        <div
+          class="form-btns">
+          <button
+            class="btn active"
+            onclick="createCharacter()"
+            style="font-size:13px;padding:7px 20px"><i
+              class="ti ti-sword"></i>
+            Enter
+            World</button>
+          <button
+            class="btn"
+            onclick="cancelCreate()">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2185,11 +2157,73 @@
     const CLASSES = {
       Warrior: { hp: 160, mp: 40, atk: 18, def: 12, mpRegen: 2, skill: 'Taunt', skillMp: 10, skillEffect: 'taunt' },
       Cleric: { hp: 100, mp: 120, atk: 10, def: 8, mpRegen: 8, skill: 'Holy Bolt', skillMp: 20, skillEffect: 'holy' },
+      Paladin: { hp: 145, mp: 90, atk: 15, def: 11, mpRegen: 5, skill: 'Holy Strike', skillMp: 18, skillEffect: 'holy' },
+      Ranger: { hp: 130, mp: 90, atk: 16, def: 9, mpRegen: 5, skill: 'Hunter Volley', skillMp: 16, skillEffect: 'back' },
+      'Shadow Knight': { hp: 145, mp: 95, atk: 15, def: 10, mpRegen: 5, skill: 'Unholy Blast', skillMp: 20, skillEffect: 'fire' },
+      Druid: { hp: 95, mp: 135, atk: 11, def: 7, mpRegen: 9, skill: 'Nature Wrath', skillMp: 22, skillEffect: 'holy' },
+      Monk: { hp: 130, mp: 55, atk: 19, def: 8, mpRegen: 4, skill: 'Flying Kick', skillMp: 14, skillEffect: 'back' },
+      Bard: { hp: 120, mp: 100, atk: 13, def: 9, mpRegen: 7, skill: 'Discordant Note', skillMp: 17, skillEffect: 'holy' },
+      Rogue: { hp: 110, mp: 80, atk: 22, def: 6, mpRegen: 5, skill: 'Backstab', skillMp: 15, skillEffect: 'back' },
+      Shaman: { hp: 110, mp: 125, atk: 11, def: 8, mpRegen: 8, skill: 'Ancestral Bolt', skillMp: 20, skillEffect: 'holy' },
+      Necromancer: { hp: 85, mp: 155, atk: 9, def: 5, mpRegen: 10, skill: 'Lifedraw', skillMp: 24, skillEffect: 'fire' },
       Wizard: { hp: 80, mp: 160, atk: 8, def: 4, mpRegen: 10, skill: 'Fireball', skillMp: 30, skillEffect: 'fire' },
-      Rogue: { hp: 110, mp: 80, atk: 22, def: 6, mpRegen: 5, skill: 'Backstab', skillMp: 15, skillEffect: 'back' }
+      Magician: { hp: 90, mp: 150, atk: 9, def: 5, mpRegen: 10, skill: 'Arcane Burst', skillMp: 24, skillEffect: 'fire' },
+      Enchanter: { hp: 85, mp: 145, atk: 9, def: 5, mpRegen: 11, skill: 'Mind Lance', skillMp: 22, skillEffect: 'holy' },
+      Beastlord: { hp: 125, mp: 95, atk: 17, def: 9, mpRegen: 6, skill: 'Savage Claw', skillMp: 16, skillEffect: 'back' },
+      Berserker: { hp: 150, mp: 40, atk: 21, def: 8, mpRegen: 2, skill: 'Frenzied Axe', skillMp: 12, skillEffect: 'back' }
     };
-    const CLASS_ICONS = { Warrior: 'ti-shield', Cleric: 'ti-heart', Wizard: 'ti-wand', Rogue: 'ti-knife' };
-    const CLASS_COLORS = { Warrior: '#E24B4A', Cleric: '#1D9E75', Wizard: '#7F77DD', Rogue: '#BA7517' };
+    const CLASS_ICONS = {
+      Warrior: 'ti-shield', Cleric: 'ti-heart', Paladin: 'ti-shield-check', Ranger: 'ti-bow', 'Shadow Knight': 'ti-moon-stars',
+      Druid: 'ti-leaf', Monk: 'ti-karate', Bard: 'ti-music', Rogue: 'ti-knife', Shaman: 'ti-bolt', Necromancer: 'ti-skull',
+      Wizard: 'ti-wand', Magician: 'ti-sparkles', Enchanter: 'ti-stars', Beastlord: 'ti-paw', Berserker: 'ti-axe'
+    };
+    const CLASS_COLORS = {
+      Warrior: '#E24B4A', Cleric: '#1D9E75', Paladin: '#3B8AC4', Ranger: '#548A37', 'Shadow Knight': '#5A4A8A', Druid: '#4E9A55',
+      Monk: '#A66E3A', Bard: '#9A6B35', Rogue: '#BA7517', Shaman: '#2B8B84', Necromancer: '#7A4A9F', Wizard: '#7F77DD',
+      Magician: '#5D73C7', Enchanter: '#C067C0', Beastlord: '#8A7445', Berserker: '#C25050'
+    };
+    const CLASS_DESCRIPTIONS = {
+      Warrior: 'Frontline tank and weapon master.',
+      Cleric: 'Divine healer and protector.',
+      Paladin: 'Holy knight with support magic.',
+      Ranger: 'Hybrid archer with survival skills.',
+      'Shadow Knight': 'Dark knight using unholy power.',
+      Druid: 'Nature caster with healing utility.',
+      Monk: 'Fast martial striker and puller.',
+      Bard: 'Songs and utility in every fight.',
+      Rogue: 'Stealth burst damage specialist.',
+      Shaman: 'Totemic caster with buffs and debuffs.',
+      Necromancer: 'Dark caster using life and decay.',
+      Wizard: 'Pure arcane burst damage caster.',
+      Magician: 'Elemental summoner and nuker.',
+      Enchanter: 'Control and mana manipulation caster.',
+      Beastlord: 'Savage hybrid fighter and mystic.',
+      Berserker: 'Frenzied melee damage dealer.'
+    };
+    const EQ_RACES = ['Human', 'Barbarian', 'Erudite', 'Wood Elf', 'High Elf', 'Dark Elf', 'Half Elf', 'Dwarf', 'Troll', 'Ogre', 'Halfling', 'Gnome', 'Iksar', 'Vah Shir', 'Froglok', 'Drakkin'];
+    const RACE_ICONS = {
+      Human: 'ti-user', Barbarian: 'ti-helmet', Erudite: 'ti-scroll-text', 'Wood Elf': 'ti-tree', 'High Elf': 'ti-sparkles',
+      'Dark Elf': 'ti-moon', 'Half Elf': 'ti-adjustments', Dwarf: 'ti-hammer', Troll: 'ti-skull', Ogre: 'ti-shield-half',
+      Halfling: 'ti-chef-hat', Gnome: 'ti-bulb', Iksar: 'ti-dna-2', 'Vah Shir': 'ti-cat', Froglok: 'ti-droplet', Drakkin: 'ti-flame'
+    };
+    const RACE_CLASS_RULES = {
+      Human: ['Warrior', 'Cleric', 'Paladin', 'Ranger', 'Shadow Knight', 'Druid', 'Monk', 'Bard', 'Rogue', 'Necromancer', 'Wizard', 'Magician', 'Enchanter'],
+      Barbarian: ['Warrior', 'Rogue', 'Shaman', 'Beastlord', 'Berserker'],
+      Erudite: ['Cleric', 'Paladin', 'Shadow Knight', 'Necromancer', 'Wizard', 'Magician', 'Enchanter'],
+      'Wood Elf': ['Warrior', 'Ranger', 'Druid', 'Bard', 'Rogue'],
+      'High Elf': ['Cleric', 'Paladin', 'Wizard', 'Magician', 'Enchanter'],
+      'Dark Elf': ['Warrior', 'Cleric', 'Shadow Knight', 'Rogue', 'Necromancer', 'Wizard', 'Magician', 'Enchanter'],
+      'Half Elf': ['Warrior', 'Paladin', 'Ranger', 'Druid', 'Bard', 'Rogue'],
+      Dwarf: ['Warrior', 'Cleric', 'Paladin', 'Rogue', 'Berserker'],
+      Troll: ['Warrior', 'Shadow Knight', 'Shaman', 'Beastlord', 'Berserker'],
+      Ogre: ['Warrior', 'Shadow Knight', 'Shaman', 'Beastlord', 'Berserker'],
+      Halfling: ['Warrior', 'Cleric', 'Druid', 'Rogue'],
+      Gnome: ['Warrior', 'Cleric', 'Rogue', 'Necromancer', 'Wizard', 'Magician', 'Enchanter'],
+      Iksar: ['Warrior', 'Monk', 'Shadow Knight', 'Shaman', 'Necromancer', 'Beastlord', 'Berserker'],
+      'Vah Shir': ['Warrior', 'Monk', 'Bard', 'Rogue', 'Beastlord', 'Berserker'],
+      Froglok: ['Warrior', 'Cleric', 'Paladin', 'Shadow Knight', 'Monk', 'Rogue', 'Wizard', 'Enchanter'],
+      Drakkin: ['Warrior', 'Cleric', 'Paladin', 'Ranger', 'Shadow Knight', 'Druid', 'Monk', 'Bard', 'Rogue', 'Shaman', 'Necromancer', 'Wizard', 'Magician', 'Enchanter', 'Beastlord', 'Berserker']
+    };
 
     const ZONES = [
       { name: 'Newbie Yard', desc: 'A safe area for new adventurers.', minLvl: 1, mobs: ['Field Rat', 'Rabid Bat', 'Skeleton Pup'], xpMult: 1, goldMult: 1, rare: 'Worn Shortsword' },
@@ -2308,6 +2342,20 @@
       4: ['a hand of Innoruuk', 'an ebon oathkeeper']
     };
 
+    const NAMED_MECHANICS = [
+      { id: 'enrage', name: 'Enrage', desc: 'Gains heavy ATK at low health.' },
+      { id: 'venom', name: 'Venom Aura', desc: 'Hits may apply extra poison damage.' },
+      { id: 'ward', name: 'Arcane Ward', desc: 'Periodically reduces incoming damage.' }
+    ];
+
+    const ZONE_EVENTS = [
+      { id: 'calm', name: 'Calm Skies', desc: 'No unusual energies at work.', playerDamageMult: 1, spellDamageMult: 1, mobDamageMult: 1, healMult: 1, manaMult: 1, xpMult: 1, goldMult: 1, lootMult: 1 },
+      { id: 'bloodmoon', name: 'Blood Moon', desc: 'Everything hits harder and rewards improve.', playerDamageMult: 1.1, spellDamageMult: 1.1, mobDamageMult: 1.25, healMult: 1, manaMult: 1, xpMult: 1.35, goldMult: 1.25, lootMult: 1.15 },
+      { id: 'arcane_winds', name: 'Arcane Winds', desc: 'Spellcraft surges with unstable power.', playerDamageMult: 1, spellDamageMult: 1.28, mobDamageMult: 1, healMult: 1, manaMult: 1.25, xpMult: 1.1, goldMult: 1, lootMult: 1 },
+      { id: 'sanctified_ground', name: 'Sanctified Ground', desc: 'Healing and recovery are amplified.', playerDamageMult: 1, spellDamageMult: 1, mobDamageMult: 0.95, healMult: 1.35, manaMult: 1.1, xpMult: 1.05, goldMult: 1.05, lootMult: 1 },
+      { id: 'hunters_call', name: "Hunter's Call", desc: 'Hunts are swift and loot is plentiful.', playerDamageMult: 1.08, spellDamageMult: 1.05, mobDamageMult: 0.92, healMult: 1, manaMult: 1, xpMult: 1.22, goldMult: 1.15, lootMult: 1.2 }
+    ];
+
     const CONTAINER_ITEMS = {
       'Worn Pouch': { slots: 8, cost: 0, starter: true },
       'Small Bag': { slots: 10, cost: 45 },
@@ -2326,15 +2374,75 @@
         { id: 'greater_heal', name: 'Greater Heal', mp: 30, cooldown: 14, levelReq: 5, cost: 65, desc: 'Large restorative prayer.', target: 'self', kind: 'heal', healPct: 0.5, variance: 12 },
         { id: 'benediction', name: 'Benediction', mp: 22, cooldown: 16, levelReq: 9, cost: 120, desc: 'Restores mana through devotion.', target: 'self', kind: 'mana', manaPct: 0.28, variance: 8 }
       ],
+      Paladin: [
+        { id: 'pal_holy_strike', name: 'Holy Strike', mp: 20, cooldown: 8, levelReq: 1, cost: 0, desc: 'Sanctified weapon strike.', target: 'enemy', kind: 'damage', power: 2.0, variance: 11 },
+        { id: 'pal_lay_hands', name: 'Lay on Hands', mp: 30, cooldown: 16, levelReq: 5, cost: 70, desc: 'Strong emergency heal.', target: 'self', kind: 'heal', healPct: 0.45, variance: 10 },
+        { id: 'pal_aegis', name: 'Aegis of Light', mp: 24, cooldown: 12, levelReq: 9, cost: 130, desc: 'Smite and weaken enemy offense.', target: 'enemy', kind: 'damage_weaken', power: 1.8, variance: 9, weaken: 3 }
+      ],
+      Ranger: [
+        { id: 'rng_double_shot', name: 'Double Shot', mp: 16, cooldown: 7, levelReq: 1, cost: 0, desc: 'Two rapid ranged strikes.', target: 'enemy', kind: 'damage', power: 2.2, variance: 12 },
+        { id: 'rng_vine_snare', name: 'Vine Snare', mp: 20, cooldown: 10, levelReq: 4, cost: 55, desc: 'Nature shot that hinders attacks.', target: 'enemy', kind: 'damage_weaken', power: 1.7, variance: 8, weaken: 2 },
+        { id: 'rng_field_dress', name: 'Field Dress', mp: 18, cooldown: 13, levelReq: 8, cost: 110, desc: 'Quick wilderness recovery.', target: 'self', kind: 'heal', healPct: 0.28, variance: 9 }
+      ],
+      'Shadow Knight': [
+        { id: 'sk_drain_strike', name: 'Drain Strike', mp: 22, cooldown: 8, levelReq: 1, cost: 0, desc: 'Unholy hit that restores life.', target: 'enemy', kind: 'damage', power: 2.1, variance: 11 },
+        { id: 'sk_disease_touch', name: 'Disease Touch', mp: 24, cooldown: 11, levelReq: 5, cost: 65, desc: 'Cursed blade with poison follow-up.', target: 'enemy', kind: 'damage_poison', power: 2.3, variance: 10, poisonMin: 8, poisonMax: 16 },
+        { id: 'sk_grim_guard', name: 'Grim Guard', mp: 20, cooldown: 12, levelReq: 9, cost: 125, desc: 'Dark blow that weakens the foe.', target: 'enemy', kind: 'damage_weaken', power: 1.9, variance: 9, weaken: 3 }
+      ],
+      Druid: [
+        { id: 'dru_solar_wrath', name: 'Solar Wrath', mp: 20, cooldown: 7, levelReq: 1, cost: 0, desc: 'Nature-fueled spell damage.', target: 'enemy', kind: 'damage', power: 2.0, variance: 11 },
+        { id: 'dru_regrowth', name: 'Regrowth', mp: 24, cooldown: 13, levelReq: 5, cost: 60, desc: 'Steady healing from nature.', target: 'self', kind: 'heal', healPct: 0.34, variance: 10 },
+        { id: 'dru_spirit_tap', name: 'Spirit Tap', mp: 16, cooldown: 12, levelReq: 8, cost: 115, desc: 'Draws mana from natural currents.', target: 'self', kind: 'mana', manaPct: 0.32, variance: 9 }
+      ],
+      Monk: [
+        { id: 'mnk_tiger_claw', name: 'Tiger Claw', mp: 16, cooldown: 6, levelReq: 1, cost: 0, desc: 'Disciplined crushing strike.', target: 'enemy', kind: 'damage', power: 2.4, variance: 12 },
+        { id: 'mnk_stunning_palm', name: 'Stunning Palm', mp: 18, cooldown: 9, levelReq: 4, cost: 50, desc: 'Palm strike that weakens response.', target: 'enemy', kind: 'damage_weaken', power: 1.8, variance: 8, weaken: 2 },
+        { id: 'mnk_centering', name: 'Centering', mp: 14, cooldown: 12, levelReq: 8, cost: 100, desc: 'Inner focus restores vitality.', target: 'self', kind: 'heal', healPct: 0.27, variance: 8 }
+      ],
+      Bard: [
+        { id: 'brd_sonic_slash', name: 'Sonic Slash', mp: 18, cooldown: 7, levelReq: 1, cost: 0, desc: 'Blade strike driven by song.', target: 'enemy', kind: 'damage', power: 1.9, variance: 10 },
+        { id: 'brd_harmony', name: 'Harmony Verse', mp: 16, cooldown: 11, levelReq: 4, cost: 55, desc: 'Restorative tune for HP.', target: 'self', kind: 'heal', healPct: 0.25, variance: 8 },
+        { id: 'brd_mana_ballad', name: 'Mana Ballad', mp: 16, cooldown: 13, levelReq: 8, cost: 105, desc: 'Song that replenishes mana.', target: 'self', kind: 'mana', manaPct: 0.3, variance: 8 }
+      ],
       Wizard: [
         { id: 'fireball', name: 'Fireball', mp: 26, cooldown: 8, levelReq: 1, cost: 0, desc: 'Focused burst of fire.', target: 'enemy', kind: 'damage', power: 2.8, variance: 18 },
         { id: 'ice_comet', name: 'Ice Comet', mp: 42, cooldown: 16, levelReq: 7, cost: 95, desc: 'Massive long-cast nuke.', target: 'enemy', kind: 'damage', power: 4.3, variance: 28 },
         { id: 'clarity', name: 'Clarity', mp: 14, cooldown: 12, levelReq: 4, cost: 50, desc: 'Converts focus into mana.', target: 'self', kind: 'mana', manaPct: 0.35, variance: 10 }
       ],
+      Magician: [
+        { id: 'mag_flame_orb', name: 'Flame Orb', mp: 24, cooldown: 8, levelReq: 1, cost: 0, desc: 'Summoned orb detonates on impact.', target: 'enemy', kind: 'damage', power: 2.5, variance: 14 },
+        { id: 'mag_shock_lance', name: 'Shock Lance', mp: 28, cooldown: 11, levelReq: 5, cost: 75, desc: 'Elemental lance with heavy burst.', target: 'enemy', kind: 'damage', power: 3.1, variance: 18 },
+        { id: 'mag_essence_draw', name: 'Essence Draw', mp: 16, cooldown: 12, levelReq: 9, cost: 130, desc: 'Arcane conversion restores mana.', target: 'self', kind: 'mana', manaPct: 0.34, variance: 9 }
+      ],
+      Enchanter: [
+        { id: 'enc_mind_spike', name: 'Mind Spike', mp: 20, cooldown: 7, levelReq: 1, cost: 0, desc: 'Psychic damage attack.', target: 'enemy', kind: 'damage', power: 2.1, variance: 12 },
+        { id: 'enc_daze', name: 'Daze', mp: 18, cooldown: 10, levelReq: 4, cost: 55, desc: 'Mental shock weakens enemy attacks.', target: 'enemy', kind: 'damage_weaken', power: 1.7, variance: 8, weaken: 3 },
+        { id: 'enc_gift_of_mind', name: 'Gift of Mind', mp: 14, cooldown: 12, levelReq: 8, cost: 115, desc: 'Harnessed focus restores mana.', target: 'self', kind: 'mana', manaPct: 0.36, variance: 10 }
+      ],
+      Shaman: [
+        { id: 'shm_spirit_spear', name: 'Spirit Spear', mp: 18, cooldown: 7, levelReq: 1, cost: 0, desc: 'Totemic force strikes the enemy.', target: 'enemy', kind: 'damage', power: 2.0, variance: 11 },
+        { id: 'shm_fetid_bite', name: 'Fetid Bite', mp: 22, cooldown: 10, levelReq: 4, cost: 60, desc: 'Venom curse applies poison.', target: 'enemy', kind: 'damage_poison', power: 2.1, variance: 10, poisonMin: 7, poisonMax: 16 },
+        { id: 'shm_ancestral_mend', name: 'Ancestral Mend', mp: 20, cooldown: 13, levelReq: 8, cost: 110, desc: 'Calls spirits for healing.', target: 'self', kind: 'heal', healPct: 0.33, variance: 10 }
+      ],
+      Necromancer: [
+        { id: 'nec_bone_shard', name: 'Bone Shard', mp: 22, cooldown: 8, levelReq: 1, cost: 0, desc: 'Dark shard tears into the enemy.', target: 'enemy', kind: 'damage', power: 2.4, variance: 13 },
+        { id: 'nec_plague_touch', name: 'Plague Touch', mp: 24, cooldown: 11, levelReq: 5, cost: 70, desc: 'Disease-infused strike with poison ticks.', target: 'enemy', kind: 'damage_poison', power: 2.2, variance: 10, poisonMin: 9, poisonMax: 19 },
+        { id: 'nec_life_tap', name: 'Life Tap', mp: 18, cooldown: 12, levelReq: 9, cost: 125, desc: 'Steals life to heal the caster.', target: 'self', kind: 'heal', healPct: 0.3, variance: 9 }
+      ],
       Rogue: [
         { id: 'backstab', name: 'Backstab', mp: 20, cooldown: 7, levelReq: 1, cost: 0, desc: 'High burst precision strike.', target: 'enemy', kind: 'damage', power: 3.0, variance: 16 },
         { id: 'poison_strike', name: 'Poison Strike', mp: 24, cooldown: 10, levelReq: 5, cost: 70, desc: 'Strike plus poison follow-up chance.', target: 'enemy', kind: 'damage_poison', power: 2.6, variance: 12, poisonMin: 8, poisonMax: 18 },
         { id: 'shadow_mend', name: 'Shadow Mend', mp: 16, cooldown: 13, levelReq: 8, cost: 105, desc: 'Recover while staying elusive.', target: 'self', kind: 'heal', healPct: 0.26, variance: 9 }
+      ],
+      Beastlord: [
+        { id: 'bst_claw_fury', name: 'Claw Fury', mp: 18, cooldown: 7, levelReq: 1, cost: 0, desc: 'Primal strike from beast training.', target: 'enemy', kind: 'damage', power: 2.3, variance: 12 },
+        { id: 'bst_feral_venom', name: 'Feral Venom', mp: 20, cooldown: 10, levelReq: 5, cost: 65, desc: 'Savage attack with poison.', target: 'enemy', kind: 'damage_poison', power: 2.2, variance: 10, poisonMin: 8, poisonMax: 17 },
+        { id: 'bst_spirit_howl', name: 'Spirit Howl', mp: 16, cooldown: 12, levelReq: 9, cost: 120, desc: 'Primal call restores vitality.', target: 'self', kind: 'heal', healPct: 0.29, variance: 9 }
+      ],
+      Berserker: [
+        { id: 'brs_whirl_axe', name: 'Whirling Axe', mp: 14, cooldown: 6, levelReq: 1, cost: 0, desc: 'Axe rush for brutal damage.', target: 'enemy', kind: 'damage', power: 2.5, variance: 13 },
+        { id: 'brs_bloodrage', name: 'Bloodrage', mp: 16, cooldown: 9, levelReq: 4, cost: 55, desc: 'Frenzied strike that weakens foe.', target: 'enemy', kind: 'damage_weaken', power: 2.1, variance: 9, weaken: 2 },
+        { id: 'brs_war_cry', name: 'War Cry', mp: 12, cooldown: 12, levelReq: 8, cost: 100, desc: 'Battle roar restores fighting spirit.', target: 'self', kind: 'heal', healPct: 0.24, variance: 8 }
       ]
     };
 
@@ -2370,8 +2478,28 @@
       }
     }
 
+    function getActiveZoneEvent(zoneIdx = null) {
+      const zi = zoneIdx === null ? (char ? char.zone : 0) : zoneIdx;
+      const dateKey = new Date().toISOString().slice(0, 10);
+      let hash = 0;
+      for (let i = 0; i < dateKey.length; i++) hash += dateKey.charCodeAt(i) * (i + 3);
+      const idx = Math.abs(hash + (zi * 17)) % ZONE_EVENTS.length;
+      return ZONE_EVENTS[idx];
+    }
+
+    function getSpellFactionRequirement(sp) {
+      if (!sp) return 0;
+      if (typeof sp.factionReq === 'number') return Math.max(0, sp.factionReq);
+      return (sp.levelReq || 1) >= 9 ? 30 : 0;
+    }
+
     function getClassSpellbook(cls) {
-      return SPELLBOOK_BY_CLASS[cls] || [];
+      const fallback = {
+        Warrior: 'Warrior', Paladin: 'Cleric', Ranger: 'Rogue', 'Shadow Knight': 'Wizard', Monk: 'Rogue', Bard: 'Cleric',
+        Rogue: 'Rogue', Cleric: 'Cleric', Druid: 'Cleric', Shaman: 'Cleric', Necromancer: 'Wizard', Wizard: 'Wizard',
+        Magician: 'Wizard', Enchanter: 'Wizard', Beastlord: 'Rogue', Berserker: 'Warrior'
+      };
+      return SPELLBOOK_BY_CLASS[cls] || SPELLBOOK_BY_CLASS[fallback[cls]] || [];
     }
 
     function getSpellById(id) {
@@ -2874,6 +3002,7 @@
     let afkInterval = null;
     let afkOn = false;
     let tickMs = 1200;
+    let selectedRace = null;
     let selectedClass = null;
     let pendingSlot = -1;    // slot being created
     let dragSrc = null;
@@ -3244,6 +3373,84 @@
       });
     }
 
+    function getAllowedClassesForRace(race) {
+      if (!race || !EQ_RACES.includes(race)) return [];
+      return Object.keys(CLASSES);
+    }
+
+    function isClassAllowedForRace(race, cls) {
+      return !!race && !!CLASSES[cls];
+    }
+
+    function setCreateStep(step) {
+      const raceStep = document.getElementById('create-step-race');
+      const classStep = document.getElementById('create-step-class');
+      if (!raceStep || !classStep) return;
+      raceStep.style.display = step === 'race' ? 'block' : 'none';
+      classStep.style.display = step === 'class' ? 'block' : 'none';
+    }
+
+    function renderRaceOptions() {
+      const raceGrid = document.getElementById('race-grid');
+      if (!raceGrid) return;
+
+      raceGrid.innerHTML = '';
+      EQ_RACES.forEach(race => {
+        const card = document.createElement('div');
+        card.className = 'class-card' + (selectedRace === race ? ' selected' : '');
+        card.onclick = () => selectRace(race);
+        const icon = RACE_ICONS[race] || 'ti-user';
+        card.innerHTML = '<i class="ti ' + icon + '" style="font-size:18px;color:#5B83B8"></i>' +
+          '<div class="class-name">' + race + '</div>' +
+          '<div class="class-desc">' + getAllowedClassesForRace(race).length + ' classes available</div>';
+        raceGrid.appendChild(card);
+      });
+    }
+
+    function renderClassOptions() {
+      const classGrid = document.getElementById('class-grid');
+      const note = document.getElementById('class-filter-note');
+      if (!classGrid || !note) return;
+
+      classGrid.innerHTML = '';
+      if (!selectedRace) {
+        note.textContent = 'Pick a race first, then choose your class.';
+        return;
+      }
+
+      const selectedRaceLabel = document.getElementById('create-selected-race');
+      if (selectedRaceLabel) selectedRaceLabel.textContent = 'Race: ' + selectedRace;
+
+      const allowed = getAllowedClassesForRace(selectedRace);
+      note.textContent = 'All races can choose any class in this version.';
+
+      allowed.forEach(cls => {
+        const card = document.createElement('div');
+        card.className = 'class-card' + (selectedClass === cls ? ' selected' : '');
+        card.onclick = () => selectClass(cls);
+        const icon = CLASS_ICONS[cls] || 'ti-user';
+        const color = CLASS_COLORS[cls] || '#6b6b67';
+        card.innerHTML = '<i class="ti ' + icon + '" style="font-size:20px;color:' + color + '"></i>' +
+          '<div class="class-name">' + cls + '</div>' +
+          '<div class="class-desc">' + (CLASS_DESCRIPTIONS[cls] || 'EverQuest class.') + '</div>';
+        classGrid.appendChild(card);
+      });
+    }
+
+    function selectRace(race) {
+      selectedRace = race;
+      if (selectedClass && !isClassAllowedForRace(selectedRace, selectedClass)) {
+        selectedClass = null;
+      }
+      renderRaceOptions();
+      renderClassOptions();
+      setCreateStep('class');
+    }
+
+    function goBackToRaceSelection() {
+      setCreateStep('race');
+    }
+
     function renderSlots() {
       const grid = document.getElementById('slot-grid');
       grid.innerHTML = '';
@@ -3253,13 +3460,16 @@
         if (s) {
           const zoneName = ZONES[s.zone] ? ZONES[s.zone].name : 'Unknown';
           const played = formatLastPlayed(s.lastSaved);
+          const icon = CLASS_ICONS[s.cls] || 'ti-user';
+          const iconColor = CLASS_COLORS[s.cls] || '#6b6b67';
+          const raceName = s.race || 'Human';
           card.innerHTML = `
         <div>
           <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
-            <i class="ti ${CLASS_ICONS[s.cls]}" style="font-size:18px;color:${CLASS_COLORS[s.cls]}"></i>
+            <i class="ti ${icon}" style="font-size:18px;color:${iconColor}"></i>
             <div>
               <div class="slot-name">${s.name}</div>
-              <div class="slot-meta">${s.cls} — Level ${s.level} &nbsp;·&nbsp; ${zoneName}</div>
+              <div class="slot-meta">${raceName} ${s.cls} — Level ${s.level} &nbsp;·&nbsp; ${zoneName}</div>
             </div>
           </div>
           <div style="font-size:10px;color:var(--text-secondary)">${played ? 'Last played ' + played : ''}</div>
@@ -3281,31 +3491,46 @@
 
     function openCreateForm(slotIdx) {
       pendingSlot = slotIdx;
+      selectedRace = null;
       selectedClass = null;
       document.getElementById('pname').value = '';
-      document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+      renderRaceOptions();
+      renderClassOptions();
+      setCreateStep('race');
       document.getElementById('new-char-form').style.display = 'block';
       document.getElementById('new-char-form').scrollIntoView({ behavior: 'smooth' });
     }
 
     function cancelCreate() {
       document.getElementById('new-char-form').style.display = 'none';
-      pendingSlot = -1; selectedClass = null;
+      pendingSlot = -1;
+      selectedRace = null;
+      selectedClass = null;
+      setCreateStep('race');
     }
 
-    function selectClass(el) {
-      document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedClass = el.dataset.class;
+    function selectClass(value) {
+      const cls = typeof value === 'string' ? value : (value && value.dataset ? value.dataset.class : null);
+      if (!selectedRace) {
+        showToast('Choose a race first.', 'error');
+        return;
+      }
+      if (!cls || !isClassAllowedForRace(selectedRace, cls)) {
+        showToast('That class is not available for your selected race.', 'error');
+        return;
+      }
+      selectedClass = cls;
+      renderClassOptions();
     }
 
     function createCharacter() {
+      if (!selectedRace) { showToast('Choose a race first.', 'error'); return; }
       if (!selectedClass) { showToast('Choose a class first.', 'error'); return; }
       const name = document.getElementById('pname').value.trim() || 'Adventurer';
       const base = CLASSES[selectedClass];
       const newChar = {
         version: CURRENT_VERSION,
-        name, cls: selectedClass, level: 1, xp: 0, xpNext: 100,
+        name, race: selectedRace, cls: selectedClass, level: 1, xp: 0, xpNext: 100,
         hp: base.hp, maxHp: base.hp, mp: base.mp, maxMp: base.mp,
         atk: base.atk, def: base.def, mpRegen: base.mpRegen,
         gold: 0, faction: 0, healpotions: 3, manapotions: 3, healpotions_lhp: 0, manapotions_lmp: 0, zone: 0, inventory: [],
@@ -3339,6 +3564,11 @@
 
       if (!CLASSES[oldChar.cls]) {
         oldChar.cls = 'Warrior';
+        repaired = true;
+      }
+
+      if (!oldChar.race || !RACE_CLASS_RULES[oldChar.race]) {
+        oldChar.race = 'Human';
         repaired = true;
       }
 
@@ -3536,7 +3766,7 @@
       if (!char) return;
       ensureSpellState(char);
       document.getElementById('char-name-disp').textContent = char.name;
-      document.getElementById('char-class-disp').textContent = char.cls + ' — Level ' + char.level;
+      document.getElementById('char-class-disp').textContent = (char.race ? char.race + ' ' : '') + char.cls + ' — Level ' + char.level;
       document.getElementById('char-level').textContent = char.level;
       document.getElementById('hp-disp').textContent = char.hp + '/' + char.maxHp;
       document.getElementById('mp-disp').textContent = char.mp + '/' + char.maxMp;
@@ -3575,7 +3805,7 @@
       document.getElementById('mob-hp-disp').textContent = mob.hp + '/' + mob.maxHp + ' HP';
       const badge = document.getElementById('mob-badge');
       if (mob.named) {
-        badge.textContent = 'Named';
+        badge.textContent = 'Named' + (mob.namedMechanic ? (' · ' + mob.namedMechanic.name) : '');
         badge.className = 'badge badge-rare';
       } else {
         badge.textContent = mob.elite ? 'Elite' : 'Normal';
@@ -3636,7 +3866,8 @@
         el.appendChild(btn);
       });
       document.getElementById('zone-name-disp').textContent = ZONES[char.zone].name;
-      document.getElementById('zone-desc-disp').textContent = ZONES[char.zone].desc;
+      const event = getActiveZoneEvent(char.zone);
+      document.getElementById('zone-desc-disp').textContent = ZONES[char.zone].desc + ' Event: ' + event.name + ' — ' + event.desc;
       document.getElementById('bind-zone-disp').textContent = 'Bind Point: ' + ZONES[char.bindZone || 0].name;
       if (char.corpse) {
         const zoneName = ZONES[char.corpse.zone] ? ZONES[char.corpse.zone].name : 'Unknown';
@@ -4172,20 +4403,23 @@
 
       const allClassSpells = getClassSpellbook(char.cls);
       const knownSet = new Set(char.knownSpells);
+      const factionScore = char.faction || 0;
 
       allClassSpells.forEach(sp => {
         if (knownSet.has(sp.id)) return;
 
         const levelReq = sp.levelReq || 1;
         const canBuyByLevel = char.level >= levelReq;
+        const factionReq = getSpellFactionRequirement(sp);
+        const canBuyByFaction = factionScore >= factionReq;
         const price = getMerchantPrice(sp.cost || 0);
-        const canBuy = canBuyByLevel && char.gold >= price;
+        const canBuy = canBuyByLevel && canBuyByFaction && char.gold >= price;
 
         const card = document.createElement('div');
         card.className = 'eq-item-card';
         card.innerHTML = `
           <div class="eq-item-name">${sp.name}</div>
-          <div class="eq-item-type">Requires Lv ${levelReq} · ${sp.mp} MP · ${sp.cooldown}s cooldown</div>
+          <div class="eq-item-type">Requires Lv ${levelReq} · Faction ${factionReq}+ · ${sp.mp} MP · ${sp.cooldown}s cooldown</div>
           <div class="eq-item-bonus">${sp.desc}</div>
           <div class="eq-item-actions">
             <button class="btn${canBuy ? ' active' : ''}" onclick="buySpell('${sp.id}')" ${canBuy ? '' : 'disabled'}>Buy (${price}g)</button>
@@ -4218,6 +4452,12 @@
       const levelReq = sp.levelReq || 1;
       if (char.level < levelReq) {
         log('You must be level ' + levelReq + ' to purchase ' + sp.name + '.', 'info');
+        return;
+      }
+
+      const factionReq = getSpellFactionRequirement(sp);
+      if ((char.faction || 0) < factionReq) {
+        log('You need faction ' + factionReq + '+ to purchase ' + sp.name + '.', 'info');
         return;
       }
 
@@ -4269,9 +4509,10 @@
       }
 
       char.mp -= sp.mp;
+      const event = getActiveZoneEvent(char.zone);
 
       if (sp.kind === 'damage' || sp.kind === 'damage_weaken' || sp.kind === 'damage_poison') {
-        const dmg = Math.floor(char.atk * sp.power + Math.random() * sp.variance);
+        const dmg = Math.max(1, Math.floor((char.atk * sp.power + Math.random() * sp.variance) * (event.spellDamageMult || 1)));
         mob.hp -= dmg;
         log(sp.name + ' hits ' + mob.name + ' for ' + dmg + ' damage!', 'dmg');
 
@@ -4293,11 +4534,11 @@
           return true;
         }
       } else if (sp.kind === 'heal') {
-        const healAmt = Math.floor(char.maxHp * (sp.healPct || 0.25) + Math.random() * (sp.variance || 8));
+        const healAmt = Math.floor((char.maxHp * (sp.healPct || 0.25) + Math.random() * (sp.variance || 8)) * (event.healMult || 1));
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log(sp.name + ' restores ' + healAmt + ' HP.', 'heal');
       } else if (sp.kind === 'mana') {
-        const manaAmt = Math.floor(char.maxMp * (sp.manaPct || 0.2) + Math.random() * (sp.variance || 6));
+        const manaAmt = Math.floor((char.maxMp * (sp.manaPct || 0.2) + Math.random() * (sp.variance || 6)) * (event.manaMult || 1));
         char.mp = Math.min(char.maxMp, char.mp + manaAmt);
         log(sp.name + ' restores ' + manaAmt + ' MP.', 'heal');
       }
@@ -4329,6 +4570,7 @@
       const elite = Math.random() < 0.1;
       const namedMult = named ? 1.8 : 1;
       const hp = Math.floor((30 + lvl * 18) * (elite ? 2.5 : 1) * namedMult);
+      const namedMechanic = named ? NAMED_MECHANICS[Math.floor(Math.random() * NAMED_MECHANICS.length)] : null;
       mob = {
         name: (named ? '[Named] ' : (elite ? '[Elite] ' : '')) + mobName,
         level: lvl,
@@ -4338,20 +4580,59 @@
         def: Math.floor((2 + lvl) * (named ? 1.4 : 1)),
         baseName: mobName,
         elite,
-        named
+        named,
+        namedMechanic,
+        enrageTriggered: false,
+        wardReady: false,
+        turnCount: 0
       };
+      if (namedMechanic) {
+        log('Named mechanic: ' + namedMechanic.name + ' — ' + namedMechanic.desc, 'info');
+      }
       log('A ' + mob.name + ' appears!', 'info'); renderMob();
     }
 
     function doAttack() {
       if (!mob) return false;
-      const dmg = Math.max(1, char.atk - mob.def + Math.floor(Math.random() * 6) - 2);
+      const event = getActiveZoneEvent(char.zone);
+      let dmg = Math.max(1, char.atk - mob.def + Math.floor(Math.random() * 6) - 2);
+      dmg = Math.max(1, Math.floor(dmg * (event.playerDamageMult || 1)));
+
+      if (mob.namedMechanic && mob.namedMechanic.id === 'ward' && mob.wardReady) {
+        dmg = Math.max(1, Math.floor(dmg * 0.55));
+        mob.wardReady = false;
+        log(mob.name + ' absorbs part of the hit with Arcane Ward.', 'info');
+      }
+
       mob.hp -= dmg;
       log(char.name + ' attacks ' + mob.name + ' for ' + dmg + ' damage.', 'dmg');
+
+      if (mob.namedMechanic && mob.namedMechanic.id === 'enrage' && !mob.enrageTriggered && mob.hp > 0 && mob.hp <= Math.floor(mob.maxHp * 0.4)) {
+        mob.enrageTriggered = true;
+        mob.atk = Math.floor(mob.atk * 1.45);
+        log(mob.name + ' becomes enraged!', 'dmg');
+      }
+
       if (mob.hp <= 0) { killMob(); return true; }
-      const md = Math.max(1, mob.atk - char.def + Math.floor(Math.random() * 4) - 1);
+
+      mob.turnCount = (mob.turnCount || 0) + 1;
+
+      let md = Math.max(1, mob.atk - char.def + Math.floor(Math.random() * 4) - 1);
+      md = Math.max(1, Math.floor(md * (event.mobDamageMult || 1)));
       char.hp -= md;
       log(mob.name + ' hits back for ' + md + '!', 'dmg');
+
+      if (mob.namedMechanic && mob.namedMechanic.id === 'venom' && Math.random() < 0.35 && char.hp > 0) {
+        const venomDmg = Math.max(1, Math.floor(mob.level * 0.8 + Math.random() * 6));
+        char.hp -= venomDmg;
+        log(mob.name + ' venom burns for ' + venomDmg + ' extra damage.', 'dmg');
+      }
+
+      if (mob.namedMechanic && mob.namedMechanic.id === 'ward' && mob.turnCount % 3 === 0 && mob.hp > 0) {
+        mob.wardReady = true;
+        log(mob.name + ' shimmers with Arcane Ward.', 'info');
+      }
+
       if (char.hp <= 0) { die(); return true; }
       renderAll(); return false;
     }
@@ -4402,9 +4683,10 @@
 
     function killMob() {
       const zone = ZONES[char.zone];
+      const event = getActiveZoneEvent(char.zone);
       const namedMult = mob.named ? 2.5 : 1;
-      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult);
-      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult);
+      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (event.xpMult || 1));
+      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult * (event.goldMult || 1));
       char.xp += xp; char.gold += gold;
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
       log(mob.name + ' is slain! +' + xp + ' XP, +' + gold + 'g', 'loot');
@@ -4414,7 +4696,7 @@
           if (q.prog >= q.count) { q.done = true; char.xp += q.xp; char.gold += q.gold; log('Quest complete: ' + q.name + '! +' + q.xp + ' XP, +' + q.gold + 'g', 'lvl'); }
         }
       });
-      if (Math.random() < (mob.named ? 0.8 : 0.4)) {
+      if (Math.random() < ((mob.named ? 0.8 : 0.4) * (event.lootMult || 1))) {
         const lootBase = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
         const loot = rollItemVariant(lootBase, mob.named ? 'loot_named' : 'loot');
         char.inventory.push(loot); log('Looted: ' + getItemDisplayName(loot), 'loot');
@@ -4869,6 +5151,8 @@
       if (char.level < ZONES[i].minLvl) return;
       char.zone = i; mob = null;
       log('Traveled to ' + ZONES[i].name + '.', 'info');
+      const event = getActiveZoneEvent(i);
+      log('Zone event: ' + event.name + ' — ' + event.desc, 'info');
       renderAll(); renderZones(); switchTab('combat'); autoSave();
     }
 
