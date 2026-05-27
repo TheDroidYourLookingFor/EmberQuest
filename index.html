@@ -1609,7 +1609,7 @@
     let potionHealAmount_Mana = 50;
     let potionHealAmount_lhp_Health = 125;
     let potionHealAmount_lmp_Mana = 125;
-    const CURRENT_VERSION = '1.0.3';
+    const CURRENT_VERSION = '1.0.4';
 
     // ══════════════════════════════════════════════
     //  PERSISTENCE
@@ -1724,45 +1724,36 @@
     }
 
     function migrateSaveData(oldChar) {
-        // If the character doesn't have a version property, it's from before 1.0.3
-        if (!oldChar.version) {
-          oldChar.healpotions_lhp = 0;
-          oldChar.manapotions_lmp = 0;
+      if (oldChar.healpotions_lhp === undefined) oldChar.healpotions_lhp = 0;
+      if (oldChar.manapotions_lmp === undefined) oldChar.manapotions_lmp = 0;
 
-          // Stamp it so we know it's been updated up to this point
-          oldChar.version = '1.0.3';
-          log('Upgraded save data to v1.0.3.', 'info');
-        }
-
-        /* 
-        Future updates are incredibly easy. Next time you change things, you just add:
-        if (oldChar.version === '1.0.3') {
-           oldChar.someNewFeature = 0;
-           oldChar.version = '1.0.4';
-        }
-        */
-
-        return oldChar;
+      if (!oldChar.version) {
+        oldChar.version = CURRENT_VERSION;
+        log('Upgraded save data to v' + CURRENT_VERSION + '.', 'info');
       }
+
+      if (oldChar.version === '1.0.3') {
+        oldChar.version = '1.0.4';
+        log('Upgraded save data to v1.0.4.', 'info');
+      }
+
+      if (oldChar.version != CURRENT_VERSION) {
+        oldChar.version = CURRENT_VERSION;
+        log('Upgraded save data to v' + CURRENT_VERSION + '.', 'info');
+      }
+    }
 
     function loadSlot(i) {
       activeSlot = i;
-      // char = JSON.parse(JSON.stringify(slots[i]));
-      let loadedChar = JSON.parse(JSON.stringify(slots[i]));
-
+      char = JSON.parse(JSON.stringify(slots[i]));
       // Run the migration checks before assigning it to the active char global
-      char = migrateSaveData(loadedChar);
+      migrateSaveData(char);
 
       // Existing equipment fallback
       if (!char.equipment) {
         char.equipment = { weapon: null, chest: null, legs: null, feet: null, offhand: null, charm: null };
       }
       if (!char.quests) char.quests = freshQuests();
-
-      // ─── ADD THIS MIGRATION FOR OLD SAVES ───
-      if (char.healpotions_lhp === undefined) char.healpotions_lhp = 0;
-      if (char.manapotions_lmp === undefined) char.manapotions_lmp = 0;
-      // ────────────────────────────────────────
 
       mob = null;
       afkOn = false; clearInterval(afkInterval); afkInterval = null;
