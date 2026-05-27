@@ -2786,6 +2786,14 @@
     };
 
     const PRESTIGE_LEVEL_REQ = 100;
+    const POST_ASCEND_STARTER_GRANT = {
+      minGold: 250,
+      minMinorHpPotions: 6,
+      minMinorMpPotions: 6,
+      minLightHpPotions: 1,
+      minLightMpPotions: 1,
+      contractProgressFloor: 1
+    };
     const PRESTIGE_PERKS = {
       xp: { label: 'Veteran Lore', desc: '+5% all XP gain per rank.', maxRank: 10, xpMultPerRank: 0.05 },
       gold: { label: 'Golden Touch', desc: '+5% gold gain from combat/contracts/quests per rank.', maxRank: 10, goldMultPerRank: 0.05 },
@@ -4041,7 +4049,7 @@
       }
 
       if (!targetChar.prestige || typeof targetChar.prestige !== 'object' || Array.isArray(targetChar.prestige)) {
-        targetChar.prestige = { rank: 0, points: 0, spent: 0, perks: { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 } };
+        targetChar.prestige = { rank: 0, points: 0, spent: 0, perks: { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 }, lastStarterGrantRank: 0 };
       }
       if (!targetChar.prestige.perks || typeof targetChar.prestige.perks !== 'object' || Array.isArray(targetChar.prestige.perks)) {
         targetChar.prestige.perks = { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 };
@@ -4053,6 +4061,7 @@
       });
       targetChar.prestige.spent = Object.keys(PRESTIGE_PERKS).reduce((sum, id) => sum + Math.max(0, Math.floor(Number(targetChar.prestige.perks[id] || 0))), 0);
       targetChar.prestige.points = Math.max(0, Math.floor(Number(targetChar.prestige.points || 0)));
+      targetChar.prestige.lastStarterGrantRank = Math.max(0, Math.min(targetChar.prestige.rank, Math.floor(Number(targetChar.prestige.lastStarterGrantRank || 0))));
 
       if (!Array.isArray(targetChar.statusEffects)) targetChar.statusEffects = [];
       targetChar.statusEffects = targetChar.statusEffects
@@ -5495,7 +5504,7 @@
         spellCooldowns: {},
         quests: freshQuests(),
         statusEffects: [],
-        prestige: { rank: 0, points: 0, spent: 0, perks: { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 } },
+        prestige: { rank: 0, points: 0, spent: 0, perks: { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 }, lastStarterGrantRank: 0 },
         aa: { points: 0, spent: 0, nodes: {}, xpProgress: 0, xpAllocPct: 0 },
         afkProfiles: { slot1: null, slot2: null, slot3: null },
         afkRules: { autoBuyPots: true, potMin: 5, autoAdvanceContract: true },
@@ -6925,6 +6934,46 @@
       }
       if (char.spellCooldowns && typeof char.spellCooldowns === 'object') {
         char.spellCooldowns = {};
+      }
+      const grant = POST_ASCEND_STARTER_GRANT;
+      if (Math.max(0, Math.floor(Number(p.lastStarterGrantRank || 0))) < p.rank) {
+        const prevGold = Math.max(0, Math.floor(Number(char.gold || 0)));
+        const prevMinorHp = Math.max(0, Math.floor(Number(char.healpotions || 0)));
+        const prevMinorMp = Math.max(0, Math.floor(Number(char.manapotions || 0)));
+        const prevLightHp = Math.max(0, Math.floor(Number(char.healpotions_lhp || 0)));
+        const prevLightMp = Math.max(0, Math.floor(Number(char.manapotions_lmp || 0)));
+
+        char.gold = Math.max(prevGold, grant.minGold);
+        char.healpotions = Math.max(prevMinorHp, grant.minMinorHpPotions);
+        char.manapotions = Math.max(prevMinorMp, grant.minMinorMpPotions);
+        char.healpotions_lhp = Math.max(prevLightHp, grant.minLightHpPotions);
+        char.manapotions_lmp = Math.max(prevLightMp, grant.minLightMpPotions);
+
+        if (char.eliteContract && char.eliteContract.active && !char.eliteContract.complete) {
+          char.eliteContract.progress = Math.min(char.eliteContract.count, Math.max(char.eliteContract.progress || 0, grant.contractProgressFloor));
+          if (char.eliteContract.progress >= char.eliteContract.count) {
+            char.eliteContract.complete = true;
+          }
+        }
+
+        p.lastStarterGrantRank = p.rank;
+
+        const gainedGold = Math.max(0, char.gold - prevGold);
+        const gainedMinorHp = Math.max(0, char.healpotions - prevMinorHp);
+        const gainedMinorMp = Math.max(0, char.manapotions - prevMinorMp);
+        const gainedLightHp = Math.max(0, char.healpotions_lhp - prevLightHp);
+        const gainedLightMp = Math.max(0, char.manapotions_lmp - prevLightMp);
+
+        const grantParts = [];
+        if (gainedGold > 0) grantParts.push('+' + gainedGold + 'g');
+        if (gainedMinorHp > 0) grantParts.push('+' + gainedMinorHp + ' Minor HP');
+        if (gainedMinorMp > 0) grantParts.push('+' + gainedMinorMp + ' Minor MP');
+        if (gainedLightHp > 0) grantParts.push('+' + gainedLightHp + ' Light HP');
+        if (gainedLightMp > 0) grantParts.push('+' + gainedLightMp + ' Light MP');
+        if (grant.contractProgressFloor > 0) grantParts.push('Contract step starts at ' + grant.contractProgressFloor);
+        if (grantParts.length) {
+          log('Starter grant received: ' + grantParts.join(' · ') + '.', 'loot');
+        }
       }
       mob = null;
 
