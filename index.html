@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.0.6</title>
+    1.0.8</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -1074,7 +1074,7 @@
     id="screen-charselect"
     class="screen active">
     <h1>EmberQuest -
-      Version 1.0.6
+      Version 1.0.8
     </h1>
     <p
       class="subtitle">
@@ -1183,7 +1183,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.0.6</span>
+        1.0.8</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -1639,6 +1639,44 @@
             </p>
           </div>
           <div
+            id="combat-log-filters"
+            style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+            <button
+              class="btn active"
+              id="log-filter-dmg-btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="toggleCombatLogFilter('dmg')">DMG On</button>
+            <button
+              class="btn active"
+              id="log-filter-loot-btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="toggleCombatLogFilter('loot')">Loot On</button>
+            <button
+              class="btn active"
+              id="log-filter-info-btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="toggleCombatLogFilter('info')">Info On</button>
+            <button
+              class="btn"
+              id="log-filter-preset-combat-btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="applyCombatLogFilterPreset('combat')">Combat Only</button>
+            <button
+              class="btn"
+              id="log-filter-preset-loot-btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="applyCombatLogFilterPreset('loot')">Loot Only</button>
+            <button
+              class="btn"
+              id="log-filter-preset-all-btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="applyCombatLogFilterPreset('all')">All</button>
+          </div>
+          <div
+            id="afk-goal-status"
+            style="font-size:10px;color:var(--text-secondary);margin-top:6px;line-height:1.35">
+          </div>
+          <div
             style="display:flex;gap:6px;flex-wrap:wrap">
             <button
               class="btn"
@@ -1722,6 +1760,10 @@
           <div
             id="dungeon-info"
             style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
+          </div>
+          <div
+            id="zone-contract-tracker"
+            style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px;margin-bottom:8px">
           </div>
           <div
             style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px;margin-bottom:8px">
@@ -1871,6 +1913,16 @@
                 class="bag-tab-row">
               </div>
               <div
+                style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+                <label
+                  for="bag-install-target-select"
+                  style="font-size:10px;color:var(--text-secondary)">Bag install target:</label>
+                <select
+                  id="bag-install-target-select"
+                  style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+                </select>
+              </div>
+              <div
                 id="bag-meta"
                 class="bag-meta">
               </div>
@@ -1955,6 +2007,10 @@
               Inventory
             </button>
           </div>
+          <div
+            id="loot-filter-controls"
+            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+          </div>
 
           <div
             class="eq-bag-grid"
@@ -2009,6 +2065,17 @@
               id="afk-btn"
               onclick="toggleAFK()"
               style="margin-left:auto">Enable</button>
+          </div>
+          <div
+            style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0 8px 0">
+            <label
+              for="afk-goal-select"
+              style="font-size:11px;color:var(--text-secondary)">AFK Goal:</label>
+            <select
+              id="afk-goal-select"
+              onchange="setAfkGoalFromUI()"
+              style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+            </select>
           </div>
           <div
             style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">
@@ -3031,8 +3098,22 @@
       const baseName = getItemBaseName(entry);
       if (!baseName) return null;
 
-      if (CONTAINER_ITEMS[baseName]) return baseName;
-      if (!ITEM_DATA[baseName]) return null;
+      const isContainer = !!CONTAINER_ITEMS[baseName];
+      const isRune = !!RUNE_DATA[baseName];
+      const isEquip = !!ITEM_DATA[baseName];
+      if (!isContainer && !isRune && !isEquip) {
+        if (entry.locked || entry.favorite) {
+          return {
+            base: baseName,
+            name: (typeof entry.name === 'string' && entry.name.trim()) ? entry.name.trim() : baseName,
+            quality: 'Normal',
+            rolls: {},
+            locked: !!entry.locked,
+            favorite: !!entry.favorite
+          };
+        }
+        return baseName;
+      }
 
       const cleanRolls = {};
       ['atk', 'def', 'hp', 'mp'].forEach(stat => {
@@ -3045,6 +3126,8 @@
       const cleanQuality = (rawQuality === 'Magic' || rawQuality === 'Rare' || rawQuality === 'Unique' || rawQuality === 'Runeword') ? rawQuality : (Object.keys(cleanRolls).length ? 'Magic' : 'Normal');
       const normalized = { base: baseName, name: cleanName, rolls: cleanRolls, quality: cleanQuality };
       if (cleanQuality === 'Unique' && typeof entry.uniqueId === 'string') normalized.uniqueId = entry.uniqueId;
+      if (entry.locked) normalized.locked = true;
+      if (entry.favorite) normalized.favorite = true;
 
       const cap = getSocketCapacityForBase(baseName);
       const maxSockets = Math.max(0, Math.min(cap, Number(entry.maxSockets || 0)));
@@ -3065,7 +3148,8 @@
       }
 
       const hasEnhancements = Object.keys(cleanRolls).length > 0 || (normalized.maxSockets || 0) > 0 || !!normalized.runeword || normalized.quality !== 'Normal';
-      if (!hasEnhancements) return baseName;
+      const hasFlags = !!normalized.locked || !!normalized.favorite;
+      if (!hasEnhancements && !hasFlags) return baseName;
 
       return normalized;
     }
@@ -3229,6 +3313,18 @@
       normal: { label: 'Normal', countMult: 1, rewardMult: 1 },
       hard: { label: 'Hard', countMult: 1.35, rewardMult: 1.45 },
       mythic: { label: 'Mythic', countMult: 1.75, rewardMult: 2.1 }
+    };
+    const CONTRACT_CHAIN_TOTAL = 3;
+    const LOOT_FILTER_PRESETS = {
+      balanced: { label: 'Balanced', autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true },
+      gold: { label: 'Gold Farm', autoSellJunk: true, autoSellNormalGear: true, protectRarePlus: true },
+      rares: { label: 'Rare Hunt', autoSellJunk: true, autoSellNormalGear: false, protectRarePlus: true }
+    };
+    const AFK_GOALS = {
+      balanced: { label: 'Balanced' },
+      level: { label: 'Level Push' },
+      contract: { label: 'Finish Contract' },
+      gold: { label: 'Gold Farm' }
     };
 
     const DUNGEON_MODIFIERS = {
@@ -3443,16 +3539,182 @@
       return DUNGEON_MODIFIERS[modifierId] || DUNGEON_MODIFIERS.balanced;
     }
 
-    function generateEliteContract(targetZone = null, tier = null) {
+    function getLootFilterState(targetChar) {
+      if (!targetChar || !targetChar.lootFilter || typeof targetChar.lootFilter !== 'object') {
+        return { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true };
+      }
+      return {
+        autoSellJunk: !!targetChar.lootFilter.autoSellJunk,
+        autoSellNormalGear: !!targetChar.lootFilter.autoSellNormalGear,
+        protectRarePlus: targetChar.lootFilter.protectRarePlus !== false
+      };
+    }
+
+    function getContractMasteryState(targetChar) {
+      if (!targetChar || !targetChar.contractMastery || typeof targetChar.contractMastery !== 'object') {
+        return { level: 0, xp: 0, totalChains: 0 };
+      }
+      return {
+        level: Math.max(0, Math.floor(Number(targetChar.contractMastery.level || 0))),
+        xp: Math.max(0, Math.floor(Number(targetChar.contractMastery.xp || 0))),
+        totalChains: Math.max(0, Math.floor(Number(targetChar.contractMastery.totalChains || 0)))
+      };
+    }
+
+    function getContractMasteryThreshold(level) {
+      const lvl = Math.max(0, Math.floor(Number(level || 0)));
+      return 2 + lvl;
+    }
+
+    function getContractRerollCost(targetChar, contract) {
+      const c = contract || (targetChar ? targetChar.eliteContract : null) || {};
+      const zoneIdx = Math.max(0, Number(c.zone || (targetChar ? targetChar.zone : 0) || 0));
+      const step = Math.max(1, Number(c.chainStep || 1));
+      const mastery = getContractMasteryState(targetChar);
+      const reduction = Math.min(0.5, mastery.level * 0.08);
+      const base = 35 + zoneIdx * 18 + step * 10;
+      return Math.max(10, Math.floor(base * (1 - reduction)));
+    }
+
+    function getAfkGoalState(targetChar) {
+      const id = targetChar && targetChar.afkGoal;
+      return AFK_GOALS[id] ? id : 'balanced';
+    }
+
+    function getCombatLogFilterState(targetChar) {
+      if (!targetChar || !targetChar.logFilters || typeof targetChar.logFilters !== 'object') {
+        return { dmg: true, loot: true, info: true };
+      }
+      return {
+        dmg: targetChar.logFilters.dmg !== false,
+        loot: targetChar.logFilters.loot !== false,
+        info: targetChar.logFilters.info !== false
+      };
+    }
+
+    function getLogCategory(type) {
+      if (type === 'dmg' || type === 'heal') return 'dmg';
+      if (type === 'loot') return 'loot';
+      return 'info';
+    }
+
+    function normalizeContractState(targetChar, contract) {
+      const fallback = generateEliteContract(targetChar.zone || 0, targetChar.contractTierPref || 'normal', 1, CONTRACT_CHAIN_TOTAL);
+      const c = Object.assign({}, (contract && typeof contract === 'object') ? contract : fallback);
+      c.active = c.active !== false;
+      c.tier = CONTRACT_TIERS[c.tier] ? c.tier : (targetChar.contractTierPref || 'normal');
+      c.zone = Math.max(0, Math.min(ZONES.length - 1, Math.floor(Number(c.zone || targetChar.zone || 0))));
+      c.count = Math.max(1, Math.floor(Number(c.count || 1)));
+      c.progress = Math.max(0, Math.min(c.count, Math.floor(Number(c.progress || 0))));
+      c.rewardXp = Math.max(1, Math.floor(Number(c.rewardXp || 1)));
+      c.rewardGold = Math.max(0, Math.floor(Number(c.rewardGold || 0)));
+      c.complete = !!c.complete;
+      c.streakAtComplete = Math.max(0, Math.floor(Number(c.streakAtComplete || 0)));
+      c.chainStep = Math.max(1, Math.floor(Number(c.chainStep || 1)));
+      c.chainTotal = Math.max(2, Math.floor(Number(c.chainTotal || CONTRACT_CHAIN_TOTAL)));
+      c.bossStep = !!c.bossStep || c.chainStep >= c.chainTotal;
+      c.target = c.bossStep ? 'Named or Elite' : (typeof c.target === 'string' && c.target ? c.target : ZONES[c.zone].mobs[0]);
+      return c;
+    }
+
+    function getPrimaryContract(targetChar) {
+      if (!targetChar) return null;
+      if (Array.isArray(targetChar.eliteContracts) && targetChar.eliteContracts.length) {
+        const idx = Math.max(0, Math.min(targetChar.eliteContracts.length - 1, Number(targetChar.contractPrimaryIdx || 0)));
+        return targetChar.eliteContracts[idx] || null;
+      }
+      return targetChar.eliteContract || null;
+    }
+
+    function isItemLocked(entry) {
+      return !!(entry && typeof entry === 'object' && entry.locked);
+    }
+
+    function isItemFavorite(entry) {
+      return !!(entry && typeof entry === 'object' && entry.favorite);
+    }
+
+    function toInventoryMetaEntry(entry) {
+      if (entry && typeof entry === 'object') return Object.assign({}, entry);
+      const base = getItemBaseName(entry);
+      return { base: base || String(entry || ''), name: base || String(entry || ''), quality: 'Normal', rolls: {} };
+    }
+
+    function collapseMetaEntry(entryObj) {
+      if (!entryObj || typeof entryObj !== 'object') return entryObj;
+      const base = getItemBaseName(entryObj);
+      if (!base) return entryObj;
+      const hasFlags = !!entryObj.locked || !!entryObj.favorite;
+      const hasEnhancements = !!(entryObj.runeword || (entryObj.maxSockets || 0) > 0 || (entryObj.rolls && Object.keys(entryObj.rolls).length > 0) || (entryObj.quality && entryObj.quality !== 'Normal'));
+      if (!hasFlags && !hasEnhancements) return base;
+      return entryObj;
+    }
+
+    function toggleInventoryItemFlag(index, flag) {
+      if (!char || index < 0 || index >= char.inventory.length) return;
+      if (flag !== 'locked' && flag !== 'favorite') return;
+      const obj = toInventoryMetaEntry(char.inventory[index]);
+      obj[flag] = !obj[flag];
+      if (!obj.locked) delete obj.locked;
+      if (!obj.favorite) delete obj.favorite;
+      char.inventory[index] = collapseMetaEntry(obj);
+      log(getItemDisplayName(char.inventory[index]) + ': ' + flag + ' ' + (obj[flag] ? 'enabled' : 'disabled') + '.', 'info');
+      renderInv();
+      autoSave();
+    }
+
+    function setPrimaryContract(index) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const idx = Math.max(0, Math.min((char.eliteContracts || []).length - 1, Number(index || 0)));
+      char.contractPrimaryIdx = idx;
+      char.eliteContract = char.eliteContracts[idx];
+      log('Primary contract set to slot ' + (idx + 1) + '.', 'info');
+      renderQuests();
+      renderZones();
+      autoSave();
+    }
+
+    function setAfkPinnedContract(index) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const idx = Math.max(0, Math.min((char.eliteContracts || []).length - 1, Number(index || 0)));
+      char.afkPinnedContractIdx = idx;
+      log('AFK pinned contract set to slot ' + (idx + 1) + '.', 'info');
+      renderQuests();
+      autoSave();
+    }
+
+    function generateEliteContract(targetZone = null, tier = null, chainStep = 1, chainTotal = CONTRACT_CHAIN_TOTAL) {
       const zoneIdx = targetZone === null ? (char ? char.zone : 0) : targetZone;
       const zone = ZONES[zoneIdx] || ZONES[0];
       const chosenTier = tier || (char && char.contractTierPref) || 'normal';
       const tierData = getContractTierData(chosenTier);
-      const target = zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
-      const count = Math.max(3, Math.floor((4 + zoneIdx) * tierData.countMult));
-      const rewardXp = Math.floor((220 + zoneIdx * 180 + count * 25) * tierData.rewardMult);
-      const rewardGold = Math.floor((40 + zoneIdx * 28 + count * 8) * tierData.rewardMult);
-      return { active: true, tier: chosenTier, zone: zoneIdx, target, count, progress: 0, rewardXp, rewardGold, complete: false, streakAtComplete: 0 };
+      const mastery = getContractMasteryState(char);
+      const countReduction = Math.min(0.2, mastery.level * 0.03);
+      const step = Math.max(1, Math.min(chainTotal, Math.floor(Number(chainStep || 1))));
+      const total = Math.max(2, Math.floor(Number(chainTotal || CONTRACT_CHAIN_TOTAL)));
+      const bossStep = step >= total;
+      const target = bossStep ? 'Named or Elite' : zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
+      const count = bossStep ? 1 : Math.max(3, Math.floor((4 + zoneIdx) * tierData.countMult * (1 + (step - 1) * 0.15) * (1 - countReduction)));
+      const stepRewardMult = bossStep ? (1.9 + mastery.level * 0.04) : (1 + (step - 1) * 0.25);
+      const rewardXp = Math.floor((220 + zoneIdx * 180 + count * 25) * tierData.rewardMult * stepRewardMult);
+      const rewardGold = Math.floor((40 + zoneIdx * 28 + count * 8) * tierData.rewardMult * stepRewardMult);
+      return {
+        active: true,
+        tier: chosenTier,
+        zone: zoneIdx,
+        target,
+        count,
+        progress: 0,
+        rewardXp,
+        rewardGold,
+        complete: false,
+        streakAtComplete: 0,
+        chainStep: step,
+        chainTotal: total,
+        bossStep
+      };
     }
 
     function ensureExtendedSystems(targetChar) {
@@ -3476,13 +3738,17 @@
         targetChar.contractTierPref = (targetChar.eliteContract && targetChar.eliteContract.tier) || 'normal';
       }
 
-      if (!targetChar.eliteContract || typeof targetChar.eliteContract !== 'object') {
-        targetChar.eliteContract = generateEliteContract(targetChar.zone || 0, targetChar.contractTierPref || 'normal');
+      targetChar.eliteContract = normalizeContractState(targetChar, targetChar.eliteContract);
+      if (!Array.isArray(targetChar.eliteContracts)) {
+        targetChar.eliteContracts = [targetChar.eliteContract];
       }
-      if (!CONTRACT_TIERS[targetChar.eliteContract.tier]) targetChar.eliteContract.tier = targetChar.contractTierPref || 'normal';
-      if (typeof targetChar.eliteContract.streakAtComplete !== 'number') {
-        targetChar.eliteContract.streakAtComplete = 0;
+      targetChar.eliteContracts = targetChar.eliteContracts.slice(0, 3).map(c => normalizeContractState(targetChar, c));
+      while (targetChar.eliteContracts.length < 3) {
+        targetChar.eliteContracts.push(generateEliteContract(targetChar.zone || 0, targetChar.contractTierPref || 'normal', 1, CONTRACT_CHAIN_TOTAL));
       }
+      targetChar.contractPrimaryIdx = Math.max(0, Math.min(targetChar.eliteContracts.length - 1, Math.floor(Number(targetChar.contractPrimaryIdx || 0))));
+      targetChar.afkPinnedContractIdx = Math.max(0, Math.min(targetChar.eliteContracts.length - 1, Math.floor(Number(targetChar.afkPinnedContractIdx || targetChar.contractPrimaryIdx || 0))));
+      targetChar.eliteContract = targetChar.eliteContracts[targetChar.contractPrimaryIdx];
 
       if (!targetChar.huntTargets || typeof targetChar.huntTargets !== 'object' || Array.isArray(targetChar.huntTargets)) {
         targetChar.huntTargets = {};
@@ -3496,6 +3762,34 @@
         cleanedTargets[String(zoneIdx)] = mobName;
       });
       targetChar.huntTargets = cleanedTargets;
+
+      if (!targetChar.lootFilter || typeof targetChar.lootFilter !== 'object' || Array.isArray(targetChar.lootFilter)) {
+        targetChar.lootFilter = { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true };
+      }
+      targetChar.lootFilter.autoSellJunk = !!targetChar.lootFilter.autoSellJunk;
+      targetChar.lootFilter.autoSellNormalGear = !!targetChar.lootFilter.autoSellNormalGear;
+      targetChar.lootFilter.protectRarePlus = targetChar.lootFilter.protectRarePlus !== false;
+      if (!targetChar.lootFilterPreset || !LOOT_FILTER_PRESETS[targetChar.lootFilterPreset]) {
+        targetChar.lootFilterPreset = 'balanced';
+      }
+
+      if (!targetChar.contractMastery || typeof targetChar.contractMastery !== 'object' || Array.isArray(targetChar.contractMastery)) {
+        targetChar.contractMastery = { level: 0, xp: 0, totalChains: 0 };
+      }
+      targetChar.contractMastery.level = Math.max(0, Math.floor(Number(targetChar.contractMastery.level || 0)));
+      targetChar.contractMastery.xp = Math.max(0, Math.floor(Number(targetChar.contractMastery.xp || 0)));
+      targetChar.contractMastery.totalChains = Math.max(0, Math.floor(Number(targetChar.contractMastery.totalChains || 0)));
+
+      if (!targetChar.afkGoal || !AFK_GOALS[targetChar.afkGoal]) {
+        targetChar.afkGoal = 'balanced';
+      }
+
+      if (!targetChar.logFilters || typeof targetChar.logFilters !== 'object' || Array.isArray(targetChar.logFilters)) {
+        targetChar.logFilters = { dmg: true, loot: true, info: true };
+      }
+      targetChar.logFilters.dmg = targetChar.logFilters.dmg !== false;
+      targetChar.logFilters.loot = targetChar.logFilters.loot !== false;
+      targetChar.logFilters.info = targetChar.logFilters.info !== false;
 
       if (!targetChar.huntStreak || typeof targetChar.huntStreak !== 'object') {
         targetChar.huntStreak = { zone: null, target: '', count: 0 };
@@ -3638,6 +3932,58 @@
         out.lootMult *= (1 + (node.lootMultPerRank || 0) * rank);
       });
       return out;
+    }
+
+    function getAACombatModifiersForNodes(targetChar, nodeRanks) {
+      const out = {
+        atkBonus: 0,
+        defBonus: 0,
+        playerDamageMult: 1,
+        mobDamageMult: 1,
+        spellPowerMult: 1,
+        healMult: 1,
+        manaMult: 1,
+        lootMult: 1,
+        mpRegenBonus: 0
+      };
+      if (!targetChar) return out;
+      const aaNodes = getAANodesForClass(targetChar.cls);
+      const source = nodeRanks || {};
+      aaNodes.forEach(node => {
+        const rank = Number(source[node.key] || 0);
+        if (!rank) return;
+        out.atkBonus += Math.floor((node.atkBonusPerRank || 0) * rank);
+        out.defBonus += Math.floor((node.defBonusPerRank || 0) * rank);
+        out.mpRegenBonus += Math.floor((node.mpRegenPerRank || 0) * rank);
+        out.playerDamageMult *= (1 + (node.playerDamageMultPerRank || 0) * rank);
+        out.mobDamageMult *= (1 + (node.mobDamageMultPerRank || 0) * rank);
+        out.spellPowerMult *= (1 + (node.spellPowerMultPerRank || 0) * rank);
+        out.healMult *= (1 + (node.healMultPerRank || 0) * rank);
+        out.manaMult *= (1 + (node.manaMultPerRank || 0) * rank);
+        out.lootMult *= (1 + (node.lootMultPerRank || 0) * rank);
+      });
+      return out;
+    }
+
+    function getAABuildCompareSummary(targetChar, nodeRanks) {
+      const m = getAACombatModifiersForNodes(targetChar, nodeRanks);
+      return {
+        atk: m.atkBonus,
+        def: m.defBonus,
+        mpRegen: m.mpRegenBonus,
+        meleePct: Math.round((m.playerDamageMult - 1) * 100),
+        spellPct: Math.round((m.spellPowerMult - 1) * 100),
+        healPct: Math.round((m.healMult - 1) * 100),
+        manaPct: Math.round((m.manaMult - 1) * 100),
+        incomingPct: Math.round((m.mobDamageMult - 1) * 100),
+        lootPct: Math.round((m.lootMult - 1) * 100)
+      };
+    }
+
+    function formatCompareDelta(cur, base, suffix = '') {
+      const d = Number(cur || 0) - Number(base || 0);
+      if (!d) return '0' + suffix;
+      return (d > 0 ? '+' : '') + d + suffix;
     }
 
     function spendAAPoint(nodeKey) {
@@ -4015,14 +4361,22 @@
       autoSave();
     }
 
-    function cycleContractTier() {
+    function cycleContractTier(contractIndex = null) {
       if (!char) return;
       ensureExtendedSystems(char);
+      if (contractIndex !== null && contractIndex !== undefined) {
+        const idx = Math.max(0, Math.min(char.eliteContracts.length - 1, Number(contractIndex)));
+        char.contractPrimaryIdx = idx;
+        char.eliteContract = char.eliteContracts[idx];
+      }
       const keys = Object.keys(CONTRACT_TIERS);
       const cur = keys.indexOf(char.contractTierPref || 'normal');
       const next = keys[(cur + 1) % keys.length];
       char.contractTierPref = next;
-      char.eliteContract = generateEliteContract(char.zone, next);
+      const c = getPrimaryContract(char) || generateEliteContract(char.zone, next, 1, CONTRACT_CHAIN_TOTAL);
+      const refreshed = generateEliteContract(c.zone, next, c.chainStep || 1, c.chainTotal || CONTRACT_CHAIN_TOTAL);
+      char.eliteContracts[char.contractPrimaryIdx] = refreshed;
+      char.eliteContract = refreshed;
       log('Contract tier set to ' + getContractTierData(next).label + '.', 'info');
       renderQuests();
       autoSave();
@@ -4077,38 +4431,98 @@
       autoSave();
     }
 
-    function claimEliteContractReward() {
-      if (!char || !char.eliteContract || !char.eliteContract.active) return;
-      const c = char.eliteContract;
+    function claimEliteContractReward(contractIndex = null) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (contractIndex !== null && contractIndex !== undefined) {
+        const idx = Math.max(0, Math.min(char.eliteContracts.length - 1, Number(contractIndex)));
+        char.contractPrimaryIdx = idx;
+        char.eliteContract = char.eliteContracts[idx];
+      }
+      const c = getPrimaryContract(char);
+      if (!c || !c.active) return;
       if (!c.complete) {
         log('Contract is not complete yet.', 'info');
         return;
       }
-      char.xp += c.rewardXp;
-      char.gold += c.rewardGold;
+      ensureExtendedSystems(char);
+      const mastery = getContractMasteryState(char);
+      const masteryRewardMult = 1 + mastery.level * 0.05;
+      const totalSteps = Math.max(2, Number(c.chainTotal || CONTRACT_CHAIN_TOTAL));
+      const step = Math.max(1, Number(c.chainStep || 1));
+      const isFinalStep = step >= totalSteps;
+      const baseXpReward = Math.floor(c.rewardXp * masteryRewardMult);
+      const baseGoldReward = Math.floor(c.rewardGold * masteryRewardMult);
+      char.xp += baseXpReward;
+      char.gold += baseGoldReward;
       let bonusXp = 0;
       let bonusGold = 0;
       if (c.streakAtComplete > 0) {
         const mult = Math.min(0.3, c.streakAtComplete * 0.02);
-        bonusXp = Math.floor(c.rewardXp * mult);
-        bonusGold = Math.floor(c.rewardGold * mult);
+        bonusXp = Math.floor(baseXpReward * mult);
+        bonusGold = Math.floor(baseGoldReward * mult);
         char.xp += bonusXp;
         char.gold += bonusGold;
       }
-      log('Elite contract completed! +' + c.rewardXp + ' XP, +' + c.rewardGold + 'g' + (bonusXp > 0 ? (' + streak bonus +' + bonusXp + ' XP, +' + bonusGold + 'g') : '') + '.', 'loot');
-      char.eliteContract = generateEliteContract(char.zone, char.contractTierPref || 'normal');
+      let chainBonusXp = 0;
+      let chainBonusGold = 0;
+      if (isFinalStep) {
+        chainBonusXp = Math.floor(baseXpReward * (0.25 + mastery.level * 0.02));
+        chainBonusGold = Math.floor(baseGoldReward * (0.25 + mastery.level * 0.02));
+        char.xp += chainBonusXp;
+        char.gold += chainBonusGold;
+
+        char.contractMastery.totalChains += 1;
+        char.contractMastery.xp += 1;
+        let leveled = false;
+        while (char.contractMastery.xp >= getContractMasteryThreshold(char.contractMastery.level)) {
+          char.contractMastery.xp -= getContractMasteryThreshold(char.contractMastery.level);
+          char.contractMastery.level += 1;
+          leveled = true;
+        }
+        if (leveled) {
+          log('Contract Mastery increased to Lv ' + char.contractMastery.level + '!', 'lvl');
+        }
+      }
+      log('Elite contract step complete! +' + baseXpReward + ' XP, +' + baseGoldReward + 'g' +
+        (bonusXp > 0 ? (' + streak bonus +' + bonusXp + ' XP, +' + bonusGold + 'g') : '') +
+        (chainBonusXp > 0 ? (' + chain bonus +' + chainBonusXp + ' XP, +' + chainBonusGold + 'g') : '') + '.', 'loot');
+
+      if (!isFinalStep) {
+        char.eliteContracts[char.contractPrimaryIdx] = generateEliteContract(c.zone, char.contractTierPref || c.tier || 'normal', step + 1, totalSteps);
+        char.eliteContract = char.eliteContracts[char.contractPrimaryIdx];
+        log('Contract Chain advanced: Step ' + (step + 1) + '/' + totalSteps + '.', 'info');
+      } else {
+        char.eliteContracts[char.contractPrimaryIdx] = generateEliteContract(char.zone, char.contractTierPref || c.tier || 'normal', 1, totalSteps);
+        char.eliteContract = char.eliteContracts[char.contractPrimaryIdx];
+        log('Contract Chain completed. A new chain has begun.', 'lvl');
+      }
       checkLevelUp();
       renderAll();
       renderQuests();
       autoSave();
     }
 
-    function rerollEliteContract() {
+    function rerollEliteContract(contractIndex = null) {
       if (!char) return;
       ensureExtendedSystems(char);
-      char.eliteContract = generateEliteContract(char.zone, char.contractTierPref || 'normal');
-      log('New elite contract posted.', 'info');
+      if (contractIndex !== null && contractIndex !== undefined) {
+        const idx = Math.max(0, Math.min(char.eliteContracts.length - 1, Number(contractIndex)));
+        char.contractPrimaryIdx = idx;
+        char.eliteContract = char.eliteContracts[idx];
+      }
+      const c = getPrimaryContract(char) || {};
+      const rerollCost = getContractRerollCost(char, c);
+      if (char.gold < rerollCost) {
+        log('Need ' + rerollCost + 'g to reroll this contract.', 'info');
+        return;
+      }
+      char.gold -= rerollCost;
+      char.eliteContracts[char.contractPrimaryIdx] = generateEliteContract(char.zone, char.contractTierPref || c.tier || 'normal', c.chainStep || 1, c.chainTotal || CONTRACT_CHAIN_TOTAL);
+      char.eliteContract = char.eliteContracts[char.contractPrimaryIdx];
+      log('New elite contract posted for ' + rerollCost + 'g.', 'info');
       renderQuests();
+      renderAll();
       autoSave();
     }
 
@@ -4144,7 +4558,10 @@
     let pendingTransmuteSourceRune = null;
     let afkHiddenAt = null;
     let activeBagIndex = 0;
-    const CURRENT_VERSION = '1.0.6';
+    let bagInstallTargetIndex = 0;
+    let afkGoalLastAction = '';
+    let afkGoalLastActionAt = 0;
+    const CURRENT_VERSION = '1.0.8';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -4666,9 +5083,21 @@
         statusEffects: [],
         aa: { points: 0, spent: 0, nodes: {} },
         contractTierPref: 'normal',
-        eliteContract: generateEliteContract(0, 'normal'),
+        eliteContract: generateEliteContract(0, 'normal', 1, CONTRACT_CHAIN_TOTAL),
+        eliteContracts: [
+          generateEliteContract(0, 'normal', 1, CONTRACT_CHAIN_TOTAL),
+          generateEliteContract(0, 'normal', 1, CONTRACT_CHAIN_TOTAL),
+          generateEliteContract(0, 'normal', 1, CONTRACT_CHAIN_TOTAL)
+        ],
+        contractPrimaryIdx: 0,
+        afkPinnedContractIdx: 0,
         huntTargets: {},
         huntStreak: { zone: null, target: '', count: 0 },
+        lootFilter: { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true },
+        lootFilterPreset: 'balanced',
+        contractMastery: { level: 0, xp: 0, totalChains: 0 },
+        afkGoal: 'balanced',
+        logFilters: { dmg: true, loot: true, info: true },
         dungeon: { active: false, floor: 1, best: 1, modifier: 'balanced' },
         afkEnabled: false, lastAfkAt: null, lastSaved: Date.now()
       };
@@ -4820,13 +5249,18 @@
       }
 
       if (oldChar.version === '1.0.3' || oldChar.version === '1.0.4') {
-        oldChar.version = '1.0.6';
-        if (!silent) log('Upgraded save data to v1.0.6.', 'info');
+        oldChar.version = '1.0.8';
+        if (!silent) log('Upgraded save data to v1.0.8.', 'info');
       }
 
       if (oldChar.version === '1.0.6') {
-        oldChar.version = '1.0.6';
-        if (!silent) log('Upgraded save data to v1.0.6.', 'info');
+        oldChar.version = '1.0.8';
+        if (!silent) log('Upgraded save data to v1.0.8.', 'info');
+      }
+
+      if (oldChar.version === '1.0.7') {
+        oldChar.version = '1.0.8';
+        if (!silent) log('Upgraded save data to v1.0.8.', 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -4937,6 +5371,21 @@
       document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
       renderMob(); renderInv(); renderShop(); renderSpellbook();
       renderAATab();
+      const afkGoalSelect = document.getElementById('afk-goal-select');
+      if (afkGoalSelect) {
+        if (!afkGoalSelect.options.length) {
+          Object.entries(AFK_GOALS).forEach(([id, data]) => {
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.textContent = data.label;
+            afkGoalSelect.appendChild(opt);
+          });
+        }
+        afkGoalSelect.value = getAfkGoalState(char);
+      }
+      renderCombatLogFilterUI();
+      applyCombatLogFilterVisibility();
+      renderAfkGoalStatus();
       renderStatusEffects();
       requestAnimationFrame(syncCombatLogSize);
     }
@@ -4990,7 +5439,7 @@
       const gap = parseFloat(styles.rowGap || styles.gap || '0') || 0;
       const available = combatHeight - mobArea.offsetHeight - actionRow.offsetHeight - (gap * 2) - 25;
       const minHeight = window.matchMedia('(max-width:760px)').matches ? 120 : 150;
-      const h = Number.isFinite(available) ? Math.max(minHeight, Math.floor(available)) : 220;
+      const h = Number.isFinite(available) ? Math.max(minHeight, Math.floor(available) - 50) : 170;
 
       logEl.style.height = h + 'px';
       logEl.style.minHeight = h + 'px';
@@ -5005,6 +5454,8 @@
       const el = document.getElementById('zone-list'); el.innerHTML = '';
       const huntSelect = document.getElementById('zone-hunt-select');
       const huntNote = document.getElementById('zone-hunt-note');
+      const contractTracker = document.getElementById('zone-contract-tracker');
+      ensureExtendedSystems(char);
       ZONES.forEach((z, i) => {
         const btn = document.createElement('button');
         btn.className = 'btn zone-btn' + (i === char.zone ? ' current' : '');
@@ -5036,6 +5487,27 @@
           huntNote.textContent = selected
             ? ('Target locked: ' + selected + '. Find Mob will hunt this type in ' + ZONES[char.zone].name + '. Streak: ' + streak)
             : 'No target locked. Find Mob works as normal random spawning in this zone.';
+        }
+      }
+
+      if (contractTracker) {
+        const c = char.eliteContract;
+        if (!c || !c.active) {
+          contractTracker.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">No active elite contract.</div>';
+        } else {
+          const zoneName = ZONES[c.zone] ? ZONES[c.zone].name : 'Unknown';
+          const step = Math.max(1, Number(c.chainStep || 1));
+          const total = Math.max(2, Number(c.chainTotal || CONTRACT_CHAIN_TOTAL));
+          const inZone = c.zone === char.zone;
+          contractTracker.innerHTML =
+            '<div class="quest-name" style="margin:0">Contract Chain Tracker</div>' +
+            '<div class="quest-prog" style="margin-top:4px">Step ' + step + '/' + total + ' · ' + getContractTierData(c.tier || 'normal').label + (c.bossStep ? ' · Boss Step' : '') + '</div>' +
+            '<div class="quest-prog">Objective: ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Ready to claim in Quests' : '') + '</div>' +
+            '<div class="quest-prog">Zone: ' + zoneName + (inZone ? ' · You are here' : '') + '</div>' +
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
+            '<button class="btn" onclick="travelToContractZone()" ' + (inZone ? 'disabled' : '') + '>Quick Travel</button>' +
+            '<button class="btn" onclick="switchTab(\'quests\')">Open Quests</button>' +
+            '</div>';
         }
       }
 
@@ -5098,6 +5570,29 @@
       log('Hunt target cleared. Random zone spawns restored.', 'info');
       renderZones();
       autoSave();
+    }
+
+    function travelToContractZone() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const c = char.eliteContract;
+      if (!c || !c.active) {
+        log('No active contract to travel to.', 'info');
+        return;
+      }
+      if (c.zone === char.zone) {
+        log('You are already in the contract zone.', 'info');
+        return;
+      }
+      if (!ZONES[c.zone]) {
+        log('Contract zone is invalid.', 'info');
+        return;
+      }
+      if (char.level < ZONES[c.zone].minLvl) {
+        log('You are too low level to enter ' + ZONES[c.zone].name + '.', 'info');
+        return;
+      }
+      travelZone(c.zone);
     }
 
     function getCorpseDirectionHint() {
@@ -5243,6 +5738,7 @@
 
       const el = document.getElementById('inv-list');
       const tabRow = document.getElementById('bag-tab-row');
+      const installTargetSelect = document.getElementById('bag-install-target-select');
       const bagMeta = document.getElementById('bag-meta');
       const runeMeta = document.getElementById('rune-stash-meta');
       const runeList = document.getElementById('rune-stash-list');
@@ -5286,6 +5782,24 @@
 
       const bagLayout = getBagLayout(char);
       activeBagIndex = Math.max(0, Math.min(activeBagIndex, bagLayout.length - 1));
+      const realBagCount = Math.max(1, char.bags.length);
+      bagInstallTargetIndex = Math.max(0, Math.min(bagInstallTargetIndex, realBagCount - 1));
+
+      if (installTargetSelect) {
+        installTargetSelect.innerHTML = '';
+        for (let i = 0; i < realBagCount; i++) {
+          const opt = document.createElement('option');
+          opt.value = String(i);
+          opt.textContent = 'Bag ' + (i + 1);
+          installTargetSelect.appendChild(opt);
+        }
+        installTargetSelect.value = String(bagInstallTargetIndex);
+        installTargetSelect.onchange = () => {
+          const next = Number(installTargetSelect.value || 0);
+          bagInstallTargetIndex = Math.max(0, Math.min(realBagCount - 1, Number.isFinite(next) ? next : 0));
+          renderInv();
+        };
+      }
 
       bagLayout.forEach((bag, b) => {
         const btn = document.createElement('button');
@@ -5335,6 +5849,8 @@
         const isContainer = isContainerEntry(item);
         const isRune = isRuneEntry(item);
         const isEquip = !!getItemData(item);
+        const locked = isItemLocked(item);
+        const favorite = isItemFavorite(item);
         const socketable = isEquip && quality !== 'Unique' && quality !== 'Runeword';
         const socketObj = socketable ? toSocketableItem(item) : null;
         const hasSocketRoom = socketObj ? socketObj.maxSockets < getSocketCapacityForBase(socketObj.base) : false;
@@ -5343,7 +5859,7 @@
         const socketCost = socketable ? getSocketCost(item) : 0;
         const rerollCost = isEquip ? getRerollCost(item) : 0;
         const rerollBtn = isEquip
-          ? `<button class="btn" onclick="rerollInventoryItem(${absoluteIndex})" ${(quality === 'Unique' || quality === 'Runeword') ? 'disabled' : ''}>${(quality === 'Unique' || quality === 'Runeword') ? 'Locked' : ('Reroll (' + rerollCost + 'g)')}</button>`
+          ? `<button class="btn" onclick="rerollInventoryItem(${absoluteIndex})" ${(quality === 'Unique' || quality === 'Runeword' || locked) ? 'disabled' : ''}>${(quality === 'Unique' || quality === 'Runeword') ? 'Locked' : ('Reroll (' + rerollCost + 'g)')}</button>`
           : '';
         const socketBtn = socketable && hasSocketRoom
           ? `<button class="btn" onclick="addSocketToItem(${absoluteIndex})">Add Socket (${socketCost}g)</button>`
@@ -5374,6 +5890,13 @@
         const card = document.createElement('div');
         card.className = 'eq-item-card';
 
+        if (locked || favorite) {
+          const tag = [];
+          if (favorite) tag.push('Favorite');
+          if (locked) tag.push('Locked');
+          itemType = itemType + ' · ' + tag.join(' · ');
+        }
+
         card.innerHTML = `
       <div class="eq-item-top">
         <div>
@@ -5385,11 +5908,13 @@
       <div class="eq-item-bonus">${bonus || 'No stats'}</div>
 
       <div class="eq-item-actions compact">
-        ${isContainer ? `<button class="btn" onclick="installContainerFromInventory(${absoluteIndex})">Install Bag</button>` : (isEquip ? `<button class="btn" onclick="equipItem(${absoluteIndex})">Equip</button>` : '')}
+        ${isContainer ? `<button class="btn" onclick="installContainerFromInventory(${absoluteIndex})">Install in Bag ${bagInstallTargetIndex + 1}</button>` : (isEquip ? `<button class="btn" onclick="equipItem(${absoluteIndex})">Equip</button>` : '')}
         ${socketBtn}
         ${insertRuneBtn}
         ${rerollBtn}
-        <button class="btn" onclick="sellItem(${absoluteIndex})">Sell</button>
+        <button class="btn" onclick="toggleInventoryItemFlag(${absoluteIndex}, 'favorite')">${favorite ? 'Unfavorite' : 'Favorite'}</button>
+        <button class="btn" onclick="toggleInventoryItemFlag(${absoluteIndex}, 'locked')">${locked ? 'Unlock' : 'Lock'}</button>
+        <button class="btn" onclick="sellItem(${absoluteIndex})" ${locked ? 'disabled' : ''}>Sell</button>
       </div>
     `;
 
@@ -5410,6 +5935,10 @@
       ensureBagState(char);
 
       const itemEntry = char.inventory[index];
+      if (isItemLocked(itemEntry)) {
+        log('That container is locked. Unlock it before installing.', 'info');
+        return;
+      }
       const item = getItemBaseName(itemEntry);
       const bagInfo = CONTAINER_ITEMS[item];
       if (!bagInfo) {
@@ -5418,7 +5947,9 @@
       }
 
       const bagLayout = getBagLayout(char);
-      const targetBag = bagLayout[activeBagIndex];
+      const realBagCount = Math.max(1, char.bags.length);
+      bagInstallTargetIndex = Math.max(0, Math.min(bagInstallTargetIndex, realBagCount - 1));
+      const targetBag = bagLayout[bagInstallTargetIndex];
       if (!targetBag || targetBag.overflow) {
         log('Select a real bag tab to install this container.', 'info');
         return;
@@ -5447,7 +5978,9 @@
     function renderShop() {
       const shopGrid = document.getElementById('shop-item-grid');
       const repNote = document.getElementById('merchant-rep-note');
+      const lootFilterControls = document.getElementById('loot-filter-controls');
       if (!shopGrid || !char) return;
+      ensureExtendedSystems(char);
 
       const hpMinorPrice = getMerchantPrice(SHOP_BASE_PRICES.hpMinor);
       const mpMinorPrice = getMerchantPrice(SHOP_BASE_PRICES.mpMinor);
@@ -5457,8 +5990,21 @@
       const chestPrice = getMerchantPrice(SHOP_BASE_PRICES.knightChestplate);
       const occultistPrice = getMerchantPrice(SHOP_BASE_PRICES.occultistReforge + Math.floor(char.level * 6));
       const runeCounts = getRuneCounts();
+      const lf = getLootFilterState(char);
+      const presetId = LOOT_FILTER_PRESETS[char.lootFilterPreset] ? char.lootFilterPreset : 'balanced';
+      const presetOptions = Object.entries(LOOT_FILTER_PRESETS)
+        .map(([id, data]) => '<option value="' + id + '" ' + (id === presetId ? 'selected' : '') + '>' + data.label + '</option>')
+        .join('');
 
       repNote.textContent = 'Faction: ' + getFactionTier(char.faction || 0) + ' (' + (char.faction || 0) + ') · Occultist services available.';
+      if (lootFilterControls) {
+        lootFilterControls.innerHTML =
+          '<button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal Gear: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
+          '<select id="loot-filter-preset-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + presetOptions + '</select>' +
+          '<button class="btn" onclick="setLootFilterPresetFromUI()">Apply Preset</button>';
+      }
 
       let shopHtml = `
         <div class="eq-item-card">
@@ -5586,19 +6132,38 @@
       });
 
       ensureExtendedSystems(char);
-      const c = char.eliteContract;
-      if (c && c.active) {
+      const mastery = getContractMasteryState(char);
+      const masteryNeed = getContractMasteryThreshold(mastery.level);
+      const masteryCard = document.createElement('div');
+      masteryCard.className = 'quest';
+      masteryCard.innerHTML = '<div class="quest-name">Contract Mastery</div>' +
+        '<div class="quest-prog">Level ' + mastery.level + ' · Chains completed: ' + mastery.totalChains + '</div>' +
+        '<div class="quest-prog">Progress: ' + mastery.xp + '/' + masteryNeed + ' chains to next level · Bonus contract rewards: +' + (mastery.level * 5) + '%</div>';
+      el.appendChild(masteryCard);
+
+      (char.eliteContracts || []).forEach((c, idx) => {
+        if (!c || !c.active) return;
         const zoneName = ZONES[c.zone] ? ZONES[c.zone].name : 'Unknown';
         const tierLabel = getContractTierData(c.tier || 'normal').label;
+        const chainStep = Math.max(1, Number(c.chainStep || 1));
+        const chainTotal = Math.max(2, Number(c.chainTotal || CONTRACT_CHAIN_TOTAL));
+        const rerollCost = getContractRerollCost(char, c);
+        const primary = idx === Number(char.contractPrimaryIdx || 0);
+        const afkPinned = idx === Number(char.afkPinnedContractIdx || 0);
         const contract = document.createElement('div');
         contract.className = 'quest';
-        contract.innerHTML = '<div class="quest-name">Elite Hunt Contract</div>' +
-          '<div class="quest-prog">Tier: ' + tierLabel + ' <button class="btn" style="font-size:10px;padding:2px 8px;margin-left:6px" onclick="cycleContractTier()">Cycle Tier</button></div>' +
-          '<div class="quest-prog">Zone: ' + zoneName + ' · Hunt ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Complete!' : '') + '</div>' +
+        contract.innerHTML = '<div class="quest-name">Elite Hunt Contract #' + (idx + 1) + (primary ? ' · Primary' : '') + (afkPinned ? ' · AFK Pin' : '') + '</div>' +
+          '<div class="quest-prog">Tier: ' + tierLabel + ' · Chain Step ' + chainStep + '/' + chainTotal + ' <button class="btn" style="font-size:10px;padding:2px 8px;margin-left:6px" onclick="cycleContractTier(' + idx + ')">Cycle Tier</button></div>' +
+          '<div class="quest-prog">Zone: ' + zoneName + ' · Hunt ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Complete!' : '') + (c.bossStep ? ' · Boss Step' : '') + '</div>' +
           '<div class="quest-prog">Reward: ' + c.rewardXp + ' XP · ' + c.rewardGold + 'g</div>' +
-          '<div style="display:flex;gap:6px;margin-top:6px"><button class="btn" onclick="claimEliteContractReward()" ' + (c.complete ? '' : 'disabled') + '>Claim</button><button class="btn" onclick="rerollEliteContract()">Reroll</button></div>';
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
+          '<button class="btn" onclick="claimEliteContractReward(' + idx + ')" ' + (c.complete ? '' : 'disabled') + '>' + (chainStep >= chainTotal ? 'Finish Chain' : 'Claim + Next Step') + '</button>' +
+          '<button class="btn" onclick="rerollEliteContract(' + idx + ')" ' + (char.gold >= rerollCost ? '' : 'disabled') + '>Reroll (' + rerollCost + 'g)</button>' +
+          '<button class="btn' + (primary ? ' active' : '') + '" onclick="setPrimaryContract(' + idx + ')">Set Primary</button>' +
+          '<button class="btn' + (afkPinned ? ' active' : '') + '" onclick="setAfkPinnedContract(' + idx + ')">Pin AFK</button>' +
+          '</div>';
         el.appendChild(contract);
-      }
+      });
     }
 
     function renderAATab() {
@@ -5645,6 +6210,29 @@
         '<button class="btn" onclick="loadAASimPreset(\'B\')" ' + (simB ? '' : 'disabled') + '>Load Sim B</button>' +
       '</div>';
       aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary);margin-top:4px">Snapshots: A ' + spentA + ' pts · B ' + spentB + ' pts</div>';
+
+      const liveSummary = getAABuildCompareSummary(char, char.aa.nodes || {});
+      const simASummary = simA ? getAABuildCompareSummary(char, simA.nodes || {}) : null;
+      const simBSummary = simB ? getAABuildCompareSummary(char, simB.nodes || {}) : null;
+      const row = (label, key, suffix = '') => {
+        const liveVal = String(liveSummary[key]) + suffix;
+        const aVal = simASummary ? formatCompareDelta(simASummary[key], liveSummary[key], suffix) : '-';
+        const bVal = simBSummary ? formatCompareDelta(simBSummary[key], liveSummary[key], suffix) : '-';
+        return '<div style="display:grid;grid-template-columns:130px 1fr 1fr 1fr;gap:6px;font-size:10px;color:var(--text-secondary)"><div>' + label + '</div><div>Live: ' + liveVal + '</div><div>Sim A: ' + aVal + '</div><div>Sim B: ' + bVal + '</div></div>';
+      };
+
+      aaHtml += '<div style="margin-top:8px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary)">' +
+        '<div class="quest-name" style="margin:0 0 6px 0">Build Compare Overlay</div>' +
+        row('ATK Bonus', 'atk') +
+        row('DEF Bonus', 'def') +
+        row('MP Regen', 'mpRegen') +
+        row('Melee Damage', 'meleePct', '%') +
+        row('Spell Power', 'spellPct', '%') +
+        row('Healing', 'healPct', '%') +
+        row('Mana Recovery', 'manaPct', '%') +
+        row('Incoming Damage', 'incomingPct', '%') +
+        row('Loot Mult', 'lootPct', '%') +
+      '</div>';
 
       const classPrefix = aaClassKey(char.cls) + '_';
       const capstoneNodes = aaNodes.filter(n => n.maxRank === 1);
@@ -5897,10 +6485,86 @@
     // ══════════════════════════════════════════════
     //  COMBAT
     // ══════════════════════════════════════════════
+    function applyCombatLogFilterVisibility() {
+      const div = document.getElementById('combat-log');
+      if (!div || !char) return;
+      const filters = getCombatLogFilterState(char);
+      Array.from(div.children).forEach(node => {
+        const cat = node.dataset && node.dataset.category ? node.dataset.category : 'info';
+        node.style.display = filters[cat] === false ? 'none' : '';
+      });
+    }
+
+    function renderCombatLogFilterUI() {
+      if (!char) return;
+      const filters = getCombatLogFilterState(char);
+      const dmgBtn = document.getElementById('log-filter-dmg-btn');
+      const lootBtn = document.getElementById('log-filter-loot-btn');
+      const infoBtn = document.getElementById('log-filter-info-btn');
+      const presetCombatBtn = document.getElementById('log-filter-preset-combat-btn');
+      const presetLootBtn = document.getElementById('log-filter-preset-loot-btn');
+      const presetAllBtn = document.getElementById('log-filter-preset-all-btn');
+      if (dmgBtn) {
+        dmgBtn.classList.toggle('active', !!filters.dmg);
+        dmgBtn.textContent = 'DMG ' + (filters.dmg ? 'On' : 'Off');
+      }
+      if (lootBtn) {
+        lootBtn.classList.toggle('active', !!filters.loot);
+        lootBtn.textContent = 'Loot ' + (filters.loot ? 'On' : 'Off');
+      }
+      if (infoBtn) {
+        infoBtn.classList.toggle('active', !!filters.info);
+        infoBtn.textContent = 'Info ' + (filters.info ? 'On' : 'Off');
+      }
+
+      const isCombatOnly = !!filters.dmg && !filters.loot && !filters.info;
+      const isLootOnly = !filters.dmg && !!filters.loot && !filters.info;
+      const isAll = !!filters.dmg && !!filters.loot && !!filters.info;
+      if (presetCombatBtn) presetCombatBtn.classList.toggle('active', isCombatOnly);
+      if (presetLootBtn) presetLootBtn.classList.toggle('active', isLootOnly);
+      if (presetAllBtn) presetAllBtn.classList.toggle('active', isAll);
+    }
+
+    function applyCombatLogFilterPreset(preset) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (preset === 'combat') {
+        char.logFilters.dmg = true;
+        char.logFilters.loot = false;
+        char.logFilters.info = false;
+      } else if (preset === 'loot') {
+        char.logFilters.dmg = false;
+        char.logFilters.loot = true;
+        char.logFilters.info = false;
+      } else {
+        char.logFilters.dmg = true;
+        char.logFilters.loot = true;
+        char.logFilters.info = true;
+      }
+      renderCombatLogFilterUI();
+      applyCombatLogFilterVisibility();
+      autoSave();
+    }
+
+    function toggleCombatLogFilter(category) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (!(category in char.logFilters)) return;
+      char.logFilters[category] = !char.logFilters[category];
+      renderCombatLogFilterUI();
+      applyCombatLogFilterVisibility();
+      autoSave();
+    }
+
     function log(msg, type = 'info') {
       const div = document.getElementById('combat-log');
+      if (!div) return;
+      const category = getLogCategory(type);
+      const filters = char ? getCombatLogFilterState(char) : { dmg: true, loot: true, info: true };
+      if (filters[category] === false) return;
       syncCombatLogSize();
       const p = document.createElement('p'); p.className = 'log-' + type; p.textContent = msg;
+      p.dataset.category = category;
       div.appendChild(p); div.scrollTop = div.scrollHeight;
       while (div.children.length > 80) div.removeChild(div.firstChild);
     }
@@ -6067,15 +6731,18 @@
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
       log(mob.name + ' is slain! +' + xp + ' XP, +' + gold + 'g', 'loot');
 
-      const contract = char.eliteContract;
-      if (contract && contract.active && !contract.complete && contract.zone === char.zone && mob.baseName === contract.target) {
+      const contract = getPrimaryContract(char);
+      const contractMatch = contract && contract.active && !contract.complete && contract.zone === char.zone && (
+        (contract.bossStep ? (mob.named || mob.elite) : (mob.baseName === contract.target))
+      );
+      if (contractMatch) {
         contract.progress += 1;
         if (contract.progress >= contract.count) {
           contract.progress = contract.count;
           contract.complete = true;
           const hs = char.huntStreak || {};
           contract.streakAtComplete = (hs.zone === char.zone && hs.target === contract.target) ? (hs.count || 0) : 0;
-          log('Elite contract objective complete. Return to quests to claim reward.', 'lvl');
+          log('Elite contract step complete. Return to quests to claim reward.', 'lvl');
         }
       }
 
@@ -6106,7 +6773,7 @@
       if (Math.random() < ((mob.named ? 0.8 : 0.4) * (event.lootMult || 1) * (dungeonMod.lootMult || 1) * (aa.lootMult || 1) * streakLootMult)) {
         const lootBase = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
         const loot = rollItemVariant(lootBase, mob.named ? 'loot_named' : 'loot');
-        char.inventory.push(loot); log('Looted: ' + getItemDisplayName(loot), 'loot');
+        processLootDrop(loot, 'Looted');
       }
       const runeDrop = rollRuneDrop(char.zone, !!mob.named, 'loot');
       if (runeDrop) {
@@ -6199,6 +6866,10 @@
     function sellItem(index) {
       if (index < 0 || index >= char.inventory.length) return;
       const item = char.inventory[index];
+      if (isItemLocked(item)) {
+        log('Item is locked. Unlock it before selling.', 'info');
+        return;
+      }
       char.inventory.splice(index, 1);
 
       const value = getItemSellValue(item);
@@ -6211,6 +6882,73 @@
 
       renderAll();
       autoSave();
+    }
+
+    function applyLootFilterPreset(presetId, silent = false) {
+      if (!char) return false;
+      ensureExtendedSystems(char);
+      const id = LOOT_FILTER_PRESETS[presetId] ? presetId : 'balanced';
+      const p = LOOT_FILTER_PRESETS[id];
+      char.lootFilter.autoSellJunk = !!p.autoSellJunk;
+      char.lootFilter.autoSellNormalGear = !!p.autoSellNormalGear;
+      char.lootFilter.protectRarePlus = p.protectRarePlus !== false;
+      char.lootFilterPreset = id;
+      if (!silent) {
+        log('Loot filter preset applied: ' + p.label + '.', 'info');
+      }
+      return true;
+    }
+
+    function setLootFilterPresetFromUI() {
+      if (!char) return;
+      const sel = document.getElementById('loot-filter-preset-select');
+      if (!sel) return;
+      applyLootFilterPreset(String(sel.value || 'balanced'));
+      renderShop();
+      autoSave();
+    }
+
+    function toggleLootFilter(flag) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (!(flag in char.lootFilter)) return;
+      char.lootFilter[flag] = !char.lootFilter[flag];
+      char.lootFilterPreset = 'balanced';
+      log('Loot filter updated: ' + flag + ' = ' + (char.lootFilter[flag] ? 'On' : 'Off') + '.', 'info');
+      renderShop();
+      autoSave();
+    }
+
+    function shouldAutoSellLootItem(item) {
+      if (!char) return false;
+      if (isItemLocked(item) || isItemFavorite(item)) return false;
+      const lf = getLootFilterState(char);
+      const quality = getItemQuality(item);
+      const isEquipment = !!getItemData(item);
+      const isContainer = isContainerEntry(item);
+
+      if (lf.protectRarePlus && (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword')) {
+        return false;
+      }
+      if (lf.autoSellNormalGear && isEquipment && quality === 'Normal') {
+        return true;
+      }
+      if (lf.autoSellJunk && !isEquipment && !isContainer) {
+        return true;
+      }
+      return false;
+    }
+
+    function processLootDrop(item, sourceLabel = 'Looted') {
+      if (!char) return;
+      if (shouldAutoSellLootItem(item)) {
+        const value = getItemSellValue(item);
+        char.gold += value;
+        log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-sold for ' + value + 'g.', 'loot');
+      } else {
+        char.inventory.push(item);
+        log(sourceLabel + ': ' + getItemDisplayName(item), 'loot');
+      }
     }
 
     function sellAllJunk() {
@@ -6226,8 +6964,9 @@
       char.inventory.forEach(item => {
         const isEquipment = !!getItemData(item);
         const isContainer = isContainerEntry(item);
+        const protectedItem = isItemLocked(item) || isItemFavorite(item);
 
-        if (!isEquipment && !isContainer) {
+        if (!isEquipment && !isContainer && !protectedItem) {
           soldCount++;
           totalGold += getItemSellValue(item);
         } else {
@@ -6260,16 +6999,22 @@
 
       const soldCount = char.inventory.length;
       let totalGold = 0;
+      let kept = 0;
 
       char.inventory.forEach(item => {
+        if (isItemLocked(item) || isItemFavorite(item)) {
+          kept++;
+          return;
+        }
         totalGold += getItemSellValue(item);
       });
 
-      char.inventory = [];
+      char.inventory = char.inventory.filter(item => isItemLocked(item) || isItemFavorite(item));
       char.gold += totalGold;
       activeBagIndex = 0;
+      bagInstallTargetIndex = 0;
 
-      log('Sold all inventory items (' + soldCount + ') for ' + totalGold + ' gold.', 'loot');
+      log('Sold ' + (soldCount - kept) + ' inventory items for ' + totalGold + ' gold. Protected items kept: ' + kept + '.', 'loot');
       showToast('Sold all inventory: +' + totalGold + 'g', 'success');
       renderAll();
       autoSave();
@@ -6373,6 +7118,10 @@
       if (index < 0 || index >= char.inventory.length) return;
 
       const entry = char.inventory[index];
+      if (isItemLocked(entry)) {
+        log('Item is locked. Unlock it before rerolling.', 'info');
+        return;
+      }
       const data = getItemData(entry);
       if (!data) {
         log('Only equippable gear can be rerolled.', 'info');
@@ -6411,6 +7160,7 @@
       char.inventory.forEach((entry, idx) => {
         if (!getItemData(entry)) return;
         if (getItemQuality(entry) === 'Unique' || getItemQuality(entry) === 'Runeword') return;
+        if (isItemLocked(entry) || isItemFavorite(entry)) return;
         candidates.push(idx);
       });
 
@@ -6442,6 +7192,10 @@
     function addSocketToItem(index) {
       if (index < 0 || index >= char.inventory.length) return;
       const entry = char.inventory[index];
+      if (isItemLocked(entry)) {
+        log('Item is locked. Unlock it before socket changes.', 'info');
+        return;
+      }
       const data = getItemData(entry);
       if (!data) {
         log('Only gear can receive sockets.', 'info');
@@ -6486,6 +7240,10 @@
     function insertRuneIntoItem(index) {
       if (index < 0 || index >= char.inventory.length) return;
       const entry = char.inventory[index];
+      if (isItemLocked(entry)) {
+        log('Item is locked. Unlock it before socket changes.', 'info');
+        return;
+      }
       const data = getItemData(entry);
       if (!data) {
         log('Only gear can be socketed with runes.', 'info');
@@ -6600,6 +7358,7 @@
         char.lastAfkAt = Date.now();
         saveSlots();
         log('Auto-battle enabled.', 'info');
+        renderAfkGoalStatus();
       }
       else {
         btn.textContent = 'Enable';
@@ -6613,14 +7372,92 @@
         char.lastAfkAt = null;
         saveSlots();
         log('Auto-battle disabled.', 'info');
+        renderAfkGoalStatus();
       }
     }
 
     function getQueueOrder() { return Array.from(document.querySelectorAll('#action-queue .queue-item')).map(el => el.dataset.action); }
 
+    function setAfkGoalAction(message) {
+      if (!message || message === afkGoalLastAction) return;
+      afkGoalLastAction = message;
+      afkGoalLastActionAt = Date.now();
+    }
+
+    function renderAfkGoalStatus() {
+      const host = document.getElementById('afk-goal-status');
+      if (!host || !char) return;
+      const goal = getAfkGoalState(char);
+      const goalLabel = AFK_GOALS[goal] ? AFK_GOALS[goal].label : 'Balanced';
+      const modeLabel = afkOn ? 'AFK On' : 'AFK Off';
+      let msg = 'Goal: ' + goalLabel + ' · ' + modeLabel;
+
+      if (afkGoalLastAction) {
+        const sec = Math.max(0, Math.floor((Date.now() - afkGoalLastActionAt) / 1000));
+        msg += ' · Last auto action: ' + afkGoalLastAction + (sec > 0 ? (' (' + sec + 's ago)') : '');
+      } else {
+        msg += ' · Last auto action: none';
+      }
+
+      host.textContent = msg;
+    }
+
+    function setAfkGoalFromUI() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const sel = document.getElementById('afk-goal-select');
+      if (!sel) return;
+      const chosen = AFK_GOALS[sel.value] ? sel.value : 'balanced';
+      char.afkGoal = chosen;
+      setAfkGoalAction('Goal changed to ' + AFK_GOALS[chosen].label);
+      applySmartAfkGoal(false);
+      log('AFK goal set to ' + AFK_GOALS[chosen].label + '.', 'info');
+      renderAll();
+      autoSave();
+    }
+
+    function applySmartAfkGoal(silent = true) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const goal = getAfkGoalState(char);
+
+      if (goal === 'level') {
+        if (!autoUseSkills) {
+          autoUseSkills = true;
+          setAfkGoalAction('Enabled class skill casting');
+        }
+        char.lootFilter.autoSellNormalGear = false;
+      } else if (goal === 'gold') {
+        const prevPreset = char.lootFilterPreset;
+        applyLootFilterPreset('gold', true);
+        if (prevPreset !== 'gold') {
+          setAfkGoalAction('Applied Gold Farm loot preset');
+        }
+      } else if (goal === 'contract') {
+        const board = Array.isArray(char.eliteContracts) ? char.eliteContracts : [];
+        const pinIdx = Math.max(0, Math.min(board.length - 1, Number(char.afkPinnedContractIdx || 0)));
+        const c = board[pinIdx] || getPrimaryContract(char);
+        if (c && c.active) {
+          if (!char.dungeon.active && Number(c.zone) !== char.zone && ZONES[c.zone] && char.level >= ZONES[c.zone].minLvl) {
+            char.zone = Number(c.zone);
+            mob = null;
+            setAfkGoalAction('Moved to contract zone: ' + ZONES[c.zone].name);
+            if (!silent) log('AFK goal moved you to ' + ZONES[c.zone].name + ' for contract progress.', 'info');
+          }
+          if (!char.dungeon.active && !c.bossStep && Number(c.zone) === char.zone && ZONES[char.zone].mobs.includes(c.target)) {
+            if (char.huntTargets[String(char.zone)] !== c.target) {
+              char.huntTargets[String(char.zone)] = c.target;
+              setAfkGoalAction('Set hunt target to contract mob: ' + c.target);
+            }
+          }
+        }
+      }
+    }
+
 
     function afkTick() {
       if (!char) return;
+      applySmartAfkGoal(true);
 
       char.mp = Math.min(char.maxMp, char.mp + char.mpRegen);
 
@@ -6674,6 +7511,7 @@
 
     function simulateAfkReturn(elapsedMs, opts = {}) {
       if (!char || !afkOn) return;
+      applySmartAfkGoal(true);
 
       const elapsedTicks = Math.floor(elapsedMs / tickMs);
       if (elapsedTicks < 3) return;
@@ -6688,12 +7526,23 @@
       let totalRunes = 0;
       let questCompletions = 0;
 
-      const zone = ZONES[char.zone];
+      const goal = getAfkGoalState(char);
+      const board = Array.isArray(char.eliteContracts) ? char.eliteContracts : [];
+      const pinIdx = Math.max(0, Math.min(board.length - 1, Number(char.afkPinnedContractIdx || 0)));
+      const contract = (goal === 'contract') ? (board[pinIdx] || getPrimaryContract(char)) : getPrimaryContract(char);
+      const simZoneIdx = (goal === 'contract' && contract && contract.active && ZONES[contract.zone] && char.level >= ZONES[contract.zone].minLvl)
+        ? Number(contract.zone)
+        : char.zone;
+      if (simZoneIdx !== char.zone) char.zone = simZoneIdx;
+      const zone = ZONES[simZoneIdx];
 
       for (let i = 0; i < fights; i++) {
-        const mobName = zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
+        let mobName = zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
+        if (goal === 'contract' && contract && contract.active && !contract.complete && !contract.bossStep && Number(contract.zone) === simZoneIdx && Math.random() < 0.65) {
+          mobName = contract.target;
+        }
         const lvl = Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
-        const elite = Math.random() < 0.1;
+        const elite = Math.random() < ((goal === 'contract' && contract && contract.bossStep) ? 0.28 : 0.1);
 
         const xp = Math.floor((20 + lvl * 15) * zone.xpMult * (elite ? 3 : 1));
         const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1));
@@ -6712,10 +7561,27 @@
           }
         });
 
+        if (contract && contract.active && !contract.complete && Number(contract.zone) === simZoneIdx) {
+          const contractMatch = contract.bossStep ? elite : (mobName === contract.target);
+          if (contractMatch) {
+            contract.progress += 1;
+            if (contract.progress >= contract.count) {
+              contract.progress = contract.count;
+              contract.complete = true;
+              contract.streakAtComplete = 0;
+            }
+          }
+        }
+
         if (Math.random() < 0.4) {
           const lootBase = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
           const loot = rollItemVariant(lootBase, 'afk');
-          char.inventory.push(loot);
+          if (shouldAutoSellLootItem(loot)) {
+            const value = getItemSellValue(loot);
+            totalGold += value;
+          } else {
+            char.inventory.push(loot);
+          }
           totalLoot++;
         }
 
