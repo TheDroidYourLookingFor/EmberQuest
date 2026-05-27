@@ -1,550 +1,1620 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EmberQuest RPG - Version 1.0.1</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg-primary: #ffffff; --bg-secondary: #f5f5f3; --bg-tertiary: #eeede8;
-  --text-primary: #1a1a18; --text-secondary: #6b6b67;
-  --border: rgba(0,0,0,0.12); --border-md: rgba(0,0,0,0.22);
-  --radius-md: 8px; --radius-lg: 12px;
-  --font: system-ui,-apple-system,sans-serif; --font-mono: 'Menlo','Consolas',monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --bg-primary:#1e1e1c; --bg-secondary:#2a2a28; --bg-tertiary:#333330; --text-primary:#f0ede6; --text-secondary:#9b9b95; --border:rgba(255,255,255,0.1); --border-md:rgba(255,255,255,0.2); }
-}
-body { font-family:var(--font); color:var(--text-primary); background:var(--bg-tertiary); min-height:100vh; padding:12px; }
+  <meta
+    charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+  <title>EmberQuest
+    RPG - Version
+    1.0.1</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* ── screens ── */
-.screen { display:none; }
-.screen.active { display:block; }
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f3;
+      --bg-tertiary: #eeede8;
+      --text-primary: #1a1a18;
+      --text-secondary: #6b6b67;
+      --border: rgba(0, 0, 0, 0.12);
+      --border-md: rgba(0, 0, 0, 0.22);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --font: system-ui, -apple-system, sans-serif;
+      --font-mono: 'Menlo', 'Consolas', monospace;
+    }
 
-/* ── char select screen ── */
-#screen-charselect { max-width:560px; margin:32px auto; }
-#screen-charselect h1 { font-size:28px; font-weight:500; text-align:center; margin-bottom:4px; }
-#screen-charselect .subtitle { font-size:13px; color:var(--text-secondary); text-align:center; margin-bottom:24px; }
-.slot-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
-.slot-card { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:14px 16px; cursor:pointer; transition:border-color .15s,background .15s; min-height:90px; display:flex; flex-direction:column; justify-content:space-between; }
-.slot-card:hover { background:var(--bg-secondary); border-color:var(--border-md); }
-.slot-card.selected { border-color:#185FA5; background:#E6F1FB; }
-@media(prefers-color-scheme:dark){ .slot-card.selected{background:#042C53;border-color:#378ADD;} }
-.slot-card.empty { border-style:dashed; }
-.slot-name { font-size:14px; font-weight:500; }
-.slot-meta { font-size:11px; color:var(--text-secondary); margin-top:3px; }
-.slot-empty-label { font-size:13px; color:var(--text-secondary); display:flex; align-items:center; gap:6px; }
-.slot-actions { display:flex; gap:6px; margin-top:8px; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-primary: #1e1e1c;
+        --bg-secondary: #2a2a28;
+        --bg-tertiary: #333330;
+        --text-primary: #f0ede6;
+        --text-secondary: #9b9b95;
+        --border: rgba(255, 255, 255, 0.1);
+        --border-md: rgba(255, 255, 255, 0.2);
+      }
+    }
 
-/* ── new char form ── */
-#new-char-form { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-lg); padding:20px; margin-top:12px; }
-#new-char-form h2 { font-size:15px; font-weight:500; margin-bottom:14px; }
-.class-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
-.class-card { padding:11px 12px; border:0.5px solid var(--border); border-radius:var(--radius-md); cursor:pointer; transition:border-color .15s,background .15s; background:var(--bg-primary); }
-.class-card:hover { background:var(--bg-secondary); }
-.class-card.selected { border-color:#185FA5; background:#E6F1FB; }
-@media(prefers-color-scheme:dark){ .class-card.selected{background:#042C53;border-color:#378ADD;} }
-.class-name { font-size:13px; font-weight:500; margin-top:3px; }
-.class-desc { font-size:11px; color:var(--text-secondary); margin-top:2px; }
-.name-row { display:flex; align-items:center; gap:8px; margin-bottom:14px; }
-.form-btns { display:flex; gap:8px; }
+    body {
+      font-family: var(--font);
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+      min-height: 100vh;
+      padding: 12px;
+    }
 
-/* ── game layout ── */
-#screen-game { max-width:900px; margin:0 auto; }
-#game-topbar { display:flex; align-items:center; gap:8px; margin-bottom:8px; padding:6px 10px; background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-md); }
-#game-topbar .title { font-size:14px; font-weight:500; flex:1; }
-#game-grid { display:grid; grid-template-columns:220px 1fr 300px; gap:8px; min-height:560px; }
-.panel { background:var(--bg-primary); border:0.5px solid var(--border); border-radius:var(--radius-md); padding:10px; }
-h3 { font-size:11px; font-weight:500; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+    /* ── screens ── */
+    .screen {
+      display: none;
+    }
 
-/* ── bars ── */
-.bar-wrap { background:var(--bg-tertiary); border-radius:4px; height:10px; margin:2px 0 6px; overflow:hidden; }
-.bar { height:100%; border-radius:4px; transition:width .3s; }
-.hp-bar{background:#E24B4A;} .mp-bar{background:#378ADD;} .xp-bar{background:#639922;}
+    .screen.active {
+      display: block;
+    }
 
-/* ── stats ── */
-.stat-row { display:flex; justify-content:space-between; font-size:12px; margin:2px 0; }
-.stat-label{color:var(--text-secondary);} .stat-val{font-weight:500;}
+    /* ── char select screen ── */
+    #screen-charselect {
+      max-width: 560px;
+      margin: 32px auto;
+    }
 
-/* ── combat log ── */
-#combat-log { background:var(--bg-secondary); border-radius:var(--radius-md); padding:8px; height:140px; overflow-y:auto; font-size:12px; font-family:var(--font-mono); }
-#combat-log p { margin:1px 0; line-height:1.5; }
-.log-dmg{color:#E24B4A;} .log-heal{color:#1D9E75;} .log-info{color:var(--text-secondary);} .log-loot{color:#BA7517;} .log-lvl{color:#7F77DD;font-weight:500;}
+    #screen-charselect h1 {
+      font-size: 28px;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 4px;
+    }
 
-/* ── mob area ── */
-#mob-area { background:var(--bg-secondary); border-radius:var(--radius-md); padding:10px; min-height:100px; }
-.mob-name{font-size:14px;font-weight:500;} .mob-level{font-size:11px;color:var(--text-secondary);}
+    #screen-charselect .subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 24px;
+    }
 
-/* ── queue ── */
-.queue-item { display:flex; align-items:center; gap:6px; font-size:12px; padding:5px 7px; background:var(--bg-secondary); border-radius:var(--radius-md); cursor:grab; border:0.5px solid var(--border); margin:3px 0; user-select:none; }
-.queue-handle{color:var(--text-secondary);font-size:10px;}
-.queue-item.dragging{opacity:.4;} .queue-item.drag-over{border-color:#378ADD;}
+    .slot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
 
-/* ── misc ── */
-.btn { display:inline-flex; align-items:center; gap:4px; font-size:12px; padding:5px 10px; border-radius:var(--radius-md); border:0.5px solid var(--border-md); background:var(--bg-secondary); color:var(--text-primary); cursor:pointer; transition:background .15s; font-family:var(--font); }
-.btn:hover{background:var(--bg-tertiary);} .btn.active{background:#185FA5;color:#E6F1FB;border-color:#185FA5;} .btn.danger{background:#A32D2D;color:#FCEBEB;border-color:#A32D2D;}
-.zone-btn{width:100%;text-align:left;margin:2px 0;justify-content:flex-start;}
-.zone-btn.current{background:#E6F1FB;color:#185FA5;border-color:#185FA5;}
-@media(prefers-color-scheme:dark){.zone-btn.current{background:#0C447C;color:#B5D4F4;border-color:#378ADD;}}
-.inv-item{font-size:11px;padding:4px 7px;margin:2px 0;border-radius:var(--radius-md);background:var(--bg-secondary);display:flex;justify-content:space-between;align-items:center;}
-.badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;}
-.badge-rare{background:#B5D4F4;color:#0C447C;} .badge-common{background:#D3D1C7;color:#444441;}
-.afk-toggle{display:flex;align-items:center;gap:8px;margin:6px 0;}
-.afk-dot{width:8px;height:8px;border-radius:50%;background:#888780;flex-shrink:0;}
-.afk-dot.on{background:#1D9E75;animation:pulse 1.2s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.quest{padding:6px;border-left:2px solid #BA7517;margin:4px 0;background:var(--bg-secondary);border-radius:0 var(--radius-md) var(--radius-md) 0;}
-.quest-name{font-weight:500;font-size:12px;} .quest-prog{color:var(--text-secondary);font-size:11px;}
-.tab-bar{display:flex;gap:4px;margin-bottom:8px;}
-.tab{font-size:11px;padding:4px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border);background:var(--bg-secondary);cursor:pointer;color:var(--text-secondary);}
-.tab.active{background:var(--bg-primary);color:var(--text-primary);border-color:var(--border-md);}
-input[type=text]{font-size:13px;padding:6px 10px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font);}
-input[type=range]{width:100%;margin:4px 0;accent-color:#378ADD;}
-.save-indicator{font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;}
-.save-indicator.saved{color:#1D9E75;}
+    .slot-card {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
 
-/* ── EQ inventory ── */
-.eq-inventory-layout{
-  display:grid;
-  grid-template-columns:220px 1fr;
-  gap:12px;
-}
-.eq-paperdoll{
-  background:var(--bg-secondary);
-  border:0.5px solid var(--border);
-  border-radius:var(--radius-md);
-  padding:10px;
-}
-.eq-paperdoll-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-}
-.eq-slot{
-  min-height:58px;
-  background:var(--bg-primary);
-  border:1px dashed var(--border-md);
-  border-radius:var(--radius-md);
-  padding:6px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-}
-.eq-slot-name{
-  font-size:10px;
-  color:var(--text-secondary);
-  text-transform:uppercase;
-  margin-bottom:3px;
-}
-.eq-slot-item{
-  font-size:11px;
-  font-weight:500;
-}
-.eq-slot-stats{
-  font-size:10px;
-  color:#378ADD;
-  margin-top:2px;
-}
-.eq-bag-area{
-  background:var(--bg-secondary);
-  border-radius:var(--radius-md);
-  padding:10px;
-}
-.eq-bag-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
-  gap:8px;
-}
-.eq-item-card{
-  background:var(--bg-primary);
-  border:0.5px solid var(--border);
-  border-radius:var(--radius-md);
-  padding:8px;
-}
-.eq-item-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:8px;
-}
-.eq-item-name{
-  font-size:12px;
-  font-weight:500;
-}
-.eq-item-type{
-  font-size:10px;
-  color:var(--text-secondary);
-  margin-top:2px;
-}
-.eq-item-bonus{
-  font-size:10px;
-  color:#1D9E75;
-  margin-top:5px;
-}
-.eq-item-actions{
-  display:flex;
-  gap:6px;
-  margin-top:8px;
-}
-.eq-empty-bag{
-  font-size:12px;
-  color:var(--text-secondary);
-}
+    .slot-card:hover {
+      background: var(--bg-secondary);
+      border-color: var(--border-md);
+    }
 
-</style>
+    .slot-card.selected {
+      border-color: #185FA5;
+      background: #E6F1FB;
+    }
+
+    @media(prefers-color-scheme:dark) {
+      .slot-card.selected {
+        background: #042C53;
+        border-color: #378ADD;
+      }
+    }
+
+    .slot-card.empty {
+      border-style: dashed;
+    }
+
+    .slot-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .slot-meta {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .slot-empty-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .slot-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    /* ── new char form ── */
+    #new-char-form {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-top: 12px;
+    }
+
+    #new-char-form h2 {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+
+    .class-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .class-card {
+      padding: 11px 12px;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      background: var(--bg-primary);
+    }
+
+    .class-card:hover {
+      background: var(--bg-secondary);
+    }
+
+    .class-card.selected {
+      border-color: #185FA5;
+      background: #E6F1FB;
+    }
+
+    @media(prefers-color-scheme:dark) {
+      .class-card.selected {
+        background: #042C53;
+        border-color: #378ADD;
+      }
+    }
+
+    .class-name {
+      font-size: 13px;
+      font-weight: 500;
+      margin-top: 3px;
+    }
+
+    .class-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .form-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ── game layout ── */
+    #screen-game {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    #game-topbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    #game-topbar .title {
+      font-size: 14px;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    #game-grid {
+      display: grid;
+      grid-template-columns: 220px 1fr 300px;
+      gap: 8px;
+      min-height: 560px;
+    }
+
+    .panel {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px;
+    }
+
+    h3 {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 8px;
+    }
+
+    /* ── bars ── */
+    .bar-wrap {
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      height: 10px;
+      margin: 2px 0 6px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width .3s;
+    }
+
+    .hp-bar {
+      background: #E24B4A;
+    }
+
+    .mp-bar {
+      background: #378ADD;
+    }
+
+    .xp-bar {
+      background: #639922;
+    }
+
+    /* ── stats ── */
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin: 2px 0;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+    }
+
+    .stat-val {
+      font-weight: 500;
+    }
+
+    /* ── combat log ── */
+    #combat-log {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 8px;
+      height: 140px;
+      overflow-y: auto;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+
+    #combat-log p {
+      margin: 1px 0;
+      line-height: 1.5;
+    }
+
+    .log-dmg {
+      color: #E24B4A;
+    }
+
+    .log-heal {
+      color: #1D9E75;
+    }
+
+    .log-info {
+      color: var(--text-secondary);
+    }
+
+    .log-loot {
+      color: #BA7517;
+    }
+
+    .log-lvl {
+      color: #7F77DD;
+      font-weight: 500;
+    }
+
+    /* ── mob area ── */
+    #mob-area {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      min-height: 100px;
+    }
+
+    .mob-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .mob-level {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* ── queue ── */
+    .queue-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 5px 7px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      cursor: grab;
+      border: 0.5px solid var(--border);
+      margin: 3px 0;
+      user-select: none;
+    }
+
+    .queue-handle {
+      color: var(--text-secondary);
+      font-size: 10px;
+    }
+
+    .queue-item.dragging {
+      opacity: .4;
+    }
+
+    .queue-item.drag-over {
+      border-color: #378ADD;
+    }
+
+    /* ── misc ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border-md);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background .15s;
+      font-family: var(--font);
+    }
+
+    .btn:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .btn.active {
+      background: #185FA5;
+      color: #E6F1FB;
+      border-color: #185FA5;
+    }
+
+    .btn.danger {
+      background: #A32D2D;
+      color: #FCEBEB;
+      border-color: #A32D2D;
+    }
+
+    .zone-btn {
+      width: 100%;
+      text-align: left;
+      margin: 2px 0;
+      justify-content: flex-start;
+    }
+
+    .zone-btn.current {
+      background: #E6F1FB;
+      color: #185FA5;
+      border-color: #185FA5;
+    }
+
+    @media(prefers-color-scheme:dark) {
+      .zone-btn.current {
+        background: #0C447C;
+        color: #B5D4F4;
+        border-color: #378ADD;
+      }
+    }
+
+    .inv-item {
+      font-size: 11px;
+      padding: 4px 7px;
+      margin: 2px 0;
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .badge-rare {
+      background: #B5D4F4;
+      color: #0C447C;
+    }
+
+    .badge-common {
+      background: #D3D1C7;
+      color: #444441;
+    }
+
+    .afk-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
+
+    .afk-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #888780;
+      flex-shrink: 0;
+    }
+
+    .afk-dot.on {
+      background: #1D9E75;
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    .quest {
+      padding: 6px;
+      border-left: 2px solid #BA7517;
+      margin: 4px 0;
+      background: var(--bg-secondary);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    }
+
+    .quest-name {
+      font-weight: 500;
+      font-size: 12px;
+    }
+
+    .quest-prog {
+      color: var(--text-secondary);
+      font-size: 11px;
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .tab {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      background: var(--bg-secondary);
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .tab.active {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border-color: var(--border-md);
+    }
+
+    input[type=text] {
+      font-size: 13px;
+      padding: 6px 10px;
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-family: var(--font);
+    }
+
+    input[type=range] {
+      width: 100%;
+      margin: 4px 0;
+      accent-color: #378ADD;
+    }
+
+    .save-indicator {
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .save-indicator.saved {
+      color: #1D9E75;
+    }
+
+    /* ── EQ inventory ── */
+    .eq-inventory-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 12px;
+    }
+
+    .eq-paperdoll {
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px;
+    }
+
+    .eq-paperdoll-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .eq-slot {
+      min-height: 58px;
+      background: var(--bg-primary);
+      border: 1px dashed var(--border-md);
+      border-radius: var(--radius-md);
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .eq-slot-name {
+      font-size: 10px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .eq-slot-item {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .eq-slot-stats {
+      font-size: 10px;
+      color: #378ADD;
+      margin-top: 2px;
+    }
+
+    .eq-bag-area {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 10px;
+    }
+
+    .eq-bag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 8px;
+    }
+
+    .eq-item-card {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px;
+    }
+
+    .eq-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .eq-item-name {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .eq-item-type {
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .eq-item-bonus {
+      font-size: 10px;
+      color: #1D9E75;
+      margin-top: 5px;
+    }
+
+    .eq-item-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .eq-empty-bag {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      SCREEN 1: Character Select / Slot Picker
 ════════════════════════════════════════════════════ -->
-<div id="screen-charselect" class="screen active">
-  <h1>EmberQuest - Version 1.0.1</h1>
-  <p class="subtitle">Select a character slot to play or create a new adventurer</p>
+  <div
+    id="screen-charselect"
+    class="screen active">
+    <h1>EmberQuest -
+      Version 1.0.1
+    </h1>
+    <p
+      class="subtitle">
+      Select a
+      character slot
+      to play or
+      create a new
+      adventurer</p>
 
-  <div class="slot-grid" id="slot-grid"></div>
+    <div
+      class="slot-grid"
+      id="slot-grid">
+    </div>
 
-  <div id="new-char-form" style="display:none">
-    <h2>Create New Character</h2>
-    <div class="class-grid">
-      <div class="class-card" data-class="Warrior" onclick="selectClass(this)">
-        <i class="ti ti-shield" style="font-size:20px;color:#E24B4A"></i>
-        <div class="class-name">Warrior</div>
-        <div class="class-desc">High HP, melee tank. Taunts enemies.</div>
+    <div
+      id="new-char-form"
+      style="display:none">
+      <h2>Create New
+        Character
+      </h2>
+      <div
+        class="class-grid">
+        <div
+          class="class-card"
+          data-class="Warrior"
+          onclick="selectClass(this)">
+          <i class="ti ti-shield"
+            style="font-size:20px;color:#E24B4A"></i>
+          <div
+            class="class-name">
+            Warrior
+          </div>
+          <div
+            class="class-desc">
+            High HP,
+            melee
+            tank.
+            Taunts
+            enemies.
+          </div>
+        </div>
+        <div
+          class="class-card"
+          data-class="Cleric"
+          onclick="selectClass(this)">
+          <i class="ti ti-heart"
+            style="font-size:20px;color:#1D9E75"></i>
+          <div
+            class="class-name">
+            Cleric
+          </div>
+          <div
+            class="class-desc">
+            Healer &
+            buffer.
+            Divine
+            magic
+            user.
+          </div>
+        </div>
+        <div
+          class="class-card"
+          data-class="Wizard"
+          onclick="selectClass(this)">
+          <i class="ti ti-wand"
+            style="font-size:20px;color:#7F77DD"></i>
+          <div
+            class="class-name">
+            Wizard
+          </div>
+          <div
+            class="class-desc">
+            Massive
+            spell
+            damage.
+            Low HP.
+          </div>
+        </div>
+        <div
+          class="class-card"
+          data-class="Rogue"
+          onclick="selectClass(this)">
+          <i class="ti ti-knife"
+            style="font-size:20px;color:#BA7517"></i>
+          <div
+            class="class-name">
+            Rogue
+          </div>
+          <div
+            class="class-desc">
+            Backstab
+            & sneak.
+            High
+            burst
+            damage.
+          </div>
+        </div>
       </div>
-      <div class="class-card" data-class="Cleric" onclick="selectClass(this)">
-        <i class="ti ti-heart" style="font-size:20px;color:#1D9E75"></i>
-        <div class="class-name">Cleric</div>
-        <div class="class-desc">Healer & buffer. Divine magic user.</div>
+      <div
+        class="name-row">
+        <label
+          style="font-size:13px;white-space:nowrap">Character
+          name:</label>
+        <input
+          id="pname"
+          type="text"
+          placeholder="Enter name"
+          style="flex:1">
       </div>
-      <div class="class-card" data-class="Wizard" onclick="selectClass(this)">
-        <i class="ti ti-wand" style="font-size:20px;color:#7F77DD"></i>
-        <div class="class-name">Wizard</div>
-        <div class="class-desc">Massive spell damage. Low HP.</div>
+      <div
+        class="form-btns">
+        <button
+          class="btn active"
+          onclick="createCharacter()"
+          style="font-size:13px;padding:7px 20px"><i
+            class="ti ti-sword"></i>
+          Enter
+          World</button>
+        <button
+          class="btn"
+          onclick="cancelCreate()">Cancel</button>
       </div>
-      <div class="class-card" data-class="Rogue" onclick="selectClass(this)">
-        <i class="ti ti-knife" style="font-size:20px;color:#BA7517"></i>
-        <div class="class-name">Rogue</div>
-        <div class="class-desc">Backstab & sneak. High burst damage.</div>
-      </div>
-    </div>
-    <div class="name-row">
-      <label style="font-size:13px;white-space:nowrap">Character name:</label>
-      <input id="pname" type="text" placeholder="Enter name" style="flex:1">
-    </div>
-    <div class="form-btns">
-      <button class="btn active" onclick="createCharacter()" style="font-size:13px;padding:7px 20px"><i class="ti ti-sword"></i> Enter World</button>
-      <button class="btn" onclick="cancelCreate()">Cancel</button>
     </div>
   </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════
      SCREEN 2: Game
 ════════════════════════════════════════════════════ -->
-<div id="screen-game" class="screen">
-  <div id="game-topbar">
-    <span class="title">EmberQuest - Version 1.0.1</span>
-    <span class="save-indicator" id="save-indicator"><i class="ti ti-device-floppy"></i> Saved</span>
-    <button class="btn" onclick="manualSave()" style="font-size:11px;padding:4px 10px"><i class="ti ti-device-floppy"></i> Save</button>
-    <button class="btn" onclick="goToCharSelect()" style="font-size:11px;padding:4px 10px"><i class="ti ti-users"></i> Characters</button>
-  </div>
-  <div id="game-grid">
-    <!-- Left: Character + Quests -->
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div class="panel">
-        <h3>Character</h3>
-        <div style="font-size:13px;font-weight:500" id="char-name-disp"></div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px" id="char-class-disp"></div>
-        <div style="font-size:11px;color:var(--text-secondary)">HP</div>
-        <div class="bar-wrap"><div class="bar hp-bar" id="hp-bar" style="width:100%"></div></div>
-        <div style="font-size:11px;color:var(--text-secondary)">MP</div>
-        <div class="bar-wrap"><div class="bar mp-bar" id="mp-bar" style="width:100%"></div></div>
-        <div style="font-size:11px;color:var(--text-secondary)">XP</div>
-        <div class="bar-wrap"><div class="bar xp-bar" id="xp-bar" style="width:0%"></div></div>
-        <div class="stat-row" style="margin-top:4px"><span class="stat-label">Level</span><span class="stat-val" id="char-level">1</span></div>
-        <div class="stat-row"><span class="stat-label">HP</span><span class="stat-val" id="hp-disp"></span></div>
-        <div class="stat-row"><span class="stat-label">MP</span><span class="stat-val" id="mp-disp"></span></div>
-        <div class="stat-row"><span class="stat-label">ATK</span><span class="stat-val" id="atk-disp"></span></div>
-        <div class="stat-row"><span class="stat-label">DEF</span><span class="stat-val" id="def-disp"></span></div>
-        <div class="stat-row"><span class="stat-label">Gold</span><span class="stat-val" id="gold-disp"></span></div>
-
-        <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
-          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">Class Skill</div>
-
-          <button class="btn active" onclick="castClassSkill()" style="width:100%;justify-content:center">
-            <i class="ti ti-bolt"></i>
-            <span id="skill-name-btn">Skill</span>
-          </button>
-
-          <div id="skill-desc" style="font-size:10px;color:var(--text-secondary);margin-top:6px;line-height:1.4"></div>
-        </div>
-      </div>
-      <div class="panel">
-        <h3>Quests</h3>
-        <div id="quest-list"></div>
-      </div>
+  <div
+    id="screen-game"
+    class="screen">
+    <div
+      id="game-topbar">
+      <span
+        class="title">EmberQuest
+        - Version
+        1.0.1</span>
+      <span
+        class="save-indicator"
+        id="save-indicator"><i
+          class="ti ti-device-floppy"></i>
+        Saved</span>
+      <button
+        class="btn"
+        onclick="manualSave()"
+        style="font-size:11px;padding:4px 10px"><i
+          class="ti ti-device-floppy"></i>
+        Save</button>
+      <button
+        class="btn"
+        onclick="goToCharSelect()"
+        style="font-size:11px;padding:4px 10px"><i
+          class="ti ti-users"></i>
+        Characters</button>
     </div>
-
-    <!-- Center: Combat / Zones / Inventory -->
-    <div class="panel" style="display:flex;flex-direction:column;gap:8px">
-      <div class="tab-bar">
-        <div class="tab active" onclick="switchTab('combat')">Combat</div>
-        <div class="tab" onclick="switchTab('zone')">Zones</div>
-        <div class="tab" onclick="switchTab('inv')">Inventory</div>
-        <div class="tab" onclick="switchTab('shop')">Shop</div>
-      </div>
-      <div id="tab-combat">
-        <div id="mob-area">
-          <div style="color:var(--text-secondary);font-size:13px" id="no-mob-msg">No enemy. Enable auto-battle or find a mob.</div>
-          <div id="mob-card" style="display:none">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <div><div class="mob-name" id="mob-name"></div><div class="mob-level" id="mob-level"></div></div>
-              <span class="badge" id="mob-badge"></span>
-            </div>
-            <div style="font-size:11px;color:var(--text-secondary)">HP</div>
-            <div class="bar-wrap"><div class="bar hp-bar" id="mob-hp-bar" style="width:100%"></div></div>
-            <div style="font-size:11px" id="mob-hp-disp"></div>
+    <div
+      id="game-grid">
+      <!-- Left: Character + Quests -->
+      <div
+        style="display:flex;flex-direction:column;gap:8px">
+        <div
+          class="panel">
+          <h3>
+            Character
+          </h3>
+          <div
+            style="font-size:13px;font-weight:500"
+            id="char-name-disp">
           </div>
-        </div>
-        <div id="combat-log" style="margin-top:8px"><p class="log-info">Welcome back, adventurer.</p></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-          <button class="btn" onclick="attackOnce()"><i class="ti ti-sword"></i> Attack</button>
-          <button class="btn" onclick="healSelf()"><i class="ti ti-heart"></i> Heal</button>
-          <button class="btn" onclick="spawnMob()"><i class="ti ti-skull"></i> Find Mob</button>
-          <button class="btn" onclick="fleeCombat()"><i class="ti ti-run"></i> Flee</button>
-        </div>
-      </div>
-      <div id="tab-zone" style="display:none">
-        <h3>Available Zones</h3>
-        <div id="zone-list"></div>
-      </div>
-      <div id="tab-inv" style="display:none">
-        <h3>Inventory</h3>
-
-        <div class="eq-inventory-layout">
-
-          <div class="eq-paperdoll">
-            <h3 style="margin-bottom:10px">Equipped</h3>
-
-            <div class="eq-paperdoll-grid">
-              <div class="eq-slot">
-                <div class="eq-slot-name">Weapon</div>
-                <div id="slot-weapon" class="eq-slot-item">Empty</div>
-              </div>
-
-              <div class="eq-slot">
-                <div class="eq-slot-name">Chest</div>
-                <div id="slot-chest" class="eq-slot-item">Empty</div>
-              </div>
-
-              <div class="eq-slot">
-                <div class="eq-slot-name">Legs</div>
-                <div id="slot-legs" class="eq-slot-item">Empty</div>
-              </div>
-
-              <div class="eq-slot">
-                <div class="eq-slot-name">Feet</div>
-                <div id="slot-feet" class="eq-slot-item">Empty</div>
-              </div>
-
-              <div class="eq-slot">
-                <div class="eq-slot-name">Offhand</div>
-                <div id="slot-offhand" class="eq-slot-item">Empty</div>
-              </div>
-
-              <div class="eq-slot">
-                <div class="eq-slot-name">Charm</div>
-                <div id="slot-charm" class="eq-slot-item">Empty</div>
-              </div>
+          <div
+            style="font-size:11px;color:var(--text-secondary);margin-bottom:6px"
+            id="char-class-disp">
+          </div>
+          <div
+            style="font-size:11px;color:var(--text-secondary)">
+            HP</div>
+          <div
+            class="bar-wrap">
+            <div
+              class="bar hp-bar"
+              id="hp-bar"
+              style="width:100%">
             </div>
           </div>
-
-          <div class="eq-bag-area">
-            <h3 style="margin-bottom:10px">Backpack</h3>
-            <div id="inv-list" class="eq-bag-grid"></div>
+          <div
+            style="font-size:11px;color:var(--text-secondary)">
+            MP</div>
+          <div
+            class="bar-wrap">
+            <div
+              class="bar mp-bar"
+              id="mp-bar"
+              style="width:100%">
+            </div>
+          </div>
+          <div
+            style="font-size:11px;color:var(--text-secondary)">
+            XP</div>
+          <div
+            class="bar-wrap">
+            <div
+              class="bar xp-bar"
+              id="xp-bar"
+              style="width:0%">
+            </div>
+          </div>
+          <div
+            class="stat-row"
+            style="margin-top:4px">
+            <span
+              class="stat-label">Level</span><span
+              class="stat-val"
+              id="char-level">1</span>
+          </div>
+          <div
+            class="stat-row">
+            <span
+              class="stat-label">HP</span><span
+              class="stat-val"
+              id="hp-disp"></span>
+          </div>
+          <div
+            class="stat-row">
+            <span
+              class="stat-label">MP</span><span
+              class="stat-val"
+              id="mp-disp"></span>
+          </div>
+          <div
+            class="stat-row">
+            <span
+              class="stat-label">ATK</span><span
+              class="stat-val"
+              id="atk-disp"></span>
+          </div>
+          <div
+            class="stat-row">
+            <span
+              class="stat-label">DEF</span><span
+              class="stat-val"
+              id="def-disp"></span>
+          </div>
+          <div
+            class="stat-row">
+            <span
+              class="stat-label">Gold</span><span
+              class="stat-val"
+              id="gold-disp"></span>
+          </div>
+          <div
+            class="stat-row">
+            <span
+              class="stat-label">HP
+              Potions</span><span
+              class="stat-val"
+              id="hp-potion"></span>
+            <button
+              class="btn active"
+              id="hp-potion-manual-btn"
+              onclick="useHpPotion(event)"
+              style="font-size:10px;padding:2px 8px">
+              USE
+            </button>
+          </div>
+          <div
+            class="stat-row">
+            <span
+              class="stat-label">MP
+              Potions</span><span
+              class="stat-val"
+              id="mp-potion"></span>
+            <button
+              class="btn active"
+              id="mp-potion-manual-btn"
+              onclick="useMpPotion(event)"
+              style="font-size:10px;padding:2px 8px">
+              USE
+            </button>
           </div>
 
+          <div
+            style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+            <div
+              style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">
+              Class
+              Skill
+            </div>
+
+            <button
+              class="btn active"
+              onclick="castClassSkill()"
+              style="width:100%;justify-content:center">
+              <i
+                class="ti ti-bolt"></i>
+              <span
+                id="skill-name-btn">Skill</span>
+            </button>
+
+            <div
+              id="skill-desc"
+              style="font-size:10px;color:var(--text-secondary);margin-top:6px;line-height:1.4">
+            </div>
+          </div>
+        </div>
+        <div
+          class="panel">
+          <h3>Quests
+          </h3>
+          <div
+            id="quest-list">
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Combat / Zones / Inventory -->
+      <div
+        class="panel"
+        style="display:flex;flex-direction:column;gap:8px">
+        <div
+          class="tab-bar">
+          <div
+            class="tab active"
+            onclick="switchTab('combat')">
+            Combat
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('zone')">
+            Zones
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('inv')">
+            Inventory
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('shop')">
+            Shop
+          </div>
+        </div>
+        <div
+          id="tab-combat">
+          <div
+            id="mob-area">
+            <div
+              style="color:var(--text-secondary);font-size:13px"
+              id="no-mob-msg">
+              No
+              enemy.
+              Enable
+              auto-battle
+              or
+              find a
+              mob.
+            </div>
+            <div
+              id="mob-card"
+              style="display:none">
+              <div
+                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <div>
+                  <div
+                    class="mob-name"
+                    id="mob-name">
+                  </div>
+                  <div
+                    class="mob-level"
+                    id="mob-level">
+                  </div>
+                </div>
+                <span
+                  class="badge"
+                  id="mob-badge"></span>
+              </div>
+              <div
+                style="font-size:11px;color:var(--text-secondary)">
+                HP
+              </div>
+              <div
+                class="bar-wrap">
+                <div
+                  class="bar hp-bar"
+                  id="mob-hp-bar"
+                  style="width:100%">
+                </div>
+              </div>
+              <div
+                style="font-size:11px"
+                id="mob-hp-disp">
+              </div>
+            </div>
+          </div>
+          <div
+            id="combat-log"
+            style="margin-top:8px">
+            <p
+              class="log-info">
+              Welcome
+              back,
+              adventurer.
+            </p>
+          </div>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+            <button
+              class="btn"
+              onclick="attackOnce()"><i
+                class="ti ti-sword"></i>
+              Attack</button>
+            <button
+              class="btn"
+              onclick="healSelf()"><i
+                class="ti ti-heart"></i>
+              Heal</button>
+            <button
+              class="btn"
+              onclick="spawnMob()"><i
+                class="ti ti-skull"></i>
+              Find
+              Mob</button>
+            <button
+              class="btn"
+              onclick="fleeCombat()"><i
+                class="ti ti-run"></i>
+              Flee</button>
+          </div>
+        </div>
+        <div
+          id="tab-zone"
+          style="display:none">
+          <h3>
+            Available
+            Zones
+          </h3>
+          <div
+            id="zone-list">
+          </div>
+        </div>
+        <div
+          id="tab-inv"
+          style="display:none">
+          <h3>
+            Inventory
+          </h3>
+
+          <div
+            class="eq-inventory-layout">
+
+            <div
+              class="eq-paperdoll">
+              <h3
+                style="margin-bottom:10px">
+                Equipped
+              </h3>
+
+              <div
+                class="eq-paperdoll-grid">
+                <div
+                  class="eq-slot">
+                  <div
+                    class="eq-slot-name">
+                    Weapon
+                  </div>
+                  <div
+                    id="slot-weapon"
+                    class="eq-slot-item">
+                    Empty
+                  </div>
+                </div>
+
+                <div
+                  class="eq-slot">
+                  <div
+                    class="eq-slot-name">
+                    Chest
+                  </div>
+                  <div
+                    id="slot-chest"
+                    class="eq-slot-item">
+                    Empty
+                  </div>
+                </div>
+
+                <div
+                  class="eq-slot">
+                  <div
+                    class="eq-slot-name">
+                    Legs
+                  </div>
+                  <div
+                    id="slot-legs"
+                    class="eq-slot-item">
+                    Empty
+                  </div>
+                </div>
+
+                <div
+                  class="eq-slot">
+                  <div
+                    class="eq-slot-name">
+                    Feet
+                  </div>
+                  <div
+                    id="slot-feet"
+                    class="eq-slot-item">
+                    Empty
+                  </div>
+                </div>
+
+                <div
+                  class="eq-slot">
+                  <div
+                    class="eq-slot-name">
+                    Offhand
+                  </div>
+                  <div
+                    id="slot-offhand"
+                    class="eq-slot-item">
+                    Empty
+                  </div>
+                </div>
+
+                <div
+                  class="eq-slot">
+                  <div
+                    class="eq-slot-name">
+                    Charm
+                  </div>
+                  <div
+                    id="slot-charm"
+                    class="eq-slot-item">
+                    Empty
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="eq-bag-area">
+              <h3
+                style="margin-bottom:10px">
+                Backpack
+              </h3>
+              <div
+                id="inv-list"
+                class="eq-bag-grid">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Auto-Battle + Zone info -->
+      <div
+        style="display:flex;flex-direction:column;gap:8px">
+        <div
+          class="panel">
+          <h3>
+            Auto-Battle
+          </h3>
+          <div
+            class="afk-toggle">
+            <div
+              class="afk-dot"
+              id="afk-dot">
+            </div>
+            <span
+              style="font-size:12px"
+              id="afk-label">AFK
+              Off</span>
+            <button
+              class="btn"
+              id="afk-btn"
+              onclick="toggleAFK()"
+              style="margin-left:auto">Enable</button>
+          </div>
+          <div
+            style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">
+            Priority
+            queue
+            (drag to
+            reorder)
+          </div>
+
+          <div
+            style="font-size:10px;color:var(--text-secondary);margin-bottom:8px">
+            Class
+            skills
+            are tied
+            to
+            attack
+            behavior.
+          </div>
+
+          <div
+            id="action-queue">
+
+            <div
+              style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
+
+              <div
+                class="queue-item"
+                draggable="true"
+                data-action="attack">
+                <span
+                  class="queue-handle">⠿</span>
+                <i class="ti ti-sword"
+                  style="font-size:14px"></i>
+                <span
+                  style="flex:1">Attack</span>
+              </div>
+
+              <div
+                class="queue-item"
+                draggable="true"
+                data-action="skill"
+                style="margin-left:28px;width:calc(100% - 28px);border-left:2px solid #378ADD;padding-left:12px">
+
+                <span
+                  class="queue-handle">⠿</span>
+                <i class="ti ti-bolt"
+                  style="font-size:14px"></i>
+                <span
+                  style="flex:1">Use
+                  Class
+                  Skill</span>
+
+                <button
+                  class="btn active"
+                  id="skill-auto-btn"
+                  onclick="toggleAutoSkill(event)"
+                  style="font-size:10px;padding:2px 8px">
+                  ON
+                </button>
+              </div>
+
+              <div
+                class="queue-item"
+                draggable="true"
+                data-action="potion_heal"
+                style="margin-left:28px;width:calc(100% - 28px);border-left:2px solid #1D9E75;padding-left:12px">
+
+                <span
+                  class="queue-handle">⠿</span>
+                <i class="ti ti-flask"
+                  style="font-size:14px"></i>
+
+                <span
+                  style="flex:1">
+                  Potion
+                  &lt;<input
+                    type="number"
+                    min="5"
+                    max="95"
+                    value="35"
+                    onchange="autoHpPotionPercent=parseInt(this.value)||35"
+                    style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px">
+                  %
+                  HP
+                </span>
+                <button
+                  class="btn active"
+                  id="hp-potion-auto-btn"
+                  onclick="toggleAutoHpPotion(event)"
+                  style="font-size:10px;padding:2px 8px">
+                  ON
+                </button>
+              </div>
+
+              <div
+                class="queue-item"
+                draggable="true"
+                data-action="potion_mana"
+                style="margin-left:28px;width:calc(100% - 28px);border-left:2px solid #1127a0;padding-left:12px">
+
+                <span
+                  class="queue-handle">⠿</span>
+                <i class="ti ti-flask"
+                  style="font-size:14px"></i>
+
+                <span
+                  style="flex:1">
+                  Potion
+                  &lt;<input
+                    type="number"
+                    min="5"
+                    max="95"
+                    value="20"
+                    onchange="autoMpPotionPercent=parseInt(this.value)||20"
+                    style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px">
+                  %
+                  MP
+                </span>
+                <button
+                  class="btn active"
+                  id="mp-potion-auto-btn"
+                  onclick="toggleAutoMpPotion(event)"
+                  style="font-size:10px;padding:2px 8px">
+                  ON
+                </button>
+              </div>
+
+            </div>
+
+            <div
+              class="queue-item"
+              draggable="true"
+              data-action="auto_loot">
+              <span
+                class="queue-handle">⠿</span>
+              <i class="ti ti-package"
+                style="font-size:14px"></i>
+              <span
+                style="flex:1">Auto-loot</span>
+            </div>
+
+            <div
+              class="queue-item"
+              draggable="true"
+              data-action="heal_if_low">
+              <span
+                class="queue-handle">⠿</span>
+              <i class="ti ti-heart"
+                style="font-size:14px"></i>
+              <span
+                style="flex:1">Rest
+                &lt;<input
+                  type="number"
+                  min="5"
+                  max="95"
+                  value="40"
+                  onchange="autoRestHpPercent=parseInt(this.value)||40"
+                  style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px">
+                %
+                HP</span>
+            </div>
+
+            <div
+              class="queue-item"
+              draggable="true"
+              data-action="rest_if_oom">
+              <span
+                class="queue-handle">⠿</span>
+              <i class="ti ti-moon"
+                style="font-size:14px"></i>
+              <span
+                style="flex:1">Rest
+                &lt;<input
+                  type="number"
+                  min="5"
+                  max="95"
+                  value="20"
+                  onchange="autoRestMpPercent=parseInt(this.value)||40"
+                  style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px">
+                %
+                MP</span>
+            </div>
+
+            <div
+              class="queue-item"
+              draggable="true"
+              data-action="respawn_mob">
+              <span
+                class="queue-handle">⠿</span>
+              <i class="ti ti-refresh"
+                style="font-size:14px"></i>
+              <span
+                style="flex:1">Find
+                next
+                mob</span>
+            </div>
+
+          </div>
+
+          Tick speed
+        </div>
+        <input
+          type="range"
+          min="500"
+          max="3000"
+          step="100"
+          value="1200"
+          id="speed-slider"
+          oninput="updateSpeed(this.value)">
+        <div
+          style="font-size:11px;color:var(--text-secondary)"
+          id="speed-label">
+          1.2s /
+          action
         </div>
       </div>
     </div>
-
-    <!-- Right: Auto-Battle + Zone info -->
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div class="panel">
-        <h3>Auto-Battle</h3>
-        <div class="afk-toggle">
-          <div class="afk-dot" id="afk-dot"></div>
-          <span style="font-size:12px" id="afk-label">AFK Off</span>
-          <button class="btn" id="afk-btn" onclick="toggleAFK()" style="margin-left:auto">Enable</button>
-        </div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">
-          Priority queue (drag to reorder)
-        </div>
-
-        <div style="font-size:10px;color:var(--text-secondary);margin-bottom:8px">
-          Class skills are tied to attack behavior.
-        </div>
-        
-<div id="action-queue">
-
-  <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
-
-    <div class="queue-item" draggable="true" data-action="attack">
-      <span class="queue-handle">⠿</span>
-      <i class="ti ti-sword" style="font-size:14px"></i>
-      <span style="flex:1">Attack</span>
-    </div>
-
-    <div class="queue-item"
-         draggable="true"
-         data-action="skill"
-         style="margin-left:28px;width:calc(100% - 28px);border-left:2px solid #378ADD;padding-left:12px">
-
-      <span class="queue-handle">⠿</span>
-      <i class="ti ti-bolt" style="font-size:14px"></i>
-      <span style="flex:1">Use Class Skill</span>
-
-      <button class="btn active"
-              id="skill-auto-btn"
-              onclick="toggleAutoSkill(event)"
-              style="font-size:10px;padding:2px 8px">
-        ON
-      </button>
-    </div>
-
-    <div class="queue-item"
-         draggable="true"
-         data-action="potion_heal"
-         style="margin-left:28px;width:calc(100% - 28px);border-left:2px solid #1D9E75;padding-left:12px">
-
-      <span class="queue-handle">⠿</span>
-      <i class="ti ti-flask" style="font-size:14px"></i>
-
-      <span style="flex:1">
-        Potion &lt;<input type="number"
-               min="5"
-               max="95"
-               value="35"
-               onchange="autoHpPotionPercent=parseInt(this.value)||35"
-               style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px">
-        % HP
-      </span>
-      <button class="btn active"
-              id="hp-potion-auto-btn"
-              onclick="toggleAutoHpPotion(event)"
-              style="font-size:10px;padding:2px 8px">
-        ON
-      </button>
-    </div>
-
-    <div class="queue-item"
-         draggable="true"
-         data-action="potion_mana"
-         style="margin-left:28px;width:calc(100% - 28px);border-left:2px solid #1127a0;padding-left:12px">
-
-      <span class="queue-handle">⠿</span>
-      <i class="ti ti-flask" style="font-size:14px"></i>
-
-      <span style="flex:1">
-        Potion &lt;<input type="number"
-               min="5"
-               max="95"
-               value="20"
-               onchange="autoMpPotionPercent=parseInt(this.value)||20"
-               style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px">
-        % MP
-      </span>
-      <button class="btn active"
-              id="mp-potion-auto-btn"
-              onclick="toggleAutoMpPotion(event)"
-              style="font-size:10px;padding:2px 8px">
-        ON
-      </button>
-    </div>
-
-  </div>
-
-  <div class="queue-item" draggable="true" data-action="auto_loot">
-    <span class="queue-handle">⠿</span>
-    <i class="ti ti-package" style="font-size:14px"></i>
-    <span style="flex:1">Auto-loot</span>
-  </div>
-
-  <div class="queue-item" draggable="true" data-action="heal_if_low">
-    <span class="queue-handle">⠿</span>
-    <i class="ti ti-heart" style="font-size:14px"></i>
-    <span style="flex:1">Rest &lt;<input type="number" min="5" max="95" value="40" onchange="autoRestHpPercent=parseInt(this.value)||40" style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px"> % HP</span>
-  </div>
-
-  <div class="queue-item" draggable="true" data-action="rest_if_oom">
-    <span class="queue-handle">⠿</span>
-    <i class="ti ti-moon" style="font-size:14px"></i>
-    <span style="flex:1">Rest &lt;<input type="number" min="5" max="95" value="20" onchange="autoRestMpPercent=parseInt(this.value)||40" style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px"> % MP</span>
-  </div>
-
-  <div class="queue-item" draggable="true" data-action="respawn_mob">
-    <span class="queue-handle">⠿</span>
-    <i class="ti ti-refresh" style="font-size:14px"></i>
-    <span style="flex:1">Find next mob</span>
-  </div>
-
-</div>
-
-Tick speed</div>
-          <input type="range" min="500" max="3000" step="100" value="1200" id="speed-slider" oninput="updateSpeed(this.value)">
-          <div style="font-size:11px;color:var(--text-secondary)" id="speed-label">1.2s / action</div>
-        </div>
+    <div
+      class="panel">
+      <h3>Zone</h3>
+      <div
+        style="font-size:12px;font-weight:500"
+        id="zone-name-disp">
       </div>
-      <div class="panel">
-        <h3>Zone</h3>
-        <div style="font-size:12px;font-weight:500" id="zone-name-disp"></div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-top:3px" id="zone-desc-disp"></div>
+      <div
+        style="font-size:11px;color:var(--text-secondary);margin-top:3px"
+        id="zone-desc-disp">
       </div>
     </div>
   </div>
-</div>
+  </div>
+  </div>
 
-<div id="tab-shop" style="display:none">
-    <h3>Village Merchant</h3>
+  <div id="tab-shop"
+    style="display:none">
+    <h3>Village
+      Merchant</h3>
 
-    <div class="eq-bag-grid">
+    <div
+      class="eq-bag-grid">
 
-      <div class="eq-item-card">
-        <div class="eq-item-name">Minor Healing Potion</div>
-        <div class="eq-item-type">Restores 50 HP</div>
-        <div class="eq-item-bonus">5 Gold</div>
+      <div
+        class="eq-item-card">
+        <div
+          class="eq-item-name">
+          Minor
+          Healing
+          Potion
+        </div>
+        <div
+          class="eq-item-type">
+          Restores
+          50 HP
+        </div>
+        <div
+          class="eq-item-bonus">
+          5 Gold
+        </div>
 
-        <div class="eq-item-actions">
-          <button class="btn" onclick="buyPotion()">
+        <div
+          class="eq-item-actions">
+          <button
+            class="btn"
+            onclick="buyHpPotion()">
             Buy
           </button>
         </div>
       </div>
 
-      <div class="eq-item-card">
-        <div class="eq-item-name">Steel Longsword</div>
-        <div class="eq-item-type">Weapon</div>
-        <div class="eq-item-bonus">+12 ATK · 40 Gold</div>
+      <div
+        class="eq-item-card">
+        <div
+          class="eq-item-name">
+          Minor Mana
+          Potion
+        </div>
+        <div
+          class="eq-item-type">
+          Restores
+          50 MP
+        </div>
+        <div
+          class="eq-item-bonus">
+          5 Gold
+        </div>
 
-        <div class="eq-item-actions">
-          <button class="btn" onclick="buyShopItem('Steel Longsword')">
+        <div
+          class="eq-item-actions">
+          <button
+            class="btn"
+            onclick="buyMpPotion()">
             Buy
           </button>
         </div>
       </div>
 
-      <div class="eq-item-card">
-        <div class="eq-item-name">Knight Chestplate</div>
-        <div class="eq-item-type">Armor</div>
-        <div class="eq-item-bonus">+18 DEF · +80 HP · 55 Gold</div>
+      <div
+        class="eq-item-card">
+        <div
+          class="eq-item-name">
+          Steel
+          Longsword
+        </div>
+        <div
+          class="eq-item-type">
+          Weapon
+        </div>
+        <div
+          class="eq-item-bonus">
+          +12 ATK ·
+          40 Gold
+        </div>
 
-        <div class="eq-item-actions">
-          <button class="btn" onclick="buyShopItem('Knight Chestplate')">
+        <div
+          class="eq-item-actions">
+          <button
+            class="btn"
+            onclick="buyShopItem('Steel Longsword')">
+            Buy
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="eq-item-card">
+        <div
+          class="eq-item-name">
+          Knight
+          Chestplate
+        </div>
+        <div
+          class="eq-item-type">
+          Armor
+        </div>
+        <div
+          class="eq-item-bonus">
+          +18 DEF ·
+          +80 HP ·
+          55 Gold
+        </div>
+
+        <div
+          class="eq-item-actions">
+          <button
+            class="btn"
+            onclick="buyShopItem('Knight Chestplate')">
             Buy
           </button>
         </div>
@@ -553,126 +1623,128 @@ Tick speed</div>
     </div>
   </div>
 
-<script>
-// ══════════════════════════════════════════════
-//  CONSTANTS
-// ══════════════════════════════════════════════
-const MAX_SLOTS = 4;
-const SAVE_KEY = 'EmberQuest_slots';
+  <script>
+    // ══════════════════════════════════════════════
+    //  CONSTANTS
+    // ══════════════════════════════════════════════
+    const MAX_SLOTS = 4;
+    const SAVE_KEY = 'EmberQuest_slots';
 
-const CLASSES = {
-  Warrior:{ hp:160,mp:40, atk:18,def:12,mpRegen:2, skill:'Taunt',    skillMp:10,skillEffect:'taunt'},
-  Cleric: { hp:100,mp:120,atk:10,def:8, mpRegen:8, skill:'Holy Bolt',skillMp:20,skillEffect:'holy'},
-  Wizard: { hp:80, mp:160,atk:8, def:4, mpRegen:10,skill:'Fireball', skillMp:30,skillEffect:'fire'},
-  Rogue:  { hp:110,mp:80, atk:22,def:6, mpRegen:5, skill:'Backstab', skillMp:15,skillEffect:'back'}
-};
-const CLASS_ICONS = {Warrior:'ti-shield',Cleric:'ti-heart',Wizard:'ti-wand',Rogue:'ti-knife'};
-const CLASS_COLORS= {Warrior:'#E24B4A',Cleric:'#1D9E75',Wizard:'#7F77DD',Rogue:'#BA7517'};
+    const CLASSES = {
+      Warrior: { hp: 160, mp: 40, atk: 18, def: 12, mpRegen: 2, skill: 'Taunt', skillMp: 10, skillEffect: 'taunt' },
+      Cleric: { hp: 100, mp: 120, atk: 10, def: 8, mpRegen: 8, skill: 'Holy Bolt', skillMp: 20, skillEffect: 'holy' },
+      Wizard: { hp: 80, mp: 160, atk: 8, def: 4, mpRegen: 10, skill: 'Fireball', skillMp: 30, skillEffect: 'fire' },
+      Rogue: { hp: 110, mp: 80, atk: 22, def: 6, mpRegen: 5, skill: 'Backstab', skillMp: 15, skillEffect: 'back' }
+    };
+    const CLASS_ICONS = { Warrior: 'ti-shield', Cleric: 'ti-heart', Wizard: 'ti-wand', Rogue: 'ti-knife' };
+    const CLASS_COLORS = { Warrior: '#E24B4A', Cleric: '#1D9E75', Wizard: '#7F77DD', Rogue: '#BA7517' };
 
-const ZONES = [
-  {name:'Newbie Yard',  desc:'A safe area for new adventurers.',    minLvl:1, mobs:['Field Rat','Rabid Bat','Skeleton Pup'],        xpMult:1,  goldMult:1,  rare:'Worn Shortsword'},
-  {name:'Blackburrow', desc:'Gnoll warrens filled with danger.',    minLvl:3, mobs:['Gnoll Pup','Gnoll Warrior','Gnoll Shaman'],    xpMult:1.5,goldMult:1.4,rare:'Gnoll Fang Earring'},
-  {name:'Unrest Manor',desc:'Haunted estate, undead everywhere.',   minLvl:7, mobs:['Restless Zombie','Decaying Spectre','Wraith'], xpMult:2.2,goldMult:2,  rare:'Ghoul-Touched Cloak'},
-  {name:'Cazic-Thule', desc:'Temple of Fear. Extremely deadly.',    minLvl:15,mobs:['Froglok Slave','Fear Elemental','Amygdalan'],  xpMult:4,  goldMult:3.5,rare:'Cazic Quill'},
-  {name:'Plane of Hate',desc:'Realm of Innoruuk. Legendary loot.', minLvl:30,mobs:['Innoruuk Servant','Ebon Mace Wielder','Demi-Lich'],xpMult:8,goldMult:7,rare:'Hate Infused Plate'}
-];
+    const ZONES = [
+      { name: 'Newbie Yard', desc: 'A safe area for new adventurers.', minLvl: 1, mobs: ['Field Rat', 'Rabid Bat', 'Skeleton Pup'], xpMult: 1, goldMult: 1, rare: 'Worn Shortsword' },
+      { name: 'Blackburrow', desc: 'Gnoll warrens filled with danger.', minLvl: 3, mobs: ['Gnoll Pup', 'Gnoll Warrior', 'Gnoll Shaman'], xpMult: 1.5, goldMult: 1.4, rare: 'Gnoll Fang Earring' },
+      { name: 'Unrest Manor', desc: 'Haunted estate, undead everywhere.', minLvl: 7, mobs: ['Restless Zombie', 'Decaying Spectre', 'Wraith'], xpMult: 2.2, goldMult: 2, rare: 'Ghoul-Touched Cloak' },
+      { name: 'Cazic-Thule', desc: 'Temple of Fear. Extremely deadly.', minLvl: 15, mobs: ['Froglok Slave', 'Fear Elemental', 'Amygdalan'], xpMult: 4, goldMult: 3.5, rare: 'Cazic Quill' },
+      { name: 'Plane of Hate', desc: 'Realm of Innoruuk. Legendary loot.', minLvl: 30, mobs: ['Innoruuk Servant', 'Ebon Mace Wielder', 'Demi-Lich'], xpMult: 8, goldMult: 7, rare: 'Hate Infused Plate' }
+    ];
 
-const ITEM_DATA = {
-  'Rusty Dagger': {slot:'weapon', atk:4, type:'Piercing Weapon'},
-  'Worn Shortsword': {slot:'weapon', atk:7, type:'Sword'},
-  'Cracked Staff': {slot:'weapon', atk:5, mp:20, type:'Staff'},
-  'Tattered Robe': {slot:'chest', def:3, mp:10, type:'Cloth Armor'},
-  'Ghoul-Touched Cloak': {slot:'chest', def:8, hp:30, type:'Rare Cloak'},
-  'Rawhide Boots': {slot:'feet', def:2, hp:10, type:'Leather Boots'},
-  'Hate Infused Plate': {slot:'chest', def:15, hp:60, type:'Plate Armor'},
-  'Gnoll Fang Earring': {slot:'charm', atk:2, def:2, type:'Charm'},
-  'Cazic Quill': {slot:'offhand', mp:35, atk:3, type:'Focus Item'},
-  'Steel Longsword': {slot:'weapon', atk:12, type:'Sword'},
-  'Knight Chestplate': {slot:'chest', def:18, hp:80, type:'Plate Armor'}
-};
+    const ITEM_DATA = {
+      'Rusty Dagger': { slot: 'weapon', atk: 4, type: 'Piercing Weapon' },
+      'Worn Shortsword': { slot: 'weapon', atk: 7, type: 'Sword' },
+      'Cracked Staff': { slot: 'weapon', atk: 5, mp: 20, type: 'Staff' },
+      'Tattered Robe': { slot: 'chest', def: 3, mp: 10, type: 'Cloth Armor' },
+      'Ghoul-Touched Cloak': { slot: 'chest', def: 8, hp: 30, type: 'Rare Cloak' },
+      'Rawhide Boots': { slot: 'feet', def: 2, hp: 10, type: 'Leather Boots' },
+      'Hate Infused Plate': { slot: 'chest', def: 15, hp: 60, type: 'Plate Armor' },
+      'Gnoll Fang Earring': { slot: 'charm', atk: 2, def: 2, type: 'Charm' },
+      'Cazic Quill': { slot: 'offhand', mp: 35, atk: 3, type: 'Focus Item' },
+      'Steel Longsword': { slot: 'weapon', atk: 12, type: 'Sword' },
+      'Knight Chestplate': { slot: 'chest', def: 18, hp: 80, type: 'Plate Armor' }
+    };
 
 
-const LOOT=['Rusty Dagger','Tattered Robe','Rawhide Boots','Bone Chip','Animal Pelt','Orc Tooth','Cracked Staff','Spider Silk','Giant Snake Fang','Mithril Ingot'];
+    const LOOT = ['Rusty Dagger', 'Tattered Robe', 'Rawhide Boots', 'Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Cracked Staff', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot'];
 
-function freshQuests(){
-  return [
-    {name:'Rat Problem',    desc:'Kill 5 Field Rats',      mob:'Field Rat',     count:5,xp:150,gold:20, done:false,prog:0},
-    {name:'Gnoll Slayer',   desc:'Kill 8 Gnoll Warriors',  mob:'Gnoll Warrior', count:8,xp:400,gold:60, done:false,prog:0},
-    {name:'Manor Cleansing',desc:'Kill 6 Restless Zombies',mob:'Restless Zombie',count:6,xp:900,gold:120,done:false,prog:0}
-  ];
-}
+    function freshQuests() {
+      return [
+        { name: 'Rat Problem', desc: 'Kill 5 Field Rats', mob: 'Field Rat', count: 5, xp: 150, gold: 20, done: false, prog: 0 },
+        { name: 'Gnoll Slayer', desc: 'Kill 8 Gnoll Warriors', mob: 'Gnoll Warrior', count: 8, xp: 400, gold: 60, done: false, prog: 0 },
+        { name: 'Manor Cleansing', desc: 'Kill 6 Restless Zombies', mob: 'Restless Zombie', count: 6, xp: 900, gold: 120, done: false, prog: 0 }
+      ];
+    }
 
-// ══════════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════════
-let slots = [];          // array of 4 (null or char object)
-let activeSlot = -1;     // which slot is loaded
-let char = null;
-let mob = null;
-let afkInterval = null;
-let afkOn = false;
-let tickMs = 1200;
-let selectedClass = null;
-let pendingSlot = -1;    // slot being created
-let dragSrc = null;
-let saveTimer = null;
-let autoUseSkills = true;
-let autoUseHpPotions = true;
-let autoUseMpPotions = true;
-let autoRestHpPercent = 40;
-let autoRestMpPercent = 20;
-let autoHpPotionPercent = 35;
-let autoMpPotionPercent = 20;
+    // ══════════════════════════════════════════════
+    //  STATE
+    // ══════════════════════════════════════════════
+    let slots = [];          // array of 4 (null or char object)
+    let activeSlot = -1;     // which slot is loaded
+    let char = null;
+    let mob = null;
+    let afkInterval = null;
+    let afkOn = false;
+    let tickMs = 1200;
+    let selectedClass = null;
+    let pendingSlot = -1;    // slot being created
+    let dragSrc = null;
+    let saveTimer = null;
+    let autoUseSkills = true;
+    let autoUseHpPotions = true;
+    let autoUseMpPotions = true;
+    let autoRestHpPercent = 40;
+    let autoRestMpPercent = 20;
+    let autoHpPotionPercent = 35;
+    let autoMpPotionPercent = 20;
+    let potionHealAmount_Health = 50;
+    let potionHealAmount_Mana = 50;
 
-// ══════════════════════════════════════════════
-//  PERSISTENCE
-// ══════════════════════════════════════════════
-function loadSlots(){
-  try { slots = JSON.parse(localStorage.getItem(SAVE_KEY)) || [null,null,null,null]; }
-  catch(e){ slots=[null,null,null,null]; }
-  while(slots.length<MAX_SLOTS) slots.push(null);
-}
+    // ══════════════════════════════════════════════
+    //  PERSISTENCE
+    // ══════════════════════════════════════════════
+    function loadSlots() {
+      try { slots = JSON.parse(localStorage.getItem(SAVE_KEY)) || [null, null, null, null]; }
+      catch (e) { slots = [null, null, null, null]; }
+      while (slots.length < MAX_SLOTS) slots.push(null);
+    }
 
-function saveSlots(){
-  if(char && activeSlot>=0) slots[activeSlot]=JSON.parse(JSON.stringify(char));
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch(e){}
-  flashSaved();
-}
+    function saveSlots() {
+      if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) { }
+      flashSaved();
+    }
 
-function manualSave(){
-  saveSlots();
-}
+    function manualSave() {
+      saveSlots();
+    }
 
-function autoSave(){
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(saveSlots,3000);
-}
+    function autoSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveSlots, 3000);
+    }
 
-function flashSaved(){
-  const el=document.getElementById('save-indicator');
-  el.innerHTML='<i class="ti ti-check"></i> Saved';
-  el.className='save-indicator saved';
-  setTimeout(()=>{el.innerHTML='<i class="ti ti-device-floppy"></i> Saved';el.className='save-indicator';},2000);
-}
+    function flashSaved() {
+      const el = document.getElementById('save-indicator');
+      el.innerHTML = '<i class="ti ti-check"></i> Saved';
+      el.className = 'save-indicator saved';
+      setTimeout(() => { el.innerHTML = '<i class="ti ti-device-floppy"></i> Saved'; el.className = 'save-indicator'; }, 2000);
+    }
 
-// ══════════════════════════════════════════════
-//  CHARACTER SELECT SCREEN
-// ══════════════════════════════════════════════
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+    // ══════════════════════════════════════════════
+    //  CHARACTER SELECT SCREEN
+    // ══════════════════════════════════════════════
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
 
-function renderSlots(){
-  const grid=document.getElementById('slot-grid');
-  grid.innerHTML='';
-  slots.forEach((s,i)=>{
-    const card=document.createElement('div');
-    card.className='slot-card'+(s?'':' empty');
-    if(s){
-      const zoneName=ZONES[s.zone]?ZONES[s.zone].name:'Unknown';
-      const played=s.lastSaved?new Date(s.lastSaved).toLocaleDateString():'';
-      card.innerHTML=`
+    function renderSlots() {
+      const grid = document.getElementById('slot-grid');
+      grid.innerHTML = '';
+      slots.forEach((s, i) => {
+        const card = document.createElement('div');
+        card.className = 'slot-card' + (s ? '' : ' empty');
+        if (s) {
+          const zoneName = ZONES[s.zone] ? ZONES[s.zone].name : 'Unknown';
+          const played = s.lastSaved ? new Date(s.lastSaved).toLocaleDateString() : '';
+          card.innerHTML = `
         <div>
           <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
             <i class="ti ${CLASS_ICONS[s.cls]}" style="font-size:18px;color:${CLASS_COLORS[s.cls]}"></i>
@@ -681,198 +1753,200 @@ function renderSlots(){
               <div class="slot-meta">${s.cls} — Level ${s.level} &nbsp;·&nbsp; ${zoneName}</div>
             </div>
           </div>
-          <div style="font-size:10px;color:var(--text-secondary)">${played?'Last played '+played:''}</div>
+          <div style="font-size:10px;color:var(--text-secondary)">${played ? 'Last played ' + played : ''}</div>
         </div>
         <div class="slot-actions">
           <button class="btn active" style="font-size:11px;padding:4px 10px" onclick="loadSlot(${i})"><i class="ti ti-player-play"></i> Play</button>
           <button class="btn danger" style="font-size:11px;padding:4px 10px" onclick="deleteSlot(${i})"><i class="ti ti-trash"></i></button>
         </div>`;
-    } else {
-      card.innerHTML=`
+        } else {
+          card.innerHTML = `
         <div class="slot-empty-label"><i class="ti ti-plus" style="font-size:16px"></i> Empty slot</div>
         <div style="margin-top:8px">
           <button class="btn" style="font-size:11px;padding:4px 12px" onclick="openCreateForm(${i})"><i class="ti ti-user-plus"></i> New character</button>
         </div>`;
-    }
-    grid.appendChild(card);
-  });
-}
-
-function openCreateForm(slotIdx){
-  pendingSlot=slotIdx;
-  selectedClass=null;
-  document.getElementById('pname').value='';
-  document.querySelectorAll('.class-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('new-char-form').style.display='block';
-  document.getElementById('new-char-form').scrollIntoView({behavior:'smooth'});
-}
-
-function cancelCreate(){
-  document.getElementById('new-char-form').style.display='none';
-  pendingSlot=-1; selectedClass=null;
-}
-
-function selectClass(el){
-  document.querySelectorAll('.class-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedClass=el.dataset.class;
-}
-
-function createCharacter(){
-  if(!selectedClass){alert('Choose a class first!');return;}
-  const name=document.getElementById('pname').value.trim()||'Adventurer';
-  const base=CLASSES[selectedClass];
-  const newChar={
-    name,cls:selectedClass,level:1,xp:0,xpNext:100,
-    hp:base.hp,maxHp:base.hp,mp:base.mp,maxMp:base.mp,
-    atk:base.atk,def:base.def,mpRegen:base.mpRegen,
-    gold:0,potions:3,zone:0,inventory:[],
-    equipment:{weapon:null,chest:null,legs:null,feet:null,offhand:null,charm:null},
-    quests:freshQuests(),lastSaved:Date.now()
-  };
-  slots[pendingSlot]=newChar;
-  saveSlots();
-  loadSlot(pendingSlot);
-}
-
-function loadSlot(i){
-  activeSlot=i;
-  char=JSON.parse(JSON.stringify(slots[i]));
-  if(!char.equipment){
-    char.equipment={weapon:null,chest:null,legs:null,feet:null,offhand:null,charm:null};
-  }
-  if(!char.quests) char.quests=freshQuests();
-  mob=null;
-  afkOn=false; clearInterval(afkInterval); afkInterval=null;
-  document.getElementById('new-char-form').style.display='none';
-  showScreen('screen-game');
-  renderAll(); renderZones(); renderQuests(); setupDrag(); switchTab('combat');
-  resetAFKUI();
-  document.getElementById('combat-log').innerHTML='';
-  log('Welcome back, '+char.name+'! You are in '+ZONES[char.zone].name+'.','info');
-}
-
-function deleteSlot(i){
-  if(!confirm('Delete '+slots[i].name+'? This cannot be undone.')) return;
-  slots[i]=null;
-  saveSlots();
-  renderSlots();
-}
-
-function goToCharSelect(){
-  if(afkOn) toggleAFK();
-  if(char){ char.lastSaved=Date.now(); saveSlots(); }
-  showScreen('screen-charselect');
-  renderSlots();
-}
-
-function resetAFKUI(){
-  document.getElementById('afk-btn').textContent='Enable';
-  document.getElementById('afk-btn').classList.remove('active');
-  document.getElementById('afk-dot').classList.remove('on');
-  document.getElementById('afk-label').textContent='AFK Off';
-}
-
-// ══════════════════════════════════════════════
-//  RENDER
-// ══════════════════════════════════════════════
-function renderAll(){
-  if(!char) return;
-  document.getElementById('char-name-disp').textContent=char.name;
-  document.getElementById('char-class-disp').textContent=char.cls+' — Level '+char.level;
-  document.getElementById('char-level').textContent=char.level;
-  document.getElementById('hp-disp').textContent=char.hp+'/'+char.maxHp;
-  document.getElementById('mp-disp').textContent=char.mp+'/'+char.maxMp;
-  document.getElementById('atk-disp').textContent=char.atk;
-  document.getElementById('def-disp').textContent=char.def;
-  document.getElementById('gold-disp').textContent=char.gold+'g ('+char.potions+' pots)';
-
-  const skillData=getClassSkillData();
-  document.getElementById('skill-name-btn').textContent=skillData.name+' ('+skillData.mp+' MP)';
-  document.getElementById('skill-desc').textContent=skillData.desc;
-
-  document.getElementById('hp-bar').style.width=Math.max(0,char.hp/char.maxHp*100)+'%';
-  document.getElementById('mp-bar').style.width=Math.max(0,char.mp/char.maxMp*100)+'%';
-  document.getElementById('xp-bar').style.width=(char.xp/char.xpNext*100)+'%';
-  renderMob(); renderInv();
-}
-
-function renderMob(){
-  const mc=document.getElementById('mob-card'),nm=document.getElementById('no-mob-msg');
-  if(!mob){mc.style.display='none';nm.style.display='block';return;}
-  mc.style.display='block';nm.style.display='none';
-  document.getElementById('mob-name').textContent=mob.name;
-  document.getElementById('mob-level').textContent='Level '+mob.level;
-  document.getElementById('mob-hp-bar').style.width=Math.max(0,mob.hp/mob.maxHp*100)+'%';
-  document.getElementById('mob-hp-disp').textContent=mob.hp+'/'+mob.maxHp+' HP';
-  const badge=document.getElementById('mob-badge');
-  badge.textContent=mob.elite?'Elite':'Normal';
-  badge.className='badge '+(mob.elite?'badge-rare':'badge-common');
-}
-
-function renderZones(){
-  const el=document.getElementById('zone-list');el.innerHTML='';
-  ZONES.forEach((z,i)=>{
-    const btn=document.createElement('button');
-    btn.className='btn zone-btn'+(i===char.zone?' current':'');
-    btn.innerHTML=(char.level<z.minLvl?'<i class="ti ti-lock" style="font-size:12px"></i> ':'')+z.name+' <span style="font-size:10px;opacity:.6">(Lv '+z.minLvl+'+)</span>';
-    btn.disabled=char.level<z.minLvl;
-    btn.onclick=()=>travelZone(i);
-    el.appendChild(btn);
-  });
-  document.getElementById('zone-name-disp').textContent=ZONES[char.zone].name;
-  document.getElementById('zone-desc-disp').textContent=ZONES[char.zone].desc;
-}
-
-
-function renderEquipment(){
-  const slots=['weapon','chest','legs','feet','offhand','charm'];
-
-  slots.forEach(slot=>{
-    const el=document.getElementById('slot-'+slot);
-    const item=char.equipment[slot];
-
-    if(!item){
-      el.innerHTML='Empty';
-      return;
+        }
+        grid.appendChild(card);
+      });
     }
 
-    const data=ITEM_DATA[item] || {};
-    let stats=[];
+    function openCreateForm(slotIdx) {
+      pendingSlot = slotIdx;
+      selectedClass = null;
+      document.getElementById('pname').value = '';
+      document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('new-char-form').style.display = 'block';
+      document.getElementById('new-char-form').scrollIntoView({ behavior: 'smooth' });
+    }
 
-    if(data.atk) stats.push('+'+data.atk+' ATK');
-    if(data.def) stats.push('+'+data.def+' DEF');
-    if(data.hp) stats.push('+'+data.hp+' HP');
-    if(data.mp) stats.push('+'+data.mp+' MP');
+    function cancelCreate() {
+      document.getElementById('new-char-form').style.display = 'none';
+      pendingSlot = -1; selectedClass = null;
+    }
 
-    el.innerHTML=`<div>${item}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>`;
-  });
-}
+    function selectClass(el) {
+      document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedClass = el.dataset.class;
+    }
 
-function renderInv(){
-  renderEquipment();
+    function createCharacter() {
+      if (!selectedClass) { alert('Choose a class first!'); return; }
+      const name = document.getElementById('pname').value.trim() || 'Adventurer';
+      const base = CLASSES[selectedClass];
+      const newChar = {
+        name, cls: selectedClass, level: 1, xp: 0, xpNext: 100,
+        hp: base.hp, maxHp: base.hp, mp: base.mp, maxMp: base.mp,
+        atk: base.atk, def: base.def, mpRegen: base.mpRegen,
+        gold: 0, healpotions: 3, manapotions: 3, zone: 0, inventory: [],
+        equipment: { weapon: null, chest: null, legs: null, feet: null, offhand: null, charm: null },
+        quests: freshQuests(), lastSaved: Date.now()
+      };
+      slots[pendingSlot] = newChar;
+      saveSlots();
+      loadSlot(pendingSlot);
+    }
 
-  const el=document.getElementById('inv-list');
-  el.innerHTML='';
+    function loadSlot(i) {
+      activeSlot = i;
+      char = JSON.parse(JSON.stringify(slots[i]));
+      if (!char.equipment) {
+        char.equipment = { weapon: null, chest: null, legs: null, feet: null, offhand: null, charm: null };
+      }
+      if (!char.quests) char.quests = freshQuests();
+      mob = null;
+      afkOn = false; clearInterval(afkInterval); afkInterval = null;
+      document.getElementById('new-char-form').style.display = 'none';
+      showScreen('screen-game');
+      renderAll(); renderZones(); renderQuests(); setupDrag(); switchTab('combat');
+      resetAFKUI();
+      document.getElementById('combat-log').innerHTML = '';
+      log('Welcome back, ' + char.name + '! You are in ' + ZONES[char.zone].name + '.', 'info');
+    }
 
-  if(!char.inventory.length){
-    el.innerHTML='<div class="eq-empty-bag">Your bags are empty.</div>';
-    return;
-  }
+    function deleteSlot(i) {
+      if (!confirm('Delete ' + slots[i].name + '? This cannot be undone.')) return;
+      slots[i] = null;
+      saveSlots();
+      renderSlots();
+    }
 
-  char.inventory.forEach((item,index)=>{
-    const data=ITEM_DATA[item] || {};
-    let bonus='';
+    function goToCharSelect() {
+      if (afkOn) toggleAFK();
+      if (char) { char.lastSaved = Date.now(); saveSlots(); }
+      showScreen('screen-charselect');
+      renderSlots();
+    }
 
-    if(data.atk) bonus += ` +${data.atk} ATK`;
-    if(data.def) bonus += ` +${data.def} DEF`;
-    if(data.hp) bonus += ` +${data.hp} HP`;
-    if(data.mp) bonus += ` +${data.mp} MP`;
+    function resetAFKUI() {
+      document.getElementById('afk-btn').textContent = 'Enable';
+      document.getElementById('afk-btn').classList.remove('active');
+      document.getElementById('afk-dot').classList.remove('on');
+      document.getElementById('afk-label').textContent = 'AFK Off';
+    }
 
-    const card=document.createElement('div');
-    card.className='eq-item-card';
+    // ══════════════════════════════════════════════
+    //  RENDER
+    // ══════════════════════════════════════════════
+    function renderAll() {
+      if (!char) return;
+      document.getElementById('char-name-disp').textContent = char.name;
+      document.getElementById('char-class-disp').textContent = char.cls + ' — Level ' + char.level;
+      document.getElementById('char-level').textContent = char.level;
+      document.getElementById('hp-disp').textContent = char.hp + '/' + char.maxHp;
+      document.getElementById('mp-disp').textContent = char.mp + '/' + char.maxMp;
+      document.getElementById('atk-disp').textContent = char.atk;
+      document.getElementById('def-disp').textContent = char.def;
+      document.getElementById('gold-disp').textContent = char.gold + 'g';
+      document.getElementById('hp-potion').textContent = char.healpotions + ' pots';
+      document.getElementById('mp-potion').textContent = char.manapotions + ' pots';
 
-    card.innerHTML=`
+      const skillData = getClassSkillData();
+      document.getElementById('skill-name-btn').textContent = skillData.name + ' (' + skillData.mp + ' MP)';
+      document.getElementById('skill-desc').textContent = skillData.desc;
+
+      document.getElementById('hp-bar').style.width = Math.max(0, char.hp / char.maxHp * 100) + '%';
+      document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
+      document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
+      renderMob(); renderInv();
+    }
+
+    function renderMob() {
+      const mc = document.getElementById('mob-card'), nm = document.getElementById('no-mob-msg');
+      if (!mob) { mc.style.display = 'none'; nm.style.display = 'block'; return; }
+      mc.style.display = 'block'; nm.style.display = 'none';
+      document.getElementById('mob-name').textContent = mob.name;
+      document.getElementById('mob-level').textContent = 'Level ' + mob.level;
+      document.getElementById('mob-hp-bar').style.width = Math.max(0, mob.hp / mob.maxHp * 100) + '%';
+      document.getElementById('mob-hp-disp').textContent = mob.hp + '/' + mob.maxHp + ' HP';
+      const badge = document.getElementById('mob-badge');
+      badge.textContent = mob.elite ? 'Elite' : 'Normal';
+      badge.className = 'badge ' + (mob.elite ? 'badge-rare' : 'badge-common');
+    }
+
+    function renderZones() {
+      const el = document.getElementById('zone-list'); el.innerHTML = '';
+      ZONES.forEach((z, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn zone-btn' + (i === char.zone ? ' current' : '');
+        btn.innerHTML = (char.level < z.minLvl ? '<i class="ti ti-lock" style="font-size:12px"></i> ' : '') + z.name + ' <span style="font-size:10px;opacity:.6">(Lv ' + z.minLvl + '+)</span>';
+        btn.disabled = char.level < z.minLvl;
+        btn.onclick = () => travelZone(i);
+        el.appendChild(btn);
+      });
+      document.getElementById('zone-name-disp').textContent = ZONES[char.zone].name;
+      document.getElementById('zone-desc-disp').textContent = ZONES[char.zone].desc;
+    }
+
+
+    function renderEquipment() {
+      const slots = ['weapon', 'chest', 'legs', 'feet', 'offhand', 'charm'];
+
+      slots.forEach(slot => {
+        const el = document.getElementById('slot-' + slot);
+        const item = char.equipment[slot];
+
+        if (!item) {
+          el.innerHTML = 'Empty';
+          return;
+        }
+
+        const data = ITEM_DATA[item] || {};
+        let stats = [];
+
+        if (data.atk) stats.push('+' + data.atk + ' ATK');
+        if (data.def) stats.push('+' + data.def + ' DEF');
+        if (data.hp) stats.push('+' + data.hp + ' HP');
+        if (data.mp) stats.push('+' + data.mp + ' MP');
+
+        el.innerHTML = `<div>${item}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>`;
+      });
+    }
+
+    function renderInv() {
+      renderEquipment();
+
+      const el = document.getElementById('inv-list');
+      el.innerHTML = '';
+
+      if (!char.inventory.length) {
+        el.innerHTML = '<div class="eq-empty-bag">Your bags are empty.</div>';
+        return;
+      }
+
+      char.inventory.forEach((item, index) => {
+        const data = ITEM_DATA[item] || {};
+        let bonus = '';
+
+        if (data.atk) bonus += ` +${data.atk} ATK`;
+        if (data.def) bonus += ` +${data.def} DEF`;
+        if (data.hp) bonus += ` +${data.hp} HP`;
+        if (data.mp) bonus += ` +${data.mp} MP`;
+
+        const card = document.createElement('div');
+        card.className = 'eq-item-card';
+
+        card.innerHTML = `
       <div class="eq-item-top">
         <div>
           <div class="eq-item-name">${item}</div>
@@ -888,521 +1962,560 @@ function renderInv(){
       </div>
     `;
 
-    el.appendChild(card);
-  });
-}
-
-
-function renderQuests(){
-  const el=document.getElementById('quest-list');el.innerHTML='';
-  char.quests.forEach(q=>{
-    const d=document.createElement('div');d.className='quest';
-    d.innerHTML='<div class="quest-name">'+(q.done?'✓ ':'')+q.name+'</div><div class="quest-prog">'+q.desc+(q.done?' — Complete!':' ('+q.prog+'/'+q.count+')')+'</div>';
-    el.appendChild(d);
-  });
-}
-
-
-const CLASS_SKILLS = {
-  Warrior:{
-    name:'Shield Slam',
-    mp:20,
-    desc:'Heavy melee strike that reduces enemy damage.',
-    use:function(){
-      if(!mob){log('No target.','info');return;}
-      if(char.mp < 20){log('Not enough MP.','info');return;}
-
-      char.mp -= 20;
-
-      const dmg=Math.floor(char.atk*2 + Math.random()*12);
-      mob.hp -= dmg;
-      mob.atk=Math.max(1,mob.atk-2);
-
-      log('Shield Slam hits for '+dmg+' and weakens the enemy!','dmg');
-
-      if(mob.hp<=0) killMob();
-
-      renderAll();
+        el.appendChild(card);
+      });
     }
-  },
 
-  Cleric:{
-    name:'Greater Heal',
-    mp:30,
-    desc:'Large heal with bonus regeneration.',
-    use:function(){
-      if(char.mp < 30){log('Not enough MP.','info');return;}
 
-      char.mp -= 30;
-
-      const heal=Math.floor(char.maxHp*0.5);
-
-      char.hp=Math.min(char.maxHp,char.hp+heal);
-
-      log('Greater Heal restores '+heal+' HP!','heal');
-
-      renderAll();
+    function renderQuests() {
+      const el = document.getElementById('quest-list'); el.innerHTML = '';
+      char.quests.forEach(q => {
+        const d = document.createElement('div'); d.className = 'quest';
+        d.innerHTML = '<div class="quest-name">' + (q.done ? '✓ ' : '') + q.name + '</div><div class="quest-prog">' + q.desc + (q.done ? ' — Complete!' : ' (' + q.prog + '/' + q.count + ')') + '</div>';
+        el.appendChild(d);
+      });
     }
-  },
 
-  Wizard:{
-    name:'Lightning Storm',
-    mp:40,
-    desc:'Massive magical burst damage.',
-    use:function(){
-      if(!mob){log('No target.','info');return;}
-      if(char.mp < 40){log('Not enough MP.','info');return;}
 
-      char.mp -= 40;
+    const CLASS_SKILLS = {
+      Warrior: {
+        name: 'Shield Slam',
+        mp: 20,
+        desc: 'Heavy melee strike that reduces enemy damage.',
+        use: function () {
+          if (!mob) { log('No target.', 'info'); return; }
+          if (char.mp < 20) { log('Not enough MP.', 'info'); return; }
 
-      const dmg=Math.floor(char.atk*4 + Math.random()*30);
+          char.mp -= 20;
 
-      mob.hp -= dmg;
+          const dmg = Math.floor(char.atk * 2 + Math.random() * 12);
+          mob.hp -= dmg;
+          mob.atk = Math.max(1, mob.atk - 2);
 
-      log('Lightning Storm hits '+mob.name+' for '+dmg+' damage!','dmg');
+          log('Shield Slam hits for ' + dmg + ' and weakens the enemy!', 'dmg');
 
-      if(mob.hp<=0) killMob();
+          if (mob.hp <= 0) killMob();
 
-      renderAll();
-    }
-  },
+          renderAll();
+        }
+      },
 
-  Rogue:{
-    name:'Poison Strike',
-    mp:25,
-    desc:'Critical strike with poison damage.',
-    use:function(){
-      if(!mob){log('No target.','info');return;}
-      if(char.mp < 25){log('Not enough MP.','info');return;}
+      Cleric: {
+        name: 'Greater Heal',
+        mp: 30,
+        desc: 'Large heal with bonus regeneration.',
+        use: function () {
+          if (char.mp < 30) { log('Not enough MP.', 'info'); return; }
 
-      char.mp -= 25;
+          char.mp -= 30;
 
-      const dmg=Math.floor(char.atk*3 + Math.random()*20);
+          const heal = Math.floor(char.maxHp * 0.5);
 
-      mob.hp -= dmg;
+          char.hp = Math.min(char.maxHp, char.hp + heal);
 
-      log('Poison Strike deals '+dmg+' damage!','dmg');
+          log('Greater Heal restores ' + heal + ' HP!', 'heal');
 
-      if(Math.random()<0.5 && mob.hp>0){
-        const poison=10+Math.floor(Math.random()*10);
-        mob.hp -= poison;
+          renderAll();
+        }
+      },
 
-        log('Poison deals '+poison+' extra damage!','dmg');
+      Wizard: {
+        name: 'Lightning Storm',
+        mp: 40,
+        desc: 'Massive magical burst damage.',
+        use: function () {
+          if (!mob) { log('No target.', 'info'); return; }
+          if (char.mp < 40) { log('Not enough MP.', 'info'); return; }
+
+          char.mp -= 40;
+
+          const dmg = Math.floor(char.atk * 4 + Math.random() * 30);
+
+          mob.hp -= dmg;
+
+          log('Lightning Storm hits ' + mob.name + ' for ' + dmg + ' damage!', 'dmg');
+
+          if (mob.hp <= 0) killMob();
+
+          renderAll();
+        }
+      },
+
+      Rogue: {
+        name: 'Poison Strike',
+        mp: 25,
+        desc: 'Critical strike with poison damage.',
+        use: function () {
+          if (!mob) { log('No target.', 'info'); return; }
+          if (char.mp < 25) { log('Not enough MP.', 'info'); return; }
+
+          char.mp -= 25;
+
+          const dmg = Math.floor(char.atk * 3 + Math.random() * 20);
+
+          mob.hp -= dmg;
+
+          log('Poison Strike deals ' + dmg + ' damage!', 'dmg');
+
+          if (Math.random() < 0.5 && mob.hp > 0) {
+            const poison = 10 + Math.floor(Math.random() * 10);
+            mob.hp -= poison;
+
+            log('Poison deals ' + poison + ' extra damage!', 'dmg');
+          }
+
+          if (mob.hp <= 0) killMob();
+
+          renderAll();
+        }
       }
+    };
 
-      if(mob.hp<=0) killMob();
-
-      renderAll();
-    }
-  }
-};
-
-function getClassSkillData(){
-  return CLASS_SKILLS[char.cls];
-}
-
-function castClassSkill(){
-  const skill=getClassSkillData();
-
-  if(!skill){
-    log('No skill available.','info');
-    return;
-  }
-
-  skill.use();
-
-  autoSave();
-}
-
-
-// ══════════════════════════════════════════════
-//  COMBAT
-// ══════════════════════════════════════════════
-function log(msg,type='info'){
-  const div=document.getElementById('combat-log');
-  const p=document.createElement('p');p.className='log-'+type;p.textContent=msg;
-  div.appendChild(p);div.scrollTop=div.scrollHeight;
-  while(div.children.length>80)div.removeChild(div.firstChild);
-}
-
-function spawnMob(){
-  const zone=ZONES[char.zone];
-  const mobName=zone.mobs[Math.floor(Math.random()*zone.mobs.length)];
-  const lvl=Math.max(1,char.level+Math.floor(Math.random()*3)-1);
-  const elite=Math.random()<0.1;
-  const hp=Math.floor((30+lvl*18)*(elite?2.5:1));
-  mob={name:(elite?'[Elite] ':'')+mobName,level:lvl,hp,maxHp:hp,atk:5+lvl*2+(elite?8:0),def:2+lvl,baseName:mobName,elite};
-  log('A '+mob.name+' appears!','info');renderMob();
-}
-
-function doAttack(){
-  if(!mob)return false;
-  const dmg=Math.max(1,char.atk-mob.def+Math.floor(Math.random()*6)-2);
-  mob.hp-=dmg;
-  log(char.name+' attacks '+mob.name+' for '+dmg+' damage.','dmg');
-  if(mob.hp<=0){killMob();return true;}
-  const md=Math.max(1,mob.atk-char.def+Math.floor(Math.random()*4)-1);
-  char.hp-=md;
-  log(mob.name+' hits back for '+md+'!','dmg');
-  if(char.hp<=0){die();return true;}
-  renderAll();return false;
-}
-
-function attackOnce(){if(!mob){spawnMob();return;}doAttack();}
-
-function healSelf(){
-  if(char.mp<15){log('Not enough MP.','info');return;}
-  const amt=Math.floor(char.maxHp*0.3+Math.random()*10);
-  char.mp=Math.max(0,char.mp-15);
-  char.hp=Math.min(char.maxHp,char.hp+amt);
-  log('You heal for '+amt+' HP.','heal');renderAll();autoSave();
-}
-
-function useSkill(){
-  const cls=CLASSES[char.cls];
-  if(char.mp<cls.skillMp){log('Not enough MP for '+cls.skill+'.','info');return;}
-  char.mp-=cls.skillMp;
-  let eff='';
-  if(cls.skillEffect==='fire'||cls.skillEffect==='holy'){
-    const dmg=Math.floor(char.atk*2.5+Math.random()*15);
-    if(mob){mob.hp-=dmg;eff='hits '+mob.name+' for '+dmg+' magic damage';if(mob.hp<=0){killMob();renderAll();return;}}
-    else eff='fizzles (no target)';
-  } else if(cls.skillEffect==='back'){
-    const dmg=Math.floor(char.atk*3+Math.random()*20);
-    if(mob){mob.hp-=dmg;eff='Backstabs '+mob.name+' for '+dmg+'!';if(mob.hp<=0){killMob();renderAll();return;}}
-    else eff='no target';
-  } else {eff='taunts the enemy!';if(mob)mob.atk=Math.max(1,mob.atk-3);}
-  log(cls.skill+': '+eff,'dmg');renderAll();
-}
-
-function killMob(){
-  const zone=ZONES[char.zone];
-  const xp=Math.floor((20+mob.level*15)*zone.xpMult*(mob.elite?3:1));
-  const gold=Math.floor((Math.random()*8+mob.level*3)*zone.goldMult*(mob.elite?2:1));
-  char.xp+=xp;char.gold+=gold;
-  log(mob.name+' is slain! +'+xp+' XP, +'+gold+'g','loot');
-  char.quests.forEach(q=>{
-    if(!q.done&&mob.baseName===q.mob){
-      q.prog=Math.min(q.count,q.prog+1);
-      if(q.prog>=q.count){q.done=true;char.xp+=q.xp;char.gold+=q.gold;log('Quest complete: '+q.name+'! +'+q.xp+' XP, +'+q.gold+'g','lvl');}
-    }
-  });
-  if(Math.random()<0.4){
-    const loot=Math.random()<0.05?zone.rare:LOOT[Math.floor(Math.random()*LOOT.length)];
-    char.inventory.push(loot);log('Looted: '+loot,'loot');
-  }
-  checkLevelUp();renderQuests();mob=null;renderAll();autoSave();
-}
-
-function checkLevelUp(){
-  while(char.xp>=char.xpNext){
-    char.xp-=char.xpNext;char.level++;
-    char.xpNext=Math.floor(char.xpNext*1.6);
-    char.maxHp=Math.floor(char.maxHp*1.12);
-    char.maxMp=Math.floor(char.maxMp*1.1);
-    char.hp=char.maxHp;char.mp=char.maxMp;
-    char.atk+=2;char.def+=1;
-    log('*** LEVEL UP! You are now level '+char.level+'! ***','lvl');
-    renderZones();
-  }
-}
-
-function die(){
-  log('You have been defeated! Returning to bind point fully restored...','dmg');
-
-  char.hp=char.maxHp;
-  char.mp=char.maxMp;
-
-  char.xp=Math.max(0,char.xp-Math.floor(char.xpNext*0.1));
-
-  mob=null;
-
-  renderAll();
-  autoSave();
-}
-
-function fleeCombat(){
-  if(!mob){log('Nothing to flee from.','info');return;}
-  if(Math.random()<0.6){log('You flee successfully!','info');mob=null;renderMob();}
-  else{const d=Math.floor(mob.atk*0.7);char.hp-=d;log('Flee failed! '+mob.name+' hits you for '+d+'.','dmg');if(char.hp<=0)die();renderAll();}
-}
-
-
-function applyItemStats(item){
-  const data=ITEM_DATA[item];
-  if(!data) return;
-
-  char.atk += data.atk || 0;
-  char.def += data.def || 0;
-  char.maxHp += data.hp || 0;
-  char.maxMp += data.mp || 0;
-}
-
-function unequipStats(item){
-  const data=ITEM_DATA[item];
-  if(!data) return;
-
-  char.atk -= data.atk || 0;
-  char.def -= data.def || 0;
-  char.maxHp -= data.hp || 0;
-  char.maxMp -= data.mp || 0;
-}
-
-function sellItem(index){
-  const item=char.inventory[index];
-  char.inventory.splice(index,1);
-
-  const value=Math.floor(Math.random()*10)+5;
-  char.gold += value;
-
-  log('Sold '+item+' for '+value+' gold.','loot');
-  renderAll();
-  autoSave();
-}
-
-function equipItem(index){
-  const item=char.inventory[index];
-  const data=ITEM_DATA[item];
-
-  if(!data){
-    log('You cannot equip that item.','info');
-    return;
-  }
-
-  const slot=data.slot;
-  const oldItem=char.equipment[slot];
-
-  if(oldItem){
-    unequipStats(oldItem);
-    char.inventory.push(oldItem);
-  }
-
-  char.equipment[slot]=item;
-  applyItemStats(item);
-
-  char.inventory.splice(index,1);
-
-  log('Equipped '+item+'.','loot');
-
-  renderAll();
-  autoSave();
-}
-
-
-function travelZone(i){
-  if(char.level<ZONES[i].minLvl)return;
-  char.zone=i;mob=null;
-  log('Traveled to '+ZONES[i].name+'.','info');
-  renderAll();renderZones();switchTab('combat');autoSave();
-}
-
-// ══════════════════════════════════════════════
-//  AUTO-BATTLE
-// ══════════════════════════════════════════════
-function toggleAFK(){
-  afkOn=!afkOn;
-  const btn=document.getElementById('afk-btn'),dot=document.getElementById('afk-dot'),label=document.getElementById('afk-label');
-  if(afkOn){btn.textContent='Disable';btn.classList.add('active');dot.classList.add('on');label.textContent='AFK On';afkInterval=setInterval(afkTick,tickMs);log('Auto-battle enabled.','info');}
-  else{btn.textContent='Enable';btn.classList.remove('active');dot.classList.remove('on');label.textContent='AFK Off';clearInterval(afkInterval);afkInterval=null;log('Auto-battle disabled.','info');}
-}
-
-function getQueueOrder(){return Array.from(document.querySelectorAll('#action-queue .queue-item')).map(el=>el.dataset.action);}
-
-
-function afkTick(){
-  if(!char) return;
-
-  char.mp=Math.min(char.maxMp,char.mp+char.mpRegen);
-
-  const queue=getQueueOrder();
-
-  for(const action of queue){
-
-    if(action==='rest_if_oom' && char.mp < char.maxMp*(autoRestMpPercent/100)){
-      log('Resting to recover mana...','info');
-      char.mp=Math.min(char.maxMp,char.mp+Math.floor(char.maxMp*0.15));
-      renderAll();
-      return;
+    function getClassSkillData() {
+      return CLASS_SKILLS[char.cls];
     }
 
-    if(action==='heal_if_low' && char.hp < char.maxHp*(autoRestHpPercent/100)){
-      healSelf();
-      return;
-    }
+    function castClassSkill() {
+      const skill = getClassSkillData();
 
-    if(action==='respawn_mob' && !mob){
-      spawnMob();
-      return;
-    }
-
-    if(action==='attack' && mob){
-      // Check Health First
-      if (autoUseHpPotions && char.hp < char.maxHp * (autoHpPotionPercent / 100) && char.potions > 0) {
-        usePotion();
+      if (!skill) {
+        log('No skill available.', 'info');
         return;
       }
 
-      if (autoUseMpPotions && char.mp < char.maxMp * (autoMpPotionPercent / 100) && char.potions > 0) {
-        usePotion();
+      skill.use();
+
+      autoSave();
+    }
+
+
+    // ══════════════════════════════════════════════
+    //  COMBAT
+    // ══════════════════════════════════════════════
+    function log(msg, type = 'info') {
+      const div = document.getElementById('combat-log');
+      const p = document.createElement('p'); p.className = 'log-' + type; p.textContent = msg;
+      div.appendChild(p); div.scrollTop = div.scrollHeight;
+      while (div.children.length > 80) div.removeChild(div.firstChild);
+    }
+
+    function spawnMob() {
+      const zone = ZONES[char.zone];
+      const mobName = zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
+      const lvl = Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
+      const elite = Math.random() < 0.1;
+      const hp = Math.floor((30 + lvl * 18) * (elite ? 2.5 : 1));
+      mob = { name: (elite ? '[Elite] ' : '') + mobName, level: lvl, hp, maxHp: hp, atk: 5 + lvl * 2 + (elite ? 8 : 0), def: 2 + lvl, baseName: mobName, elite };
+      log('A ' + mob.name + ' appears!', 'info'); renderMob();
+    }
+
+    function doAttack() {
+      if (!mob) return false;
+      const dmg = Math.max(1, char.atk - mob.def + Math.floor(Math.random() * 6) - 2);
+      mob.hp -= dmg;
+      log(char.name + ' attacks ' + mob.name + ' for ' + dmg + ' damage.', 'dmg');
+      if (mob.hp <= 0) { killMob(); return true; }
+      const md = Math.max(1, mob.atk - char.def + Math.floor(Math.random() * 4) - 1);
+      char.hp -= md;
+      log(mob.name + ' hits back for ' + md + '!', 'dmg');
+      if (char.hp <= 0) { die(); return true; }
+      renderAll(); return false;
+    }
+
+    function attackOnce() { if (!mob) { spawnMob(); return; } doAttack(); }
+
+    function healSelf() {
+      if (char.mp < 15) { log('Not enough MP.', 'info'); return; }
+      const amt = Math.floor(char.maxHp * 0.3 + Math.random() * 10);
+      char.mp = Math.max(0, char.mp - 15);
+      char.hp = Math.min(char.maxHp, char.hp + amt);
+      log('You heal for ' + amt + ' HP.', 'heal'); renderAll(); autoSave();
+    }
+
+    function useSkill() {
+      const cls = CLASSES[char.cls];
+      if (char.mp < cls.skillMp) { log('Not enough MP for ' + cls.skill + '.', 'info'); return; }
+      char.mp -= cls.skillMp;
+      let eff = '';
+      if (cls.skillEffect === 'fire' || cls.skillEffect === 'holy') {
+        const dmg = Math.floor(char.atk * 2.5 + Math.random() * 15);
+        if (mob) { mob.hp -= dmg; eff = 'hits ' + mob.name + ' for ' + dmg + ' magic damage'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
+        else eff = 'fizzles (no target)';
+      } else if (cls.skillEffect === 'back') {
+        const dmg = Math.floor(char.atk * 3 + Math.random() * 20);
+        if (mob) { mob.hp -= dmg; eff = 'Backstabs ' + mob.name + ' for ' + dmg + '!'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
+        else eff = 'no target';
+      } else { eff = 'taunts the enemy!'; if (mob) mob.atk = Math.max(1, mob.atk - 3); }
+      log(cls.skill + ': ' + eff, 'dmg'); renderAll();
+    }
+
+    function killMob() {
+      const zone = ZONES[char.zone];
+      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1));
+      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1));
+      char.xp += xp; char.gold += gold;
+      log(mob.name + ' is slain! +' + xp + ' XP, +' + gold + 'g', 'loot');
+      char.quests.forEach(q => {
+        if (!q.done && mob.baseName === q.mob) {
+          q.prog = Math.min(q.count, q.prog + 1);
+          if (q.prog >= q.count) { q.done = true; char.xp += q.xp; char.gold += q.gold; log('Quest complete: ' + q.name + '! +' + q.xp + ' XP, +' + q.gold + 'g', 'lvl'); }
+        }
+      });
+      if (Math.random() < 0.4) {
+        const loot = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
+        char.inventory.push(loot); log('Looted: ' + loot, 'loot');
+      }
+      checkLevelUp(); renderQuests(); mob = null; renderAll(); autoSave();
+    }
+
+    function checkLevelUp() {
+      while (char.xp >= char.xpNext) {
+        char.xp -= char.xpNext; char.level++;
+        char.xpNext = Math.floor(char.xpNext * 1.6);
+        char.maxHp = Math.floor(char.maxHp * 1.12);
+        char.maxMp = Math.floor(char.maxMp * 1.1);
+        char.hp = char.maxHp; char.mp = char.maxMp;
+        char.atk += 2; char.def += 1;
+        log('*** LEVEL UP! You are now level ' + char.level + '! ***', 'lvl');
+        renderZones();
+      }
+    }
+
+    function die() {
+      log('You have been defeated! Returning to bind point fully restored...', 'dmg');
+
+      char.hp = char.maxHp;
+      char.mp = char.maxMp;
+
+      char.xp = Math.max(0, char.xp - Math.floor(char.xpNext * 0.1));
+
+      mob = null;
+
+      renderAll();
+      autoSave();
+    }
+
+    function fleeCombat() {
+      if (!mob) { log('Nothing to flee from.', 'info'); return; }
+      if (Math.random() < 0.6) { log('You flee successfully!', 'info'); mob = null; renderMob(); }
+      else { const d = Math.floor(mob.atk * 0.7); char.hp -= d; log('Flee failed! ' + mob.name + ' hits you for ' + d + '.', 'dmg'); if (char.hp <= 0) die(); renderAll(); }
+    }
+
+
+    function applyItemStats(item) {
+      const data = ITEM_DATA[item];
+      if (!data) return;
+
+      char.atk += data.atk || 0;
+      char.def += data.def || 0;
+      char.maxHp += data.hp || 0;
+      char.maxMp += data.mp || 0;
+    }
+
+    function unequipStats(item) {
+      const data = ITEM_DATA[item];
+      if (!data) return;
+
+      char.atk -= data.atk || 0;
+      char.def -= data.def || 0;
+      char.maxHp -= data.hp || 0;
+      char.maxMp -= data.mp || 0;
+    }
+
+    function sellItem(index) {
+      const item = char.inventory[index];
+      char.inventory.splice(index, 1);
+
+      const value = Math.floor(Math.random() * 10) + 5;
+      char.gold += value;
+
+      log('Sold ' + item + ' for ' + value + ' gold.', 'loot');
+      renderAll();
+      autoSave();
+    }
+
+    function equipItem(index) {
+      const item = char.inventory[index];
+      const data = ITEM_DATA[item];
+
+      if (!data) {
+        log('You cannot equip that item.', 'info');
         return;
       }
 
-      // Skill usage is now part of attack behavior
-      if(autoUseSkills){
-        const skill=getClassSkillData();
+      const slot = data.slot;
+      const oldItem = char.equipment[slot];
 
-        if(skill && char.mp >= skill.mp){
-          castClassSkill();
+      if (oldItem) {
+        unequipStats(oldItem);
+        char.inventory.push(oldItem);
+      }
+
+      char.equipment[slot] = item;
+      applyItemStats(item);
+
+      char.inventory.splice(index, 1);
+
+      log('Equipped ' + item + '.', 'loot');
+
+      renderAll();
+      autoSave();
+    }
+
+
+    function travelZone(i) {
+      if (char.level < ZONES[i].minLvl) return;
+      char.zone = i; mob = null;
+      log('Traveled to ' + ZONES[i].name + '.', 'info');
+      renderAll(); renderZones(); switchTab('combat'); autoSave();
+    }
+
+    // ══════════════════════════════════════════════
+    //  AUTO-BATTLE
+    // ══════════════════════════════════════════════
+    function toggleAFK() {
+      afkOn = !afkOn;
+      const btn = document.getElementById('afk-btn'), dot = document.getElementById('afk-dot'), label = document.getElementById('afk-label');
+      if (afkOn) { btn.textContent = 'Disable'; btn.classList.add('active'); dot.classList.add('on'); label.textContent = 'AFK On'; afkInterval = setInterval(afkTick, tickMs); log('Auto-battle enabled.', 'info'); }
+      else { btn.textContent = 'Enable'; btn.classList.remove('active'); dot.classList.remove('on'); label.textContent = 'AFK Off'; clearInterval(afkInterval); afkInterval = null; log('Auto-battle disabled.', 'info'); }
+    }
+
+    function getQueueOrder() { return Array.from(document.querySelectorAll('#action-queue .queue-item')).map(el => el.dataset.action); }
+
+
+    function afkTick() {
+      if (!char) return;
+
+      char.mp = Math.min(char.maxMp, char.mp + char.mpRegen);
+
+      const queue = getQueueOrder();
+
+      for (const action of queue) {
+
+        if (action === 'rest_if_oom' && char.mp < char.maxMp * (autoRestMpPercent / 100)) {
+          log('Resting to recover mana...', 'info');
+          char.mp = Math.min(char.maxMp, char.mp + Math.floor(char.maxMp * 0.15));
+          renderAll();
+          return;
+        }
+
+        if (action === 'heal_if_low' && char.hp < char.maxHp * (autoRestHpPercent / 100)) {
+          healSelf();
+          return;
+        }
+
+        if (action === 'respawn_mob' && !mob) {
+          spawnMob();
+          return;
+        }
+
+        if (action === 'attack' && mob) {
+          // Check Health First
+          if (autoUseHpPotions && char.hp < char.maxHp * (autoHpPotionPercent / 100) && char.healpotions > 0) {
+            useHpPotion();
+            return;
+          }
+
+          if (autoUseMpPotions && char.mp < char.maxMp * (autoMpPotionPercent / 100) && char.manapotions > 0) {
+            useMpPotion();
+            return;
+          }
+
+          // Skill usage is now part of attack behavior
+          if (autoUseSkills) {
+            const skill = getClassSkillData();
+
+            if (skill && char.mp >= skill.mp) {
+              castClassSkill();
+              return;
+            }
+          }
+
+          doAttack();
           return;
         }
       }
 
-      doAttack();
-      return;
+      renderAll();
     }
-  }
 
-  renderAll();
-}
+    function buyHpPotion() {
+      if (char.gold < 5) {
+        log('Not enough gold.', 'info');
+        return;
+      }
 
+      char.gold -= 5;
+      char.healpotions += 1;
 
+      log('Bought a healing potion.', 'loot');
 
-
-function buyPotion(){
-  if(char.gold < 5){
-    log('Not enough gold.','info');
-    return;
-  }
-
-  char.gold -= 5;
-  char.potions += 1;
-
-  log('Bought a healing potion.','loot');
-
-  renderAll();
-  autoSave();
-}
-
-function usePotion(){
-  if(char.potions <= 0){
-    log('Out of potions.','info');
-    return;
-  }
-
-  char.potions -= 1;
-
-  const heal=50;
-
-  char.hp=Math.min(char.maxHp,char.hp+heal);
-
-  log('Used a healing potion for '+heal+' HP.','heal');
-
-  renderAll();
-  autoSave();
-}
-
-function buyShopItem(item){
-  const prices={
-    'Steel Longsword':40,
-    'Knight Chestplate':55
-  };
-
-  const cost=prices[item];
-
-  if(char.gold < cost){
-    log('Not enough gold.','info');
-    return;
-  }
-
-  char.gold -= cost;
-  char.inventory.push(item);
-
-  log('Purchased '+item+'.','loot');
-
-  renderAll();
-  autoSave();
-}
-
-function toggleAutoSkill(event){
-  event.stopPropagation();
-
-  autoUseSkills = !autoUseSkills;
-
-  const btn=document.getElementById('skill-auto-btn');
-
-  if(autoUseSkills){
-    btn.textContent='ON';
-    btn.classList.add('active');
-    log('Auto class skills enabled.','info');
-  } else {
-    btn.textContent='OFF';
-    btn.classList.remove('active');
-    log('Auto class skills disabled.','info');
-  }
-}
-
-function toggleAutoHpPotion(event){
-  event.stopPropagation();
-  autoUseHpPotions = !autoUseHpPotions;
-  const btn=document.getElementById('hp-potion-auto-btn');
-
-  if(autoUseHpPotions){
-    btn.textContent='ON';
-    btn.classList.add('active');
-    log('Auto HP potion enabled.','info');
-  } else {
-    btn.textContent='OFF';
-    btn.classList.remove('active');
-    log('Auto HP potion disabled.','info');
-  }
-}
-
-  function toggleAutoMpPotion(event) {
-    event.stopPropagation();
-    autoUseMpPotions = !autoUseMpPotions;
-    const btn = document.getElementById('mp-potion-auto-btn');
-
-    if (autoUseMpPotions) {
-      btn.textContent = 'ON';
-      btn.classList.add('active');
-      log('Auto MP potion enabled.', 'info');
-    } else {
-      btn.textContent = 'OFF';
-      btn.classList.remove('active');
-      log('Auto MP potion disabled.', 'info');
+      renderAll();
+      autoSave();
     }
-  }
 
-function updateSpeed(val){
-  tickMs=parseInt(val);
-  document.getElementById('speed-label').textContent=(tickMs/1000).toFixed(1)+'s / action';
-  if(afkOn){clearInterval(afkInterval);afkInterval=setInterval(afkTick,tickMs);}
-}
+    function buyMpPotion() {
+      if (char.gold < 5) {
+        log('Not enough gold.', 'info');
+        return;
+      }
 
-// ══════════════════════════════════════════════
-//  UI HELPERS
-// ══════════════════════════════════════════════
-function switchTab(tab){
-  ['combat','zone','inv','shop'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
-  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['combat','zone','inv','shop'][i]===tab);});
-  if(tab==='zone')renderZones();
-  if(tab==='inv')renderInv();
-  // if(tab==='shop')renderInv();
-}
+      char.gold -= 5;
+      char.manapotions += 1;
 
-function setupDrag(){
-  const queue=document.getElementById('action-queue');
-  queue.addEventListener('dragstart',e=>{dragSrc=e.target.closest('.queue-item');if(dragSrc)dragSrc.classList.add('dragging');});
-  queue.addEventListener('dragend',()=>{document.querySelectorAll('.queue-item').forEach(el=>el.classList.remove('dragging','drag-over'));});
-  queue.addEventListener('dragover',e=>{e.preventDefault();const t=e.target.closest('.queue-item');if(t&&t!==dragSrc){document.querySelectorAll('.queue-item').forEach(el=>el.classList.remove('drag-over'));t.classList.add('drag-over');}});
-  queue.addEventListener('drop',e=>{e.preventDefault();const t=e.target.closest('.queue-item');if(t&&t!==dragSrc){const items=[...queue.querySelectorAll('.queue-item')];const si=items.indexOf(dragSrc),ti=items.indexOf(t);if(si<ti)t.after(dragSrc);else t.before(dragSrc);log('Queue updated: '+getQueueOrder().join(' → '),'info');}});
-}
+      log('Bought a mana potion.', 'loot');
 
-// ══════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════
-loadSlots();
-renderSlots();
-</script>
+      renderAll();
+      autoSave();
+    }
+
+    function useHpPotion() {
+      if (char.healpotions <= 0) {
+        log('Out of HP potions.', 'info');
+        return;
+      }
+      if (char.hp == char.maxHp) {
+        log('Health already full!', 'info');
+        return;
+      }
+
+      char.healpotions -= 1;
+
+      const healAmt = potionHealAmount_Health;
+
+      char.hp = Math.min(char.maxHp, char.hp + healAmt);
+
+      log('Used a healing potion for ' + healAmt + ' HP.', 'heal');
+
+      renderAll();
+      autoSave();
+    }
+
+    function useMpPotion() {
+      if (char.manapotions <= 0) {
+        log('Out of MP potions.', 'info');
+        return;
+      }
+      if (char.mp == char.maxMp) {
+        log('Mana already full!', 'info');
+        return;
+      }
+
+      char.manapotions -= 1;
+
+      const healAmt = potionHealAmount_Mana;
+
+      char.mp = Math.min(char.maxMp, char.mp + healAmt);
+
+      log('Used a mana potion for ' + healAmt + ' MP.', 'heal');
+
+      renderAll();
+      autoSave();
+    }
+
+    function buyShopItem(item) {
+      const prices = {
+        'Steel Longsword': 40,
+        'Knight Chestplate': 55
+      };
+
+      const cost = prices[item];
+
+      if (char.gold < cost) {
+        log('Not enough gold.', 'info');
+        return;
+      }
+
+      char.gold -= cost;
+      char.inventory.push(item);
+
+      log('Purchased ' + item + '.', 'loot');
+
+      renderAll();
+      autoSave();
+    }
+
+    function toggleAutoSkill(event) {
+      event.stopPropagation();
+
+      autoUseSkills = !autoUseSkills;
+
+      const btn = document.getElementById('skill-auto-btn');
+
+      if (autoUseSkills) {
+        btn.textContent = 'ON';
+        btn.classList.add('active');
+        log('Auto class skills enabled.', 'info');
+      } else {
+        btn.textContent = 'OFF';
+        btn.classList.remove('active');
+        log('Auto class skills disabled.', 'info');
+      }
+    }
+
+    function toggleAutoHpPotion(event) {
+      event.stopPropagation();
+      autoUseHpPotions = !autoUseHpPotions;
+      const btn = document.getElementById('hp-potion-auto-btn');
+
+      if (autoUseHpPotions) {
+        btn.textContent = 'ON';
+        btn.classList.add('active');
+        log('Auto HP potion enabled.', 'info');
+      } else {
+        btn.textContent = 'OFF';
+        btn.classList.remove('active');
+        log('Auto HP potion disabled.', 'info');
+      }
+    }
+
+    function toggleAutoMpPotion(event) {
+      event.stopPropagation();
+      autoUseMpPotions = !autoUseMpPotions;
+      const btn = document.getElementById('mp-potion-auto-btn');
+
+      if (autoUseMpPotions) {
+        btn.textContent = 'ON';
+        btn.classList.add('active');
+        log('Auto MP potion enabled.', 'info');
+      } else {
+        btn.textContent = 'OFF';
+        btn.classList.remove('active');
+        log('Auto MP potion disabled.', 'info');
+      }
+    }
+
+    function updateSpeed(val) {
+      tickMs = parseInt(val);
+      document.getElementById('speed-label').textContent = (tickMs / 1000).toFixed(1) + 's / action';
+      if (afkOn) { clearInterval(afkInterval); afkInterval = setInterval(afkTick, tickMs); }
+    }
+
+    // ══════════════════════════════════════════════
+    //  UI HELPERS
+    // ══════════════════════════════════════════════
+    function switchTab(tab) {
+      ['combat', 'zone', 'inv', 'shop'].forEach(t => { document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none'; });
+      document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', ['combat', 'zone', 'inv', 'shop'][i] === tab); });
+      if (tab === 'zone') renderZones();
+      if (tab === 'inv') renderInv();
+      // if(tab==='shop')renderInv();
+    }
+
+    function setupDrag() {
+      const queue = document.getElementById('action-queue');
+      queue.addEventListener('dragstart', e => { dragSrc = e.target.closest('.queue-item'); if (dragSrc) dragSrc.classList.add('dragging'); });
+      queue.addEventListener('dragend', () => { document.querySelectorAll('.queue-item').forEach(el => el.classList.remove('dragging', 'drag-over')); });
+      queue.addEventListener('dragover', e => { e.preventDefault(); const t = e.target.closest('.queue-item'); if (t && t !== dragSrc) { document.querySelectorAll('.queue-item').forEach(el => el.classList.remove('drag-over')); t.classList.add('drag-over'); } });
+      queue.addEventListener('drop', e => { e.preventDefault(); const t = e.target.closest('.queue-item'); if (t && t !== dragSrc) { const items = [...queue.querySelectorAll('.queue-item')]; const si = items.indexOf(dragSrc), ti = items.indexOf(t); if (si < ti) t.after(dragSrc); else t.before(dragSrc); log('Queue updated: ' + getQueueOrder().join(' → '), 'info'); } });
+    }
+
+    // ══════════════════════════════════════════════
+    //  INIT
+    // ══════════════════════════════════════════════
+    loadSlots();
+    renderSlots();
+  </script>
 </body>
+
 </html>
