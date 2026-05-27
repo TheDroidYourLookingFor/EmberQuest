@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.0.5</title>
+    1.0.6</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2448,6 +2448,8 @@
       'Knight Chestplate': { runes: ['Rune: Tal', 'Rune: Ort'], name: 'Runeword: Bulwark', bonus: { def: 10, hp: 60 } },
       'Cracked Staff': { runes: ['Rune: Tir', 'Rune: Sol'], name: 'Runeword: Sparkspine', bonus: { atk: 8, mp: 44 } }
     };
+    const RUNEWORD_EVOLUTION_THRESHOLDS = [0, 220, 560, 1040, 1720];
+    const RUNEWORD_EVOLUTION_MULT_PER_TIER = 0.2;
     const RUNE_TRANSMUTE_CHAIN = ['Rune: El', 'Rune: Tir', 'Rune: Tal', 'Rune: Ort', 'Rune: Sol', 'Rune: Dol'];
     const SHOP_BASE_PRICES = {
       hpMinor: 5,
@@ -2689,8 +2691,37 @@
     function getItemDisplayName(entry) {
       if (typeof entry === 'string') return entry;
       if (!entry || typeof entry !== 'object') return 'Unknown Item';
-      if (typeof entry.name === 'string' && entry.name.trim()) return entry.name.trim();
+      if (typeof entry.name === 'string' && entry.name.trim()) {
+        const baseName = entry.name.trim();
+        if (entry.runeword && typeof entry.runeword === 'object') {
+          const tier = getRunewordTierByXp(Number(entry.runeword.xp || 0));
+          if (tier > 1) return baseName + ' [E' + tier + ']';
+        }
+        return baseName;
+      }
       return getItemBaseName(entry) || 'Unknown Item';
+    }
+
+    function getRunewordTierByXp(xpRaw) {
+      const xp = Math.max(0, Math.floor(Number(xpRaw || 0)));
+      let tier = 1;
+      for (let i = 1; i < RUNEWORD_EVOLUTION_THRESHOLDS.length; i++) {
+        if (xp >= RUNEWORD_EVOLUTION_THRESHOLDS[i]) tier = i + 1;
+      }
+      return Math.max(1, Math.min(RUNEWORD_EVOLUTION_THRESHOLDS.length, tier));
+    }
+
+    function getRunewordBonusStats(runewordObj) {
+      if (!runewordObj || typeof runewordObj !== 'object') return { atk: 0, def: 0, hp: 0, mp: 0 };
+      const base = Object.assign({}, runewordObj.bonus || {});
+      const tier = getRunewordTierByXp(Number(runewordObj.xp || 0));
+      const mult = 1 + (tier - 1) * RUNEWORD_EVOLUTION_MULT_PER_TIER;
+      return {
+        atk: Math.floor(Number(base.atk || 0) * mult),
+        def: Math.floor(Number(base.def || 0) * mult),
+        hp: Math.floor(Number(base.hp || 0) * mult),
+        mp: Math.floor(Number(base.mp || 0) * mult)
+      };
     }
 
     function getItemQuality(entry) {
@@ -2839,7 +2870,8 @@
       if (entry.runeword && typeof entry.runeword === 'object' && typeof entry.runeword.name === 'string') {
         obj.runeword = {
           name: entry.runeword.name,
-          bonus: Object.assign({}, entry.runeword.bonus || {})
+          bonus: Object.assign({}, entry.runeword.bonus || {}),
+          xp: Math.max(0, Math.floor(Number(entry.runeword.xp || 0)))
         };
         obj.quality = 'Runeword';
       }
@@ -2942,7 +2974,8 @@
 
       itemObj.runeword = {
         name: recipe.name,
-        bonus: Object.assign({}, recipe.bonus)
+        bonus: Object.assign({}, recipe.bonus),
+        xp: 0
       };
       itemObj.name = recipe.name;
       itemObj.quality = 'Runeword';
@@ -2981,8 +3014,9 @@
       }
 
       if (entry && typeof entry === 'object' && entry.runeword && typeof entry.runeword === 'object') {
+        const rwStats = getRunewordBonusStats(entry.runeword);
         ['atk', 'def', 'hp', 'mp'].forEach(stat => {
-          const val = Number(entry.runeword.bonus && entry.runeword.bonus[stat]);
+          const val = Number(rwStats[stat] || 0);
           if (Number.isFinite(val) && val > 0) stats[stat] += Math.floor(val);
         });
       }
@@ -3024,7 +3058,8 @@
       if (entry.runeword && typeof entry.runeword === 'object' && typeof entry.runeword.name === 'string') {
         normalized.runeword = {
           name: entry.runeword.name,
-          bonus: Object.assign({}, entry.runeword.bonus || {})
+          bonus: Object.assign({}, entry.runeword.bonus || {}),
+          xp: Math.max(0, Math.floor(Number(entry.runeword.xp || 0)))
         };
         normalized.quality = 'Runeword';
       }
@@ -3366,14 +3401,15 @@
       return baseNodes.concat(classNodes);
     }
 
-    function getAANodeRequirementState(targetChar, node, allNodes) {
+    function getAANodeRequirementState(targetChar, node, allNodes, nodeRanksOverride = null) {
       const reqs = Array.isArray(node.requires) ? node.requires : [];
       if (!reqs.length) return { met: true, missing: [] };
       const missing = [];
       reqs.forEach(req => {
         const dep = allNodes.find(n => n.id === req.id);
         const need = Math.max(1, Math.floor(Number(req.rank || 1)));
-        const have = dep ? Math.max(0, Math.floor(Number((targetChar.aa && targetChar.aa.nodes && targetChar.aa.nodes[dep.key]) || 0))) : 0;
+        const source = nodeRanksOverride || (targetChar.aa && targetChar.aa.nodes) || {};
+        const have = dep ? Math.max(0, Math.floor(Number(source[dep.key] || 0))) : 0;
         if (have < need) {
           missing.push((dep ? dep.name : req.id) + ' ' + have + '/' + need);
         }
@@ -3496,6 +3532,17 @@
       if (typeof targetChar.aa.ui.archetypeOpen !== 'boolean') targetChar.aa.ui.archetypeOpen = true;
       if (typeof targetChar.aa.ui.classOpen !== 'boolean') targetChar.aa.ui.classOpen = true;
       if (typeof targetChar.aa.ui.capstoneOpen !== 'boolean') targetChar.aa.ui.capstoneOpen = true;
+      if (!targetChar.aa.sim || typeof targetChar.aa.sim !== 'object' || Array.isArray(targetChar.aa.sim)) {
+        targetChar.aa.sim = { active: false, points: 0, nodes: {} };
+      }
+      targetChar.aa.sim.active = !!targetChar.aa.sim.active;
+      targetChar.aa.sim.points = Math.max(0, Math.floor(Number(targetChar.aa.sim.points || 0)));
+      if (!targetChar.aa.sim.nodes || typeof targetChar.aa.sim.nodes !== 'object' || Array.isArray(targetChar.aa.sim.nodes)) {
+        targetChar.aa.sim.nodes = {};
+      }
+      if (!targetChar.aa.sim.presets || typeof targetChar.aa.sim.presets !== 'object' || Array.isArray(targetChar.aa.sim.presets)) {
+        targetChar.aa.sim.presets = { A: null, B: null };
+      }
 
       const aaNodes = getAANodesForClass(targetChar.cls);
       const cleanedAANodes = {};
@@ -3508,6 +3555,40 @@
       });
       targetChar.aa.nodes = cleanedAANodes;
       targetChar.aa.spent = spent;
+
+      const cleanedSimNodes = {};
+      aaNodes.forEach(node => {
+        const raw = Number(targetChar.aa.sim.nodes[node.key] || 0);
+        cleanedSimNodes[node.key] = Math.max(0, Math.min(node.maxRank, Math.floor(Number.isFinite(raw) ? raw : 0)));
+      });
+      targetChar.aa.sim.nodes = cleanedSimNodes;
+
+      const totalOwnedAA = targetChar.aa.points + targetChar.aa.spent;
+      const simSpent = aaNodes.reduce((sum, node) => sum + Number(targetChar.aa.sim.nodes[node.key] || 0), 0);
+      if (!targetChar.aa.sim.active) {
+        targetChar.aa.sim.points = targetChar.aa.points;
+      } else {
+        targetChar.aa.sim.points = Math.max(0, totalOwnedAA - simSpent);
+      }
+
+      ['A', 'B'].forEach(slot => {
+        const preset = targetChar.aa.sim.presets[slot];
+        if (!preset || typeof preset !== 'object' || !preset.nodes || typeof preset.nodes !== 'object') {
+          targetChar.aa.sim.presets[slot] = null;
+          return;
+        }
+        if (preset.cls !== targetChar.cls) {
+          targetChar.aa.sim.presets[slot] = null;
+          return;
+        }
+        const normalizedNodes = {};
+        aaNodes.forEach(node => {
+          const raw = Number(preset.nodes[node.key] || 0);
+          normalizedNodes[node.key] = Math.max(0, Math.min(node.maxRank, Math.floor(Number.isFinite(raw) ? raw : 0)));
+        });
+        const spentRanks = aaNodes.reduce((sum, node) => sum + Number(normalizedNodes[node.key] || 0), 0);
+        targetChar.aa.sim.presets[slot] = { cls: targetChar.cls, nodes: normalizedNodes, spent: spentRanks };
+      });
 
       ['slot1', 'slot2'].forEach(slot => {
         const preset = targetChar.aa.presets[slot];
@@ -3596,12 +3677,190 @@
       return Math.floor(120 + lvl * 45);
     }
 
+    function grantRunewordEvolutionXp() {
+      if (!char || !char.equipment || !mob) return;
+      const slots = ['weapon', 'chest', 'legs', 'feet', 'offhand', 'charm'];
+      const baseXp = 10 + Math.floor(mob.level * 2.2) + (mob.elite ? 8 : 0) + (mob.named ? 14 : 0);
+      slots.forEach(slot => {
+        const it = char.equipment[slot];
+        if (!it || typeof it !== 'object' || !it.runeword || typeof it.runeword !== 'object') return;
+        const beforeXp = Math.max(0, Math.floor(Number(it.runeword.xp || 0)));
+        const beforeTier = getRunewordTierByXp(beforeXp);
+        const gained = Math.max(4, Math.floor(baseXp * (slot === 'weapon' ? 1.15 : 1)));
+        it.runeword.xp = beforeXp + gained;
+        const afterTier = getRunewordTierByXp(it.runeword.xp);
+        if (afterTier > beforeTier) {
+          log(it.runeword.name + ' evolved to Tier ' + afterTier + '!', 'lvl');
+        }
+      });
+    }
+
     function toggleAAGroups(groupKey) {
       if (!char) return;
       ensureExtendedSystems(char);
       if (groupKey === 'archetype') char.aa.ui.archetypeOpen = !char.aa.ui.archetypeOpen;
       if (groupKey === 'class') char.aa.ui.classOpen = !char.aa.ui.classOpen;
       if (groupKey === 'capstone') char.aa.ui.capstoneOpen = !char.aa.ui.capstoneOpen;
+      renderAATab();
+      autoSave();
+    }
+
+    function startAASimulator() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      char.aa.sim.active = true;
+      char.aa.sim.points = Math.max(0, Number(char.aa.points || 0));
+      char.aa.sim.nodes = Object.assign({}, char.aa.nodes || {});
+      log('AA simulator started. Planning mode is active.', 'info');
+      renderAATab();
+    }
+
+    function cancelAASimulator() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      char.aa.sim.active = false;
+      char.aa.sim.points = Math.max(0, Number(char.aa.points || 0));
+      char.aa.sim.nodes = Object.assign({}, char.aa.nodes || {});
+      log('AA simulator canceled. Live build restored.', 'info');
+      renderAATab();
+      autoSave();
+    }
+
+    function resetAASimulator() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (!char.aa.sim.active) {
+        log('Start simulator first.', 'info');
+        return;
+      }
+      const aaNodes = getAANodesForClass(char.cls);
+      const totalOwned = Math.max(0, Number(char.aa.points || 0)) + Math.max(0, Number(char.aa.spent || 0));
+      const clean = {};
+      aaNodes.forEach(node => { clean[node.key] = 0; });
+      char.aa.sim.nodes = clean;
+      char.aa.sim.points = totalOwned;
+      log('AA simulator reset to empty build.', 'info');
+      renderAATab();
+    }
+
+    function saveAASimPreset(slotName) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (slotName !== 'A' && slotName !== 'B') return;
+      const nodes = getAANodesForClass(char.cls);
+      const sourceNodes = (char.aa.sim && char.aa.sim.active) ? (char.aa.sim.nodes || {}) : (char.aa.nodes || {});
+      const snap = {};
+      let spent = 0;
+      nodes.forEach(node => {
+        const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number(sourceNodes[node.key] || 0))));
+        snap[node.key] = rank;
+        spent += rank;
+      });
+      char.aa.sim.presets[slotName] = { cls: char.cls, nodes: snap, spent };
+      log('Saved simulator preset ' + slotName + '.', 'info');
+      renderAATab();
+      autoSave();
+    }
+
+    function loadAASimPreset(slotName) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (slotName !== 'A' && slotName !== 'B') return;
+      const preset = char.aa.sim.presets[slotName];
+      if (!preset || preset.cls !== char.cls || !preset.nodes) {
+        log('No valid simulator preset ' + slotName + ' for this class.', 'info');
+        return;
+      }
+
+      const nodes = getAANodesForClass(char.cls);
+      const normalized = {};
+      let spent = 0;
+      nodes.forEach(node => {
+        const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number(preset.nodes[node.key] || 0))));
+        normalized[node.key] = rank;
+        spent += rank;
+      });
+
+      const totalOwned = Math.max(0, Number(char.aa.points || 0)) + Math.max(0, Number(char.aa.spent || 0));
+      if (spent > totalOwned) {
+        log('Preset ' + slotName + ' requires more AA than currently owned.', 'info');
+        return;
+      }
+
+      char.aa.sim.active = true;
+      char.aa.sim.nodes = normalized;
+      char.aa.sim.points = totalOwned - spent;
+      log('Loaded simulator preset ' + slotName + '.', 'info');
+      renderAATab();
+    }
+
+    function simSpendAAPoint(nodeKey) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (!char.aa.sim.active) {
+        log('Start simulator first.', 'info');
+        return;
+      }
+      if ((char.aa.sim.points || 0) <= 0) {
+        log('No simulator points available.', 'info');
+        return;
+      }
+
+      const allNodes = getAANodesForClass(char.cls);
+      const node = allNodes.find(n => n.key === nodeKey);
+      if (!node) {
+        log('Unknown AA node.', 'info');
+        return;
+      }
+
+      const rank = Number(char.aa.sim.nodes[node.key] || 0);
+      if (rank >= node.maxRank) {
+        log(node.name + ' is already max rank in simulator.', 'info');
+        return;
+      }
+
+      const req = getAANodeRequirementState(char, node, allNodes, char.aa.sim.nodes);
+      if (!req.met) {
+        log('Simulator requires: ' + req.missing.join(', ') + '.', 'info');
+        return;
+      }
+
+      char.aa.sim.nodes[node.key] = rank + 1;
+      char.aa.sim.points -= 1;
+      renderAATab();
+    }
+
+    function applyAASimulatorBuild() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (!char.aa.sim.active) {
+        log('Simulator is not active.', 'info');
+        return;
+      }
+
+      const allNodes = getAANodesForClass(char.cls);
+      const target = {};
+      let spent = 0;
+      allNodes.forEach(node => {
+        const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number(char.aa.sim.nodes[node.key] || 0))));
+        target[node.key] = rank;
+        spent += rank;
+      });
+
+      const totalOwned = Math.max(0, Number(char.aa.points || 0)) + Math.max(0, Number(char.aa.spent || 0));
+      if (spent > totalOwned) {
+        log('Simulator build exceeds available AA.', 'info');
+        return;
+      }
+
+      char.aa.nodes = target;
+      char.aa.spent = spent;
+      char.aa.points = totalOwned - spent;
+      char.aa.sim.active = false;
+      char.aa.sim.nodes = Object.assign({}, target);
+      char.aa.sim.points = char.aa.points;
+      log('Applied simulator build.', 'lvl');
+      renderAll();
       renderAATab();
       autoSave();
     }
@@ -4561,11 +4820,11 @@
       }
 
       if (oldChar.version === '1.0.3' || oldChar.version === '1.0.4') {
-        oldChar.version = '1.0.5';
-        if (!silent) log('Upgraded save data to v1.0.5.', 'info');
+        oldChar.version = '1.0.6';
+        if (!silent) log('Upgraded save data to v1.0.6.', 'info');
       }
 
-      if (oldChar.version === '1.0.5') {
+      if (oldChar.version === '1.0.6') {
         oldChar.version = '1.0.6';
         if (!silent) log('Upgraded save data to v1.0.6.', 'info');
       }
@@ -5020,6 +5279,7 @@
           <div class="eq-item-name ${found ? 'rarity-runeword' : ''}">${found ? recipe.name : 'Unknown Runeword'}</div>
           <div class="eq-item-type">Base: ${baseItem}</div>
           <div class="eq-item-bonus">${found ? ('Runes: ' + recipe.runes.join(' + ')) : 'Discover by socketing runes into the right base item.'}</div>
+          ${found ? `<div class="eq-item-type">Evolution: Tiers 1-${RUNEWORD_EVOLUTION_THRESHOLDS.length} (${RUNEWORD_EVOLUTION_MULT_PER_TIER * 100}% bonus per tier)</div>` : ''}
         `;
         compendium.appendChild(card);
       });
@@ -5098,6 +5358,11 @@
         if (setName) itemType = itemType + ' · Set: ' + setName;
         if (quality === 'Runeword' && item && item.runeword && item.runeword.name) {
           itemType = itemType + ' · ' + item.runeword.name;
+          const rwXp = Math.max(0, Math.floor(Number(item.runeword.xp || 0)));
+          const rwTier = getRunewordTierByXp(rwXp);
+          const nextIdx = Math.min(RUNEWORD_EVOLUTION_THRESHOLDS.length - 1, rwTier);
+          const nextAt = RUNEWORD_EVOLUTION_THRESHOLDS[nextIdx] || RUNEWORD_EVOLUTION_THRESHOLDS[RUNEWORD_EVOLUTION_THRESHOLDS.length - 1];
+          itemType = itemType + ' · Tier ' + rwTier + (rwTier < RUNEWORD_EVOLUTION_THRESHOLDS.length ? (' (' + rwXp + '/' + nextAt + ' XP)') : (' (' + rwXp + ' XP)'));
         }
 
         if (isRune) {
@@ -5345,10 +5610,15 @@
       const aa = document.createElement('div');
       aa.className = 'quest';
       const aaNodes = getAANodesForClass(char.cls);
-      const aaPoints = (char.aa && Number.isFinite(Number(char.aa.points))) ? char.aa.points : 0;
+      const simActive = !!(char.aa && char.aa.sim && char.aa.sim.active);
+      const activeNodes = simActive ? (char.aa.sim.nodes || {}) : (char.aa.nodes || {});
+      const aaPoints = simActive
+        ? Math.max(0, Math.floor(Number((char.aa && char.aa.sim && char.aa.sim.points) || 0)))
+        : ((char.aa && Number.isFinite(Number(char.aa.points))) ? char.aa.points : 0);
+      const investAction = simActive ? 'simSpendAAPoint' : 'spendAAPoint';
       const aaRespecCost = getAARespecCost(char);
       let aaHtml = '<div class="quest-name">Alternate Advancement</div>' +
-        '<div class="quest-prog">Class: ' + char.cls + ' · Unspent Points: ' + aaPoints + ' · Earn 1 point each level from 10+</div>';
+        '<div class="quest-prog">Class: ' + char.cls + ' · ' + (simActive ? 'Simulator Points: ' : 'Unspent Points: ') + aaPoints + ' · Earn 1 point each level from 10+</div>';
 
       aaHtml += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
         '<button class="btn" onclick="respecAA()">Respec (' + aaRespecCost + 'g)</button>' +
@@ -5357,6 +5627,24 @@
         '<button class="btn" onclick="saveAAPreset(\'slot2\')">Save Preset 2</button>' +
         '<button class="btn" onclick="loadAAPreset(\'slot2\')">Load Preset 2</button>' +
       '</div>';
+
+      aaHtml += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
+        (simActive
+          ? '<button class="btn active" onclick="applyAASimulatorBuild()">Apply Sim Build</button><button class="btn" onclick="resetAASimulator()">Reset Sim</button><button class="btn" onclick="cancelAASimulator()">Cancel Sim</button>'
+          : '<button class="btn" onclick="startAASimulator()">Start Simulator</button>') +
+      '</div>';
+
+      const simA = char.aa && char.aa.sim && char.aa.sim.presets ? char.aa.sim.presets.A : null;
+      const simB = char.aa && char.aa.sim && char.aa.sim.presets ? char.aa.sim.presets.B : null;
+      const spentA = simA && Number.isFinite(Number(simA.spent)) ? Number(simA.spent) : 0;
+      const spentB = simB && Number.isFinite(Number(simB.spent)) ? Number(simB.spent) : 0;
+      aaHtml += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
+        '<button class="btn" onclick="saveAASimPreset(\'A\')">Save Sim A</button>' +
+        '<button class="btn" onclick="loadAASimPreset(\'A\')" ' + (simA ? '' : 'disabled') + '>Load Sim A</button>' +
+        '<button class="btn" onclick="saveAASimPreset(\'B\')">Save Sim B</button>' +
+        '<button class="btn" onclick="loadAASimPreset(\'B\')" ' + (simB ? '' : 'disabled') + '>Load Sim B</button>' +
+      '</div>';
+      aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary);margin-top:4px">Snapshots: A ' + spentA + ' pts · B ' + spentB + ' pts</div>';
 
       const classPrefix = aaClassKey(char.cls) + '_';
       const capstoneNodes = aaNodes.filter(n => n.maxRank === 1);
@@ -5370,8 +5658,8 @@
       function renderNodeList(nodes) {
         let html = '';
         nodes.forEach(node => {
-          const rank = (char.aa && char.aa.nodes) ? Number(char.aa.nodes[node.key] || 0) : 0;
-          const req = getAANodeRequirementState(char, node, aaNodes);
+          const rank = Number(activeNodes[node.key] || 0);
+          const req = getAANodeRequirementState(char, node, aaNodes, activeNodes);
           const canSpend = aaPoints > 0 && rank < node.maxRank && req.met;
           const capstoneTag = node.maxRank === 1 ? ' <span class="badge badge-rare" style="font-size:10px">Capstone</span>' : '';
           const reqText = req.met ? '' : ('<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">Requires: ' + req.missing.join(', ') + '</div>');
@@ -5379,7 +5667,7 @@
           html += '<div style="margin-top:6px;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary)">' +
             '<div class="quest-prog" style="margin-top:0">' + node.name + capstoneTag + ' (' + rank + '/' + node.maxRank + ') — ' + node.desc + '</div>' +
             nextGain + reqText +
-            '<div style="margin-top:4px"><button class="btn" title="' + getAANodeNextGainText(node, rank) + '" onclick="spendAAPoint(\'' + node.key + '\')" ' + (canSpend ? '' : 'disabled') + '>Invest 1 AA</button></div>' +
+            '<div style="margin-top:4px"><button class="btn" title="' + getAANodeNextGainText(node, rank) + '" onclick="' + investAction + '(\'' + node.key + '\')" ' + (canSpend ? '' : 'disabled') + '>Invest 1 AA' + (simActive ? ' (Sim)' : '') + '</button></div>' +
           '</div>';
         });
         return html;
@@ -5826,6 +6114,8 @@
         char.runeStash.push(runeDrop);
         log('Rune found: ' + runeDrop + '.', 'loot');
       }
+
+      grantRunewordEvolutionXp();
 
       if (inDungeon) {
         char.dungeon.floor += 1;
