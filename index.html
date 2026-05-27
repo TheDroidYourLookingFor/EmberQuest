@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.0.3</title>
+    1.0.4</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -575,6 +575,171 @@
       color: #1D9E75;
     }
 
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(640px, 100%);
+      max-height: 88vh;
+      overflow: auto;
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .modal-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .import-preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .import-preview-slot {
+      border: 0.5px solid var(--border);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 8px;
+      min-height: 72px;
+    }
+
+    .import-preview-slot .slot-id {
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .import-preview-slot .slot-main {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .import-preview-slot .slot-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .modal-option-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .toast-host {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      max-width: min(360px, calc(100vw - 24px));
+    }
+
+    .toast {
+      border: 0.5px solid var(--border-md);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      font-size: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      transform: translateY(6px);
+      opacity: 0;
+      transition: transform .16s ease, opacity .16s ease;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .toast:hover {
+      border-color: var(--border-md);
+    }
+
+    .toast-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .toast-icon {
+      font-size: 14px;
+      line-height: 1.2;
+      margin-top: 1px;
+    }
+
+    .toast-message {
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      border-color: #1D9E75;
+    }
+
+    .toast.success .toast-icon {
+      color: #1D9E75;
+    }
+
+    .toast.error {
+      border-color: #A32D2D;
+    }
+
+    .toast.error .toast-icon {
+      color: #A32D2D;
+    }
+
+    .toast.info .toast-icon {
+      color: #378ADD;
+    }
+
+    @media(max-width:720px) {
+      .import-preview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* ── EQ inventory ── */
     .eq-inventory-layout {
       display: grid;
@@ -632,6 +797,42 @@
       padding: 10px;
     }
 
+    .bag-tab-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .bag-tab-btn {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border);
+      background: var(--bg-primary);
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
+    .bag-tab-btn.active {
+      color: var(--text-primary);
+      border-color: #378ADD;
+      background: #E6F1FB;
+    }
+
+    @media(prefers-color-scheme:dark) {
+      .bag-tab-btn.active {
+        background: #0C447C;
+        color: #B5D4F4;
+      }
+    }
+
+    .bag-meta {
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
     .eq-bag-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -657,6 +858,24 @@
       font-weight: 500;
     }
 
+    .rarity-magic {
+      color: #4D7DFF;
+    }
+
+    .rarity-rare {
+      color: #C28D18;
+    }
+
+    .rarity-unique {
+      color: #A85B00;
+      text-shadow: 0 0 6px rgba(168, 91, 0, 0.25);
+    }
+
+    .rarity-runeword {
+      color: #2C9D5A;
+      text-shadow: 0 0 6px rgba(44, 157, 90, 0.2);
+    }
+
     .eq-item-type {
       font-size: 10px;
       color: var(--text-secondary);
@@ -675,14 +894,44 @@
       margin-top: 8px;
     }
 
+    .eq-item-actions.compact {
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .eq-item-actions.compact .btn {
+      font-size: 10px;
+      padding: 3px 7px;
+      max-width: 100%;
+    }
+
     .eq-empty-bag {
       font-size: 12px;
       color: var(--text-secondary);
+    }
+
+    .eq-empty-slot {
+      border: 1px dashed var(--border-md);
+      border-radius: var(--radius-md);
+      min-height: 112px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
     }
   </style>
 </head>
 
 <body>
+
+  <div
+    id="toast-host"
+    class="toast-host"
+    aria-live="polite"
+    aria-atomic="true">
+  </div>
 
   <!-- ═══════════════════════════════════════════════════
      SCREEN 1: Character Select / Slot Picker
@@ -691,7 +940,7 @@
     id="screen-charselect"
     class="screen active">
     <h1>EmberQuest -
-      Version 1.0.3
+      Version 1.0.4
     </h1>
     <p
       class="subtitle">
@@ -828,7 +1077,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.0.3</span>
+        1.0.4</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -842,10 +1091,113 @@
         Save</button>
       <button
         class="btn"
+        onclick="exportSlotsToFile()"
+        style="font-size:11px;padding:4px 10px"><i
+          class="ti ti-download"></i>
+        Export</button>
+      <button
+        class="btn"
+        onclick="promptImportSlots()"
+        style="font-size:11px;padding:4px 10px"><i
+          class="ti ti-upload"></i>
+        Import</button>
+      <button
+        class="btn"
         onclick="goToCharSelect()"
         style="font-size:11px;padding:4px 10px"><i
           class="ti ti-users"></i>
         Characters</button>
+    </div>
+    <input
+      id="import-save-input"
+      type="file"
+      accept="application/json,.json"
+      style="display:none"
+      onchange="importSlotsFromFile(event)">
+    <div
+      id="import-preview-modal"
+      class="modal-backdrop"
+      onclick="if(event.target===this)closeImportPreview()">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="import-preview-title">
+        <div
+          class="modal-title"
+          id="import-preview-title">
+          Import Save
+          Preview
+        </div>
+        <div
+          class="modal-subtitle"
+          id="import-preview-subtitle">
+        </div>
+        <div
+          id="import-preview-grid"
+          class="import-preview-grid">
+        </div>
+        <label
+          class="modal-option-row">
+          <input
+            id="import-backup-toggle"
+            type="checkbox"
+            checked>
+          Create backup export before importing
+        </label>
+        <div
+          class="modal-actions">
+          <button
+            id="import-cancel-btn"
+            class="btn"
+            onclick="closeImportPreview()">
+            Cancel
+          </button>
+          <button
+            id="import-confirm-btn"
+            class="btn active"
+            onclick="confirmImportSlots()">
+            Confirm Import
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      id="transmute-confirm-modal"
+      class="modal-backdrop"
+      onclick="if(event.target===this)closeTransmuteConfirm()">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="transmute-confirm-title">
+        <div
+          class="modal-title"
+          id="transmute-confirm-title">
+          Confirm Focused
+          Transmute
+        </div>
+        <div
+          class="modal-subtitle"
+          id="transmute-confirm-subtitle">
+        </div>
+        <div
+          class="modal-actions">
+          <button
+            id="transmute-cancel-btn"
+            class="btn"
+            onclick="closeTransmuteConfirm()">
+            Cancel
+          </button>
+          <button
+            id="transmute-confirm-btn"
+            class="btn active"
+            onclick="confirmTransmuteRunes()">
+            Confirm
+            Craft
+          </button>
+        </div>
+      </div>
     </div>
     <div
       id="game-grid">
@@ -944,6 +1296,13 @@
           <div
             class="stat-row">
             <span
+              class="stat-label">Faction</span><span
+              class="stat-val"
+              id="faction-disp"></span>
+          </div>
+          <div
+            class="stat-row">
+            <span
               class="stat-label">HP
               Potions</span><span
               class="stat-val"
@@ -952,7 +1311,7 @@
               style="display:flex;gap:2px;">
               <button
                 class="btn active"
-                id="hp-potion-manual-btn"
+                id="hp-potion-buy-btn"
                 onclick="buyHpPotion()"
                 style="font-size:10px;padding:2px 8px">
                 BUY
@@ -995,8 +1354,8 @@
             style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
             <div
               style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">
-              Class
-              Skill
+              Spell
+              Gems
             </div>
 
             <button
@@ -1007,6 +1366,25 @@
                 class="ti ti-bolt"></i>
               <span
                 id="skill-name-btn">Skill</span>
+            </button>
+
+            <button
+              class="btn"
+              onclick="castMemorizedSpell(1)"
+              style="width:100%;justify-content:center;margin-top:6px"
+              id="skill2-btn">
+              <i
+                class="ti ti-bolt"></i>
+              Gem 2
+            </button>
+
+            <button
+              class="btn"
+              onclick="meditate()"
+              style="width:100%;justify-content:center;margin-top:6px">
+              <i
+                class="ti ti-moon-stars"></i>
+              Meditate
             </button>
 
             <div
@@ -1048,8 +1426,18 @@
           </div>
           <div
             class="tab"
+            onclick="switchTab('runes')">
+            Runes
+          </div>
+          <div
+            class="tab"
             onclick="switchTab('shop')">
             Shop
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('spells')">
+            Spells
           </div>
         </div>
         <div
@@ -1146,6 +1534,29 @@
             Available
             Zones
           </h3>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button
+              class="btn"
+              onclick="bindAffinity()"><i
+                class="ti ti-map-pin"></i>
+              Bind Here</button>
+            <button
+              class="btn"
+              onclick="gateToBind()"><i
+                class="ti ti-portal"></i>
+              Gate to Bind</button>
+            <button
+              class="btn"
+              onclick="senseCorpse()"><i
+                class="ti ti-radar-2"></i>
+              Sense Corpse</button>
+            <button
+              class="btn"
+              onclick="recoverCorpse()"><i
+                class="ti ti-skull"></i>
+              Recover Corpse</button>
+          </div>
           <div
             id="zone-list">
           </div>
@@ -1256,6 +1667,14 @@
                 Backpack
               </h3>
               <div
+                id="bag-tab-row"
+                class="bag-tab-row">
+              </div>
+              <div
+                id="bag-meta"
+                class="bag-meta">
+              </div>
+              <div
                 id="inv-list"
                 class="eq-bag-grid">
               </div>
@@ -1264,17 +1683,94 @@
           </div>
         </div>
         <div
+          id="tab-runes"
+          style="display:none">
+          <h3>
+            Runes
+          </h3>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button
+              class="btn"
+              onclick="stashAllRunesFromInventory()"><i
+                class="ti ti-box"></i>
+              Stash All
+              Runes</button>
+            <button
+              class="btn"
+              onclick="transmuteRunes()"><i
+                class="ti ti-arrows-shuffle"></i>
+              Quick
+              Transmute</button>
+          </div>
+              <div
+                id="rune-stash-meta"
+                class="bag-meta">
+              </div>
+              <div
+                id="rune-stash-list"
+                class="eq-bag-grid"
+                style="margin-bottom:10px">
+              </div>
+              <h3
+                style="margin-bottom:6px">
+                Runeword
+                Compendium
+              </h3>
+              <div
+                id="runeword-compendium"
+                class="eq-bag-grid"
+                style="margin-bottom:10px">
+              </div>
+              <div
+                style="font-size:10px;color:var(--text-secondary)">
+                Focused transmute options are available in the Shop tab.
+              </div>
+        </div>
+        <div
           id="tab-shop"
           style="display:none">
           <h3>
             Village
             Merchant
           </h3>
+          <div
+            id="merchant-rep-note"
+            style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
+          </div>
+          <div
+            style="display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button
+              class="btn"
+              onclick="sellAllJunk()"><i
+                class="ti ti-coins"></i>
+              Sell All
+              Junk
+            </button>
+            <button
+              class="btn danger"
+              onclick="sellAllInventory()"><i
+                class="ti ti-trash"></i>
+              Sell All
+              Inventory
+            </button>
+          </div>
 
           <div
             class="eq-bag-grid"
             id="shop-item-grid">
             <!-- Rendered dynamically via JavaScript -->
+          </div>
+        </div>
+        <div
+          id="tab-spells"
+          style="display:none">
+          <h3>
+            Spellbook
+          </h3>
+          <div
+            id="spellbook-list"
+            class="eq-bag-grid">
           </div>
         </div>
       </div>
@@ -1479,7 +1975,7 @@
                   min="5"
                   max="95"
                   value="20"
-                  onchange="autoRestMpPercent=parseInt(this.value)||40"
+                  onchange="autoRestMpPercent=parseInt(this.value)||20"
                   style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px">
                 %
                 MP</span>
@@ -1530,6 +2026,14 @@
         style="font-size:11px;color:var(--text-secondary);margin-top:3px"
         id="zone-desc-disp">
       </div>
+      <div
+        style="font-size:11px;color:var(--text-secondary);margin-top:6px"
+        id="bind-zone-disp">
+      </div>
+      <div
+        style="font-size:11px;color:var(--text-secondary);margin-top:3px"
+        id="corpse-disp">
+      </div>
     </div>
   </div>
   </div>
@@ -1575,6 +2079,646 @@
 
 
     const LOOT = ['Rusty Dagger', 'Tattered Robe', 'Rawhide Boots', 'Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Cracked Staff', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot'];
+    const ITEM_AFFIX_POOL = {
+      weapon: [
+        { stat: 'atk', min: 1, max: 5, prefix: 'Jagged', suffix: 'Slaying' },
+        { stat: 'atk', min: 2, max: 7, prefix: 'Brutal', suffix: 'Carnage' },
+        { stat: 'mp', min: 6, max: 24, prefix: 'Mystic', suffix: 'Focus' }
+      ],
+      chest: [
+        { stat: 'def', min: 1, max: 5, prefix: 'Sturdy', suffix: 'the Bear' },
+        { stat: 'hp', min: 10, max: 38, prefix: 'Vigorous', suffix: 'Vitality' },
+        { stat: 'mp', min: 8, max: 28, prefix: 'Runed', suffix: 'the Sage' }
+      ],
+      legs: [
+        { stat: 'def', min: 1, max: 4, prefix: 'Guarded', suffix: 'Warding' },
+        { stat: 'hp', min: 8, max: 30, prefix: 'Hardened', suffix: 'Fortitude' }
+      ],
+      feet: [
+        { stat: 'def', min: 1, max: 3, prefix: 'Surefooted', suffix: 'Balance' },
+        { stat: 'hp', min: 6, max: 20, prefix: 'Stout', suffix: 'Endurance' }
+      ],
+      offhand: [
+        { stat: 'atk', min: 1, max: 3, prefix: 'Keen', suffix: 'Precision' },
+        { stat: 'mp', min: 8, max: 26, prefix: 'Arcane', suffix: 'Insight' },
+        { stat: 'def', min: 1, max: 3, prefix: 'Warded', suffix: 'Protection' }
+      ],
+      charm: [
+        { stat: 'atk', min: 1, max: 2, prefix: 'Savage', suffix: 'Striking' },
+        { stat: 'def', min: 1, max: 2, prefix: 'Blessed', suffix: 'Guarding' },
+        { stat: 'hp', min: 6, max: 20, prefix: 'Hearty', suffix: 'Life' },
+        { stat: 'mp', min: 6, max: 20, prefix: 'Sage', suffix: 'Mana' }
+      ]
+    };
+    const UNIQUE_ITEM_BY_BASE = {
+      'Rusty Dagger': [
+        { id: 'bloodletter_shiv', name: 'Bloodletter Shiv', rolls: { atk: 10, hp: 24 } }
+      ],
+      'Worn Shortsword': [
+        { id: 'old_kings_blade', name: "Old King's Blade", rolls: { atk: 13, def: 4 } }
+      ],
+      'Cracked Staff': [
+        { id: 'stormspine', name: 'Stormspine', rolls: { atk: 6, mp: 44 } }
+      ],
+      'Tattered Robe': [
+        { id: 'veil_of_ashes', name: 'Veil of Ashes', rolls: { def: 7, mp: 42 } }
+      ],
+      'Rawhide Boots': [
+        { id: 'duststep', name: 'Duststep', rolls: { def: 5, hp: 30 } }
+      ],
+      'Gnoll Fang Earring': [
+        { id: 'packlords_trophy', name: "Packlord's Trophy", rolls: { atk: 4, def: 4, hp: 22 } }
+      ],
+      'Cazic Quill': [
+        { id: 'quill_of_fear', name: 'Quill of Fear', rolls: { atk: 7, mp: 50 } }
+      ],
+      'Steel Longsword': [
+        { id: 'oathcleaver', name: 'Oathcleaver', rolls: { atk: 16, hp: 30 } }
+      ],
+      'Knight Chestplate': [
+        { id: 'bulwark_of_ember', name: 'Bulwark of Ember', rolls: { def: 12, hp: 48 } }
+      ]
+    };
+    const RUNE_DATA = {
+      'Rune: El': { id: 'El', stat: 'atk', value: 3, tier: 1 },
+      'Rune: Tir': { id: 'Tir', stat: 'mp', value: 14, tier: 1 },
+      'Rune: Tal': { id: 'Tal', stat: 'def', value: 3, tier: 2 },
+      'Rune: Ort': { id: 'Ort', stat: 'hp', value: 24, tier: 2 },
+      'Rune: Sol': { id: 'Sol', stat: 'atk', value: 6, tier: 3 },
+      'Rune: Dol': { id: 'Dol', stat: 'hp', value: 38, tier: 3 }
+    };
+    const RUNEWORD_RECIPES = {
+      'Steel Longsword': { runes: ['Rune: El', 'Rune: Tir'], name: 'Runeword: Steel', bonus: { atk: 12, mp: 20 } },
+      'Knight Chestplate': { runes: ['Rune: Tal', 'Rune: Ort'], name: 'Runeword: Bulwark', bonus: { def: 10, hp: 60 } },
+      'Cracked Staff': { runes: ['Rune: Tir', 'Rune: Sol'], name: 'Runeword: Sparkspine', bonus: { atk: 8, mp: 44 } }
+    };
+    const RUNE_TRANSMUTE_CHAIN = ['Rune: El', 'Rune: Tir', 'Rune: Tal', 'Rune: Ort', 'Rune: Sol', 'Rune: Dol'];
+    const SHOP_BASE_PRICES = {
+      hpMinor: 5,
+      mpMinor: 5,
+      hpLight: 100,
+      mpLight: 100,
+      steelLongsword: 40,
+      knightChestplate: 55,
+      occultistReforge: 80,
+      occultistSocket: 65
+    };
+
+    const NAMED_BY_ZONE = {
+      0: ['a rabid rat king', 'a bat matriarch'],
+      1: ['an enraged gnoll packlord', 'a blackburrow bloodshaman'],
+      2: ['a restless butler', 'a manor revenant'],
+      3: ['a fearbound high priest', 'a thule warbringer'],
+      4: ['a hand of Innoruuk', 'an ebon oathkeeper']
+    };
+
+    const CONTAINER_ITEMS = {
+      'Worn Pouch': { slots: 8, cost: 0, starter: true },
+      'Small Bag': { slots: 10, cost: 45 },
+      "Traveler's Pack": { slots: 12, cost: 95 },
+      'Tailored Backpack': { slots: 14, cost: 165 }
+    };
+
+    const SPELLBOOK_BY_CLASS = {
+      Warrior: [
+        { id: 'shield_slam', name: 'Shield Slam', mp: 20, cooldown: 9, levelReq: 1, cost: 0, desc: 'Heavy blow that weakens enemy ATK.', target: 'enemy', kind: 'damage_weaken', power: 2.1, variance: 12, weaken: 2 },
+        { id: 'taunting_blow', name: 'Taunting Blow', mp: 14, cooldown: 6, levelReq: 4, cost: 40, desc: 'Reliable melee strike.', target: 'enemy', kind: 'damage', power: 1.6, variance: 8 },
+        { id: 'second_wind', name: 'Second Wind', mp: 18, cooldown: 14, levelReq: 8, cost: 110, desc: 'Battle recovery for HP.', target: 'self', kind: 'heal', healPct: 0.3, variance: 10 }
+      ],
+      Cleric: [
+        { id: 'holy_bolt', name: 'Holy Bolt', mp: 18, cooldown: 6, levelReq: 1, cost: 0, desc: 'Divine ranged damage.', target: 'enemy', kind: 'damage', power: 1.9, variance: 10 },
+        { id: 'greater_heal', name: 'Greater Heal', mp: 30, cooldown: 14, levelReq: 5, cost: 65, desc: 'Large restorative prayer.', target: 'self', kind: 'heal', healPct: 0.5, variance: 12 },
+        { id: 'benediction', name: 'Benediction', mp: 22, cooldown: 16, levelReq: 9, cost: 120, desc: 'Restores mana through devotion.', target: 'self', kind: 'mana', manaPct: 0.28, variance: 8 }
+      ],
+      Wizard: [
+        { id: 'fireball', name: 'Fireball', mp: 26, cooldown: 8, levelReq: 1, cost: 0, desc: 'Focused burst of fire.', target: 'enemy', kind: 'damage', power: 2.8, variance: 18 },
+        { id: 'ice_comet', name: 'Ice Comet', mp: 42, cooldown: 16, levelReq: 7, cost: 95, desc: 'Massive long-cast nuke.', target: 'enemy', kind: 'damage', power: 4.3, variance: 28 },
+        { id: 'clarity', name: 'Clarity', mp: 14, cooldown: 12, levelReq: 4, cost: 50, desc: 'Converts focus into mana.', target: 'self', kind: 'mana', manaPct: 0.35, variance: 10 }
+      ],
+      Rogue: [
+        { id: 'backstab', name: 'Backstab', mp: 20, cooldown: 7, levelReq: 1, cost: 0, desc: 'High burst precision strike.', target: 'enemy', kind: 'damage', power: 3.0, variance: 16 },
+        { id: 'poison_strike', name: 'Poison Strike', mp: 24, cooldown: 10, levelReq: 5, cost: 70, desc: 'Strike plus poison follow-up chance.', target: 'enemy', kind: 'damage_poison', power: 2.6, variance: 12, poisonMin: 8, poisonMax: 18 },
+        { id: 'shadow_mend', name: 'Shadow Mend', mp: 16, cooldown: 13, levelReq: 8, cost: 105, desc: 'Recover while staying elusive.', target: 'self', kind: 'heal', healPct: 0.26, variance: 9 }
+      ]
+    };
+
+    function getFactionTier(value) {
+      if (value >= 200) return 'Ally';
+      if (value >= 90) return 'Kindly';
+      if (value >= 30) return 'Amiable';
+      if (value >= -29) return 'Indifferent';
+      if (value >= -89) return 'Dubious';
+      return 'Threatening';
+    }
+
+    function getFactionPriceMultiplier(value) {
+      if (value >= 200) return 0.78;
+      if (value >= 90) return 0.86;
+      if (value >= 30) return 0.94;
+      if (value >= -29) return 1.0;
+      if (value >= -89) return 1.12;
+      return 1.28;
+    }
+
+    function getMerchantPrice(base) {
+      return Math.max(1, Math.floor(base * getFactionPriceMultiplier(char.faction || 0)));
+    }
+
+    function adjustFaction(delta, reason) {
+      const oldTier = getFactionTier(char.faction || 0);
+      char.faction = Math.max(-500, Math.min(500, (char.faction || 0) + delta));
+      const newTier = getFactionTier(char.faction);
+
+      if (oldTier !== newTier) {
+        log('Faction changed to ' + newTier + (reason ? ' (' + reason + ')' : '') + '.', 'info');
+      }
+    }
+
+    function getClassSpellbook(cls) {
+      return SPELLBOOK_BY_CLASS[cls] || [];
+    }
+
+    function getSpellById(id) {
+      if (!char || !id) return null;
+      return getClassSpellbook(char.cls).find(sp => sp.id === id) || null;
+    }
+
+    function getSpellCooldownRemaining(id) {
+      if (!char || !char.spellCooldowns || !id) return 0;
+      const readyAt = Number(char.spellCooldowns[id] || 0);
+      if (!Number.isFinite(readyAt) || readyAt <= Date.now()) return 0;
+      return Math.ceil((readyAt - Date.now()) / 1000);
+    }
+
+    function ensureSpellState(targetChar) {
+      const spellbook = getClassSpellbook(targetChar.cls);
+      const starterSpell = spellbook.length ? spellbook[0].id : null;
+
+      if (!Array.isArray(targetChar.knownSpells) || !targetChar.knownSpells.length) {
+        targetChar.knownSpells = starterSpell ? [starterSpell] : [];
+      } else {
+        const validSpellIds = new Set(spellbook.map(sp => sp.id));
+        targetChar.knownSpells = targetChar.knownSpells.filter(id => validSpellIds.has(id));
+      }
+
+      if (!targetChar.spellShopInitialized) {
+        targetChar.knownSpells = starterSpell ? [starterSpell] : [];
+        targetChar.spellShopInitialized = true;
+      }
+
+      if (!Array.isArray(targetChar.memorizedSpells) || targetChar.memorizedSpells.length < 2) {
+        targetChar.memorizedSpells = [targetChar.knownSpells[0] || null, targetChar.knownSpells[1] || null];
+      } else {
+        const known = new Set(targetChar.knownSpells);
+        const gem1 = known.has(targetChar.memorizedSpells[0]) ? targetChar.memorizedSpells[0] : (targetChar.knownSpells[0] || null);
+        const gem2 = known.has(targetChar.memorizedSpells[1]) ? targetChar.memorizedSpells[1] : (targetChar.knownSpells[1] || null);
+        targetChar.memorizedSpells = [gem1, gem2];
+      }
+
+      if (!targetChar.spellCooldowns || typeof targetChar.spellCooldowns !== 'object') {
+        targetChar.spellCooldowns = {};
+      }
+    }
+
+    function ensureBagState(targetChar) {
+      if (!Array.isArray(targetChar.bags) || !targetChar.bags.length) {
+        targetChar.bags = ['Worn Pouch', 'Worn Pouch', 'Worn Pouch', 'Worn Pouch'];
+      }
+
+      while (targetChar.bags.length < 4) targetChar.bags.push('Worn Pouch');
+
+      targetChar.bags = targetChar.bags.map(name => CONTAINER_ITEMS[name] ? name : 'Worn Pouch');
+    }
+
+    function getItemBaseName(entry) {
+      if (typeof entry === 'string') return entry;
+      if (entry && typeof entry === 'object' && typeof entry.base === 'string') return entry.base;
+      return '';
+    }
+
+    function getItemDisplayName(entry) {
+      if (typeof entry === 'string') return entry;
+      if (!entry || typeof entry !== 'object') return 'Unknown Item';
+      if (typeof entry.name === 'string' && entry.name.trim()) return entry.name.trim();
+      return getItemBaseName(entry) || 'Unknown Item';
+    }
+
+    function getItemQuality(entry) {
+      if (!entry || typeof entry !== 'object') return 'Normal';
+      if (entry.quality === 'Magic' || entry.quality === 'Rare' || entry.quality === 'Unique' || entry.quality === 'Runeword') return entry.quality;
+      return 'Normal';
+    }
+
+    function getItemRarityClass(entry) {
+      const quality = getItemQuality(entry);
+      if (quality === 'Magic') return 'rarity-magic';
+      if (quality === 'Rare') return 'rarity-rare';
+      if (quality === 'Unique') return 'rarity-unique';
+      if (quality === 'Runeword') return 'rarity-runeword';
+      return '';
+    }
+
+    function getItemData(entry) {
+      const baseName = getItemBaseName(entry);
+      return ITEM_DATA[baseName] || null;
+    }
+
+    function isContainerEntry(entry) {
+      const baseName = getItemBaseName(entry);
+      return !!CONTAINER_ITEMS[baseName];
+    }
+
+    function isRuneEntry(entry) {
+      const baseName = getItemBaseName(entry);
+      return !!RUNE_DATA[baseName];
+    }
+
+    function getSocketCapacityForBase(baseName) {
+      const data = ITEM_DATA[baseName];
+      if (!data) return 0;
+      if (data.slot === 'weapon' || data.slot === 'chest' || data.slot === 'offhand') return 2;
+      if (data.slot === 'legs' || data.slot === 'feet' || data.slot === 'charm') return 1;
+      return 0;
+    }
+
+    function toSocketableItem(entry) {
+      const baseName = getItemBaseName(entry);
+      const data = ITEM_DATA[baseName];
+      if (!data) return null;
+
+      const cap = getSocketCapacityForBase(baseName);
+      if (cap <= 0) return null;
+
+      if (typeof entry === 'string') {
+        return {
+          base: baseName,
+          name: baseName,
+          rolls: {},
+          quality: 'Normal',
+          maxSockets: 0,
+          sockets: [],
+          runeword: null
+        };
+      }
+
+      const obj = {
+        base: baseName,
+        name: getItemDisplayName(entry),
+        rolls: Object.assign({}, entry.rolls || {}),
+        quality: getItemQuality(entry),
+        maxSockets: Math.max(0, Math.min(cap, Number(entry.maxSockets || 0))),
+        sockets: [],
+        runeword: null
+      };
+
+      if (Array.isArray(entry.sockets)) {
+        obj.sockets = entry.sockets.slice(0, obj.maxSockets).map(r => RUNE_DATA[r] ? r : null);
+      }
+      while (obj.sockets.length < obj.maxSockets) obj.sockets.push(null);
+
+      if (entry.runeword && typeof entry.runeword === 'object' && typeof entry.runeword.name === 'string') {
+        obj.runeword = {
+          name: entry.runeword.name,
+          bonus: Object.assign({}, entry.runeword.bonus || {})
+        };
+        obj.quality = 'Runeword';
+      }
+
+      return obj;
+    }
+
+    function getSocketSummary(entry) {
+      if (!entry || typeof entry !== 'object') return '';
+      const maxSockets = Math.max(0, Number(entry.maxSockets || 0));
+      if (maxSockets <= 0) return '';
+      const sockets = Array.isArray(entry.sockets) ? entry.sockets.slice(0, maxSockets) : [];
+      while (sockets.length < maxSockets) sockets.push(null);
+      return sockets.map(s => s ? RUNE_DATA[s]?.id || '?' : 'Empty').join(' | ');
+    }
+
+    function findRuneInventoryIndex() {
+      return char.inventory.findIndex(it => isRuneEntry(it));
+    }
+
+    function hasAnyRuneAvailable() {
+      return (Array.isArray(char.runeStash) && char.runeStash.length > 0) || findRuneInventoryIndex() >= 0;
+    }
+
+    function takeFirstAvailableRune() {
+      if (Array.isArray(char.runeStash) && char.runeStash.length > 0) {
+        return char.runeStash.shift();
+      }
+      const idx = findRuneInventoryIndex();
+      if (idx < 0) return null;
+      const runeName = getItemBaseName(char.inventory[idx]);
+      char.inventory.splice(idx, 1);
+      return runeName;
+    }
+
+    function getRuneCounts() {
+      const counts = {};
+      RUNE_TRANSMUTE_CHAIN.forEach(r => counts[r] = 0);
+      (char.runeStash || []).forEach(r => { if (counts[r] !== undefined) counts[r] += 1; });
+      (char.inventory || []).forEach(item => {
+        const rn = getItemBaseName(item);
+        if (counts[rn] !== undefined) counts[rn] += 1;
+      });
+      return counts;
+    }
+
+    function consumeRunesByName(runeName, amount) {
+      let needed = amount;
+
+      if (Array.isArray(char.runeStash) && char.runeStash.length) {
+        const keep = [];
+        char.runeStash.forEach(r => {
+          if (needed > 0 && r === runeName) needed -= 1;
+          else keep.push(r);
+        });
+        char.runeStash = keep;
+      }
+
+      if (needed > 0 && Array.isArray(char.inventory) && char.inventory.length) {
+        const keepInv = [];
+        char.inventory.forEach(item => {
+          const rn = getItemBaseName(item);
+          if (needed > 0 && rn === runeName && isRuneEntry(item)) needed -= 1;
+          else keepInv.push(item);
+        });
+        char.inventory = keepInv;
+      }
+
+      return needed === 0;
+    }
+
+    function rollRuneDrop(zoneIdx, named = false, source = 'loot') {
+      const baseChance = source === 'afk' ? 0.08 : 0.12;
+      const chance = named ? Math.max(baseChance, 0.28) : baseChance;
+      if (Math.random() > chance) return null;
+
+      const pools = [
+        ['Rune: El', 'Rune: Tir'],
+        ['Rune: El', 'Rune: Tir', 'Rune: Tal'],
+        ['Rune: Tir', 'Rune: Tal', 'Rune: Ort'],
+        ['Rune: Tal', 'Rune: Ort', 'Rune: Sol'],
+        ['Rune: Ort', 'Rune: Sol', 'Rune: Dol']
+      ];
+
+      const pool = pools[Math.max(0, Math.min(pools.length - 1, zoneIdx))];
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function tryApplyRuneword(itemObj) {
+      const recipe = RUNEWORD_RECIPES[itemObj.base];
+      if (!recipe || !Array.isArray(itemObj.sockets)) return;
+
+      const usedSockets = itemObj.sockets.slice(0, recipe.runes.length);
+      if (usedSockets.length < recipe.runes.length) return;
+      if (usedSockets.some(r => !r)) return;
+
+      const a = usedSockets.slice().sort().join('|');
+      const b = recipe.runes.slice().sort().join('|');
+      if (a !== b) return;
+
+      itemObj.runeword = {
+        name: recipe.name,
+        bonus: Object.assign({}, recipe.bonus)
+      };
+      itemObj.name = recipe.name;
+      itemObj.quality = 'Runeword';
+
+      if (!Array.isArray(char.discoveredRunewords)) char.discoveredRunewords = [];
+      if (!char.discoveredRunewords.includes(recipe.name)) {
+        char.discoveredRunewords.push(recipe.name);
+        log('Runeword discovered: ' + recipe.name + '!', 'lvl');
+      }
+    }
+
+    function getItemEffectiveStats(entry) {
+      const base = getItemData(entry);
+      if (!base) return null;
+
+      const stats = {
+        atk: base.atk || 0,
+        def: base.def || 0,
+        hp: base.hp || 0,
+        mp: base.mp || 0
+      };
+
+      if (entry && typeof entry === 'object' && entry.rolls && typeof entry.rolls === 'object') {
+        ['atk', 'def', 'hp', 'mp'].forEach(stat => {
+          const rolled = Number(entry.rolls[stat] || 0);
+          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled);
+        });
+      }
+
+      if (entry && typeof entry === 'object' && Array.isArray(entry.sockets)) {
+        entry.sockets.forEach(r => {
+          const rune = RUNE_DATA[r];
+          if (!rune) return;
+          stats[rune.stat] = (stats[rune.stat] || 0) + rune.value;
+        });
+      }
+
+      if (entry && typeof entry === 'object' && entry.runeword && typeof entry.runeword === 'object') {
+        ['atk', 'def', 'hp', 'mp'].forEach(stat => {
+          const val = Number(entry.runeword.bonus && entry.runeword.bonus[stat]);
+          if (Number.isFinite(val) && val > 0) stats[stat] += Math.floor(val);
+        });
+      }
+
+      return stats;
+    }
+
+    function normalizeInventoryEntry(entry) {
+      if (typeof entry === 'string') return entry;
+      if (!entry || typeof entry !== 'object') return null;
+
+      const baseName = getItemBaseName(entry);
+      if (!baseName) return null;
+
+      if (CONTAINER_ITEMS[baseName]) return baseName;
+      if (!ITEM_DATA[baseName]) return null;
+
+      const cleanRolls = {};
+      ['atk', 'def', 'hp', 'mp'].forEach(stat => {
+        const raw = Number(entry.rolls && entry.rolls[stat]);
+        if (Number.isFinite(raw) && raw > 0) cleanRolls[stat] = Math.floor(raw);
+      });
+
+      const cleanName = (typeof entry.name === 'string' && entry.name.trim()) ? entry.name.trim() : baseName;
+      const rawQuality = entry.quality;
+      const cleanQuality = (rawQuality === 'Magic' || rawQuality === 'Rare' || rawQuality === 'Unique' || rawQuality === 'Runeword') ? rawQuality : (Object.keys(cleanRolls).length ? 'Magic' : 'Normal');
+      const normalized = { base: baseName, name: cleanName, rolls: cleanRolls, quality: cleanQuality };
+      if (cleanQuality === 'Unique' && typeof entry.uniqueId === 'string') normalized.uniqueId = entry.uniqueId;
+
+      const cap = getSocketCapacityForBase(baseName);
+      const maxSockets = Math.max(0, Math.min(cap, Number(entry.maxSockets || 0)));
+      if (maxSockets > 0) {
+        const sockets = Array.isArray(entry.sockets) ? entry.sockets.slice(0, maxSockets).map(r => RUNE_DATA[r] ? r : null) : [];
+        while (sockets.length < maxSockets) sockets.push(null);
+        normalized.maxSockets = maxSockets;
+        normalized.sockets = sockets;
+      }
+
+      if (entry.runeword && typeof entry.runeword === 'object' && typeof entry.runeword.name === 'string') {
+        normalized.runeword = {
+          name: entry.runeword.name,
+          bonus: Object.assign({}, entry.runeword.bonus || {})
+        };
+        normalized.quality = 'Runeword';
+      }
+
+      const hasEnhancements = Object.keys(cleanRolls).length > 0 || (normalized.maxSockets || 0) > 0 || !!normalized.runeword || normalized.quality !== 'Normal';
+      if (!hasEnhancements) return baseName;
+
+      return normalized;
+    }
+
+    function normalizeEquipmentEntry(entry, slotName) {
+      const normalized = normalizeInventoryEntry(entry);
+      if (!normalized) return null;
+
+      const data = getItemData(normalized);
+      if (!data || data.slot !== slotName) return null;
+      return normalized;
+    }
+
+    function rollItemVariant(baseName, source = 'loot') {
+      const data = ITEM_DATA[baseName];
+      if (!data) return baseName;
+
+      const uniquePool = UNIQUE_ITEM_BY_BASE[baseName] || [];
+      let uniqueChance = 0;
+      if (source === 'loot_named') uniqueChance = 0.03;
+      else if (source === 'loot') uniqueChance = 0.009;
+      else if (source === 'afk') uniqueChance = 0.004;
+
+      if (uniquePool.length && uniqueChance > 0 && Math.random() < uniqueChance) {
+        const chosen = uniquePool[Math.floor(Math.random() * uniquePool.length)];
+        return {
+          base: baseName,
+          name: chosen.name,
+          rolls: Object.assign({}, chosen.rolls),
+          quality: 'Unique',
+          uniqueId: chosen.id
+        };
+      }
+
+      const magicChance = source === 'reroll' ? 1 : (source === 'shop' ? 0.55 : (source === 'afk' ? 0.35 : 0.42));
+      if (Math.random() > magicChance) return baseName;
+
+      const pool = ITEM_AFFIX_POOL[data.slot] || [];
+      if (!pool.length) return baseName;
+
+      const affixCount = Math.random() < (source === 'reroll' ? 0.35 : (source === 'shop' ? 0.3 : 0.18)) ? 2 : 1;
+      const picks = [];
+      const used = new Set();
+
+      while (picks.length < affixCount && used.size < pool.length) {
+        const idx = Math.floor(Math.random() * pool.length);
+        if (used.has(idx)) continue;
+        used.add(idx);
+        picks.push(pool[idx]);
+      }
+
+      if (!picks.length) return baseName;
+
+      const rolls = {};
+      picks.forEach(affix => {
+        const value = affix.min + Math.floor(Math.random() * (affix.max - affix.min + 1));
+        rolls[affix.stat] = (rolls[affix.stat] || 0) + value;
+      });
+
+      const prefix = picks[0]?.prefix || '';
+      const suffix = picks[1]?.suffix || '';
+      const name = (prefix ? (prefix + ' ') : '') + baseName + (suffix ? (' of ' + suffix) : '');
+
+      return {
+        base: baseName,
+        name,
+        rolls,
+        quality: picks.length > 1 ? 'Rare' : 'Magic'
+      };
+    }
+
+    function getItemSellValue(entry) {
+      const data = getItemData(entry);
+      if (!data) {
+        if (isContainerEntry(entry)) {
+          const bagData = CONTAINER_ITEMS[getItemBaseName(entry)];
+          return Math.max(12, Math.floor((bagData?.cost || 20) * 0.45));
+        }
+        return Math.floor(Math.random() * 10) + 5;
+      }
+
+      const stats = getItemEffectiveStats(entry);
+      let value = 8;
+      value += (stats.atk || 0) * 3;
+      value += (stats.def || 0) * 3;
+      value += Math.floor((stats.hp || 0) / 12);
+      value += Math.floor((stats.mp || 0) / 12);
+
+      if (entry && typeof entry === 'object' && entry.quality === 'Rare') value += 18;
+      else if (entry && typeof entry === 'object' && entry.quality === 'Unique') value += 45;
+      else if (entry && typeof entry === 'object' && entry.quality === 'Runeword') value += 65;
+      else if (entry && typeof entry === 'object') value += 9;
+
+      value += Math.floor(Math.random() * 6);
+      return Math.max(6, value);
+    }
+
+    function getRerollCost(entry) {
+      let base = SHOP_BASE_PRICES.occultistReforge + Math.floor((char?.level || 1) * 5);
+      const quality = getItemQuality(entry);
+      if (quality === 'Magic') base += 15;
+      if (quality === 'Rare') base += 45;
+      if (quality === 'Unique') base += 120;
+      if (quality === 'Runeword') base += 160;
+      return getMerchantPrice(base);
+    }
+
+    function getSocketCost(entry) {
+      let base = SHOP_BASE_PRICES.occultistSocket + Math.floor((char?.level || 1) * 4);
+      const quality = getItemQuality(entry);
+      if (quality === 'Magic') base += 20;
+      if (quality === 'Rare') base += 40;
+      if (quality === 'Runeword') base += 120;
+      return getMerchantPrice(base);
+    }
+
+    function getTargetTransmuteCost(sourceRune) {
+      const rune = RUNE_DATA[sourceRune];
+      if (!rune) return getMerchantPrice(35);
+      const base = 30 + rune.tier * 28 + Math.floor((char?.level || 1) * 2);
+      return getMerchantPrice(base);
+    }
+
+    function getBagLayout(targetChar) {
+      ensureBagState(targetChar);
+
+      const layout = targetChar.bags.map((bagName, idx) => {
+        const bagData = CONTAINER_ITEMS[bagName] || CONTAINER_ITEMS['Worn Pouch'];
+        return {
+          index: idx,
+          name: bagName,
+          slots: bagData.slots,
+          overflow: false
+        };
+      });
+
+      const totalSlots = layout.reduce((sum, b) => sum + b.slots, 0);
+      if (targetChar.inventory.length > totalSlots) {
+        layout.push({
+          index: layout.length,
+          name: 'Overflow',
+          slots: targetChar.inventory.length - totalSlots,
+          overflow: true
+        });
+      }
+
+      return layout;
+    }
 
     function freshQuests() {
       return [
@@ -1597,6 +2741,7 @@
     let selectedClass = null;
     let pendingSlot = -1;    // slot being created
     let dragSrc = null;
+    let dragSetupDone = false;
     let saveTimer = null;
     let autoUseSkills = true;
     let autoUseHpPotions = true;
@@ -1609,7 +2754,13 @@
     let potionHealAmount_Mana = 50;
     let potionHealAmount_lhp_Health = 125;
     let potionHealAmount_lmp_Mana = 125;
+    let pendingImportedSlots = null;
+    let pendingImportFileName = '';
+    let pendingTransmuteSourceRune = null;
+    let afkHiddenAt = null;
+    let activeBagIndex = 0;
     const CURRENT_VERSION = '1.0.4';
+    const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
     //  PERSISTENCE
@@ -1621,13 +2772,252 @@
     }
 
     function saveSlots() {
-      if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+      if (char && activeSlot >= 0) {
+        char.afkEnabled = afkOn;
+        char.lastAfkAt = afkOn ? Date.now() : null;
+        slots[activeSlot] = JSON.parse(JSON.stringify(char));
+      }
       try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) { }
       flashSaved();
     }
 
     function manualSave() {
       saveSlots();
+    }
+
+    function exportSlotsToFile(options = {}) {
+      if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+
+      const payload = {
+        meta: {
+          game: 'EmberQuest',
+          version: CURRENT_VERSION,
+          exportedAt: new Date().toISOString()
+        },
+        slots
+      };
+
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 10);
+      const prefix = options.prefix || 'emberquest-save';
+
+      a.href = url;
+      a.download = prefix + '-' + stamp + '.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+
+      if (!options.silent && char) log('Save exported successfully.', 'info');
+    }
+
+    function promptImportSlots() {
+      const input = document.getElementById('import-save-input');
+      input.value = '';
+      input.click();
+    }
+
+    function validateImportedSlots(rawSlots) {
+      if (!Array.isArray(rawSlots)) throw new Error('Invalid save format: slots must be an array.');
+
+      const normalized = [];
+      for (let i = 0; i < Math.min(rawSlots.length, MAX_SLOTS); i++) {
+        const entry = rawSlots[i];
+
+        if (entry === null) {
+          normalized.push(null);
+          continue;
+        }
+
+        if (typeof entry !== 'object' || Array.isArray(entry)) {
+          throw new Error('Invalid slot at index ' + i + '.');
+        }
+
+        const cloned = JSON.parse(JSON.stringify(entry));
+        migrateSaveData(cloned, true);
+        normalized.push(cloned);
+      }
+
+      while (normalized.length < MAX_SLOTS) normalized.push(null);
+      return normalized;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function openImportPreview(validatedSlots, fileName) {
+      pendingImportedSlots = validatedSlots;
+      pendingImportFileName = fileName || 'selected file';
+
+      const subtitle = document.getElementById('import-preview-subtitle');
+      const grid = document.getElementById('import-preview-grid');
+      const backupToggle = document.getElementById('import-backup-toggle');
+
+      subtitle.textContent = 'Review imported slots from ' + pendingImportFileName + '. Confirm to overwrite current local slots.';
+      if (backupToggle) backupToggle.checked = true;
+      grid.innerHTML = '';
+
+      validatedSlots.forEach((slot, i) => {
+        const slotCard = document.createElement('div');
+        slotCard.className = 'import-preview-slot';
+
+        if (!slot) {
+          slotCard.innerHTML = '<div class="slot-id">Slot ' + (i + 1) + '</div><div class="slot-main">Empty</div><div class="slot-sub">No character in this slot.</div>';
+        } else {
+          const invCount = Array.isArray(slot.inventory) ? slot.inventory.length : 0;
+          slotCard.innerHTML = '<div class="slot-id">Slot ' + (i + 1) + '</div>' +
+            '<div class="slot-main">' + escapeHtml(slot.name) + '</div>' +
+            '<div class="slot-sub">' + escapeHtml(slot.cls) + ' · Level ' + slot.level + ' · ' + invCount + ' items</div>';
+        }
+
+        grid.appendChild(slotCard);
+      });
+
+      document.getElementById('import-preview-modal').classList.add('open');
+
+      const confirmBtn = document.getElementById('import-confirm-btn');
+      if (confirmBtn) confirmBtn.focus();
+    }
+
+    function closeImportPreview() {
+      pendingImportedSlots = null;
+      pendingImportFileName = '';
+      document.getElementById('import-preview-modal').classList.remove('open');
+    }
+
+    function openTransmuteConfirm(sourceRune) {
+      const srcIndex = RUNE_TRANSMUTE_CHAIN.indexOf(sourceRune);
+      if (srcIndex < 0 || srcIndex >= RUNE_TRANSMUTE_CHAIN.length - 1) {
+        log('That rune cannot be transmuted further.', 'info');
+        return;
+      }
+
+      const resultRune = RUNE_TRANSMUTE_CHAIN[srcIndex + 1];
+      const counts = getRuneCounts();
+      const owned = counts[sourceRune] || 0;
+      const cost = getTargetTransmuteCost(sourceRune);
+
+      pendingTransmuteSourceRune = sourceRune;
+
+      const subtitle = document.getElementById('transmute-confirm-subtitle');
+      subtitle.textContent = 'Forge 3x ' + sourceRune + ' into 1x ' + resultRune + ' for ' + cost + 'g? You own ' + owned + '.';
+
+      document.getElementById('transmute-confirm-modal').classList.add('open');
+      const confirmBtn = document.getElementById('transmute-confirm-btn');
+      if (confirmBtn) confirmBtn.focus();
+    }
+
+    function closeTransmuteConfirm() {
+      pendingTransmuteSourceRune = null;
+      document.getElementById('transmute-confirm-modal').classList.remove('open');
+    }
+
+    function confirmTransmuteRunes() {
+      if (!pendingTransmuteSourceRune) {
+        closeTransmuteConfirm();
+        return;
+      }
+
+      const source = pendingTransmuteSourceRune;
+      closeTransmuteConfirm();
+      transmuteRunesTarget(source);
+    }
+
+    function applyImportedSlots(importedSlots) {
+      slots = importedSlots;
+      activeSlot = -1;
+      char = null;
+      mob = null;
+
+      if (afkOn) {
+        afkOn = false;
+        clearInterval(afkInterval);
+        afkInterval = null;
+      }
+
+      localStorage.setItem(SAVE_KEY, JSON.stringify(slots));
+      showScreen('screen-charselect');
+      renderSlots();
+    }
+
+    function confirmImportSlots() {
+      if (!pendingImportedSlots) {
+        closeImportPreview();
+        return;
+      }
+
+      const backupToggle = document.getElementById('import-backup-toggle');
+      const shouldBackup = backupToggle ? backupToggle.checked : true;
+      const imported = pendingImportedSlots;
+
+      if (shouldBackup) {
+        exportSlotsToFile({ prefix: 'emberquest-pre-import-backup', silent: true });
+      }
+
+      closeImportPreview();
+      applyImportedSlots(imported);
+      showToast('Save imported successfully.' + (shouldBackup ? ' Backup file downloaded first.' : ''), 'success');
+    }
+
+    function handleModalKeydown(event) {
+      const importModal = document.getElementById('import-preview-modal');
+      const transmuteModal = document.getElementById('transmute-confirm-modal');
+      const importOpen = importModal && importModal.classList.contains('open');
+      const transmuteOpen = transmuteModal && transmuteModal.classList.contains('open');
+      if (!importOpen && !transmuteOpen) return;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (importOpen) closeImportPreview();
+        if (transmuteOpen) closeTransmuteConfirm();
+        return;
+      }
+
+      if (event.key === 'Enter') {
+        const target = event.target;
+        const tag = target && target.tagName ? target.tagName.toLowerCase() : '';
+        const isTextInput = tag === 'input' && target.type !== 'checkbox';
+        if (tag === 'textarea' || isTextInput) return;
+
+        event.preventDefault();
+        if (importOpen) confirmImportSlots();
+        else if (transmuteOpen) confirmTransmuteRunes();
+      }
+    }
+
+    function importSlotsFromFile(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        try {
+          const text = String((e && e.target && e.target.result) || '');
+          const parsed = JSON.parse(text);
+          const rawSlots = Array.isArray(parsed) ? parsed : parsed.slots;
+          const validatedSlots = validateImportedSlots(rawSlots);
+          openImportPreview(validatedSlots, file.name);
+        } catch (err) {
+          showToast('Import failed: ' + (err && err.message ? err.message : 'Unknown error'), 'error', 3800);
+        }
+      };
+
+      reader.onerror = function () {
+        showToast('Import failed: unable to read file.', 'error', 3800);
+      };
+
+      reader.readAsText(file);
     }
 
     function autoSave() {
@@ -1640,6 +3030,61 @@
       el.innerHTML = '<i class="ti ti-check"></i> Saved';
       el.className = 'save-indicator saved';
       setTimeout(() => { el.innerHTML = '<i class="ti ti-device-floppy"></i> Saved'; el.className = 'save-indicator'; }, 2000);
+    }
+
+    function showToast(message, type = 'info', duration = 2600) {
+      const host = document.getElementById('toast-host');
+      if (!host) return;
+
+      while (host.children.length >= 4) {
+        host.removeChild(host.firstChild);
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.title = 'Click to dismiss';
+
+      const iconMap = {
+        success: 'ti ti-circle-check',
+        error: 'ti ti-alert-circle',
+        info: 'ti ti-info-circle'
+      };
+
+      const content = document.createElement('div');
+      content.className = 'toast-content';
+
+      const icon = document.createElement('i');
+      icon.className = 'toast-icon ' + (iconMap[type] || iconMap.info);
+
+      const text = document.createElement('span');
+      text.className = 'toast-message';
+      text.textContent = message;
+
+      content.appendChild(icon);
+      content.appendChild(text);
+      toast.appendChild(content);
+
+      host.appendChild(toast);
+
+      requestAnimationFrame(() => toast.classList.add('show'));
+
+      let closing = false;
+
+      const dismiss = () => {
+        if (closing) return;
+        closing = true;
+        toast.classList.remove('show');
+        setTimeout(() => {
+          if (host.contains(toast)) host.removeChild(toast);
+        }, 180);
+      };
+
+      const autoDismissTimer = setTimeout(dismiss, duration);
+
+      toast.addEventListener('click', () => {
+        clearTimeout(autoDismissTimer);
+        dismiss();
+      });
     }
 
     // ══════════════════════════════════════════════
@@ -1706,7 +3151,7 @@
     }
 
     function createCharacter() {
-      if (!selectedClass) { alert('Choose a class first!'); return; }
+      if (!selectedClass) { showToast('Choose a class first.', 'error'); return; }
       const name = document.getElementById('pname').value.trim() || 'Adventurer';
       const base = CLASSES[selectedClass];
       const newChar = {
@@ -1714,32 +3159,170 @@
         name, cls: selectedClass, level: 1, xp: 0, xpNext: 100,
         hp: base.hp, maxHp: base.hp, mp: base.mp, maxMp: base.mp,
         atk: base.atk, def: base.def, mpRegen: base.mpRegen,
-        gold: 0, healpotions: 3, manapotions: 3, manapotions_lhp: 0, manapotions_lmp: 0, zone: 0, inventory: [],
+        gold: 0, faction: 0, healpotions: 3, manapotions: 3, healpotions_lhp: 0, manapotions_lmp: 0, zone: 0, inventory: [],
+        bindZone: 0, corpse: null,
+        runeStash: [], discoveredRunewords: [],
+        bags: ['Worn Pouch', 'Worn Pouch', 'Worn Pouch', 'Worn Pouch'],
         equipment: { weapon: null, chest: null, legs: null, feet: null, offhand: null, charm: null },
-        quests: freshQuests(), lastSaved: Date.now()
+        knownSpells: [getClassSpellbook(selectedClass)[0]?.id || null].filter(Boolean),
+        memorizedSpells: [getClassSpellbook(selectedClass)[0]?.id || null, null],
+        spellShopInitialized: true,
+        spellCooldowns: {},
+        quests: freshQuests(), afkEnabled: false, lastAfkAt: null, lastSaved: Date.now()
       };
       slots[pendingSlot] = newChar;
       saveSlots();
       loadSlot(pendingSlot);
     }
 
-    function migrateSaveData(oldChar) {
-      if (oldChar.healpotions_lhp === undefined) oldChar.healpotions_lhp = 0;
+    function migrateSaveData(oldChar, silent = false) {
+      let repaired = false;
+
+      function toInt(val, fallback) {
+        const n = Number(val);
+        if (!Number.isFinite(n)) return fallback;
+        return Math.floor(n);
+      }
+
+      function nonNegativeInt(val, fallback) {
+        return Math.max(0, toInt(val, fallback));
+      }
+
+      if (!CLASSES[oldChar.cls]) {
+        oldChar.cls = 'Warrior';
+        repaired = true;
+      }
+
+      if (typeof oldChar.name !== 'string' || !oldChar.name.trim()) {
+        oldChar.name = 'Adventurer';
+        repaired = true;
+      }
+
+      oldChar.level = Math.max(1, toInt(oldChar.level, 1));
+      oldChar.xp = nonNegativeInt(oldChar.xp, 0);
+      oldChar.xpNext = Math.max(100, nonNegativeInt(oldChar.xpNext, 100));
+
+      oldChar.maxHp = Math.max(1, toInt(oldChar.maxHp, CLASSES[oldChar.cls].hp));
+      oldChar.maxMp = Math.max(0, toInt(oldChar.maxMp, CLASSES[oldChar.cls].mp));
+      oldChar.hp = Math.min(oldChar.maxHp, Math.max(0, toInt(oldChar.hp, oldChar.maxHp)));
+      oldChar.mp = Math.min(oldChar.maxMp, Math.max(0, toInt(oldChar.mp, oldChar.maxMp)));
+
+      oldChar.atk = Math.max(1, toInt(oldChar.atk, CLASSES[oldChar.cls].atk));
+      oldChar.def = Math.max(0, toInt(oldChar.def, CLASSES[oldChar.cls].def));
+      oldChar.mpRegen = Math.max(0, toInt(oldChar.mpRegen, CLASSES[oldChar.cls].mpRegen));
+      oldChar.gold = nonNegativeInt(oldChar.gold, 0);
+      oldChar.faction = Math.max(-500, Math.min(500, toInt(oldChar.faction, 0)));
+      oldChar.healpotions = nonNegativeInt(oldChar.healpotions, 0);
+      oldChar.manapotions = nonNegativeInt(oldChar.manapotions, 0);
+      oldChar.afkEnabled = !!oldChar.afkEnabled;
+      if (oldChar.lastAfkAt === undefined || oldChar.lastAfkAt === null) {
+        oldChar.lastAfkAt = null;
+      } else {
+        const lastAfk = Number(oldChar.lastAfkAt);
+        oldChar.lastAfkAt = Number.isFinite(lastAfk) && lastAfk > 0 ? Math.floor(lastAfk) : null;
+      }
+
+      if (oldChar.healpotions_lhp === undefined) oldChar.healpotions_lhp = oldChar.manapotions_lhp || 0;
       if (oldChar.manapotions_lmp === undefined) oldChar.manapotions_lmp = 0;
+      if (oldChar.manapotions_lhp !== undefined) delete oldChar.manapotions_lhp;
+      oldChar.healpotions_lhp = nonNegativeInt(oldChar.healpotions_lhp, 0);
+      oldChar.manapotions_lmp = nonNegativeInt(oldChar.manapotions_lmp, 0);
+
+      oldChar.zone = toInt(oldChar.zone, 0);
+      if (oldChar.zone < 0 || oldChar.zone >= ZONES.length) {
+        oldChar.zone = 0;
+        repaired = true;
+      }
+
+      oldChar.bindZone = toInt(oldChar.bindZone, oldChar.zone || 0);
+      if (oldChar.bindZone < 0 || oldChar.bindZone >= ZONES.length) {
+        oldChar.bindZone = oldChar.zone || 0;
+        repaired = true;
+      }
+
+      if (!oldChar.corpse || typeof oldChar.corpse !== 'object') {
+        oldChar.corpse = null;
+      } else {
+        const cz = toInt(oldChar.corpse.zone, -1);
+        const cg = nonNegativeInt(oldChar.corpse.gold || 0, 0);
+        if (cz < 0 || cz >= ZONES.length) {
+          oldChar.corpse = null;
+        } else {
+          oldChar.corpse = { zone: cz, gold: cg, ts: toInt(oldChar.corpse.ts || Date.now(), Date.now()) };
+        }
+      }
+
+      if (!Array.isArray(oldChar.inventory)) {
+        oldChar.inventory = [];
+        repaired = true;
+      } else {
+        const cleanedInventory = [];
+        oldChar.inventory.forEach(entry => {
+          const normalized = normalizeInventoryEntry(entry);
+          if (normalized !== null) cleanedInventory.push(normalized);
+          else repaired = true;
+        });
+        if (cleanedInventory.length !== oldChar.inventory.length) repaired = true;
+        oldChar.inventory = cleanedInventory;
+      }
+
+      if (!Array.isArray(oldChar.runeStash)) {
+        oldChar.runeStash = [];
+      } else {
+        oldChar.runeStash = oldChar.runeStash.filter(r => typeof r === 'string' && !!RUNE_DATA[r]);
+      }
+
+      if (!Array.isArray(oldChar.discoveredRunewords)) {
+        oldChar.discoveredRunewords = [];
+      } else {
+        const validRunewords = new Set(Object.values(RUNEWORD_RECIPES).map(r => r.name));
+        oldChar.discoveredRunewords = oldChar.discoveredRunewords.filter(name => typeof name === 'string' && validRunewords.has(name));
+      }
+
+      if (!oldChar.equipment || typeof oldChar.equipment !== 'object') {
+        oldChar.equipment = { weapon: null, chest: null, legs: null, feet: null, offhand: null, charm: null };
+        repaired = true;
+      } else {
+        const eqSlots = ['weapon', 'chest', 'legs', 'feet', 'offhand', 'charm'];
+        eqSlots.forEach(slot => {
+          if (oldChar.equipment[slot] === undefined) {
+            oldChar.equipment[slot] = null;
+            repaired = true;
+            return;
+          }
+
+          const normalized = normalizeEquipmentEntry(oldChar.equipment[slot], slot);
+          if (normalized === null && oldChar.equipment[slot] !== null) repaired = true;
+          if (JSON.stringify(normalized) !== JSON.stringify(oldChar.equipment[slot])) repaired = true;
+          oldChar.equipment[slot] = normalized;
+        });
+      }
+
+      if (!Array.isArray(oldChar.quests)) {
+        oldChar.quests = freshQuests();
+        repaired = true;
+      }
+
+      ensureSpellState(oldChar);
+      ensureBagState(oldChar);
 
       if (!oldChar.version) {
         oldChar.version = CURRENT_VERSION;
-        log('Upgraded save data to v' + CURRENT_VERSION + '.', 'info');
+        if (!silent) log('Upgraded save data to v' + CURRENT_VERSION + '.', 'info');
       }
 
       if (oldChar.version === '1.0.3') {
         oldChar.version = '1.0.4';
-        log('Upgraded save data to v1.0.4.', 'info');
+        if (!silent) log('Upgraded save data to v1.0.4.', 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
         oldChar.version = CURRENT_VERSION;
-        log('Upgraded save data to v' + CURRENT_VERSION + '.', 'info');
+        if (!silent) log('Upgraded save data to v' + CURRENT_VERSION + '.', 'info');
+      }
+
+      if (repaired) {
+        if (!silent) log('Detected invalid save values and repaired them automatically.', 'info');
       }
     }
 
@@ -1748,12 +3331,15 @@
       char = JSON.parse(JSON.stringify(slots[i]));
       // Run the migration checks before assigning it to the active char global
       migrateSaveData(char);
+      const shouldResumeAfk = !!char.afkEnabled;
+      const previousAfkStamp = char.lastAfkAt;
 
       // Existing equipment fallback
       if (!char.equipment) {
         char.equipment = { weapon: null, chest: null, legs: null, feet: null, offhand: null, charm: null };
       }
       if (!char.quests) char.quests = freshQuests();
+      ensureSpellState(char);
 
       mob = null;
       afkOn = false; clearInterval(afkInterval); afkInterval = null;
@@ -1763,6 +3349,14 @@
       resetAFKUI();
       document.getElementById('combat-log').innerHTML = '';
       log('Welcome back, ' + char.name + '! You are in ' + ZONES[char.zone].name + '.', 'info');
+
+      if (shouldResumeAfk) {
+        toggleAFK();
+        if (previousAfkStamp) {
+          const elapsed = Math.max(0, Date.now() - previousAfkStamp);
+          simulateAfkReturn(elapsed, { source: 'resume' });
+        }
+      }
     }
 
     function deleteSlot(i) {
@@ -1791,6 +3385,7 @@
     // ══════════════════════════════════════════════
     function renderAll() {
       if (!char) return;
+      ensureSpellState(char);
       document.getElementById('char-name-disp').textContent = char.name;
       document.getElementById('char-class-disp').textContent = char.cls + ' — Level ' + char.level;
       document.getElementById('char-level').textContent = char.level;
@@ -1799,17 +3394,25 @@
       document.getElementById('atk-disp').textContent = char.atk;
       document.getElementById('def-disp').textContent = char.def;
       document.getElementById('gold-disp').textContent = char.gold + 'g';
-      document.getElementById('hp-potion').textContent = char.healpotions + char.healpotions_lhp + ' pots';
-      document.getElementById('mp-potion').textContent = char.manapotions + char.manapotions_lmp + ' pots';
+      document.getElementById('faction-disp').textContent = getFactionTier(char.faction || 0);
+      const hpPotionsTotal = (char.healpotions || 0) + (char.healpotions_lhp || 0);
+      const mpPotionsTotal = (char.manapotions || 0) + (char.manapotions_lmp || 0);
+      document.getElementById('hp-potion').textContent = hpPotionsTotal + ' pots';
+      document.getElementById('mp-potion').textContent = mpPotionsTotal + ' pots';
 
-      const skillData = getClassSkillData();
-      document.getElementById('skill-name-btn').textContent = skillData.name + ' (' + skillData.mp + ' MP)';
-      document.getElementById('skill-desc').textContent = skillData.desc;
+      const spellOne = getSpellById(char.memorizedSpells[0]);
+      const spellTwo = getSpellById(char.memorizedSpells[1]);
+      const cdOne = spellOne ? getSpellCooldownRemaining(spellOne.id) : 0;
+      const cdTwo = spellTwo ? getSpellCooldownRemaining(spellTwo.id) : 0;
+
+      document.getElementById('skill-name-btn').textContent = spellOne ? (spellOne.name + ' (' + spellOne.mp + ' MP)' + (cdOne > 0 ? ' [' + cdOne + 's]' : '')) : 'Gem 1 Empty';
+      document.getElementById('skill2-btn').textContent = spellTwo ? (spellTwo.name + ' (' + spellTwo.mp + ' MP)' + (cdTwo > 0 ? ' [' + cdTwo + 's]' : '')) : 'Gem 2 Empty';
+      document.getElementById('skill-desc').textContent = spellOne ? spellOne.desc : 'Memorize spells in the Spells tab.';
 
       document.getElementById('hp-bar').style.width = Math.max(0, char.hp / char.maxHp * 100) + '%';
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
       document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
-      renderMob(); renderInv(); renderShop();
+      renderMob(); renderInv(); renderShop(); renderSpellbook();
     }
 
     function renderMob() {
@@ -1821,8 +3424,13 @@
       document.getElementById('mob-hp-bar').style.width = Math.max(0, mob.hp / mob.maxHp * 100) + '%';
       document.getElementById('mob-hp-disp').textContent = mob.hp + '/' + mob.maxHp + ' HP';
       const badge = document.getElementById('mob-badge');
-      badge.textContent = mob.elite ? 'Elite' : 'Normal';
-      badge.className = 'badge ' + (mob.elite ? 'badge-rare' : 'badge-common');
+      if (mob.named) {
+        badge.textContent = 'Named';
+        badge.className = 'badge badge-rare';
+      } else {
+        badge.textContent = mob.elite ? 'Elite' : 'Normal';
+        badge.className = 'badge ' + (mob.elite ? 'badge-rare' : 'badge-common');
+      }
     }
 
     function renderZones() {
@@ -1837,6 +3445,120 @@
       });
       document.getElementById('zone-name-disp').textContent = ZONES[char.zone].name;
       document.getElementById('zone-desc-disp').textContent = ZONES[char.zone].desc;
+      document.getElementById('bind-zone-disp').textContent = 'Bind Point: ' + ZONES[char.bindZone || 0].name;
+      if (char.corpse) {
+        const zoneName = ZONES[char.corpse.zone] ? ZONES[char.corpse.zone].name : 'Unknown';
+        document.getElementById('corpse-disp').textContent = 'Corpse: ' + zoneName + ' (' + (char.corpse.gold || 0) + 'g)';
+      } else {
+        document.getElementById('corpse-disp').textContent = 'Corpse: None';
+      }
+    }
+
+    function getCorpseDirectionHint() {
+      if (!char || !char.corpse || !ZONES[char.corpse.zone]) return '';
+      const corpseZone = char.corpse.zone;
+      const delta = corpseZone - char.zone;
+      if (delta === 0) return 'You sense your corpse very close by.';
+      if (delta > 0) return 'You sense your corpse deeper in dangerous territory.';
+      return 'You sense your corpse in safer lands behind you.';
+    }
+
+    function senseCorpse() {
+      if (!char) return;
+      if (!char.corpse) {
+        log('You sense nothing. No corpse remains to recover.', 'info');
+        return;
+      }
+      if (mob) {
+        log('You cannot focus enough to sense your corpse during combat.', 'info');
+        return;
+      }
+      if (char.mp < 8) {
+        log('Not enough MP to sense your corpse.', 'info');
+        return;
+      }
+
+      char.mp -= 8;
+      const zoneName = ZONES[char.corpse.zone] ? ZONES[char.corpse.zone].name : 'Unknown';
+      const hint = getCorpseDirectionHint();
+      log('You sense your corpse in ' + zoneName + '. ' + hint, 'info');
+
+      if (char.corpse.zone === char.zone) {
+        showToast('Corpse nearby. Recover it now.', 'success');
+      } else {
+        showToast('Corpse sensed: ' + zoneName, 'info');
+      }
+
+      renderAll();
+      renderZones();
+      autoSave();
+    }
+
+    function bindAffinity() {
+      if (!char) return;
+      if (mob) {
+        log('You cannot bind while in combat.', 'info');
+        return;
+      }
+      if (char.mp < 12) {
+        log('Not enough MP to bind.', 'info');
+        return;
+      }
+
+      char.mp -= 12;
+      char.bindZone = char.zone;
+      log('Your soul is now bound in ' + ZONES[char.bindZone].name + '.', 'info');
+      renderAll();
+      renderZones();
+      autoSave();
+    }
+
+    function gateToBind() {
+      if (!char) return;
+      if (mob) {
+        log('You cannot gate while in combat.', 'info');
+        return;
+      }
+      if (char.zone === char.bindZone) {
+        log('You are already at your bind point.', 'info');
+        return;
+      }
+      if (char.mp < 20) {
+        log('Not enough MP to gate.', 'info');
+        return;
+      }
+
+      char.mp -= 20;
+      char.zone = char.bindZone;
+      mob = null;
+      log('You gate back to ' + ZONES[char.bindZone].name + '.', 'info');
+      renderAll();
+      renderZones();
+      switchTab('combat');
+      autoSave();
+    }
+
+    function recoverCorpse() {
+      if (!char) return;
+      if (!char.corpse) {
+        log('You have no corpse to recover.', 'info');
+        return;
+      }
+
+      if (char.corpse.zone !== char.zone) {
+        log('Your corpse is in ' + ZONES[char.corpse.zone].name + '.', 'info');
+        return;
+      }
+
+      const goldRecovered = char.corpse.gold || 0;
+      char.gold += goldRecovered;
+      char.corpse = null;
+
+      log('You recover your corpse and reclaim ' + goldRecovered + ' gold.', 'loot');
+      showToast('Corpse recovered: +' + goldRecovered + 'g', 'success');
+      renderAll();
+      renderZones();
+      autoSave();
     }
 
 
@@ -1852,7 +3574,7 @@
           return;
         }
 
-        const data = ITEM_DATA[item] || {};
+        const data = getItemEffectiveStats(item) || {};
         let stats = [];
 
         if (data.atk) stats.push('+' + data.atk + ' ATK');
@@ -1860,29 +3582,133 @@
         if (data.hp) stats.push('+' + data.hp + ' HP');
         if (data.mp) stats.push('+' + data.mp + ' MP');
 
-        el.innerHTML = `<div>${item}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>`;
+        const label = getItemDisplayName(item);
+        const rarityClass = getItemRarityClass(item);
+        el.innerHTML = `<div class="eq-item-name ${rarityClass}">${label}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>`;
       });
     }
 
     function renderInv() {
       renderEquipment();
+      ensureBagState(char);
 
       const el = document.getElementById('inv-list');
+      const tabRow = document.getElementById('bag-tab-row');
+      const bagMeta = document.getElementById('bag-meta');
+      const runeMeta = document.getElementById('rune-stash-meta');
+      const runeList = document.getElementById('rune-stash-list');
+      const compendium = document.getElementById('runeword-compendium');
       el.innerHTML = '';
+      tabRow.innerHTML = '';
+      runeList.innerHTML = '';
+      compendium.innerHTML = '';
+
+      if (!Array.isArray(char.runeStash)) char.runeStash = [];
+      if (!Array.isArray(char.discoveredRunewords)) char.discoveredRunewords = [];
+
+      const runeCounts = getRuneCounts();
+      const stashCount = (char.runeStash || []).length;
+      runeMeta.textContent = 'Rune stash: ' + stashCount + ' · Includes runes stored outside bag slots.';
+
+      RUNE_TRANSMUTE_CHAIN.forEach(runeName => {
+        const count = runeCounts[runeName] || 0;
+        const card = document.createElement('div');
+        card.className = 'eq-item-card';
+        card.innerHTML = `
+          <div class="eq-item-name rarity-magic">${runeName}</div>
+          <div class="eq-item-type">${RUNE_DATA[runeName].stat.toUpperCase()} +${RUNE_DATA[runeName].value}</div>
+          <div class="eq-item-bonus">Owned: ${count}</div>
+        `;
+        runeList.appendChild(card);
+      });
+
+      Object.entries(RUNEWORD_RECIPES).forEach(([baseItem, recipe]) => {
+        const found = char.discoveredRunewords.includes(recipe.name);
+        const card = document.createElement('div');
+        card.className = 'eq-item-card';
+        card.innerHTML = `
+          <div class="eq-item-name ${found ? 'rarity-runeword' : ''}">${found ? recipe.name : 'Unknown Runeword'}</div>
+          <div class="eq-item-type">Base: ${baseItem}</div>
+          <div class="eq-item-bonus">${found ? ('Runes: ' + recipe.runes.join(' + ')) : 'Discover by socketing runes into the right base item.'}</div>
+        `;
+        compendium.appendChild(card);
+      });
+
+      const bagLayout = getBagLayout(char);
+      activeBagIndex = Math.max(0, Math.min(activeBagIndex, bagLayout.length - 1));
+
+      bagLayout.forEach((bag, b) => {
+        const btn = document.createElement('button');
+        btn.className = 'bag-tab-btn' + (b === activeBagIndex ? ' active' : '');
+        btn.textContent = bag.overflow ? 'Overflow' : ('Bag ' + (b + 1) + ' (' + bag.slots + ')');
+        btn.onclick = () => {
+          activeBagIndex = b;
+          renderInv();
+        };
+        tabRow.appendChild(btn);
+      });
+
+      const start = bagLayout.slice(0, activeBagIndex).reduce((sum, b) => sum + b.slots, 0);
+      const activeBag = bagLayout[activeBagIndex];
+      const end = start + activeBag.slots;
+      const visibleItems = char.inventory.slice(start, end);
+      bagMeta.textContent = activeBag.overflow
+        ? 'Overflow slots (your bags are full). Total items: ' + char.inventory.length
+        : ('Showing ' + activeBag.name + ' · Slots ' + (start + 1) + '-' + end + ' · Total items: ' + char.inventory.length);
 
       if (!char.inventory.length) {
         el.innerHTML = '<div class="eq-empty-bag">Your bags are empty.</div>';
-        return;
       }
 
-      char.inventory.forEach((item, index) => {
-        const data = ITEM_DATA[item] || {};
+      visibleItems.forEach((item, localIndex) => {
+        const absoluteIndex = start + localIndex;
+        const data = getItemData(item) || {};
+        const stats = getItemEffectiveStats(item) || {};
         let bonus = '';
 
-        if (data.atk) bonus += ` +${data.atk} ATK`;
-        if (data.def) bonus += ` +${data.def} DEF`;
-        if (data.hp) bonus += ` +${data.hp} HP`;
-        if (data.mp) bonus += ` +${data.mp} MP`;
+        if (stats.atk) bonus += ` +${stats.atk} ATK`;
+        if (stats.def) bonus += ` +${stats.def} DEF`;
+        if (stats.hp) bonus += ` +${stats.hp} HP`;
+        if (stats.mp) bonus += ` +${stats.mp} MP`;
+
+        const sockets = getSocketSummary(item);
+        if (sockets) bonus += ` · [${sockets}]`;
+
+        const quality = getItemQuality(item);
+        const qualityTag = quality !== 'Normal' ? (' • ' + quality) : '';
+        const rarityClass = getItemRarityClass(item);
+        const itemName = getItemDisplayName(item);
+        const isContainer = isContainerEntry(item);
+        const isRune = isRuneEntry(item);
+        const isEquip = !!getItemData(item);
+        const socketable = isEquip && quality !== 'Unique' && quality !== 'Runeword';
+        const socketObj = socketable ? toSocketableItem(item) : null;
+        const hasSocketRoom = socketObj ? socketObj.maxSockets < getSocketCapacityForBase(socketObj.base) : false;
+        const hasEmptySocket = socketObj ? (socketObj.maxSockets > 0 && socketObj.sockets.some(s => !s)) : false;
+        const hasRuneInBag = hasAnyRuneAvailable();
+        const socketCost = socketable ? getSocketCost(item) : 0;
+        const rerollCost = isEquip ? getRerollCost(item) : 0;
+        const rerollBtn = isEquip
+          ? `<button class="btn" onclick="rerollInventoryItem(${absoluteIndex})" ${(quality === 'Unique' || quality === 'Runeword') ? 'disabled' : ''}>${(quality === 'Unique' || quality === 'Runeword') ? 'Locked' : ('Reroll (' + rerollCost + 'g)')}</button>`
+          : '';
+        const socketBtn = socketable && hasSocketRoom
+          ? `<button class="btn" onclick="addSocketToItem(${absoluteIndex})">Add Socket (${socketCost}g)</button>`
+          : '';
+        const insertRuneBtn = socketable && hasEmptySocket
+          ? `<button class="btn" onclick="insertRuneIntoItem(${absoluteIndex})" ${hasRuneInBag ? '' : 'disabled'}>Insert Rune</button>`
+          : '';
+
+        let itemType = data.type || 'Misc Item';
+        if (isRune) itemType = 'Rune';
+        if (quality === 'Runeword' && item && item.runeword && item.runeword.name) {
+          itemType = itemType + ' · ' + item.runeword.name;
+        }
+
+        if (isRune) {
+          const runeName = getItemBaseName(item);
+          const runeData = RUNE_DATA[runeName];
+          bonus = runeData ? ('+' + runeData.value + ' ' + runeData.stat.toUpperCase()) : 'Rune';
+        }
 
         const card = document.createElement('div');
         card.className = 'eq-item-card';
@@ -1890,32 +3716,94 @@
         card.innerHTML = `
       <div class="eq-item-top">
         <div>
-          <div class="eq-item-name">${item}</div>
-          <div class="eq-item-type">${data.type || 'Misc Item'}</div>
+          <div class="eq-item-name ${rarityClass}">${itemName}</div>
+          <div class="eq-item-type">${itemType}${qualityTag}</div>
         </div>
       </div>
 
       <div class="eq-item-bonus">${bonus || 'No stats'}</div>
 
-      <div class="eq-item-actions">
-        <button class="btn" onclick="equipItem(${index})">Equip</button>
-        <button class="btn" onclick="sellItem(${index})">Sell</button>
+      <div class="eq-item-actions compact">
+        ${isContainer ? `<button class="btn" onclick="installContainerFromInventory(${absoluteIndex})">Install Bag</button>` : (isEquip ? `<button class="btn" onclick="equipItem(${absoluteIndex})">Equip</button>` : '')}
+        ${socketBtn}
+        ${insertRuneBtn}
+        ${rerollBtn}
+        <button class="btn" onclick="sellItem(${absoluteIndex})">Sell</button>
       </div>
     `;
 
         el.appendChild(card);
       });
+
+      const emptyCount = Math.max(0, activeBag.slots - visibleItems.length);
+      for (let i = 0; i < emptyCount; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'eq-empty-slot';
+        empty.textContent = 'Empty Slot';
+        el.appendChild(empty);
+      }
+    }
+
+    function installContainerFromInventory(index) {
+      if (index < 0 || index >= char.inventory.length) return;
+      ensureBagState(char);
+
+      const itemEntry = char.inventory[index];
+      const item = getItemBaseName(itemEntry);
+      const bagInfo = CONTAINER_ITEMS[item];
+      if (!bagInfo) {
+        log('That item is not a container.', 'info');
+        return;
+      }
+
+      const bagLayout = getBagLayout(char);
+      const targetBag = bagLayout[activeBagIndex];
+      if (!targetBag || targetBag.overflow) {
+        log('Select a real bag tab to install this container.', 'info');
+        return;
+      }
+
+      const oldBagName = char.bags[targetBag.index];
+      const oldBagInfo = CONTAINER_ITEMS[oldBagName] || CONTAINER_ITEMS['Worn Pouch'];
+
+      let projectedCapacity = bagLayout.filter(b => !b.overflow).reduce((sum, b) => sum + b.slots, 0) - oldBagInfo.slots + bagInfo.slots;
+      if (char.inventory.length - 1 > projectedCapacity) {
+        log('Not enough capacity to replace this bag yet.', 'info');
+        return;
+      }
+
+      char.inventory.splice(index, 1);
+      if (!(CONTAINER_ITEMS[oldBagName] && CONTAINER_ITEMS[oldBagName].starter)) {
+        char.inventory.push(oldBagName);
+      }
+
+      char.bags[targetBag.index] = item;
+      log('Installed ' + item + ' into Bag ' + (targetBag.index + 1) + '.', 'loot');
+      renderAll();
+      autoSave();
     }
 
     function renderShop() {
       const shopGrid = document.getElementById('shop-item-grid');
+      const repNote = document.getElementById('merchant-rep-note');
       if (!shopGrid || !char) return;
+
+      const hpMinorPrice = getMerchantPrice(SHOP_BASE_PRICES.hpMinor);
+      const mpMinorPrice = getMerchantPrice(SHOP_BASE_PRICES.mpMinor);
+      const hpLightPrice = getMerchantPrice(SHOP_BASE_PRICES.hpLight);
+      const mpLightPrice = getMerchantPrice(SHOP_BASE_PRICES.mpLight);
+      const steelPrice = getMerchantPrice(SHOP_BASE_PRICES.steelLongsword);
+      const chestPrice = getMerchantPrice(SHOP_BASE_PRICES.knightChestplate);
+      const occultistPrice = getMerchantPrice(SHOP_BASE_PRICES.occultistReforge + Math.floor(char.level * 6));
+      const runeCounts = getRuneCounts();
+
+      repNote.textContent = 'Faction: ' + getFactionTier(char.faction || 0) + ' (' + (char.faction || 0) + ') · Occultist services available.';
 
       let shopHtml = `
         <div class="eq-item-card">
           <div class="eq-item-name">Minor Healing Potion</div>
           <div class="eq-item-type">Restores 50 HP</div>
-          <div class="eq-item-bonus">5 Gold</div>
+          <div class="eq-item-bonus">${hpMinorPrice} Gold</div>
           <div class="eq-item-actions">
             <button class="btn" onclick="buyHpPotion()">Buy</button>
             <button class="btn" onclick="buyHpPotion_10()">Buy x10</button>
@@ -1925,7 +3813,7 @@
         <div class="eq-item-card">
           <div class="eq-item-name">Minor Mana Potion</div>
           <div class="eq-item-type">Restores 50 MP</div>
-          <div class="eq-item-bonus">5 Gold</div>
+          <div class="eq-item-bonus">${mpMinorPrice} Gold</div>
           <div class="eq-item-actions">
             <button class="btn" onclick="buyMpPotion()">Buy</button>
             <button class="btn" onclick="buyMpPotion_10()">Buy x10</button>
@@ -1939,7 +3827,7 @@
           <div class="eq-item-card">
             <div class="eq-item-name">Light Healing Potion</div>
             <div class="eq-item-type">Restores 125 HP</div>
-            <div class="eq-item-bonus">100 Gold</div>
+            <div class="eq-item-bonus">${hpLightPrice} Gold</div>
             <div class="eq-item-actions">
               <button class="btn" onclick="buyHpPotion_LHP()">Buy</button>
               <button class="btn" onclick="buyHpPotion_LHP_10()">Buy x10</button>
@@ -1949,7 +3837,7 @@
           <div class="eq-item-card">
             <div class="eq-item-name">Light Mana Potion</div>
             <div class="eq-item-type">Restores 125 MP</div>
-            <div class="eq-item-bonus">100 Gold</div>
+            <div class="eq-item-bonus">${mpLightPrice} Gold</div>
             <div class="eq-item-actions">
               <button class="btn" onclick="buyMpPotion_LMP()">Buy</button>
               <button class="btn" onclick="buyMpPotion_LMP_10()">Buy x10</button>
@@ -1962,7 +3850,7 @@
         <div class="eq-item-card">
           <div class="eq-item-name">Steel Longsword</div>
           <div class="eq-item-type">Weapon</div>
-          <div class="eq-item-bonus">+12 ATK · 40 Gold</div>
+          <div class="eq-item-bonus">+12 ATK · ${steelPrice} Gold</div>
           <div class="eq-item-actions">
             <button class="btn" onclick="buyShopItem('Steel Longsword')">Buy</button>
           </div>
@@ -1971,12 +3859,57 @@
         <div class="eq-item-card">
           <div class="eq-item-name">Knight Chestplate</div>
           <div class="eq-item-type">Armor</div>
-          <div class="eq-item-bonus">+18 DEF · +80 HP · 55 Gold</div>
+          <div class="eq-item-bonus">+18 DEF · +80 HP · ${chestPrice} Gold</div>
           <div class="eq-item-actions">
             <button class="btn" onclick="buyShopItem('Knight Chestplate')">Buy</button>
           </div>
         </div>
       `;
+
+      const bagItems = Object.entries(CONTAINER_ITEMS).filter(([_, data]) => !data.starter);
+      bagItems.forEach(([name, data]) => {
+        const price = getMerchantPrice(data.cost);
+        shopHtml += `
+          <div class="eq-item-card">
+            <div class="eq-item-name">${name}</div>
+            <div class="eq-item-type">Container (${data.slots} slots)</div>
+            <div class="eq-item-bonus">${price} Gold</div>
+            <div class="eq-item-actions">
+              <button class="btn" onclick="buyContainer('${name}')">Buy</button>
+            </div>
+          </div>
+        `;
+      });
+
+      shopHtml += `
+        <div class="eq-item-card">
+          <div class="eq-item-name rarity-magic">Occultist Reforge</div>
+          <div class="eq-item-type">Rerolls one random non-unique gear piece in your inventory.</div>
+          <div class="eq-item-bonus">${occultistPrice} Gold</div>
+          <div class="eq-item-actions">
+            <button class="btn" onclick="rerollRandomInventoryItem()">Reforge</button>
+          </div>
+        </div>
+      `;
+
+      for (let i = 0; i < RUNE_TRANSMUTE_CHAIN.length - 1; i++) {
+        const sourceRune = RUNE_TRANSMUTE_CHAIN[i];
+        const resultRune = RUNE_TRANSMUTE_CHAIN[i + 1];
+        const cost = getTargetTransmuteCost(sourceRune);
+        const owned = runeCounts[sourceRune] || 0;
+        const canCraft = owned >= 3 && char.gold >= cost;
+
+        shopHtml += `
+          <div class="eq-item-card">
+            <div class="eq-item-name rarity-magic">Focused Transmute: ${sourceRune} -> ${resultRune}</div>
+            <div class="eq-item-type">Requires 3x ${sourceRune}</div>
+            <div class="eq-item-bonus">Owned: ${owned} · Cost: ${cost} Gold</div>
+            <div class="eq-item-actions">
+              <button class="btn${canCraft ? ' active' : ''}" onclick="openTransmuteConfirm('${sourceRune}')" ${canCraft ? '' : 'disabled'}>Craft</button>
+            </div>
+          </div>
+        `;
+      }
 
       shopGrid.innerHTML = shopHtml;
     }
@@ -1990,116 +3923,197 @@
       });
     }
 
-
-    const CLASS_SKILLS = {
-      Warrior: {
-        name: 'Shield Slam',
-        mp: 20,
-        desc: 'Heavy melee strike that reduces enemy damage.',
-        use: function () {
-          if (!mob) { log('No target.', 'info'); return; }
-          if (char.mp < 20) { log('Not enough MP.', 'info'); return; }
-
-          char.mp -= 20;
-
-          const dmg = Math.floor(char.atk * 2 + Math.random() * 12);
-          mob.hp -= dmg;
-          mob.atk = Math.max(1, mob.atk - 2);
-
-          log('Shield Slam hits for ' + dmg + ' and weakens the enemy!', 'dmg');
-
-          if (mob.hp <= 0) killMob();
-
-          renderAll();
-        }
-      },
-
-      Cleric: {
-        name: 'Greater Heal',
-        mp: 30,
-        desc: 'Large heal with bonus regeneration.',
-        use: function () {
-          if (char.mp < 30) { log('Not enough MP.', 'info'); return; }
-
-          char.mp -= 30;
-
-          const heal = Math.floor(char.maxHp * 0.5);
-
-          char.hp = Math.min(char.maxHp, char.hp + heal);
-
-          log('Greater Heal restores ' + heal + ' HP!', 'heal');
-
-          renderAll();
-        }
-      },
-
-      Wizard: {
-        name: 'Lightning Storm',
-        mp: 40,
-        desc: 'Massive magical burst damage.',
-        use: function () {
-          if (!mob) { log('No target.', 'info'); return; }
-          if (char.mp < 40) { log('Not enough MP.', 'info'); return; }
-
-          char.mp -= 40;
-
-          const dmg = Math.floor(char.atk * 4 + Math.random() * 30);
-
-          mob.hp -= dmg;
-
-          log('Lightning Storm hits ' + mob.name + ' for ' + dmg + ' damage!', 'dmg');
-
-          if (mob.hp <= 0) killMob();
-
-          renderAll();
-        }
-      },
-
-      Rogue: {
-        name: 'Poison Strike',
-        mp: 25,
-        desc: 'Critical strike with poison damage.',
-        use: function () {
-          if (!mob) { log('No target.', 'info'); return; }
-          if (char.mp < 25) { log('Not enough MP.', 'info'); return; }
-
-          char.mp -= 25;
-
-          const dmg = Math.floor(char.atk * 3 + Math.random() * 20);
-
-          mob.hp -= dmg;
-
-          log('Poison Strike deals ' + dmg + ' damage!', 'dmg');
-
-          if (Math.random() < 0.5 && mob.hp > 0) {
-            const poison = 10 + Math.floor(Math.random() * 10);
-            mob.hp -= poison;
-
-            log('Poison deals ' + poison + ' extra damage!', 'dmg');
-          }
-
-          if (mob.hp <= 0) killMob();
-
-          renderAll();
-        }
-      }
-    };
-
-    function getClassSkillData() {
-      return CLASS_SKILLS[char.cls];
+    function setMemorizedSpell(slotIdx, spellId) {
+      ensureSpellState(char);
+      char.memorizedSpells[slotIdx] = spellId;
+      log('Memorized ' + (getSpellById(spellId)?.name || spellId) + ' in gem ' + (slotIdx + 1) + '.', 'info');
+      renderAll();
+      autoSave();
     }
 
-    function castClassSkill() {
-      const skill = getClassSkillData();
+    function renderSpellbook() {
+      const el = document.getElementById('spellbook-list');
+      if (!el || !char) return;
 
-      if (!skill) {
-        log('No skill available.', 'info');
+      ensureSpellState(char);
+      el.innerHTML = '';
+
+      const knownCards = document.createElement('div');
+      knownCards.className = 'eq-bag-grid';
+
+      const vendorCards = document.createElement('div');
+      vendorCards.className = 'eq-bag-grid';
+
+      const knownTitle = document.createElement('h3');
+      knownTitle.textContent = 'Memorized Arts';
+      el.appendChild(knownTitle);
+
+      if (!char.knownSpells.length) {
+        knownCards.innerHTML = '<div class="eq-empty-bag">No spells learned yet.</div>';
+      }
+
+      char.knownSpells.forEach(spellId => {
+        const sp = getSpellById(spellId);
+        if (!sp) return;
+        const cd = getSpellCooldownRemaining(sp.id);
+
+        const card = document.createElement('div');
+        card.className = 'eq-item-card';
+        card.innerHTML = `
+          <div class="eq-item-name">${sp.name}</div>
+          <div class="eq-item-type">${sp.mp} MP · ${sp.cooldown}s cooldown${cd > 0 ? ' · Ready in ' + cd + 's' : ''}</div>
+          <div class="eq-item-bonus">${sp.desc}</div>
+          <div class="eq-item-actions">
+            <button class="btn" onclick="setMemorizedSpell(0, '${sp.id}')">Mem Gem 1</button>
+            <button class="btn" onclick="setMemorizedSpell(1, '${sp.id}')">Mem Gem 2</button>
+          </div>
+        `;
+        knownCards.appendChild(card);
+      });
+
+      el.appendChild(knownCards);
+
+      const vendorTitle = document.createElement('h3');
+      vendorTitle.style.marginTop = '12px';
+      vendorTitle.textContent = 'Spell Vendor';
+      el.appendChild(vendorTitle);
+
+      const allClassSpells = getClassSpellbook(char.cls);
+      const knownSet = new Set(char.knownSpells);
+
+      allClassSpells.forEach(sp => {
+        if (knownSet.has(sp.id)) return;
+
+        const levelReq = sp.levelReq || 1;
+        const canBuyByLevel = char.level >= levelReq;
+        const price = getMerchantPrice(sp.cost || 0);
+        const canBuy = canBuyByLevel && char.gold >= price;
+
+        const card = document.createElement('div');
+        card.className = 'eq-item-card';
+        card.innerHTML = `
+          <div class="eq-item-name">${sp.name}</div>
+          <div class="eq-item-type">Requires Lv ${levelReq} · ${sp.mp} MP · ${sp.cooldown}s cooldown</div>
+          <div class="eq-item-bonus">${sp.desc}</div>
+          <div class="eq-item-actions">
+            <button class="btn${canBuy ? ' active' : ''}" onclick="buySpell('${sp.id}')" ${canBuy ? '' : 'disabled'}>Buy (${price}g)</button>
+          </div>
+        `;
+        vendorCards.appendChild(card);
+      });
+
+      if (!vendorCards.children.length) {
+        vendorCards.innerHTML = '<div class="eq-empty-bag">Vendor has no new spells for you.</div>';
+      }
+
+      el.appendChild(vendorCards);
+    }
+
+    function buySpell(spellId) {
+      const sp = getSpellById(spellId);
+      if (!sp) {
+        log('That spell is not sold here.', 'info');
         return;
       }
 
-      skill.use();
+      ensureSpellState(char);
 
+      if (char.knownSpells.includes(sp.id)) {
+        log('You already know ' + sp.name + '.', 'info');
+        return;
+      }
+
+      const levelReq = sp.levelReq || 1;
+      if (char.level < levelReq) {
+        log('You must be level ' + levelReq + ' to purchase ' + sp.name + '.', 'info');
+        return;
+      }
+
+      const cost = getMerchantPrice(sp.cost || 0);
+      if (char.gold < cost) {
+        log('Not enough gold for ' + sp.name + '.', 'info');
+        return;
+      }
+
+      char.gold -= cost;
+      char.knownSpells.push(sp.id);
+      if (!char.memorizedSpells[0]) char.memorizedSpells[0] = sp.id;
+      else if (!char.memorizedSpells[1]) char.memorizedSpells[1] = sp.id;
+
+      log('Purchased spell: ' + sp.name + ' for ' + cost + 'g.', 'loot');
+      renderAll();
       autoSave();
+    }
+
+    function castClassSkill() {
+      castMemorizedSpell(0);
+    }
+
+    function castMemorizedSpell(slotIdx, silent = false) {
+      if (!char) return false;
+      ensureSpellState(char);
+
+      const spellId = char.memorizedSpells[slotIdx];
+      const sp = getSpellById(spellId);
+      if (!sp) {
+        if (!silent) log('No spell memorized in that gem.', 'info');
+        return false;
+      }
+
+      const cd = getSpellCooldownRemaining(sp.id);
+      if (cd > 0) {
+        if (!silent) log(sp.name + ' is on cooldown (' + cd + 's).', 'info');
+        return false;
+      }
+
+      if (char.mp < sp.mp) {
+        if (!silent) log('Not enough MP for ' + sp.name + '.', 'info');
+        return false;
+      }
+
+      if (sp.target === 'enemy' && !mob) {
+        if (!silent) log('No target for ' + sp.name + '.', 'info');
+        return false;
+      }
+
+      char.mp -= sp.mp;
+
+      if (sp.kind === 'damage' || sp.kind === 'damage_weaken' || sp.kind === 'damage_poison') {
+        const dmg = Math.floor(char.atk * sp.power + Math.random() * sp.variance);
+        mob.hp -= dmg;
+        log(sp.name + ' hits ' + mob.name + ' for ' + dmg + ' damage!', 'dmg');
+
+        if (sp.kind === 'damage_weaken') {
+          mob.atk = Math.max(1, mob.atk - (sp.weaken || 1));
+          log(mob.name + ' looks weakened.', 'info');
+        }
+
+        if (sp.kind === 'damage_poison' && mob.hp > 0 && Math.random() < 0.55) {
+          const poison = (sp.poisonMin || 6) + Math.floor(Math.random() * ((sp.poisonMax || 16) - (sp.poisonMin || 6) + 1));
+          mob.hp -= poison;
+          log('Poison ticks for ' + poison + ' extra damage.', 'dmg');
+        }
+
+        if (mob.hp <= 0) {
+          killMob();
+          char.spellCooldowns[sp.id] = Date.now() + sp.cooldown * 1000;
+          autoSave();
+          return true;
+        }
+      } else if (sp.kind === 'heal') {
+        const healAmt = Math.floor(char.maxHp * (sp.healPct || 0.25) + Math.random() * (sp.variance || 8));
+        char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        log(sp.name + ' restores ' + healAmt + ' HP.', 'heal');
+      } else if (sp.kind === 'mana') {
+        const manaAmt = Math.floor(char.maxMp * (sp.manaPct || 0.2) + Math.random() * (sp.variance || 6));
+        char.mp = Math.min(char.maxMp, char.mp + manaAmt);
+        log(sp.name + ' restores ' + manaAmt + ' MP.', 'heal');
+      }
+
+      char.spellCooldowns[sp.id] = Date.now() + sp.cooldown * 1000;
+      renderAll();
+      autoSave();
+      return true;
     }
 
 
@@ -2115,11 +4129,24 @@
 
     function spawnMob() {
       const zone = ZONES[char.zone];
-      const mobName = zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
+      const namedPool = NAMED_BY_ZONE[char.zone] || [];
+      const named = namedPool.length > 0 && Math.random() < 0.08;
+      const mobName = named ? namedPool[Math.floor(Math.random() * namedPool.length)] : zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
       const lvl = Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
       const elite = Math.random() < 0.1;
-      const hp = Math.floor((30 + lvl * 18) * (elite ? 2.5 : 1));
-      mob = { name: (elite ? '[Elite] ' : '') + mobName, level: lvl, hp, maxHp: hp, atk: 5 + lvl * 2 + (elite ? 8 : 0), def: 2 + lvl, baseName: mobName, elite };
+      const namedMult = named ? 1.8 : 1;
+      const hp = Math.floor((30 + lvl * 18) * (elite ? 2.5 : 1) * namedMult);
+      mob = {
+        name: (named ? '[Named] ' : (elite ? '[Elite] ' : '')) + mobName,
+        level: lvl,
+        hp,
+        maxHp: hp,
+        atk: Math.floor((5 + lvl * 2 + (elite ? 8 : 0)) * namedMult),
+        def: Math.floor((2 + lvl) * (named ? 1.4 : 1)),
+        baseName: mobName,
+        elite,
+        named
+      };
       log('A ' + mob.name + ' appears!', 'info'); renderMob();
     }
 
@@ -2146,6 +4173,23 @@
       log('You heal for ' + amt + ' HP.', 'heal'); renderAll(); autoSave();
     }
 
+    function meditate() {
+      if (mob) {
+        log('You cannot meditate in combat.', 'info');
+        return;
+      }
+      if (char.mp >= char.maxMp) {
+        log('Your mana is already full.', 'info');
+        return;
+      }
+
+      const gain = Math.floor(char.maxMp * 0.18) + char.mpRegen;
+      char.mp = Math.min(char.maxMp, char.mp + gain);
+      log('You meditate and recover ' + gain + ' mana.', 'heal');
+      renderAll();
+      autoSave();
+    }
+
     function useSkill() {
       const cls = CLASSES[char.cls];
       if (char.mp < cls.skillMp) { log('Not enough MP for ' + cls.skill + '.', 'info'); return; }
@@ -2165,9 +4209,11 @@
 
     function killMob() {
       const zone = ZONES[char.zone];
-      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1));
-      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1));
+      const namedMult = mob.named ? 2.5 : 1;
+      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult);
+      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult);
       char.xp += xp; char.gold += gold;
+      adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
       log(mob.name + ' is slain! +' + xp + ' XP, +' + gold + 'g', 'loot');
       char.quests.forEach(q => {
         if (!q.done && mob.baseName === q.mob) {
@@ -2175,9 +4221,16 @@
           if (q.prog >= q.count) { q.done = true; char.xp += q.xp; char.gold += q.gold; log('Quest complete: ' + q.name + '! +' + q.xp + ' XP, +' + q.gold + 'g', 'lvl'); }
         }
       });
-      if (Math.random() < 0.4) {
-        const loot = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
-        char.inventory.push(loot); log('Looted: ' + loot, 'loot');
+      if (Math.random() < (mob.named ? 0.8 : 0.4)) {
+        const lootBase = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
+        const loot = rollItemVariant(lootBase, mob.named ? 'loot_named' : 'loot');
+        char.inventory.push(loot); log('Looted: ' + getItemDisplayName(loot), 'loot');
+      }
+      const runeDrop = rollRuneDrop(char.zone, !!mob.named, 'loot');
+      if (runeDrop) {
+        if (!Array.isArray(char.runeStash)) char.runeStash = [];
+        char.runeStash.push(runeDrop);
+        log('Rune found: ' + runeDrop + '.', 'loot');
       }
       checkLevelUp(); renderQuests(); mob = null; renderAll(); autoSave();
     }
@@ -2196,16 +4249,27 @@
     }
 
     function die() {
-      log('You have been defeated! Returning to bind point fully restored...', 'dmg');
+      const bindZone = char.bindZone ?? char.zone;
+      const lostGold = Math.floor(char.gold * 0.15);
+      char.gold = Math.max(0, char.gold - lostGold);
+      char.corpse = { zone: char.zone, gold: lostGold, ts: Date.now() };
+
+      log('You have been defeated! Your corpse remains in ' + ZONES[char.zone].name + '.', 'dmg');
+      log('You lose ' + lostGold + ' gold until your corpse is recovered.', 'dmg');
+      log('Returning to bind point in ' + ZONES[bindZone].name + '...', 'info');
 
       char.hp = char.maxHp;
       char.mp = char.maxMp;
 
       char.xp = Math.max(0, char.xp - Math.floor(char.xpNext * 0.1));
+      adjustFaction(-5, 'dishonorable retreat');
+
+      char.zone = bindZone;
 
       mob = null;
 
       renderAll();
+      renderZones();
       autoSave();
     }
 
@@ -2217,7 +4281,7 @@
 
 
     function applyItemStats(item) {
-      const data = ITEM_DATA[item];
+      const data = getItemEffectiveStats(item);
       if (!data) return;
 
       char.atk += data.atk || 0;
@@ -2227,7 +4291,7 @@
     }
 
     function unequipStats(item) {
-      const data = ITEM_DATA[item];
+      const data = getItemEffectiveStats(item);
       if (!data) return;
 
       char.atk -= data.atk || 0;
@@ -2237,20 +4301,348 @@
     }
 
     function sellItem(index) {
+      if (index < 0 || index >= char.inventory.length) return;
       const item = char.inventory[index];
       char.inventory.splice(index, 1);
 
-      const value = Math.floor(Math.random() * 10) + 5;
+      const value = getItemSellValue(item);
       char.gold += value;
 
-      log('Sold ' + item + ' for ' + value + ' gold.', 'loot');
+      log('Sold ' + getItemDisplayName(item) + ' for ' + value + ' gold.', 'loot');
+
+      const bagCount = getBagLayout(char).length;
+      if (activeBagIndex >= bagCount) activeBagIndex = bagCount - 1;
+
+      renderAll();
+      autoSave();
+    }
+
+    function sellAllJunk() {
+      if (!char || !Array.isArray(char.inventory) || !char.inventory.length) {
+        log('You have no junk to sell.', 'info');
+        return;
+      }
+
+      const kept = [];
+      let soldCount = 0;
+      let totalGold = 0;
+
+      char.inventory.forEach(item => {
+        const isEquipment = !!getItemData(item);
+        const isContainer = isContainerEntry(item);
+
+        if (!isEquipment && !isContainer) {
+          soldCount++;
+          totalGold += getItemSellValue(item);
+        } else {
+          kept.push(item);
+        }
+      });
+
+      if (!soldCount) {
+        log('No junk items found to sell.', 'info');
+        return;
+      }
+
+      char.inventory = kept;
+      char.gold += totalGold;
+
+      const bagCount = getBagLayout(char).length;
+      if (activeBagIndex >= bagCount) activeBagIndex = bagCount - 1;
+
+      log('Sold ' + soldCount + ' junk items for ' + totalGold + ' gold.', 'loot');
+      showToast('Sold junk: +' + totalGold + 'g', 'success');
+      renderAll();
+      autoSave();
+    }
+
+    function sellAllInventory() {
+      if (!char || !Array.isArray(char.inventory) || !char.inventory.length) {
+        log('Your inventory is already empty.', 'info');
+        return;
+      }
+
+      const soldCount = char.inventory.length;
+      let totalGold = 0;
+
+      char.inventory.forEach(item => {
+        totalGold += getItemSellValue(item);
+      });
+
+      char.inventory = [];
+      char.gold += totalGold;
+      activeBagIndex = 0;
+
+      log('Sold all inventory items (' + soldCount + ') for ' + totalGold + ' gold.', 'loot');
+      showToast('Sold all inventory: +' + totalGold + 'g', 'success');
+      renderAll();
+      autoSave();
+    }
+
+    function stashAllRunesFromInventory() {
+      if (!Array.isArray(char.runeStash)) char.runeStash = [];
+
+      let moved = 0;
+      const kept = [];
+
+      char.inventory.forEach(item => {
+        if (isRuneEntry(item)) {
+          char.runeStash.push(getItemBaseName(item));
+          moved++;
+        } else {
+          kept.push(item);
+        }
+      });
+
+      char.inventory = kept;
+
+      if (!moved) {
+        log('No runes in inventory to stash.', 'info');
+        return;
+      }
+
+      log('Stashed ' + moved + ' runes.', 'loot');
+      renderAll();
+      autoSave();
+    }
+
+    function transmuteRunes() {
+      const counts = getRuneCounts();
+      let sourceRune = null;
+      let resultRune = null;
+
+      for (let i = 0; i < RUNE_TRANSMUTE_CHAIN.length - 1; i++) {
+        const cur = RUNE_TRANSMUTE_CHAIN[i];
+        if ((counts[cur] || 0) >= 3) {
+          sourceRune = cur;
+          resultRune = RUNE_TRANSMUTE_CHAIN[i + 1];
+          break;
+        }
+      }
+
+      if (!sourceRune || !resultRune) {
+        log('Need 3 matching lower runes to transmute.', 'info');
+        return;
+      }
+
+      if (!consumeRunesByName(sourceRune, 3)) {
+        log('Rune transmute failed. Try again.', 'info');
+        return;
+      }
+
+      if (!Array.isArray(char.runeStash)) char.runeStash = [];
+      char.runeStash.push(resultRune);
+      log('Transmuted 3x ' + sourceRune + ' into 1x ' + resultRune + '.', 'loot');
+      showToast('Rune transmute complete: ' + resultRune, 'success');
+      renderAll();
+      autoSave();
+    }
+
+    function transmuteRunesTarget(sourceRune) {
+      const srcIndex = RUNE_TRANSMUTE_CHAIN.indexOf(sourceRune);
+      if (srcIndex < 0 || srcIndex >= RUNE_TRANSMUTE_CHAIN.length - 1) {
+        log('That rune cannot be transmuted further.', 'info');
+        return;
+      }
+
+      const resultRune = RUNE_TRANSMUTE_CHAIN[srcIndex + 1];
+      const counts = getRuneCounts();
+      if ((counts[sourceRune] || 0) < 3) {
+        log('You need 3x ' + sourceRune + ' to craft ' + resultRune + '.', 'info');
+        return;
+      }
+
+      const cost = getTargetTransmuteCost(sourceRune);
+      if (char.gold < cost) {
+        log('Not enough gold for focused transmute (' + cost + 'g).', 'info');
+        return;
+      }
+
+      if (!consumeRunesByName(sourceRune, 3)) {
+        log('Focused transmute failed. Try again.', 'info');
+        return;
+      }
+
+      if (!Array.isArray(char.runeStash)) char.runeStash = [];
+      char.gold -= cost;
+      char.runeStash.push(resultRune);
+
+      log('Occultist forged 3x ' + sourceRune + ' into 1x ' + resultRune + ' for ' + cost + 'g.', 'loot');
+      showToast('Focused transmute: ' + resultRune, 'success');
+      renderAll();
+      autoSave();
+    }
+
+    function rerollInventoryItem(index) {
+      if (index < 0 || index >= char.inventory.length) return;
+
+      const entry = char.inventory[index];
+      const data = getItemData(entry);
+      if (!data) {
+        log('Only equippable gear can be rerolled.', 'info');
+        return;
+      }
+
+      const quality = getItemQuality(entry);
+      if (quality === 'Unique') {
+        log('Unique items cannot be rerolled.', 'info');
+        return;
+      }
+      if (quality === 'Runeword') {
+        log('Runeword items cannot be rerolled.', 'info');
+        return;
+      }
+
+      const cost = getRerollCost(entry);
+      if (char.gold < cost) {
+        log('Not enough gold for reroll (' + cost + 'g).', 'info');
+        return;
+      }
+
+      const oldName = getItemDisplayName(entry);
+      char.gold -= cost;
+      const rerolled = rollItemVariant(getItemBaseName(entry), 'reroll');
+      char.inventory[index] = rerolled;
+
+      log('Occultist rerolled ' + oldName + ' into ' + getItemDisplayName(rerolled) + ' for ' + cost + 'g.', 'loot');
+      renderAll();
+      autoSave();
+    }
+
+    function rerollRandomInventoryItem() {
+      const candidates = [];
+
+      char.inventory.forEach((entry, idx) => {
+        if (!getItemData(entry)) return;
+        if (getItemQuality(entry) === 'Unique' || getItemQuality(entry) === 'Runeword') return;
+        candidates.push(idx);
+      });
+
+      if (!candidates.length) {
+        log('No rerollable gear found in inventory.', 'info');
+        return;
+      }
+
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.occultistReforge + Math.floor(char.level * 6));
+      if (char.gold < cost) {
+        log('Not enough gold for occultist reforge (' + cost + 'g).', 'info');
+        return;
+      }
+
+      const chosenIndex = candidates[Math.floor(Math.random() * candidates.length)];
+      const oldEntry = char.inventory[chosenIndex];
+      const oldName = getItemDisplayName(oldEntry);
+
+      char.gold -= cost;
+      const rerolled = rollItemVariant(getItemBaseName(oldEntry), 'reroll');
+      char.inventory[chosenIndex] = rerolled;
+
+      log('Occultist reforged ' + oldName + ' into ' + getItemDisplayName(rerolled) + ' for ' + cost + 'g.', 'loot');
+      showToast('Occultist reforge complete.', 'success');
+      renderAll();
+      autoSave();
+    }
+
+    function addSocketToItem(index) {
+      if (index < 0 || index >= char.inventory.length) return;
+      const entry = char.inventory[index];
+      const data = getItemData(entry);
+      if (!data) {
+        log('Only gear can receive sockets.', 'info');
+        return;
+      }
+
+      const quality = getItemQuality(entry);
+      if (quality === 'Unique' || quality === 'Runeword') {
+        log('That item is sealed and cannot gain more sockets.', 'info');
+        return;
+      }
+
+      const obj = toSocketableItem(entry);
+      if (!obj) {
+        log('That item cannot hold sockets.', 'info');
+        return;
+      }
+
+      const cap = getSocketCapacityForBase(obj.base);
+      if (obj.maxSockets >= cap) {
+        log('No more sockets can be added to this item.', 'info');
+        return;
+      }
+
+      const cost = getSocketCost(entry);
+      if (char.gold < cost) {
+        log('Not enough gold to add a socket (' + cost + 'g).', 'info');
+        return;
+      }
+
+      char.gold -= cost;
+      obj.maxSockets += 1;
+      if (!Array.isArray(obj.sockets)) obj.sockets = [];
+      while (obj.sockets.length < obj.maxSockets) obj.sockets.push(null);
+      char.inventory[index] = obj;
+
+      log('Occultist added a socket to ' + getItemDisplayName(obj) + ' for ' + cost + 'g.', 'loot');
+      renderAll();
+      autoSave();
+    }
+
+    function insertRuneIntoItem(index) {
+      if (index < 0 || index >= char.inventory.length) return;
+      const entry = char.inventory[index];
+      const data = getItemData(entry);
+      if (!data) {
+        log('Only gear can be socketed with runes.', 'info');
+        return;
+      }
+
+      const quality = getItemQuality(entry);
+      if (quality === 'Unique' || quality === 'Runeword') {
+        log('That item cannot accept more runes.', 'info');
+        return;
+      }
+
+      let obj = toSocketableItem(entry);
+      if (!obj || obj.maxSockets <= 0) {
+        log('This item has no sockets.', 'info');
+        return;
+      }
+
+      const emptyIdx = obj.sockets.findIndex(s => !s);
+      if (emptyIdx < 0) {
+        log('No empty sockets available.', 'info');
+        return;
+      }
+
+      const runeName = takeFirstAvailableRune();
+      if (!runeName) {
+        log('You need at least one rune in your stash or inventory.', 'info');
+        return;
+      }
+
+      const itemIndex = index;
+      obj = toSocketableItem(char.inventory[itemIndex]);
+      if (!obj) return;
+
+      const targetIdx = obj.sockets.findIndex(s => !s);
+      if (targetIdx < 0) {
+        log('No empty sockets available.', 'info');
+        return;
+      }
+
+      obj.sockets[targetIdx] = runeName;
+      tryApplyRuneword(obj);
+      char.inventory[itemIndex] = obj;
+
+      log('Inserted ' + runeName + ' into ' + getItemDisplayName(obj) + '.', 'loot');
       renderAll();
       autoSave();
     }
 
     function equipItem(index) {
+      if (index < 0 || index >= char.inventory.length) return;
       const item = char.inventory[index];
-      const data = ITEM_DATA[item];
+      const data = getItemData(item);
 
       if (!data) {
         log('You cannot equip that item.', 'info');
@@ -2270,7 +4662,10 @@
 
       char.inventory.splice(index, 1);
 
-      log('Equipped ' + item + '.', 'loot');
+      log('Equipped ' + getItemDisplayName(item) + '.', 'loot');
+
+      const bagCount = getBagLayout(char).length;
+      if (activeBagIndex >= bagCount) activeBagIndex = bagCount - 1;
 
       renderAll();
       autoSave();
@@ -2290,8 +4685,31 @@
     function toggleAFK() {
       afkOn = !afkOn;
       const btn = document.getElementById('afk-btn'), dot = document.getElementById('afk-dot'), label = document.getElementById('afk-label');
-      if (afkOn) { btn.textContent = 'Disable'; btn.classList.add('active'); dot.classList.add('on'); label.textContent = 'AFK On'; afkInterval = setInterval(afkTick, tickMs); log('Auto-battle enabled.', 'info'); }
-      else { btn.textContent = 'Enable'; btn.classList.remove('active'); dot.classList.remove('on'); label.textContent = 'AFK Off'; clearInterval(afkInterval); afkInterval = null; log('Auto-battle disabled.', 'info'); }
+      if (afkOn) {
+        btn.textContent = 'Disable';
+        btn.classList.add('active');
+        dot.classList.add('on');
+        label.textContent = 'AFK On';
+        afkInterval = setInterval(afkTick, tickMs);
+        afkHiddenAt = document.hidden ? Date.now() : null;
+        char.afkEnabled = true;
+        char.lastAfkAt = Date.now();
+        saveSlots();
+        log('Auto-battle enabled.', 'info');
+      }
+      else {
+        btn.textContent = 'Enable';
+        btn.classList.remove('active');
+        dot.classList.remove('on');
+        label.textContent = 'AFK Off';
+        clearInterval(afkInterval);
+        afkInterval = null;
+        afkHiddenAt = null;
+        char.afkEnabled = false;
+        char.lastAfkAt = null;
+        saveSlots();
+        log('Auto-battle disabled.', 'info');
+      }
     }
 
     function getQueueOrder() { return Array.from(document.querySelectorAll('#action-queue .queue-item')).map(el => el.dataset.action); }
@@ -2337,10 +4755,7 @@
 
           // Skill usage is now part of attack behavior
           if (autoUseSkills) {
-            const skill = getClassSkillData();
-
-            if (skill && char.mp >= skill.mp) {
-              castClassSkill();
+            if (castMemorizedSpell(0, true) || castMemorizedSpell(1, true)) {
               return;
             }
           }
@@ -2353,14 +4768,112 @@
       renderAll();
     }
 
+    function simulateAfkReturn(elapsedMs, opts = {}) {
+      if (!char || !afkOn) return;
+
+      const elapsedTicks = Math.floor(elapsedMs / tickMs);
+      if (elapsedTicks < 3) return;
+
+      const maxTicks = 1800;
+      const simTicks = Math.min(elapsedTicks, maxTicks);
+      const fights = Math.max(1, Math.floor(simTicks * 0.28));
+
+      let totalXp = 0;
+      let totalGold = 0;
+      let totalLoot = 0;
+      let totalRunes = 0;
+      let questCompletions = 0;
+
+      const zone = ZONES[char.zone];
+
+      for (let i = 0; i < fights; i++) {
+        const mobName = zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
+        const lvl = Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
+        const elite = Math.random() < 0.1;
+
+        const xp = Math.floor((20 + lvl * 15) * zone.xpMult * (elite ? 3 : 1));
+        const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1));
+        totalXp += xp;
+        totalGold += gold;
+
+        char.quests.forEach(q => {
+          if (!q.done && mobName === q.mob) {
+            q.prog = Math.min(q.count, q.prog + 1);
+            if (q.prog >= q.count) {
+              q.done = true;
+              totalXp += q.xp;
+              totalGold += q.gold;
+              questCompletions++;
+            }
+          }
+        });
+
+        if (Math.random() < 0.4) {
+          const lootBase = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
+          const loot = rollItemVariant(lootBase, 'afk');
+          char.inventory.push(loot);
+          totalLoot++;
+        }
+
+        const runeDrop = rollRuneDrop(char.zone, elite, 'afk');
+        if (runeDrop) {
+          if (!Array.isArray(char.runeStash)) char.runeStash = [];
+          char.runeStash.push(runeDrop);
+          totalRunes++;
+        }
+      }
+
+      char.xp += totalXp;
+      char.gold += totalGold;
+      const factionGain = Math.max(1, Math.floor(fights / 6));
+      adjustFaction(factionGain, 'AFK hunting');
+      checkLevelUp();
+
+      const minutes = Math.floor(elapsedMs / 60000);
+      const seconds = Math.floor((elapsedMs % 60000) / 1000);
+      const awayLabel = minutes > 0 ? (minutes + 'm ' + seconds + 's') : (seconds + 's');
+
+      const sourcePrefix = opts.source === 'resume' ? 'AFK resume' : 'AFK return';
+      log(sourcePrefix + ' (' + awayLabel + '): simulated ' + fights + ' fights, +' + totalXp + ' XP, +' + totalGold + 'g, ' + totalLoot + ' items, ' + totalRunes + ' runes, +' + factionGain + ' faction.', 'loot');
+      if (questCompletions > 0) log('AFK quests completed: ' + questCompletions + '.', 'lvl');
+      if (elapsedTicks > simTicks) {
+        log('AFK simulation capped at ' + maxTicks + ' ticks for performance.', 'info');
+      }
+
+      showToast('AFK rewards: +' + totalXp + ' XP, +' + totalGold + 'g, ' + totalLoot + ' items, ' + totalRunes + ' runes, +' + factionGain + ' faction', 'success', 4200);
+
+      char.lastAfkAt = Date.now();
+      renderQuests();
+      renderAll();
+      autoSave();
+    }
+
+    function handleVisibilityChange() {
+      if (!afkOn || !char) return;
+
+      if (document.hidden) {
+        afkHiddenAt = Date.now();
+        char.lastAfkAt = afkHiddenAt;
+        saveSlots();
+        return;
+      }
+
+      if (afkHiddenAt) {
+        const elapsed = Date.now() - afkHiddenAt;
+        afkHiddenAt = null;
+        simulateAfkReturn(elapsed);
+      }
+    }
+
     // Minor Potions
     function buyHpPotion() {
-      if (char.gold < 5) {
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.hpMinor);
+      if (char.gold < cost) {
         log('Not enough gold.', 'info');
         return;
       }
 
-      char.gold -= 5;
+      char.gold -= cost;
       char.healpotions += 1;
 
       log('Bought a healing potion.', 'loot');
@@ -2370,12 +4883,13 @@
     }
 
     function buyHpPotion_10() {
-      if (char.gold < 50) {
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.hpMinor) * 10;
+      if (char.gold < cost) {
         log('Not enough gold.', 'info');
         return;
       }
 
-      char.gold -= 50;
+      char.gold -= cost;
       char.healpotions += 10;
 
       log('Bought a healing potion x10.', 'loot');
@@ -2385,12 +4899,13 @@
     }
 
     function buyMpPotion() {
-      if (char.gold < 5) {
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.mpMinor);
+      if (char.gold < cost) {
         log('Not enough gold.', 'info');
         return;
       }
 
-      char.gold -= 5;
+      char.gold -= cost;
       char.manapotions += 1;
 
       log('Bought a mana potion.', 'loot');
@@ -2400,12 +4915,13 @@
     }
 
     function buyMpPotion_10() {
-      if (char.gold < 50) {
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.mpMinor) * 10;
+      if (char.gold < cost) {
         log('Not enough gold.', 'info');
         return;
       }
 
-      char.gold -= 50;
+      char.gold -= cost;
       char.manapotions += 10;
 
       log('Bought a mana potion x10.', 'loot');
@@ -2478,12 +4994,13 @@
 
     // Light Potions
     function buyHpPotion_LHP() {
-      if (char.gold < 100) {
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.hpLight);
+      if (char.gold < cost) {
         log('Not enough gold.', 'info');
         return;
       }
 
-      char.gold -= 100;
+      char.gold -= cost;
       char.healpotions_lhp += 1;
 
       log('Bought a light healing potion.', 'loot');
@@ -2493,12 +5010,13 @@
     }
 
     function buyHpPotion_LHP_10() {
-      if (char.gold < 1000) {
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.hpLight) * 10;
+      if (char.gold < cost) {
         log('Not enough gold.', 'info');
         return;
       }
 
-      char.gold -= 1000;
+      char.gold -= cost;
       char.healpotions_lhp += 10;
 
       log('Bought a healing potion x10.', 'loot');
@@ -2508,12 +5026,13 @@
     }
 
     function buyMpPotion_LMP() {
-      if (char.gold < 100) {
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.mpLight);
+      if (char.gold < cost) {
         log('Not enough gold.', 'info');
         return;
       }
 
-      char.gold -= 100;
+      char.gold -= cost;
       char.manapotions_lmp += 1;
 
       log('Bought a light mana potion.', 'loot');
@@ -2523,12 +5042,13 @@
     }
 
     function buyMpPotion_LMP_10() {
-      if (char.gold < 1000) {
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.mpLight) * 10;
+      if (char.gold < cost) {
         log('Not enough gold.', 'info');
         return;
       }
 
-      char.gold -= 1000;
+      char.gold -= cost;
       char.manapotions_lmp += 10;
 
       log('Bought a light mana potion x10.', 'loot');
@@ -2569,7 +5089,7 @@
         return;
       }
 
-      char.manapotions -= 1;
+      char.manapotions_lmp -= 1;
 
       const healAmt = potionHealAmount_lmp_Mana;
 
@@ -2583,11 +5103,11 @@
 
     function buyShopItem(item) {
       const prices = {
-        'Steel Longsword': 40,
-        'Knight Chestplate': 55
+        'Steel Longsword': SHOP_BASE_PRICES.steelLongsword,
+        'Knight Chestplate': SHOP_BASE_PRICES.knightChestplate
       };
 
-      const cost = prices[item];
+      const cost = getMerchantPrice(prices[item]);
 
       if (char.gold < cost) {
         log('Not enough gold.', 'info');
@@ -2595,10 +5115,31 @@
       }
 
       char.gold -= cost;
-      char.inventory.push(item);
+      const purchasedItem = rollItemVariant(item, 'shop');
+      char.inventory.push(purchasedItem);
 
-      log('Purchased ' + item + '.', 'loot');
+      log('Purchased ' + getItemDisplayName(purchasedItem) + '.', 'loot');
 
+      renderAll();
+      autoSave();
+    }
+
+    function buyContainer(name) {
+      const data = CONTAINER_ITEMS[name];
+      if (!data || data.starter) {
+        log('That container cannot be purchased.', 'info');
+        return;
+      }
+
+      const cost = getMerchantPrice(data.cost);
+      if (char.gold < cost) {
+        log('Not enough gold.', 'info');
+        return;
+      }
+
+      char.gold -= cost;
+      char.inventory.push(name);
+      log('Purchased container: ' + name + '.', 'loot');
       renderAll();
       autoSave();
     }
@@ -2663,14 +5204,19 @@
     //  UI HELPERS
     // ══════════════════════════════════════════════
     function switchTab(tab) {
-      ['combat', 'zone', 'inv', 'shop'].forEach(t => { document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none'; });
-      document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', ['combat', 'zone', 'inv', 'shop'][i] === tab); });
+      ['combat', 'zone', 'inv', 'runes', 'shop', 'spells'].forEach(t => { document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none'; });
+      document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', ['combat', 'zone', 'inv', 'runes', 'shop', 'spells'][i] === tab); });
       if (tab === 'zone') renderZones();
       if (tab === 'inv') renderInv();
+      if (tab === 'runes') renderInv();
       if (tab === 'shop') renderShop();
+      if (tab === 'spells') renderSpellbook();
     }
 
     function setupDrag() {
+      if (dragSetupDone) return;
+      dragSetupDone = true;
+
       const queue = document.getElementById('action-queue');
       queue.addEventListener('dragstart', e => { dragSrc = e.target.closest('.queue-item'); if (dragSrc) dragSrc.classList.add('dragging'); });
       queue.addEventListener('dragend', () => { document.querySelectorAll('.queue-item').forEach(el => el.classList.remove('dragging', 'drag-over')); });
@@ -2681,6 +5227,8 @@
     // ══════════════════════════════════════════════
     //  INIT
     // ══════════════════════════════════════════════
+    document.addEventListener('keydown', handleModalKeydown);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     loadSlots();
     renderSlots();
   </script>
