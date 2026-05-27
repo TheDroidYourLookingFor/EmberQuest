@@ -252,6 +252,12 @@
       min-height: 560px;
     }
 
+    #center-panel {
+      min-height: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
     .panel {
       background: var(--bg-primary);
       border: 0.5px solid var(--border);
@@ -312,12 +318,27 @@
     }
 
     /* ── combat log ── */
+    #tab-combat {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-height: 0;
+      max-height: 100%;
+      overflow: hidden;
+    }
+
     #combat-log {
       background: var(--bg-secondary);
       border-radius: var(--radius-md);
       padding: 8px;
-      height: 140px;
-      overflow-y: auto;
+      height: 220px;
+      min-height: 0;
+      max-height: 220px;
+      flex: 0 0 auto;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      box-sizing: border-box;
       font-size: 12px;
       font-family: var(--font-mono);
     }
@@ -408,6 +429,7 @@
       cursor: pointer;
       transition: background .15s;
       font-family: var(--font);
+      touch-action: manipulation;
     }
 
     .btn:hover {
@@ -539,6 +561,7 @@
       background: var(--bg-secondary);
       cursor: pointer;
       color: var(--text-secondary);
+      touch-action: manipulation;
     }
 
     .tab.active {
@@ -737,6 +760,105 @@
     @media(max-width:720px) {
       .import-preview-grid {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media(max-width:1024px) {
+      #game-grid {
+        grid-template-columns: 220px 1fr;
+      }
+
+      #game-grid>div:last-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media(max-width:760px) {
+      body {
+        padding: 8px;
+      }
+
+      #screen-game {
+        max-width: 100%;
+      }
+
+      #game-topbar {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      #game-grid {
+        grid-template-columns: 1fr;
+        min-height: 0;
+      }
+
+      #game-grid>div:last-child {
+        grid-column: auto;
+      }
+
+      .panel {
+        padding: 8px;
+      }
+
+      .tab-bar {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .tab {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      .btn {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      .eq-item-actions {
+        gap: 8px;
+      }
+
+      .queue-item {
+        min-height: 40px;
+      }
+
+      input[type=range] {
+        height: 28px;
+      }
+
+      .eq-inventory-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .eq-bag-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #combat-log {
+        min-height: 120px;
+      }
+    }
+
+    @media(max-width:390px) {
+      #game-topbar .title {
+        width: 100%;
+      }
+
+      #game-topbar {
+        gap: 8px;
+      }
+
+      #game-topbar .btn {
+        flex: 1 1 calc(50% - 8px);
+        justify-content: center;
+        padding: 8px 10px;
+        min-height: 40px;
       }
     }
 
@@ -1405,6 +1527,7 @@
 
       <!-- Center: Combat / Zones / Inventory -->
       <div
+        id="center-panel"
         class="panel"
         style="display:flex;flex-direction:column;gap:8px">
         <div
@@ -1494,7 +1617,7 @@
           </div>
           <div
             id="combat-log"
-            style="margin-top:8px">
+            >
             <p
               class="log-info">
               Welcome
@@ -1503,7 +1626,7 @@
             </p>
           </div>
           <div
-            style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+            style="display:flex;gap:6px;flex-wrap:wrap">
             <button
               class="btn"
               onclick="attackOnce()"><i
@@ -1996,46 +2119,47 @@
             </div>
 
           </div>
-
-          Tick speed
         </div>
-        <input
-          type="range"
-          min="500"
-          max="3000"
-          step="100"
-          value="1200"
-          id="speed-slider"
-          oninput="updateSpeed(this.value)">
         <div
-          style="font-size:11px;color:var(--text-secondary)"
-          id="speed-label">
-          1.2s /
-          action
+          class="panel">
+          <h3>Tick Speed</h3>
+          <input
+            type="range"
+            min="500"
+            max="3000"
+            step="100"
+            value="1200"
+            id="speed-slider"
+            oninput="updateSpeed(this.value)">
+          <div
+            style="font-size:11px;color:var(--text-secondary)"
+            id="speed-label">
+            1.2s /
+            action
+          </div>
+        </div>
+        <div
+          class="panel">
+          <h3>Zone</h3>
+          <div
+            style="font-size:12px;font-weight:500"
+            id="zone-name-disp">
+          </div>
+          <div
+            style="font-size:11px;color:var(--text-secondary);margin-top:3px"
+            id="zone-desc-disp">
+          </div>
+          <div
+            style="font-size:11px;color:var(--text-secondary);margin-top:6px"
+            id="bind-zone-disp">
+          </div>
+          <div
+            style="font-size:11px;color:var(--text-secondary);margin-top:3px"
+            id="corpse-disp">
+          </div>
         </div>
       </div>
     </div>
-    <div
-      class="panel">
-      <h3>Zone</h3>
-      <div
-        style="font-size:12px;font-weight:500"
-        id="zone-name-disp">
-      </div>
-      <div
-        style="font-size:11px;color:var(--text-secondary);margin-top:3px"
-        id="zone-desc-disp">
-      </div>
-      <div
-        style="font-size:11px;color:var(--text-secondary);margin-top:6px"
-        id="bind-zone-disp">
-      </div>
-      <div
-        style="font-size:11px;color:var(--text-secondary);margin-top:3px"
-        id="corpse-disp">
-      </div>
-    </div>
-  </div>
   </div>
   </div>
 
@@ -3413,6 +3537,7 @@
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
       document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
       renderMob(); renderInv(); renderShop(); renderSpellbook();
+      requestAnimationFrame(syncCombatLogSize);
     }
 
     function renderMob() {
@@ -3431,6 +3556,48 @@
         badge.textContent = mob.elite ? 'Elite' : 'Normal';
         badge.className = 'badge ' + (mob.elite ? 'badge-rare' : 'badge-common');
       }
+      requestAnimationFrame(syncCombatLogSize);
+    }
+
+    function syncCombatLogSize() {
+      const centerPanel = document.getElementById('center-panel');
+      const tabBar = centerPanel ? centerPanel.querySelector('.tab-bar') : null;
+      const combatTab = document.getElementById('tab-combat');
+      const logEl = document.getElementById('combat-log');
+      const mobArea = document.getElementById('mob-area');
+      if (!centerPanel || !tabBar || !combatTab || !logEl || !mobArea) return;
+      if (combatTab.style.display === 'none') return;
+
+      const actionRow = logEl.nextElementSibling;
+      if (!actionRow) return;
+
+      const bodyStyles = getComputedStyle(document.body);
+      const bodyPadBottom = parseFloat(bodyStyles.paddingBottom || '0') || 0;
+      const panelTop = centerPanel.getBoundingClientRect().top;
+      const viewportAvailable = Math.floor(window.innerHeight - panelTop - bodyPadBottom);
+
+      const centerStyles = getComputedStyle(centerPanel);
+      const centerGap = parseFloat(centerStyles.rowGap || centerStyles.gap || '0') || 0;
+      const centerInnerHeight = Math.max(360, Math.min(680, viewportAvailable));
+
+      const combatHeight = Math.max(220, Math.floor(centerInnerHeight - tabBar.offsetHeight - centerGap - 20));
+      combatTab.style.height = combatHeight + 'px';
+      combatTab.style.minHeight = combatHeight + 'px';
+      combatTab.style.maxHeight = combatHeight + 'px';
+
+      const styles = getComputedStyle(combatTab);
+      const gap = parseFloat(styles.rowGap || styles.gap || '0') || 0;
+      const available = combatHeight - mobArea.offsetHeight - actionRow.offsetHeight - (gap * 2) - 25;
+      const minHeight = window.matchMedia('(max-width:760px)').matches ? 120 : 150;
+      const h = Number.isFinite(available) ? Math.max(minHeight, Math.floor(available)) : 220;
+
+      logEl.style.height = h + 'px';
+      logEl.style.minHeight = h + 'px';
+      logEl.style.maxHeight = h + 'px';
+      logEl.style.flex = '0 0 auto';
+      logEl.style.overflowY = 'scroll';
+      logEl.style.overflowX = 'hidden';
+      logEl.style.boxSizing = 'border-box';
     }
 
     function renderZones() {
@@ -4122,6 +4289,7 @@
     // ══════════════════════════════════════════════
     function log(msg, type = 'info') {
       const div = document.getElementById('combat-log');
+      syncCombatLogSize();
       const p = document.createElement('p'); p.className = 'log-' + type; p.textContent = msg;
       div.appendChild(p); div.scrollTop = div.scrollHeight;
       while (div.children.length > 80) div.removeChild(div.firstChild);
@@ -5204,8 +5372,11 @@
     //  UI HELPERS
     // ══════════════════════════════════════════════
     function switchTab(tab) {
-      ['combat', 'zone', 'inv', 'runes', 'shop', 'spells'].forEach(t => { document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none'; });
+      ['combat', 'zone', 'inv', 'runes', 'shop', 'spells'].forEach(t => {
+        document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
+      });
       document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', ['combat', 'zone', 'inv', 'runes', 'shop', 'spells'][i] === tab); });
+      if (tab === 'combat') requestAnimationFrame(syncCombatLogSize);
       if (tab === 'zone') renderZones();
       if (tab === 'inv') renderInv();
       if (tab === 'runes') renderInv();
@@ -5229,6 +5400,7 @@
     // ══════════════════════════════════════════════
     document.addEventListener('keydown', handleModalKeydown);
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('resize', () => requestAnimationFrame(syncCombatLogSize));
     loadSlots();
     renderSlots();
   </script>
