@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.0.1</title>
+    1.0.2</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -691,7 +691,7 @@
     id="screen-charselect"
     class="screen active">
     <h1>EmberQuest -
-      Version 1.0.1
+      Version 1.0.2
     </h1>
     <p
       class="subtitle">
@@ -828,7 +828,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.0.1</span>
+        1.0.2</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -948,13 +948,23 @@
               Potions</span><span
               class="stat-val"
               id="hp-potion"></span>
-            <button
-              class="btn active"
-              id="hp-potion-manual-btn"
-              onclick="useHpPotion(event)"
-              style="font-size:10px;padding:2px 8px">
-              USE
-            </button>
+            <div
+              style="display:flex;gap:2px;">
+              <button
+                class="btn active"
+                id="hp-potion-manual-btn"
+                onclick="buyHpPotion()"
+                style="font-size:10px;padding:2px 8px">
+                BUY
+              </button>
+              <button
+                class="btn active"
+                id="hp-potion-manual-btn"
+                onclick="useHpPotion(event)"
+                style="font-size:10px;padding:2px 8px">
+                USE
+              </button>
+            </div>
           </div>
           <div
             class="stat-row">
@@ -963,15 +973,24 @@
               Potions</span><span
               class="stat-val"
               id="mp-potion"></span>
-            <button
-              class="btn active"
-              id="mp-potion-manual-btn"
-              onclick="useMpPotion(event)"
-              style="font-size:10px;padding:2px 8px">
-              USE
-            </button>
+            <div
+              style="display:flex;gap:2px;">
+              <button
+                class="btn active"
+                id="mp-potion-buy-btn"
+                onclick="buyMpPotion()"
+                style="font-size:10px;padding:2px 8px">
+                BUY
+              </button>
+              <button
+                class="btn active"
+                id="mp-potion-manual-btn"
+                onclick="useMpPotion(event)"
+                style="font-size:10px;padding:2px 8px">
+                USE
+              </button>
+            </div>
           </div>
-
           <div
             style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
             <div
@@ -1535,6 +1554,10 @@
             onclick="buyHpPotion()">
             Buy
           </button>
+          <button class="btn"
+            onclick="buyHpPotion_10()">
+            Buy x10
+          </button>
         </div>
       </div>
 
@@ -1561,6 +1584,10 @@
             class="btn"
             onclick="buyMpPotion()">
             Buy
+          </button>
+          <button class="btn"
+            onclick="buyMpPotion_10()">
+            Buy x10
           </button>
         </div>
       </div>
@@ -2354,6 +2381,20 @@
       autoSave();
     }
 
+    function buyHpPotion_10() {
+      if (char.gold < 50) {
+        log('Not enough gold.', 'info');
+        return;
+      }
+
+      char.gold -= 50;
+      char.healpotions += 10;
+
+      log('Bought a healing potion x10.', 'loot');
+
+      renderAll();
+      autoSave();
+    }
     function buyMpPotion() {
       if (char.gold < 5) {
         log('Not enough gold.', 'info');
@@ -2368,6 +2409,21 @@
       renderAll();
       autoSave();
     }
+
+    function buyMpPotion_10() {
+        if (char.gold < 50) {
+          log('Not enough gold.', 'info');
+          return;
+        }
+
+        char.gold -= 50;
+        char.manapotions += 10;
+
+        log('Bought a mana potion x10.', 'loot');
+
+        renderAll();
+        autoSave();
+      }
 
     function useHpPotion() {
       if (char.healpotions <= 0) {
