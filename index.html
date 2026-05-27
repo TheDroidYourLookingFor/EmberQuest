@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.0.4</title>
+    1.0.5</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -1074,7 +1074,7 @@
     id="screen-charselect"
     class="screen active">
     <h1>EmberQuest -
-      Version 1.0.4
+      Version 1.0.5
     </h1>
     <p
       class="subtitle">
@@ -1211,7 +1211,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.0.4</span>
+        1.0.5</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -2895,7 +2895,7 @@
     let pendingTransmuteSourceRune = null;
     let afkHiddenAt = null;
     let activeBagIndex = 0;
-    const CURRENT_VERSION = '1.0.4';
+    const CURRENT_VERSION = '1.0.5';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -3231,6 +3231,19 @@
       document.getElementById(id).classList.add('active');
     }
 
+    function formatLastPlayed(ts) {
+      if (!ts) return '';
+      const dt = new Date(ts);
+      if (Number.isNaN(dt.getTime())) return '';
+      return dt.toLocaleString([], {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
+
     function renderSlots() {
       const grid = document.getElementById('slot-grid');
       grid.innerHTML = '';
@@ -3239,7 +3252,7 @@
         card.className = 'slot-card' + (s ? '' : ' empty');
         if (s) {
           const zoneName = ZONES[s.zone] ? ZONES[s.zone].name : 'Unknown';
-          const played = s.lastSaved ? new Date(s.lastSaved).toLocaleDateString() : '';
+          const played = formatLastPlayed(s.lastSaved);
           card.innerHTML = `
         <div>
           <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
@@ -3447,9 +3460,9 @@
         if (!silent) log('Upgraded save data to v' + CURRENT_VERSION + '.', 'info');
       }
 
-      if (oldChar.version === '1.0.3') {
-        oldChar.version = '1.0.4';
-        if (!silent) log('Upgraded save data to v1.0.4.', 'info');
+      if (oldChar.version === '1.0.3' || oldChar.version === '1.0.4') {
+        oldChar.version = '1.0.5';
+        if (!silent) log('Upgraded save data to v1.0.5.', 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
