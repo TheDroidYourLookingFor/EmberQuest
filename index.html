@@ -224,7 +224,7 @@
 
     /* ── game layout ── */
     #screen-game {
-      max-width: 900px;
+      max-width: 1120px;
       margin: 0 auto;
     }
 
@@ -247,7 +247,7 @@
 
     #game-grid {
       display: grid;
-      grid-template-columns: 220px 1fr 300px;
+      grid-template-columns: 210px minmax(0, 1fr) 280px;
       gap: 8px;
       min-height: 560px;
     }
@@ -326,6 +326,15 @@
       min-height: 0;
       max-height: 100%;
       overflow: hidden;
+    }
+
+    #tab-zone,
+    #tab-inv,
+    #tab-runes,
+    #tab-shop,
+    #tab-spells {
+      min-width: 0;
+      overflow-x: auto;
     }
 
     #combat-log {
@@ -865,8 +874,9 @@
     /* ── EQ inventory ── */
     .eq-inventory-layout {
       display: grid;
-      grid-template-columns: 220px 1fr;
+      grid-template-columns: minmax(160px, 190px) minmax(0, 1fr);
       gap: 12px;
+      min-width: 0;
     }
 
     .eq-paperdoll {
@@ -917,6 +927,7 @@
       background: var(--bg-secondary);
       border-radius: var(--radius-md);
       padding: 10px;
+      min-width: 0;
     }
 
     .bag-tab-row {
@@ -957,8 +968,9 @@
 
     .eq-bag-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 8px;
+      min-width: 0;
     }
 
     .eq-item-card {
