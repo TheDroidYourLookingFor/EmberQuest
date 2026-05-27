@@ -1497,6 +1497,25 @@
               id="skill-desc"
               style="font-size:10px;color:var(--text-secondary);margin-top:6px;line-height:1.4">
             </div>
+
+            <div
+              style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+              <div
+                style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">
+                <div
+                  style="font-size:11px;color:var(--text-secondary)">
+                  Active Effects
+                </div>
+                <button
+                  class="btn"
+                  style="font-size:10px;padding:2px 8px"
+                  onclick="invokeShrine()">Invoke Shrine</button>
+              </div>
+              <div
+                id="status-effects"
+                style="display:flex;flex-wrap:wrap;gap:4px">
+              </div>
+            </div>
           </div>
         </div>
         <div
@@ -1663,6 +1682,23 @@
               onclick="recoverCorpse()"><i
                 class="ti ti-skull"></i>
               Recover Corpse</button>
+          </div>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button
+              class="btn"
+              onclick="enterDungeon()"><i
+                class="ti ti-stairs"></i>
+              Enter Dungeon</button>
+            <button
+              class="btn"
+              onclick="leaveDungeon()"><i
+                class="ti ti-door-exit"></i>
+              Leave Dungeon</button>
+          </div>
+          <div
+            id="dungeon-info"
+            style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
           </div>
           <div
             id="zone-list">
@@ -2247,6 +2283,28 @@
       'Knight Chestplate': { slot: 'chest', def: 18, hp: 80, type: 'Plate Armor' }
     };
 
+    const WEAPON_PROCS = {
+      'Rusty Dagger': { name: 'Jagged Wound', chance: 0.12, type: 'poison', min: 4, max: 9 },
+      'Worn Shortsword': { name: 'Sundering Slash', chance: 0.1, type: 'damage', min: 6, max: 12, weaken: 1 },
+      'Cracked Staff': { name: 'Mana Surge', chance: 0.12, type: 'mana', min: 10, max: 20 },
+      'Steel Longsword': { name: 'Steel Tempest', chance: 0.14, type: 'damage', min: 12, max: 22, weaken: 2 }
+    };
+
+    const ITEM_SETS = {
+      'Crypt Stalker': {
+        pieces: ['Worn Shortsword', 'Rawhide Boots', 'Gnoll Fang Earring'],
+        bonus2: { atk: 3, def: 1, procChance: 0.02 }
+      },
+      'Ember Warden': {
+        pieces: ['Steel Longsword', 'Knight Chestplate', 'Cazic Quill'],
+        bonus2: { atk: 4, def: 2, procChance: 0.03 }
+      },
+      'Twilight Scholar': {
+        pieces: ['Cracked Staff', 'Tattered Robe', 'Cazic Quill'],
+        bonus2: { atk: 2, def: 2, procChance: 0.02 }
+      }
+    };
+
 
     const LOOT = ['Rusty Dagger', 'Tattered Robe', 'Rawhide Boots', 'Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Cracked Staff', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot'];
     const ITEM_AFFIX_POOL = {
@@ -2585,6 +2643,76 @@
     function getItemData(entry) {
       const baseName = getItemBaseName(entry);
       return ITEM_DATA[baseName] || null;
+    }
+
+    function getItemSetName(entry) {
+      const baseName = getItemBaseName(entry);
+      if (!baseName) return null;
+      for (const [setName, setData] of Object.entries(ITEM_SETS)) {
+        if (setData.pieces.includes(baseName)) return setName;
+      }
+      return null;
+    }
+
+    function getActiveSetBonusStats() {
+      const result = { atk: 0, def: 0, procChance: 0, names: [] };
+      if (!char || !char.equipment) return result;
+
+      const equippedBases = Object.values(char.equipment)
+        .map(item => getItemBaseName(item))
+        .filter(Boolean);
+
+      Object.entries(ITEM_SETS).forEach(([setName, setData]) => {
+        const count = setData.pieces.filter(piece => equippedBases.includes(piece)).length;
+        if (count >= 2) {
+          result.atk += setData.bonus2.atk || 0;
+          result.def += setData.bonus2.def || 0;
+          result.procChance += setData.bonus2.procChance || 0;
+          result.names.push(setName);
+        }
+      });
+
+      return result;
+    }
+
+    function tryTriggerWeaponProc(event, setBonus) {
+      if (!char || !char.equipment || !char.equipment.weapon || !mob) return false;
+
+      const weaponBase = getItemBaseName(char.equipment.weapon);
+      const proc = WEAPON_PROCS[weaponBase];
+      if (!proc) return false;
+
+      const totalChance = Math.min(0.45, (proc.chance || 0) + (setBonus.procChance || 0));
+      if (Math.random() > totalChance) return false;
+
+      if (proc.type === 'mana') {
+        const manaGain = Math.floor((proc.min || 8) + Math.random() * ((proc.max || 14) - (proc.min || 8) + 1));
+        char.mp = Math.min(char.maxMp, char.mp + Math.floor(manaGain * (event.manaMult || 1)));
+        log(proc.name + ' triggers and restores mana.', 'heal');
+        return false;
+      }
+
+      let dmg = Math.floor((proc.min || 6) + Math.random() * ((proc.max || 12) - (proc.min || 6) + 1));
+      dmg = Math.max(1, Math.floor(dmg * (event.playerDamageMult || 1)));
+      mob.hp -= dmg;
+      log(proc.name + ' triggers for ' + dmg + ' bonus damage!', 'dmg');
+
+      if (proc.weaken && mob.hp > 0) {
+        mob.atk = Math.max(1, mob.atk - proc.weaken);
+      }
+
+      if (proc.type === 'poison' && mob.hp > 0) {
+        const poison = Math.max(1, Math.floor(dmg * 0.5));
+        mob.hp -= poison;
+        log(proc.name + ' poison deals ' + poison + ' extra damage.', 'dmg');
+      }
+
+      if (mob.hp <= 0) {
+        killMob();
+        return true;
+      }
+
+      return false;
     }
 
     function isContainerEntry(entry) {
@@ -2990,6 +3118,177 @@
         { name: 'Gnoll Slayer', desc: 'Kill 8 Gnoll Warriors', mob: 'Gnoll Warrior', count: 8, xp: 400, gold: 60, done: false, prog: 0 },
         { name: 'Manor Cleansing', desc: 'Kill 6 Restless Zombies', mob: 'Restless Zombie', count: 6, xp: 900, gold: 120, done: false, prog: 0 }
       ];
+    }
+
+    const DUNGEON_MOBS = ['Abyss Stalker', 'Void Acolyte', 'Crypt Juggernaut', 'Rune Horror', 'Nightshade Warden'];
+
+    function generateEliteContract(targetZone = null) {
+      const zoneIdx = targetZone === null ? (char ? char.zone : 0) : targetZone;
+      const zone = ZONES[zoneIdx] || ZONES[0];
+      const target = zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
+      const count = Math.max(3, 4 + zoneIdx);
+      const rewardXp = Math.floor(220 + zoneIdx * 180 + count * 25);
+      const rewardGold = Math.floor(40 + zoneIdx * 28 + count * 8);
+      return { active: true, zone: zoneIdx, target, count, progress: 0, rewardXp, rewardGold, complete: false };
+    }
+
+    function ensureExtendedSystems(targetChar) {
+      if (!Array.isArray(targetChar.statusEffects)) targetChar.statusEffects = [];
+      targetChar.statusEffects = targetChar.statusEffects
+        .filter(e => e && typeof e === 'object' && typeof e.id === 'string' && Number.isFinite(Number(e.expiresAt)))
+        .map(e => ({
+          id: e.id,
+          name: typeof e.name === 'string' ? e.name : e.id,
+          type: e.type === 'debuff' ? 'debuff' : 'buff',
+          atkBonus: Number(e.atkBonus || 0),
+          defBonus: Number(e.defBonus || 0),
+          playerDamageMult: Number(e.playerDamageMult || 1),
+          mobDamageMult: Number(e.mobDamageMult || 1),
+          healMult: Number(e.healMult || 1),
+          manaMult: Number(e.manaMult || 1),
+          expiresAt: Number(e.expiresAt)
+        }));
+
+      if (!targetChar.eliteContract || typeof targetChar.eliteContract !== 'object') {
+        targetChar.eliteContract = generateEliteContract(targetChar.zone || 0);
+      }
+
+      if (!targetChar.dungeon || typeof targetChar.dungeon !== 'object') {
+        targetChar.dungeon = { active: false, floor: 1, best: 1 };
+      }
+      targetChar.dungeon.active = !!targetChar.dungeon.active;
+      targetChar.dungeon.floor = Math.max(1, Number(targetChar.dungeon.floor || 1));
+      targetChar.dungeon.best = Math.max(targetChar.dungeon.floor, Number(targetChar.dungeon.best || 1));
+    }
+
+    function cleanupStatusEffects(targetChar, logExpired = false) {
+      if (!Array.isArray(targetChar.statusEffects)) targetChar.statusEffects = [];
+      const now = Date.now();
+      const active = [];
+      targetChar.statusEffects.forEach(e => {
+        if (Number(e.expiresAt) > now) active.push(e);
+        else if (logExpired && targetChar === char) log(e.name + ' fades.', 'info');
+      });
+      targetChar.statusEffects = active;
+    }
+
+    function applyStatusEffect(effect) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      cleanupStatusEffects(char);
+      char.statusEffects = char.statusEffects.filter(e => e.id !== effect.id);
+      char.statusEffects.push(effect);
+      log(effect.name + ' applied.', effect.type === 'debuff' ? 'dmg' : 'info');
+    }
+
+    function getStatusEffectModifiers(targetChar) {
+      const out = { atkBonus: 0, defBonus: 0, playerDamageMult: 1, mobDamageMult: 1, healMult: 1, manaMult: 1 };
+      if (!targetChar || !Array.isArray(targetChar.statusEffects)) return out;
+      targetChar.statusEffects.forEach(e => {
+        out.atkBonus += Number(e.atkBonus || 0);
+        out.defBonus += Number(e.defBonus || 0);
+        out.playerDamageMult *= Number(e.playerDamageMult || 1);
+        out.mobDamageMult *= Number(e.mobDamageMult || 1);
+        out.healMult *= Number(e.healMult || 1);
+        out.manaMult *= Number(e.manaMult || 1);
+      });
+      return out;
+    }
+
+    function renderStatusEffects() {
+      const host = document.getElementById('status-effects');
+      if (!host || !char) return;
+      ensureExtendedSystems(char);
+      cleanupStatusEffects(char);
+      host.innerHTML = '';
+      if (!char.statusEffects.length) {
+        host.innerHTML = '<span class="badge badge-common">None</span>';
+        return;
+      }
+      const now = Date.now();
+      char.statusEffects.forEach(e => {
+        const chip = document.createElement('span');
+        chip.className = 'badge ' + (e.type === 'debuff' ? 'badge-rare' : 'badge-common');
+        const left = Math.max(1, Math.ceil((Number(e.expiresAt) - now) / 1000));
+        chip.textContent = e.name + ' (' + left + 's)';
+        host.appendChild(chip);
+      });
+    }
+
+    function invokeShrine() {
+      if (!char) return;
+      if (mob) {
+        log('You cannot invoke a shrine during combat.', 'info');
+        return;
+      }
+      const duration = 180000;
+      const roll = Math.random();
+      if (roll < 0.45) {
+        applyStatusEffect({ id: 'shrine_fury', name: 'Shrine Fury', type: 'buff', atkBonus: 3, playerDamageMult: 1.12, expiresAt: Date.now() + duration });
+      } else if (roll < 0.8) {
+        applyStatusEffect({ id: 'shrine_ward', name: 'Shrine Ward', type: 'buff', defBonus: 2, mobDamageMult: 0.9, expiresAt: Date.now() + duration });
+      } else {
+        applyStatusEffect({ id: 'shrine_blight', name: 'Shrine Blight', type: 'debuff', playerDamageMult: 0.9, mobDamageMult: 1.12, expiresAt: Date.now() + duration });
+      }
+      renderAll();
+      autoSave();
+    }
+
+    function enterDungeon() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (mob) {
+        log('You cannot enter the dungeon during combat.', 'info');
+        return;
+      }
+      char.dungeon.active = true;
+      char.dungeon.floor = Math.max(1, char.dungeon.floor || 1);
+      mob = null;
+      log('You descend into the Endless Dungeon at floor ' + char.dungeon.floor + '.', 'info');
+      renderAll();
+      renderZones();
+      autoSave();
+    }
+
+    function leaveDungeon() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (!char.dungeon.active) {
+        log('You are not in the dungeon.', 'info');
+        return;
+      }
+      char.dungeon.active = false;
+      char.dungeon.floor = 1;
+      mob = null;
+      log('You leave the Endless Dungeon.', 'info');
+      renderAll();
+      renderZones();
+      autoSave();
+    }
+
+    function claimEliteContractReward() {
+      if (!char || !char.eliteContract || !char.eliteContract.active) return;
+      const c = char.eliteContract;
+      if (!c.complete) {
+        log('Contract is not complete yet.', 'info');
+        return;
+      }
+      char.xp += c.rewardXp;
+      char.gold += c.rewardGold;
+      log('Elite contract completed! +' + c.rewardXp + ' XP, +' + c.rewardGold + 'g.', 'loot');
+      char.eliteContract = generateEliteContract(char.zone);
+      checkLevelUp();
+      renderAll();
+      renderQuests();
+      autoSave();
+    }
+
+    function rerollEliteContract() {
+      if (!char) return;
+      char.eliteContract = generateEliteContract(char.zone);
+      log('New elite contract posted.', 'info');
+      renderQuests();
+      autoSave();
     }
 
     // ══════════════════════════════════════════════
@@ -3542,7 +3841,11 @@
         memorizedSpells: [getClassSpellbook(selectedClass)[0]?.id || null, null],
         spellShopInitialized: true,
         spellCooldowns: {},
-        quests: freshQuests(), afkEnabled: false, lastAfkAt: null, lastSaved: Date.now()
+        quests: freshQuests(),
+        statusEffects: [],
+        eliteContract: generateEliteContract(0),
+        dungeon: { active: false, floor: 1, best: 1 },
+        afkEnabled: false, lastAfkAt: null, lastSaved: Date.now()
       };
       slots[pendingSlot] = newChar;
       saveSlots();
@@ -3684,6 +3987,7 @@
 
       ensureSpellState(oldChar);
       ensureBagState(oldChar);
+      ensureExtendedSystems(oldChar);
 
       if (!oldChar.version) {
         oldChar.version = CURRENT_VERSION;
@@ -3718,6 +4022,7 @@
         char.equipment = { weapon: null, chest: null, legs: null, feet: null, offhand: null, charm: null };
       }
       if (!char.quests) char.quests = freshQuests();
+      ensureExtendedSystems(char);
       ensureSpellState(char);
 
       mob = null;
@@ -3765,6 +4070,8 @@
     function renderAll() {
       if (!char) return;
       ensureSpellState(char);
+      ensureExtendedSystems(char);
+      cleanupStatusEffects(char, true);
       document.getElementById('char-name-disp').textContent = char.name;
       document.getElementById('char-class-disp').textContent = (char.race ? char.race + ' ' : '') + char.cls + ' — Level ' + char.level;
       document.getElementById('char-level').textContent = char.level;
@@ -3792,6 +4099,7 @@
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
       document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
       renderMob(); renderInv(); renderShop(); renderSpellbook();
+      renderStatusEffects();
       requestAnimationFrame(syncCombatLogSize);
     }
 
@@ -3869,6 +4177,13 @@
       const event = getActiveZoneEvent(char.zone);
       document.getElementById('zone-desc-disp').textContent = ZONES[char.zone].desc + ' Event: ' + event.name + ' — ' + event.desc;
       document.getElementById('bind-zone-disp').textContent = 'Bind Point: ' + ZONES[char.bindZone || 0].name;
+      const dungeonInfo = document.getElementById('dungeon-info');
+      if (dungeonInfo) {
+        ensureExtendedSystems(char);
+        dungeonInfo.textContent = char.dungeon.active
+          ? ('Dungeon Active · Floor ' + char.dungeon.floor + ' · Best ' + char.dungeon.best)
+          : ('Dungeon Inactive · Best Floor ' + (char.dungeon.best || 1));
+      }
       if (char.corpse) {
         const zoneName = ZONES[char.corpse.zone] ? ZONES[char.corpse.zone].name : 'Unknown';
         document.getElementById('corpse-disp').textContent = 'Corpse: ' + zoneName + ' (' + (char.corpse.gold || 0) + 'g)';
@@ -4007,13 +4322,16 @@
 
         const label = getItemDisplayName(item);
         const rarityClass = getItemRarityClass(item);
-        el.innerHTML = `<div class="eq-item-name ${rarityClass}">${label}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>`;
+        const setName = getItemSetName(item);
+        const setLine = setName ? `<div class="eq-slot-stats">Set: ${setName}</div>` : '';
+        el.innerHTML = `<div class="eq-item-name ${rarityClass}">${label}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>${setLine}`;
       });
     }
 
     function renderInv() {
       renderEquipment();
       ensureBagState(char);
+      const setBonus = getActiveSetBonusStats();
 
       const el = document.getElementById('inv-list');
       const tabRow = document.getElementById('bag-tab-row');
@@ -4079,6 +4397,10 @@
         ? 'Overflow slots (your bags are full). Total items: ' + char.inventory.length
         : ('Showing ' + activeBag.name + ' · Slots ' + (start + 1) + '-' + end + ' · Total items: ' + char.inventory.length);
 
+      if (setBonus.names.length) {
+        bagMeta.textContent += ' · Active Sets: ' + setBonus.names.join(', ') + ' (+' + setBonus.atk + ' ATK, +' + setBonus.def + ' DEF)';
+      }
+
       if (!char.inventory.length) {
         el.innerHTML = '<div class="eq-empty-bag">Your bags are empty.</div>';
       }
@@ -4123,6 +4445,8 @@
 
         let itemType = data.type || 'Misc Item';
         if (isRune) itemType = 'Rune';
+        const setName = getItemSetName(item);
+        if (setName) itemType = itemType + ' · Set: ' + setName;
         if (quality === 'Runeword' && item && item.runeword && item.runeword.name) {
           itemType = itemType + ' · ' + item.runeword.name;
         }
@@ -4344,6 +4668,19 @@
         d.innerHTML = '<div class="quest-name">' + (q.done ? '✓ ' : '') + q.name + '</div><div class="quest-prog">' + q.desc + (q.done ? ' — Complete!' : ' (' + q.prog + '/' + q.count + ')') + '</div>';
         el.appendChild(d);
       });
+
+      ensureExtendedSystems(char);
+      const c = char.eliteContract;
+      if (c && c.active) {
+        const zoneName = ZONES[c.zone] ? ZONES[c.zone].name : 'Unknown';
+        const contract = document.createElement('div');
+        contract.className = 'quest';
+        contract.innerHTML = '<div class="quest-name">Elite Hunt Contract</div>' +
+          '<div class="quest-prog">Zone: ' + zoneName + ' · Hunt ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Complete!' : '') + '</div>' +
+          '<div class="quest-prog">Reward: ' + c.rewardXp + ' XP · ' + c.rewardGold + 'g</div>' +
+          '<div style="display:flex;gap:6px;margin-top:6px"><button class="btn" onclick="claimEliteContractReward()" ' + (c.complete ? '' : 'disabled') + '>Claim</button><button class="btn" onclick="rerollEliteContract()">Reroll</button></div>';
+        el.appendChild(contract);
+      }
     }
 
     function setMemorizedSpell(slotIdx, spellId) {
@@ -4436,6 +4773,7 @@
     }
 
     function buySpell(spellId) {
+      ensureExtendedSystems(char);
       const sp = getSpellById(spellId);
       if (!sp) {
         log('That spell is not sold here.', 'info');
@@ -4510,9 +4848,10 @@
 
       char.mp -= sp.mp;
       const event = getActiveZoneEvent(char.zone);
+      const fx = getStatusEffectModifiers(char);
 
       if (sp.kind === 'damage' || sp.kind === 'damage_weaken' || sp.kind === 'damage_poison') {
-        const dmg = Math.max(1, Math.floor((char.atk * sp.power + Math.random() * sp.variance) * (event.spellDamageMult || 1)));
+        const dmg = Math.max(1, Math.floor((char.atk * sp.power + Math.random() * sp.variance) * (event.spellDamageMult || 1) * (fx.playerDamageMult || 1)));
         mob.hp -= dmg;
         log(sp.name + ' hits ' + mob.name + ' for ' + dmg + ' damage!', 'dmg');
 
@@ -4534,11 +4873,11 @@
           return true;
         }
       } else if (sp.kind === 'heal') {
-        const healAmt = Math.floor((char.maxHp * (sp.healPct || 0.25) + Math.random() * (sp.variance || 8)) * (event.healMult || 1));
+        const healAmt = Math.floor((char.maxHp * (sp.healPct || 0.25) + Math.random() * (sp.variance || 8)) * (event.healMult || 1) * (fx.healMult || 1));
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log(sp.name + ' restores ' + healAmt + ' HP.', 'heal');
       } else if (sp.kind === 'mana') {
-        const manaAmt = Math.floor((char.maxMp * (sp.manaPct || 0.2) + Math.random() * (sp.variance || 6)) * (event.manaMult || 1));
+        const manaAmt = Math.floor((char.maxMp * (sp.manaPct || 0.2) + Math.random() * (sp.variance || 6)) * (event.manaMult || 1) * (fx.manaMult || 1));
         char.mp = Math.min(char.maxMp, char.mp + manaAmt);
         log(sp.name + ' restores ' + manaAmt + ' MP.', 'heal');
       }
@@ -4563,11 +4902,19 @@
 
     function spawnMob() {
       const zone = ZONES[char.zone];
+      ensureExtendedSystems(char);
+      const inDungeon = !!char.dungeon.active;
+      const floor = char.dungeon.floor || 1;
       const namedPool = NAMED_BY_ZONE[char.zone] || [];
-      const named = namedPool.length > 0 && Math.random() < 0.08;
-      const mobName = named ? namedPool[Math.floor(Math.random() * namedPool.length)] : zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
-      const lvl = Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
-      const elite = Math.random() < 0.1;
+      const named = inDungeon ? (floor % 5 === 0) : (namedPool.length > 0 && Math.random() < 0.08);
+      const dungeonBoss = inDungeon && named;
+      const mobName = inDungeon
+        ? (dungeonBoss ? ('Floor ' + floor + ' Sentinel') : DUNGEON_MOBS[Math.floor(Math.random() * DUNGEON_MOBS.length)])
+        : (named ? namedPool[Math.floor(Math.random() * namedPool.length)] : zone.mobs[Math.floor(Math.random() * zone.mobs.length)]);
+      const lvl = inDungeon
+        ? Math.max(1, char.level + Math.floor(floor / 2))
+        : Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
+      const elite = inDungeon ? (dungeonBoss || Math.random() < 0.2) : (Math.random() < 0.1);
       const namedMult = named ? 1.8 : 1;
       const hp = Math.floor((30 + lvl * 18) * (elite ? 2.5 : 1) * namedMult);
       const namedMechanic = named ? NAMED_MECHANICS[Math.floor(Math.random() * NAMED_MECHANICS.length)] : null;
@@ -4595,8 +4942,13 @@
     function doAttack() {
       if (!mob) return false;
       const event = getActiveZoneEvent(char.zone);
-      let dmg = Math.max(1, char.atk - mob.def + Math.floor(Math.random() * 6) - 2);
-      dmg = Math.max(1, Math.floor(dmg * (event.playerDamageMult || 1)));
+      const fx = getStatusEffectModifiers(char);
+      const setBonus = getActiveSetBonusStats();
+      const playerAtk = char.atk + (setBonus.atk || 0) + (fx.atkBonus || 0);
+      const playerDef = char.def + (setBonus.def || 0) + (fx.defBonus || 0);
+
+      let dmg = Math.max(1, playerAtk - mob.def + Math.floor(Math.random() * 6) - 2);
+      dmg = Math.max(1, Math.floor(dmg * (event.playerDamageMult || 1) * (fx.playerDamageMult || 1)));
 
       if (mob.namedMechanic && mob.namedMechanic.id === 'ward' && mob.wardReady) {
         dmg = Math.max(1, Math.floor(dmg * 0.55));
@@ -4613,12 +4965,16 @@
         log(mob.name + ' becomes enraged!', 'dmg');
       }
 
+      if (mob.hp > 0 && tryTriggerWeaponProc(event, setBonus)) {
+        return true;
+      }
+
       if (mob.hp <= 0) { killMob(); return true; }
 
       mob.turnCount = (mob.turnCount || 0) + 1;
 
-      let md = Math.max(1, mob.atk - char.def + Math.floor(Math.random() * 4) - 1);
-      md = Math.max(1, Math.floor(md * (event.mobDamageMult || 1)));
+      let md = Math.max(1, mob.atk - playerDef + Math.floor(Math.random() * 4) - 1);
+      md = Math.max(1, Math.floor(md * (event.mobDamageMult || 1) * (fx.mobDamageMult || 1)));
       char.hp -= md;
       log(mob.name + ' hits back for ' + md + '!', 'dmg');
 
@@ -4684,12 +5040,26 @@
     function killMob() {
       const zone = ZONES[char.zone];
       const event = getActiveZoneEvent(char.zone);
+      ensureExtendedSystems(char);
+      const inDungeon = !!char.dungeon.active;
+      const floor = char.dungeon.floor || 1;
       const namedMult = mob.named ? 2.5 : 1;
-      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (event.xpMult || 1));
-      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult * (event.goldMult || 1));
+      const dungeonMult = inDungeon ? (1 + floor * 0.08) : 1;
+      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (event.xpMult || 1) * dungeonMult);
+      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult * (event.goldMult || 1) * dungeonMult);
       char.xp += xp; char.gold += gold;
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
       log(mob.name + ' is slain! +' + xp + ' XP, +' + gold + 'g', 'loot');
+
+      const contract = char.eliteContract;
+      if (contract && contract.active && !contract.complete && contract.zone === char.zone && mob.baseName === contract.target) {
+        contract.progress += 1;
+        if (contract.progress >= contract.count) {
+          contract.progress = contract.count;
+          contract.complete = true;
+          log('Elite contract objective complete. Return to quests to claim reward.', 'lvl');
+        }
+      }
       char.quests.forEach(q => {
         if (!q.done && mob.baseName === q.mob) {
           q.prog = Math.min(q.count, q.prog + 1);
@@ -4707,6 +5077,13 @@
         char.runeStash.push(runeDrop);
         log('Rune found: ' + runeDrop + '.', 'loot');
       }
+
+      if (inDungeon) {
+        char.dungeon.floor += 1;
+        char.dungeon.best = Math.max(char.dungeon.best || 1, char.dungeon.floor);
+        log('Dungeon floor cleared. Next floor: ' + char.dungeon.floor + '.', 'info');
+      }
+
       checkLevelUp(); renderQuests(); mob = null; renderAll(); autoSave();
     }
 
@@ -5149,6 +5526,12 @@
 
     function travelZone(i) {
       if (char.level < ZONES[i].minLvl) return;
+      ensureExtendedSystems(char);
+      if (char.dungeon.active) {
+        char.dungeon.active = false;
+        char.dungeon.floor = 1;
+        log('You leave the Endless Dungeon to travel.', 'info');
+      }
       char.zone = i; mob = null;
       log('Traveled to ' + ZONES[i].name + '.', 'info');
       const event = getActiveZoneEvent(i);
