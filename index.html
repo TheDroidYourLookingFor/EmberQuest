@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.0.2</title>
+    1.0.3</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -691,7 +691,7 @@
     id="screen-charselect"
     class="screen active">
     <h1>EmberQuest -
-      Version 1.0.2
+      Version 1.0.3
     </h1>
     <p
       class="subtitle">
@@ -828,7 +828,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.0.2</span>
+        1.0.3</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -1263,6 +1263,20 @@
 
           </div>
         </div>
+        <div
+          id="tab-shop"
+          style="display:none">
+          <h3>
+            Village
+            Merchant
+          </h3>
+
+          <div
+            class="eq-bag-grid"
+            id="shop-item-grid">
+            <!-- Rendered dynamically via JavaScript -->
+          </div>
+        </div>
       </div>
 
       <!-- Right: Auto-Battle + Zone info -->
@@ -1521,135 +1535,6 @@
   </div>
   </div>
 
-  <div id="tab-shop"
-    style="display:none">
-    <h3>Village
-      Merchant</h3>
-
-    <div
-      class="eq-bag-grid">
-
-      <div
-        class="eq-item-card">
-        <div
-          class="eq-item-name">
-          Minor
-          Healing
-          Potion
-        </div>
-        <div
-          class="eq-item-type">
-          Restores
-          50 HP
-        </div>
-        <div
-          class="eq-item-bonus">
-          5 Gold
-        </div>
-
-        <div
-          class="eq-item-actions">
-          <button
-            class="btn"
-            onclick="buyHpPotion()">
-            Buy
-          </button>
-          <button class="btn"
-            onclick="buyHpPotion_10()">
-            Buy x10
-          </button>
-        </div>
-      </div>
-
-      <div
-        class="eq-item-card">
-        <div
-          class="eq-item-name">
-          Minor Mana
-          Potion
-        </div>
-        <div
-          class="eq-item-type">
-          Restores
-          50 MP
-        </div>
-        <div
-          class="eq-item-bonus">
-          5 Gold
-        </div>
-
-        <div
-          class="eq-item-actions">
-          <button
-            class="btn"
-            onclick="buyMpPotion()">
-            Buy
-          </button>
-          <button class="btn"
-            onclick="buyMpPotion_10()">
-            Buy x10
-          </button>
-        </div>
-      </div>
-
-      <div
-        class="eq-item-card">
-        <div
-          class="eq-item-name">
-          Steel
-          Longsword
-        </div>
-        <div
-          class="eq-item-type">
-          Weapon
-        </div>
-        <div
-          class="eq-item-bonus">
-          +12 ATK ·
-          40 Gold
-        </div>
-
-        <div
-          class="eq-item-actions">
-          <button
-            class="btn"
-            onclick="buyShopItem('Steel Longsword')">
-            Buy
-          </button>
-        </div>
-      </div>
-
-      <div
-        class="eq-item-card">
-        <div
-          class="eq-item-name">
-          Knight
-          Chestplate
-        </div>
-        <div
-          class="eq-item-type">
-          Armor
-        </div>
-        <div
-          class="eq-item-bonus">
-          +18 DEF ·
-          +80 HP ·
-          55 Gold
-        </div>
-
-        <div
-          class="eq-item-actions">
-          <button
-            class="btn"
-            onclick="buyShopItem('Knight Chestplate')">
-            Buy
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
   <script>
     // ══════════════════════════════════════════════
     //  CONSTANTS
@@ -1722,6 +1607,8 @@
     let autoMpPotionPercent = 20;
     let potionHealAmount_Health = 50;
     let potionHealAmount_Mana = 50;
+    let potionHealAmount_lhp_Health = 125;
+    let potionHealAmount_lmp_Mana = 125;
 
     // ══════════════════════════════════════════════
     //  PERSISTENCE
@@ -1825,7 +1712,7 @@
         name, cls: selectedClass, level: 1, xp: 0, xpNext: 100,
         hp: base.hp, maxHp: base.hp, mp: base.mp, maxMp: base.mp,
         atk: base.atk, def: base.def, mpRegen: base.mpRegen,
-        gold: 0, healpotions: 3, manapotions: 3, zone: 0, inventory: [],
+        gold: 0, healpotions: 3, manapotions: 3, manapotions_lhp: 0, manapotions_lmp: 0,zone: 0, inventory: [],
         equipment: { weapon: null, chest: null, legs: null, feet: null, offhand: null, charm: null },
         quests: freshQuests(), lastSaved: Date.now()
       };
@@ -1885,8 +1772,8 @@
       document.getElementById('atk-disp').textContent = char.atk;
       document.getElementById('def-disp').textContent = char.def;
       document.getElementById('gold-disp').textContent = char.gold + 'g';
-      document.getElementById('hp-potion').textContent = char.healpotions + ' pots';
-      document.getElementById('mp-potion').textContent = char.manapotions + ' pots';
+      document.getElementById('hp-potion').textContent = char.healpotions + char.healpotions_lhp + ' pots';
+      document.getElementById('mp-potion').textContent = char.manapotions + char.manapotions_lmp + ' pots';
 
       const skillData = getClassSkillData();
       document.getElementById('skill-name-btn').textContent = skillData.name + ' (' + skillData.mp + ' MP)';
@@ -1895,7 +1782,7 @@
       document.getElementById('hp-bar').style.width = Math.max(0, char.hp / char.maxHp * 100) + '%';
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
       document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
-      renderMob(); renderInv();
+      renderMob(); renderInv(); renderShop();
     }
 
     function renderMob() {
@@ -1993,6 +1880,79 @@
       });
     }
 
+    function renderShop() {
+      const shopGrid = document.getElementById('shop-item-grid');
+      if (!shopGrid || !char) return;
+
+      let shopHtml = `
+        <div class="eq-item-card">
+          <div class="eq-item-name">Minor Healing Potion</div>
+          <div class="eq-item-type">Restores 50 HP</div>
+          <div class="eq-item-bonus">5 Gold</div>
+          <div class="eq-item-actions">
+            <button class="btn" onclick="buyHpPotion()">Buy</button>
+            <button class="btn" onclick="buyHpPotion_10()">Buy x10</button>
+          </div>
+        </div>
+
+        <div class="eq-item-card">
+          <div class="eq-item-name">Minor Mana Potion</div>
+          <div class="eq-item-type">Restores 50 MP</div>
+          <div class="eq-item-bonus">5 Gold</div>
+          <div class="eq-item-actions">
+            <button class="btn" onclick="buyMpPotion()">Buy</button>
+            <button class="btn" onclick="buyMpPotion_10()">Buy x10</button>
+          </div>
+        </div>
+      `;
+
+      // Gate Light Potions behind character level > 10 (shows up starting at Level 11)
+      if (char.level > 10) {
+        shopHtml += `
+          <div class="eq-item-card">
+            <div class="eq-item-name">Light Healing Potion</div>
+            <div class="eq-item-type">Restores 125 HP</div>
+            <div class="eq-item-bonus">100 Gold</div>
+            <div class="eq-item-actions">
+              <button class="btn" onclick="buyHpPotion_LHP()">Buy</button>
+              <button class="btn" onclick="buyHpPotion_LHP_10()">Buy x10</button>
+            </div>
+          </div>
+
+          <div class="eq-item-card">
+            <div class="eq-item-name">Light Mana Potion</div>
+            <div class="eq-item-type">Restores 125 MP</div>
+            <div class="eq-item-bonus">100 Gold</div>
+            <div class="eq-item-actions">
+              <button class="btn" onclick="buyMpPotion_LMP()">Buy</button>
+              <button class="btn" onclick="buyMpPotion_LMP_10()">Buy x10</button>
+            </div>
+          </div>
+        `;
+      }
+
+      shopHtml += `
+        <div class="eq-item-card">
+          <div class="eq-item-name">Steel Longsword</div>
+          <div class="eq-item-type">Weapon</div>
+          <div class="eq-item-bonus">+12 ATK · 40 Gold</div>
+          <div class="eq-item-actions">
+            <button class="btn" onclick="buyShopItem('Steel Longsword')">Buy</button>
+          </div>
+        </div>
+
+        <div class="eq-item-card">
+          <div class="eq-item-name">Knight Chestplate</div>
+          <div class="eq-item-type">Armor</div>
+          <div class="eq-item-bonus">+18 DEF · +80 HP · 55 Gold</div>
+          <div class="eq-item-actions">
+            <button class="btn" onclick="buyShopItem('Knight Chestplate')">Buy</button>
+          </div>
+        </div>
+      `;
+
+      shopGrid.innerHTML = shopHtml;
+    }
 
     function renderQuests() {
       const el = document.getElementById('quest-list'); el.innerHTML = '';
@@ -2338,12 +2298,12 @@
 
         if (action === 'attack' && mob) {
           // Check Health First
-          if (autoUseHpPotions && char.hp < char.maxHp * (autoHpPotionPercent / 100) && char.healpotions > 0) {
+          if (autoUseHpPotions && char.hp < char.maxHp * (autoHpPotionPercent / 100) && (char.healpotions > 0 || char.healpotions_lhp > 0)) {
             useHpPotion();
             return;
           }
 
-          if (autoUseMpPotions && char.mp < char.maxMp * (autoMpPotionPercent / 100) && char.manapotions > 0) {
+          if (autoUseMpPotions && char.mp < char.maxMp * (autoMpPotionPercent / 100) && (char.manapotions > 0 || char.manapotions_lmp > 0)) {
             useMpPotion();
             return;
           }
@@ -2366,6 +2326,7 @@
       renderAll();
     }
 
+    // Minor Potions
     function buyHpPotion() {
       if (char.gold < 5) {
         log('Not enough gold.', 'info');
@@ -2395,6 +2356,7 @@
       renderAll();
       autoSave();
     }
+
     function buyMpPotion() {
       if (char.gold < 5) {
         log('Not enough gold.', 'info');
@@ -2411,23 +2373,146 @@
     }
 
     function buyMpPotion_10() {
-        if (char.gold < 50) {
-          log('Not enough gold.', 'info');
-          return;
-        }
-
-        char.gold -= 50;
-        char.manapotions += 10;
-
-        log('Bought a mana potion x10.', 'loot');
-
-        renderAll();
-        autoSave();
+      if (char.gold < 50) {
+        log('Not enough gold.', 'info');
+        return;
       }
 
+      char.gold -= 50;
+      char.manapotions += 10;
+
+      log('Bought a mana potion x10.', 'loot');
+
+      renderAll();
+      autoSave();
+    }
+
     function useHpPotion() {
-      if (char.healpotions <= 0) {
+      // Check if health is already maximized
+      if (char.hp == char.maxHp) {
+        log('Health already full!', 'info');
+        return;
+      }
+
+      // Check and use Light Healing Potion first
+      if (char.healpotions_lhp && char.healpotions_lhp > 0) {
+        char.healpotions_lhp -= 1;
+        const healAmt = potionHealAmount_lhp_Health;
+        char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        log('Used a light healing potion for ' + healAmt + ' HP.', 'heal');
+      }
+      // Fallback to Minor Healing Potion
+      else if (char.healpotions && char.healpotions > 0) {
+        char.healpotions -= 1;
+        const healAmt = potionHealAmount_Health;
+        char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        log('Used a healing potion for ' + healAmt + ' HP.', 'heal');
+      }
+      // Out of all potions
+      else {
         log('Out of HP potions.', 'info');
+        return;
+      }
+
+      renderAll();
+      autoSave();
+    }
+
+    function useMpPotion() {
+      // Check if mana is already maximized
+      if (char.mp == char.maxMp) {
+        log('Mana already full!', 'info');
+        return;
+      }
+
+      // Check and use Light Mana Potion first
+      if (char.manapotions_lmp && char.manapotions_lmp > 0) {
+        char.manapotions_lmp -= 1;
+        const healAmt = potionHealAmount_lmp_Mana;
+        char.mp = Math.min(char.maxMp, char.mp + healAmt);
+        log('Used a light mana potion for ' + healAmt + ' MP.', 'heal');
+      }
+      // Fallback to Minor Mana Potion
+      else if (char.manapotions && char.manapotions > 0) {
+        char.manapotions -= 1;
+        const healAmt = potionHealAmount_Mana;
+        char.mp = Math.min(char.maxMp, char.mp + healAmt);
+        log('Used a mana potion for ' + healAmt + ' MP.', 'heal');
+      }
+      // Out of all potions
+      else {
+        log('Out of MP potions.', 'info');
+        return;
+      }
+
+      renderAll();
+      autoSave();
+    }
+
+    // Light Potions
+    function buyHpPotion_LHP() {
+      if (char.gold < 100) {
+        log('Not enough gold.', 'info');
+        return;
+      }
+
+      char.gold -= 100;
+      char.healpotions_lhp += 1;
+
+      log('Bought a light healing potion.', 'loot');
+
+      renderAll();
+      autoSave();
+    }
+
+    function buyHpPotion_LHP_10() {
+      if (char.gold < 1000) {
+        log('Not enough gold.', 'info');
+        return;
+      }
+
+      char.gold -= 1000;
+      char.healpotions_lhp += 10;
+
+      log('Bought a healing potion x10.', 'loot');
+
+      renderAll();
+      autoSave();
+    }
+
+    function buyMpPotion_LMP() {
+      if (char.gold < 100) {
+        log('Not enough gold.', 'info');
+        return;
+      }
+
+      char.gold -= 100;
+      char.manapotions_lmp += 1;
+
+      log('Bought a light mana potion.', 'loot');
+
+      renderAll();
+      autoSave();
+    }
+
+    function buyMpPotion_LMP_10() {
+      if (char.gold < 1000) {
+        log('Not enough gold.', 'info');
+        return;
+      }
+
+      char.gold -= 1000;
+      char.manapotions_lmp += 10;
+
+      log('Bought a light mana potion x10.', 'loot');
+
+      renderAll();
+      autoSave();
+    }
+
+    function useHpPotion_LHP() {
+      if (char.healpotions_lhp <= 0) {
+        log('Out of Light Healing potions.', 'info');
         return;
       }
       if (char.hp == char.maxHp) {
@@ -2435,21 +2520,21 @@
         return;
       }
 
-      char.healpotions -= 1;
+      char.healpotions_lhp -= 1;
 
-      const healAmt = potionHealAmount_Health;
+      const healAmt = potionHealAmount_lhp_Health;
 
       char.hp = Math.min(char.maxHp, char.hp + healAmt);
 
-      log('Used a healing potion for ' + healAmt + ' HP.', 'heal');
+      log('Used a light healing potion for ' + healAmt + ' HP.', 'heal');
 
       renderAll();
       autoSave();
     }
 
-    function useMpPotion() {
-      if (char.manapotions <= 0) {
-        log('Out of MP potions.', 'info');
+    function useMpPotion_LMP() {
+      if (char.manapotions_lmp <= 0) {
+        log('Out of Light Mana potions.', 'info');
         return;
       }
       if (char.mp == char.maxMp) {
@@ -2459,11 +2544,11 @@
 
       char.manapotions -= 1;
 
-      const healAmt = potionHealAmount_Mana;
+      const healAmt = potionHealAmount_lmp_Mana;
 
       char.mp = Math.min(char.maxMp, char.mp + healAmt);
 
-      log('Used a mana potion for ' + healAmt + ' MP.', 'heal');
+      log('Used a light mana potion for ' + healAmt + ' MP.', 'heal');
 
       renderAll();
       autoSave();
@@ -2555,7 +2640,7 @@
       document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', ['combat', 'zone', 'inv', 'shop'][i] === tab); });
       if (tab === 'zone') renderZones();
       if (tab === 'inv') renderInv();
-      // if(tab==='shop')renderInv();
+      if (tab === 'shop') renderShop();
     }
 
     function setupDrag() {
