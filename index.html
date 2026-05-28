@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.1.0</title>
+    1.1.1</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -344,7 +344,9 @@
 
     /* Hidden — the old slot grid container is no longer used for layout
        but renderSlots() still writes to it; we render via #cs-slotlist instead. */
-    .slot-grid { display: none; }
+    .slot-grid {
+      display: none;
+    }
 
     /* Mobile / narrow viewports: stack the panel above the scene */
     @media (max-width: 720px) {
@@ -357,9 +359,14 @@
         width: auto;
         margin: 10px;
       }
-      #charselect-scene, #charselect-avatar, #charselect-nameplate, #charselect-backdrop {
+
+      #charselect-scene,
+      #charselect-avatar,
+      #charselect-nameplate,
+      #charselect-backdrop {
         display: none;
       }
+
       #new-char-form {
         position: relative;
         transform: none;
@@ -1277,7 +1284,8 @@
       min-height: 100vh;
       max-width: none;
       padding: 8px;
-      margin: -12px;        /* cancel body padding so bg covers the screen */
+      margin: -12px;
+      /* cancel body padding so bg covers the screen */
       color: #e8dfc4;
       font-family: 'Georgia', 'Times New Roman', serif;
     }
@@ -1289,8 +1297,8 @@
       border-radius: 2px;
       box-shadow:
         inset 0 0 0 1px #5a607a,
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 2px 4px rgba(0,0,0,0.5);
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 2px 4px rgba(0, 0, 0, 0.5);
       color: #e8dfc4;
       padding: 4px 10px;
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -1307,16 +1315,17 @@
        inner border. Mirrors EQ's translucent panels stacked on the world. */
     #screen-game .panel {
       background: linear-gradient(180deg,
-        rgba(28, 30, 42, 0.92) 0%,
-        rgba(20, 22, 32, 0.92) 100%);
+          rgba(28, 30, 42, 0.92) 0%,
+          rgba(20, 22, 32, 0.92) 100%);
       border: 1px solid #0a0c14;
       border-radius: 2px;
       box-shadow:
         inset 0 0 0 1px #4a5168,
-        inset 0 0 16px rgba(0,0,0,0.5),
-        0 3px 8px rgba(0,0,0,0.55);
+        inset 0 0 16px rgba(0, 0, 0, 0.5),
+        0 3px 8px rgba(0, 0, 0, 0.55);
       color: #e8dfc4;
-      padding: 0;          /* title bar handles its own padding; content below */
+      padding: 0;
+      /* title bar handles its own padding; content below */
     }
 
     /* Section header inside each panel acts as the window's title bar */
@@ -1334,19 +1343,21 @@
       border-bottom: 1px solid #0a0c14;
       box-shadow:
         inset 0 0 0 1px #5a607a,
-        inset 0 1px 0 rgba(255,255,255,0.08);
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
       text-shadow: 1px 1px 2px #000;
     }
 
     /* Restore inner padding for the panel content (everything after h3) */
-    #screen-game .panel > *:not(h3) {
+    #screen-game .panel>*:not(h3) {
       padding-left: 8px;
       padding-right: 8px;
     }
-    #screen-game .panel > *:not(h3):last-child {
+
+    #screen-game .panel>*:not(h3):last-child {
       padding-bottom: 8px;
     }
-    #screen-game .panel > h3 + * {
+
+    #screen-game .panel>h3+* {
       padding-top: 8px;
     }
 
@@ -1354,11 +1365,13 @@
     #screen-game #center-panel {
       padding: 0;
     }
-    #screen-game #center-panel > *:not(.tab-bar) {
+
+    #screen-game #center-panel>*:not(.tab-bar) {
       padding-left: 8px;
       padding-right: 8px;
     }
-    #screen-game #center-panel > *:last-child {
+
+    #screen-game #center-panel>*:last-child {
       padding-bottom: 8px;
     }
 
@@ -1369,7 +1382,7 @@
       padding: 4px 4px 0 4px;
       background: linear-gradient(180deg, #2c3144 0%, #1a1d28 100%);
       border-bottom: 1px solid #0a0c14;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
       flex-wrap: wrap;
     }
 
@@ -1384,7 +1397,7 @@
       background: linear-gradient(180deg, #3d4458 0%, #2a2f3e 100%);
       color: #b8b0a0;
       text-shadow: 1px 1px 2px #000;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
     #screen-game .tab.active {
@@ -1392,8 +1405,8 @@
       color: #ffe7a8;
       border-color: #5a607a;
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.2),
-        inset 0 -1px 0 rgba(0,0,0,0.3);
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
     }
 
     /* General buttons — beveled gray slabs */
@@ -1407,23 +1420,31 @@
       border: 1px solid #0a0c14;
       border-radius: 2px;
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.2),
-        inset 0 -1px 0 rgba(0,0,0,0.4),
-        0 1px 2px rgba(0,0,0,0.4);
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+        0 1px 2px rgba(0, 0, 0, 0.4);
       text-shadow: 1px 1px 2px #000;
       padding: 4px 10px;
       transition: filter .12s;
     }
-    #screen-game .btn:hover { filter: brightness(1.15); }
-    #screen-game .btn:active { filter: brightness(0.85); transform: translateY(1px); }
+
+    #screen-game .btn:hover {
+      filter: brightness(1.15);
+    }
+
+    #screen-game .btn:active {
+      filter: brightness(0.85);
+      transform: translateY(1px);
+    }
 
     #screen-game .btn.active {
       background: linear-gradient(180deg, #7a8298 0%, #565f7c 50%, #3c4560 100%);
       color: #fff7d6;
       box-shadow:
-        inset 0 2px 4px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(0, 0, 0, 0.4),
         inset 0 0 0 1px #6a7da0;
     }
+
     #screen-game .btn.danger {
       background: linear-gradient(180deg, #8a3a3a 0%, #5a2424 50%, #3a1818 100%);
       color: #ffd0c0;
@@ -1438,11 +1459,14 @@
       margin: 1px 0;
       padding: 0 2px;
     }
+
     #screen-game .stat-label {
       color: #c8c0a8;
     }
+
     #screen-game .stat-val {
-      color: #6fdc6f;        /* the bright green seen for HP/AC in the screenshot */
+      color: #6fdc6f;
+      /* the bright green seen for HP/AC in the screenshot */
       font-weight: 700;
       text-shadow: 1px 1px 0 #000;
     }
@@ -1453,22 +1477,32 @@
       border: 1px solid #0a0c14;
       box-shadow:
         inset 0 0 0 1px #2a2e3a,
-        inset 0 1px 2px rgba(0,0,0,0.7);
+        inset 0 1px 2px rgba(0, 0, 0, 0.7);
       height: 12px;
       border-radius: 1px;
     }
+
     #screen-game .bar {
       border-radius: 0;
       background-image:
         repeating-linear-gradient(90deg,
-          rgba(255,255,255,0.16) 0px,
-          rgba(255,255,255,0.16) 1px,
+          rgba(255, 255, 255, 0.16) 0px,
+          rgba(255, 255, 255, 0.16) 1px,
           transparent 1px,
           transparent 6px);
     }
-    #screen-game .hp-bar { background-color: #c83232; }
-    #screen-game .mp-bar { background-color: #3a78d8; }
-    #screen-game .xp-bar { background-color: #58a020; }
+
+    #screen-game .hp-bar {
+      background-color: #c83232;
+    }
+
+    #screen-game .mp-bar {
+      background-color: #3a78d8;
+    }
+
+    #screen-game .xp-bar {
+      background-color: #58a020;
+    }
 
     /* Mob and character name plates */
     #screen-game #mob-area {
@@ -1477,6 +1511,7 @@
       box-shadow: inset 0 0 0 1px #3a3f55;
       border-radius: 2px;
     }
+
     #screen-game .mob-name {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 14px;
@@ -1484,6 +1519,7 @@
       color: #ffe7a8;
       text-shadow: 1px 1px 2px #000;
     }
+
     #screen-game .mob-level {
       color: #c8c0a8;
       font-size: 11px;
@@ -1495,17 +1531,37 @@
       border: 1px solid #0a0c14;
       box-shadow:
         inset 0 0 0 1px #3a3f55,
-        inset 0 0 8px rgba(0,0,0,0.8);
+        inset 0 0 8px rgba(0, 0, 0, 0.8);
       border-radius: 2px;
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 12px;
       color: #d8d0b0;
     }
-    #screen-game .log-dmg  { color: #ff7878; }   /* combat damage — bright red */
-    #screen-game .log-heal { color: #6fdc6f; }   /* heals — bright green */
-    #screen-game .log-info { color: #f8e060; }   /* yellow system text */
-    #screen-game .log-loot { color: #f0a830; }   /* orange loot */
-    #screen-game .log-lvl  { color: #a89cff; font-weight: 700; }
+
+    #screen-game .log-dmg {
+      color: #ff7878;
+    }
+
+    /* combat damage — bright red */
+    #screen-game .log-heal {
+      color: #6fdc6f;
+    }
+
+    /* heals — bright green */
+    #screen-game .log-info {
+      color: #f8e060;
+    }
+
+    /* yellow system text */
+    #screen-game .log-loot {
+      color: #f0a830;
+    }
+
+    /* orange loot */
+    #screen-game .log-lvl {
+      color: #a89cff;
+      font-weight: 700;
+    }
 
     /* "Done" / close-style row at panel bottoms — give existing buttons
        a slightly chunkier look when bare (no .btn class). */
@@ -1532,15 +1588,16 @@
     #screen-game .modal-card,
     .modal-card {
       background: linear-gradient(180deg,
-        rgba(28, 30, 42, 0.98) 0%,
-        rgba(20, 22, 32, 0.98) 100%);
+          rgba(28, 30, 42, 0.98) 0%,
+          rgba(20, 22, 32, 0.98) 100%);
       border: 1px solid #0a0c14;
       box-shadow:
         inset 0 0 0 1px #5a607a,
-        0 8px 32px rgba(0,0,0,0.7);
+        0 8px 32px rgba(0, 0, 0, 0.7);
       color: #e8dfc4;
       font-family: 'Georgia', 'Times New Roman', serif;
     }
+
     .modal-title {
       color: #ffe7a8;
       text-shadow: 1px 1px 2px #000;
@@ -1574,7 +1631,7 @@
     #screen-game .shop-slot {
       background: linear-gradient(180deg, #2a2e3a 0%, #16182a 100%);
       border: 1px solid #0a0c14;
-      box-shadow: inset 0 0 0 1px #3a3f55, inset 0 2px 4px rgba(0,0,0,0.6);
+      box-shadow: inset 0 0 0 1px #3a3f55, inset 0 2px 4px rgba(0, 0, 0, 0.6);
       border-radius: 2px;
       color: #e8dfc4;
     }
@@ -1583,7 +1640,7 @@
     #screen-game .queue-item {
       background: linear-gradient(180deg, #3d4458 0%, #2a2f3e 100%);
       border: 1px solid #0a0c14;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
       color: #e8dfc4;
       font-family: 'Georgia', 'Times New Roman', serif;
     }
@@ -1608,6 +1665,7 @@
       font-weight: 700;
       text-shadow: 1px 1px 2px #000;
     }
+
     #screen-game #char-class-disp {
       color: #c8c0a8;
       font-size: 11px;
@@ -1640,7 +1698,7 @@
     #screen-game .eq-empty-slot {
       background: linear-gradient(180deg, #18192a 0%, #0c0d18 100%);
       border: 1px solid #0a0c14;
-      box-shadow: inset 0 0 0 1px #3a3f55, inset 0 2px 4px rgba(0,0,0,0.7);
+      box-shadow: inset 0 0 0 1px #3a3f55, inset 0 2px 4px rgba(0, 0, 0, 0.7);
       border-radius: 2px;
       color: #c8c0a8;
     }
@@ -1666,19 +1724,22 @@
       color: #c8c0a8;
       background: linear-gradient(180deg, #3d4458 0%, #2a2f3e 100%);
       border: 1px solid #0a0c14;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
       border-radius: 2px;
       padding: 3px 10px;
     }
+
     #screen-game .bag-tab-btn.active {
       background: linear-gradient(180deg, #5d6478 0%, #3d4458 100%) !important;
       color: #ffe7a8 !important;
       border-color: #5a607a !important;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
+
     #screen-game .bag-meta {
       color: #c8c0a8;
     }
+
     #screen-game .eq-empty-bag {
       color: #c8c0a8;
     }
@@ -1703,7 +1764,7 @@
 
     /* Section headers within tabs ("INVENTORY", "EQUIPPED", "BACKPACK",
        "VILLAGE MERCHANT") need consistent treatment */
-    #screen-game [id^="tab-"] > div > div[style*="font-weight"],
+    #screen-game [id^="tab-"]>div>div[style*="font-weight"],
     #screen-game [id^="tab-"] strong {
       color: #ffe7a8;
     }
@@ -1734,90 +1795,248 @@
     class="screen active">
 
     <!-- Background gradients and lighting -->
-    <div id="charselect-backdrop"></div>
+    <div
+      id="charselect-backdrop">
+    </div>
 
     <!-- Decorative temple-arch scene -->
-    <div id="charselect-scene">
-      <svg viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <div
+      id="charselect-scene">
+      <svg
+        viewBox="0 0 600 700"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true">
         <defs>
-          <linearGradient id="cs-stone" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#c9b9a0"/>
-            <stop offset="50%" stop-color="#9d8c72"/>
-            <stop offset="100%" stop-color="#6f5e48"/>
+          <linearGradient
+            id="cs-stone"
+            x1="0"
+            x2="0"
+            y1="0"
+            y2="1">
+            <stop
+              offset="0%"
+              stop-color="#c9b9a0" />
+            <stop
+              offset="50%"
+              stop-color="#9d8c72" />
+            <stop
+              offset="100%"
+              stop-color="#6f5e48" />
           </linearGradient>
-          <linearGradient id="cs-gold" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#f0d27a"/>
-            <stop offset="100%" stop-color="#8a6a1f"/>
+          <linearGradient
+            id="cs-gold"
+            x1="0"
+            x2="0"
+            y1="0"
+            y2="1">
+            <stop
+              offset="0%"
+              stop-color="#f0d27a" />
+            <stop
+              offset="100%"
+              stop-color="#8a6a1f" />
           </linearGradient>
-          <linearGradient id="cs-floor" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#d6a04a"/>
-            <stop offset="100%" stop-color="#7a5320"/>
+          <linearGradient
+            id="cs-floor"
+            x1="0"
+            x2="0"
+            y1="0"
+            y2="1">
+            <stop
+              offset="0%"
+              stop-color="#d6a04a" />
+            <stop
+              offset="100%"
+              stop-color="#7a5320" />
           </linearGradient>
         </defs>
 
         <!-- Left pillar -->
-        <rect x="60" y="430" width="80" height="200" fill="url(#cs-stone)" stroke="#3d2f1a" stroke-width="1.5"/>
-        <rect x="50" y="420" width="100" height="18" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1"/>
-        <rect x="50" y="625" width="100" height="14" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1"/>
+        <rect x="60"
+          y="430"
+          width="80"
+          height="200"
+          fill="url(#cs-stone)"
+          stroke="#3d2f1a"
+          stroke-width="1.5" />
+        <rect x="50"
+          y="420"
+          width="100"
+          height="18"
+          fill="url(#cs-gold)"
+          stroke="#3d2f1a"
+          stroke-width="1" />
+        <rect x="50"
+          y="625"
+          width="100"
+          height="14"
+          fill="url(#cs-gold)"
+          stroke="#3d2f1a"
+          stroke-width="1" />
 
         <!-- Right pillar -->
-        <rect x="460" y="430" width="80" height="200" fill="url(#cs-stone)" stroke="#3d2f1a" stroke-width="1.5"/>
-        <rect x="450" y="420" width="100" height="18" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1"/>
-        <rect x="450" y="625" width="100" height="14" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1"/>
+        <rect
+          x="460"
+          y="430"
+          width="80"
+          height="200"
+          fill="url(#cs-stone)"
+          stroke="#3d2f1a"
+          stroke-width="1.5" />
+        <rect
+          x="450"
+          y="420"
+          width="100"
+          height="18"
+          fill="url(#cs-gold)"
+          stroke="#3d2f1a"
+          stroke-width="1" />
+        <rect
+          x="450"
+          y="625"
+          width="100"
+          height="14"
+          fill="url(#cs-gold)"
+          stroke="#3d2f1a"
+          stroke-width="1" />
 
         <!-- Central arch -->
-        <path d="M 170 640 L 170 340 Q 170 160 300 160 Q 430 160 430 340 L 430 640 Z"
-              fill="url(#cs-stone)" stroke="#3d2f1a" stroke-width="2"/>
+        <path
+          d="M 170 640 L 170 340 Q 170 160 300 160 Q 430 160 430 340 L 430 640 Z"
+          fill="url(#cs-stone)"
+          stroke="#3d2f1a"
+          stroke-width="2" />
         <!-- Gold trim around arch -->
-        <path d="M 170 340 Q 170 160 300 160 Q 430 160 430 340"
-              fill="none" stroke="url(#cs-gold)" stroke-width="10"/>
-        <path d="M 170 340 Q 170 160 300 160 Q 430 160 430 340"
-              fill="none" stroke="#5b4314" stroke-width="1.5"/>
+        <path
+          d="M 170 340 Q 170 160 300 160 Q 430 160 430 340"
+          fill="none"
+          stroke="url(#cs-gold)"
+          stroke-width="10" />
+        <path
+          d="M 170 340 Q 170 160 300 160 Q 430 160 430 340"
+          fill="none"
+          stroke="#5b4314"
+          stroke-width="1.5" />
 
         <!-- Inner arch (open) -->
-        <path d="M 210 640 L 210 360 Q 210 200 300 200 Q 390 200 390 360 L 390 640 Z"
-              fill="#5a7da3" opacity="0.55"/>
+        <path
+          d="M 210 640 L 210 360 Q 210 200 300 200 Q 390 200 390 360 L 390 640 Z"
+          fill="#5a7da3"
+          opacity="0.55" />
 
         <!-- Ornamental keystone -->
-        <circle cx="300" cy="180" r="14" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1.5"/>
+        <circle
+          cx="300"
+          cy="180"
+          r="14"
+          fill="url(#cs-gold)"
+          stroke="#3d2f1a"
+          stroke-width="1.5" />
 
         <!-- Floor disc with rune circle -->
-        <ellipse cx="300" cy="660" rx="240" ry="34" fill="url(#cs-floor)" stroke="#3d2f1a" stroke-width="1"/>
-        <ellipse cx="300" cy="660" rx="200" ry="26" fill="none" stroke="#5b3f12" stroke-width="1.5" opacity="0.7"/>
-        <ellipse cx="300" cy="660" rx="160" ry="20" fill="none" stroke="#5b3f12" stroke-width="1" opacity="0.5"/>
+        <ellipse
+          cx="300"
+          cy="660"
+          rx="240"
+          ry="34"
+          fill="url(#cs-floor)"
+          stroke="#3d2f1a"
+          stroke-width="1" />
+        <ellipse
+          cx="300"
+          cy="660"
+          rx="200"
+          ry="26"
+          fill="none"
+          stroke="#5b3f12"
+          stroke-width="1.5"
+          opacity="0.7" />
+        <ellipse
+          cx="300"
+          cy="660"
+          rx="160"
+          ry="20"
+          fill="none"
+          stroke="#5b3f12"
+          stroke-width="1"
+          opacity="0.5" />
       </svg>
     </div>
 
     <!-- The character "model" — vector silhouette where EQ shows a 3D model -->
     <!-- Race-aware character avatar — populated by buildAvatarSvg() -->
-    <div id="charselect-avatar" aria-hidden="true"></div>
+    <div
+      id="charselect-avatar"
+      aria-hidden="true">
+    </div>
 
     <!-- Floating yellow nameplate above the character -->
-    <div id="charselect-nameplate">
-      <div class="np-name" id="np-name">No Character Selected</div>
-      <div class="np-zone" id="np-zone"></div>
+    <div
+      id="charselect-nameplate">
+      <div
+        class="np-name"
+        id="np-name">
+        No Character
+        Selected
+      </div>
+      <div
+        class="np-zone"
+        id="np-zone">
+      </div>
     </div>
 
     <!-- LEFT-SIDE EverQuest control panel -->
-    <div id="charselect-panel">
-      <div class="cs-header">Character Select</div>
+    <div
+      id="charselect-panel">
+      <div
+        class="cs-header">
+        Character
+        Select</div>
 
-      <div class="cs-toprow">
-        <div class="eq-btn eq-small" onclick="csExplore()">Explore</div>
-        <div class="eq-btn eq-small" onclick="csDelete()">Delete</div>
-        <div class="eq-btn eq-small" onclick="csRotate()">Rotate</div>
+      <div
+        class="cs-toprow">
+        <div
+          class="eq-btn eq-small"
+          onclick="csExplore()">
+          Explore
+        </div>
+        <div
+          class="eq-btn eq-small"
+          onclick="csDelete()">
+          Delete
+        </div>
+        <div
+          class="eq-btn eq-small"
+          onclick="csRotate()">
+          Rotate
+        </div>
       </div>
 
-      <div class="cs-slotlist" id="cs-slotlist"></div>
+      <div
+        class="cs-slotlist"
+        id="cs-slotlist">
+      </div>
 
-      <div class="cs-bottomrow">
-        <div class="eq-btn" onclick="csQuit()">Quit</div>
-        <div class="eq-btn eq-primary" onclick="csEnterWorld()">Enter World</div>
+      <div
+        class="cs-bottomrow">
+        <div
+          class="eq-btn"
+          onclick="csQuit()">
+          Quit</div>
+        <div
+          class="eq-btn eq-primary"
+          onclick="csEnterWorld()">
+          Enter
+          World
+        </div>
       </div>
     </div>
 
     <!-- Hidden legacy container kept so renderSlots() never errors -->
-    <div class="slot-grid" id="slot-grid"></div>
+    <div
+      class="slot-grid"
+      id="slot-grid">
+    </div>
 
     <div
       id="new-char-form"
@@ -1829,7 +2048,8 @@
         id="create-step-race">
         <div
           style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;font-weight:500">
-          Choose Race
+          Choose
+          Race
         </div>
         <div
           class="class-grid"
@@ -1851,7 +2071,8 @@
           style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div
             style="font-size:12px;color:var(--text-secondary);font-weight:500">
-            Choose Class
+            Choose
+            Class
           </div>
           <button
             class="btn"
@@ -1859,7 +2080,8 @@
             onclick="goBackToRaceSelection()"><i
               class="ti ti-arrow-left"></i>
             Back
-            to Race</button>
+            to
+            Race</button>
         </div>
         <div
           id="create-selected-race"
@@ -1913,7 +2135,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.0</span>
+        1.1.1</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -1962,7 +2184,8 @@
         <div
           class="modal-title"
           id="import-preview-title">
-          Import Save
+          Import
+          Save
           Preview
         </div>
         <div
@@ -1979,7 +2202,11 @@
             id="import-backup-toggle"
             type="checkbox"
             checked>
-          Create backup export before importing
+          Create
+          backup
+          export
+          before
+          importing
         </label>
         <div
           class="modal-actions">
@@ -1993,7 +2220,8 @@
             id="import-confirm-btn"
             class="btn active"
             onclick="confirmImportSlots()">
-            Confirm Import
+            Confirm
+            Import
           </button>
         </div>
       </div>
@@ -2010,7 +2238,8 @@
         <div
           class="modal-title"
           id="transmute-confirm-title">
-          Confirm Focused
+          Confirm
+          Focused
           Transmute
         </div>
         <div
@@ -2097,7 +2326,8 @@
           <div
             class="stat-row">
             <span
-              class="stat-label">AA Points</span><span
+              class="stat-label">AA
+              Points</span><span
               class="stat-val"
               id="aa-points-disp">0</span>
           </div>
@@ -2246,12 +2476,14 @@
                 style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">
                 <div
                   style="font-size:11px;color:var(--text-secondary)">
-                  Active Effects
+                  Active
+                  Effects
                 </div>
                 <button
                   class="btn"
                   style="font-size:10px;padding:2px 8px"
-                  onclick="invokeShrine()">Invoke Shrine</button>
+                  onclick="invokeShrine()">Invoke
+                  Shrine</button>
               </div>
               <div
                 id="status-effects"
@@ -2281,6 +2513,11 @@
           </div>
           <div
             class="tab"
+            onclick="switchTab('dungeon')">
+            Dungeon
+          </div>
+          <div
+            class="tab"
             onclick="switchTab('quests')">
             Quests
           </div>
@@ -2288,6 +2525,12 @@
             class="tab"
             onclick="switchTab('inv')">
             Inventory
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('loot')">
+            Loot
+            Filter
           </div>
           <div
             class="tab"
@@ -2369,8 +2612,7 @@
             </div>
           </div>
           <div
-            id="combat-log"
-            >
+            id="combat-log">
             <p
               class="log-info">
               Welcome
@@ -2385,27 +2627,32 @@
               class="btn active"
               id="log-filter-dmg-btn"
               style="font-size:10px;padding:2px 8px"
-              onclick="toggleCombatLogFilter('dmg')">DMG On</button>
+              onclick="toggleCombatLogFilter('dmg')">DMG
+              On</button>
             <button
               class="btn active"
               id="log-filter-loot-btn"
               style="font-size:10px;padding:2px 8px"
-              onclick="toggleCombatLogFilter('loot')">Loot On</button>
+              onclick="toggleCombatLogFilter('loot')">Loot
+              On</button>
             <button
               class="btn active"
               id="log-filter-info-btn"
               style="font-size:10px;padding:2px 8px"
-              onclick="toggleCombatLogFilter('info')">Info On</button>
+              onclick="toggleCombatLogFilter('info')">Info
+              On</button>
             <button
               class="btn"
               id="log-filter-preset-combat-btn"
               style="font-size:10px;padding:2px 8px"
-              onclick="applyCombatLogFilterPreset('combat')">Combat Only</button>
+              onclick="applyCombatLogFilterPreset('combat')">Combat
+              Only</button>
             <button
               class="btn"
               id="log-filter-preset-loot-btn"
               style="font-size:10px;padding:2px 8px"
-              onclick="applyCombatLogFilterPreset('loot')">Loot Only</button>
+              onclick="applyCombatLogFilterPreset('loot')">Loot
+              Only</button>
             <button
               class="btn"
               id="log-filter-preset-all-btn"
@@ -2454,52 +2701,35 @@
               class="btn"
               onclick="bindAffinity()"><i
                 class="ti ti-map-pin"></i>
-              Bind Here</button>
+              Bind
+              Here</button>
             <button
               class="btn"
               onclick="gateToBind()"><i
                 class="ti ti-portal"></i>
-              Gate to Bind</button>
+              Gate
+              to
+              Bind</button>
             <button
               class="btn"
               onclick="senseCorpse()"><i
                 class="ti ti-radar-2"></i>
-              Sense Corpse</button>
+              Sense
+              Corpse</button>
             <button
               class="btn"
               onclick="recoverCorpse()"><i
                 class="ti ti-skull"></i>
-              Recover Corpse</button>
+              Recover
+              Corpse</button>
           </div>
           <div
             style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
             <button
               class="btn"
-              onclick="enterDungeon()"><i
-                class="ti ti-stairs"></i>
-              Enter Dungeon</button>
-            <button
-              class="btn"
-              onclick="leaveDungeon()"><i
-                class="ti ti-door-exit"></i>
-              Leave Dungeon</button>
-          </div>
-          <div
-            style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
-            <label
-              style="font-size:11px;color:var(--text-secondary)">Dungeon
-              Modifier:</label>
-            <select
-              id="dungeon-modifier-select"
-              style="min-width:170px;font-size:12px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
-            </select>
-            <button
-              class="btn"
-              onclick="setDungeonModifierFromUI()">Apply</button>
-          </div>
-          <div
-            id="dungeon-info"
-            style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
+              onclick="switchTab('dungeon')">Open
+              Dungeon
+              Tab</button>
           </div>
           <div
             id="zone-contract-tracker"
@@ -2509,7 +2739,9 @@
             style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px;margin-bottom:8px">
             <div
               style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">
-              Hunt Target (Optional)
+              Hunt
+              Target
+              (Optional)
             </div>
             <div
               style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
@@ -2656,7 +2888,9 @@
                 style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
                 <label
                   for="bag-install-target-select"
-                  style="font-size:10px;color:var(--text-secondary)">Bag install target:</label>
+                  style="font-size:10px;color:var(--text-secondary)">Bag
+                  install
+                  target:</label>
                 <select
                   id="bag-install-target-select"
                   style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
@@ -2675,6 +2909,124 @@
           </div>
         </div>
         <div
+          id="tab-dungeon"
+          style="display:none">
+          <h3>
+            Dungeon
+          </h3>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button
+              class="btn"
+              onclick="enterDungeon()"><i
+                class="ti ti-stairs"></i>
+              Enter
+              Dungeon</button>
+            <button
+              class="btn"
+              onclick="leaveDungeon()"><i
+                class="ti ti-door-exit"></i>
+              Leave
+              Dungeon</button>
+            <button
+              class="btn"
+              onclick="advanceDungeonFloor()">Descend
+              One
+              Floor</button>
+          </div>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            <label
+              style="font-size:11px;color:var(--text-secondary)">Dungeon
+              Modifier:</label>
+            <select
+              id="dungeon-modifier-select"
+              style="min-width:170px;font-size:12px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)"></select>
+            <button
+              class="btn"
+              onclick="setDungeonModifierFromUI()">Apply</button>
+          </div>
+          <div
+            id="dungeon-info"
+            style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
+          </div>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            <button
+              class="btn"
+              onclick="toggleDungeonOption('autoDescend')">Auto-Descend:
+              <span
+                id="dungeon-auto-descend">Off</span></button>
+            <button
+              class="btn"
+              onclick="toggleDungeonOption('autoLeaveOnDeath')">Auto-Leave
+              on
+              Death:
+              <span
+                id="dungeon-auto-leave">Off</span></button>
+          </div>
+          <div
+            id="dungeon-mod-details"
+            style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px;margin-bottom:8px;font-size:11px;color:var(--text-secondary)">
+          </div>
+        </div>
+        <div
+          id="tab-loot"
+          style="display:none">
+          <div
+            id="loot-rule-panel"
+            style="margin-top:8px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-md);display:flex;flex-direction:column;gap:8px;">
+            <div
+              style="font-size:11px;font-weight:600;">
+              Loot
+              Filter
+              Options
+            </div>
+            <div
+              id="loot-filter-options"
+              style="display:flex;flex-wrap:wrap;gap:6px;">
+            </div>
+            <div
+              style="font-size:11px;font-weight:600;">
+              Advanced
+              Loot
+              Rules
+            </div>
+            <div
+              style="display:flex;gap:6px;flex-wrap:wrap;">
+              <input
+                id="loot-filter-keyword"
+                type="text"
+                placeholder="Keyword (bone, rusty, etc)"
+                style="flex:1;min-width:140px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);">
+              <select
+                id="loot-filter-action"
+                style="font-size:11px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);">
+                <option
+                  value="keep">
+                  KEEP
+                </option>
+                <option
+                  value="sell">
+                  SELL
+                </option>
+                <option
+                  value="ignore">
+                  IGNORE
+                </option>
+              </select>
+              <button
+                class="btn"
+                onclick="addLootFilterRule()">Add
+                Rule</button>
+            </div>
+            <div
+              id="loot-filter-rule-list"
+              style="display:flex;flex-direction:column;gap:4px;">
+            </div>
+          </div>
+        </div>
+        <div
           id="tab-runes"
           style="display:none">
           <h3>
@@ -2686,7 +3038,8 @@
               class="btn"
               onclick="stashAllRunesFromInventory()"><i
                 class="ti ti-box"></i>
-              Stash All
+              Stash
+              All
               Runes</button>
             <button
               class="btn"
@@ -2695,29 +3048,36 @@
               Quick
               Transmute</button>
           </div>
-              <div
-                id="rune-stash-meta"
-                class="bag-meta">
-              </div>
-              <div
-                id="rune-stash-list"
-                class="eq-bag-grid"
-                style="margin-bottom:10px">
-              </div>
-              <h3
-                style="margin-bottom:6px">
-                Runeword
-                Compendium
-              </h3>
-              <div
-                id="runeword-compendium"
-                class="eq-bag-grid"
-                style="margin-bottom:10px">
-              </div>
-              <div
-                style="font-size:10px;color:var(--text-secondary)">
-                Focused transmute options are available in the Shop tab.
-              </div>
+          <div
+            id="rune-stash-meta"
+            class="bag-meta">
+          </div>
+          <div
+            id="rune-stash-list"
+            class="eq-bag-grid"
+            style="margin-bottom:10px">
+          </div>
+          <h3
+            style="margin-bottom:6px">
+            Runeword
+            Compendium
+          </h3>
+          <div
+            id="runeword-compendium"
+            class="eq-bag-grid"
+            style="margin-bottom:10px">
+          </div>
+          <div
+            style="font-size:10px;color:var(--text-secondary)">
+            Focused
+            transmute
+            options
+            are
+            available
+            in the
+            Shop
+            tab.
+          </div>
         </div>
         <div
           id="tab-shop"
@@ -2736,20 +3096,18 @@
               class="btn"
               onclick="sellAllJunk()"><i
                 class="ti ti-coins"></i>
-              Sell All
+              Sell
+              All
               Junk
             </button>
             <button
               class="btn danger"
               onclick="sellAllInventory()"><i
                 class="ti ti-trash"></i>
-              Sell All
+              Sell
+              All
               Inventory
             </button>
-          </div>
-          <div
-            id="loot-filter-controls"
-            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
           </div>
 
           <div
@@ -2822,7 +3180,8 @@
             style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0 8px 0">
             <label
               for="afk-goal-select"
-              style="font-size:11px;color:var(--text-secondary)">AFK Goal:</label>
+              style="font-size:11px;color:var(--text-secondary)">AFK
+              Goal:</label>
             <select
               id="afk-goal-select"
               onchange="setAfkGoalFromUI()"
@@ -2833,13 +3192,26 @@
             style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 8px 0">
             <label
               for="afk-profile-select"
-              style="font-size:11px;color:var(--text-secondary)">AFK Profile:</label>
+              style="font-size:11px;color:var(--text-secondary)">AFK
+              Profile:</label>
             <select
               id="afk-profile-select"
               style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
-              <option value="slot1">Profile 1</option>
-              <option value="slot2">Profile 2</option>
-              <option value="slot3">Profile 3</option>
+              <option
+                value="slot1">
+                Profile
+                1
+              </option>
+              <option
+                value="slot2">
+                Profile
+                2
+              </option>
+              <option
+                value="slot3">
+                Profile
+                3
+              </option>
             </select>
             <button
               class="btn"
@@ -2856,9 +3228,12 @@
               class="btn active"
               id="rule-buy-pots-btn"
               style="font-size:10px;padding:2px 8px"
-              onclick="toggleAfkRule('autoBuyPots')">Auto-Buy Pots: On</button>
+              onclick="toggleAfkRule('autoBuyPots')">Auto-Buy
+              Pots:
+              On</button>
             <label
-              style="font-size:10px;color:var(--text-secondary)">Min Pots</label>
+              style="font-size:10px;color:var(--text-secondary)">Min
+              Pots</label>
             <input
               id="rule-pot-min"
               type="number"
@@ -2871,7 +3246,9 @@
               class="btn active"
               id="rule-contract-advance-btn"
               style="font-size:10px;padding:2px 8px"
-              onclick="toggleAfkRule('autoAdvanceContract')">Auto-Advance Contract: On</button>
+              onclick="toggleAfkRule('autoAdvanceContract')">Auto-Advance
+              Contract:
+              On</button>
           </div>
           <div
             style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">
@@ -3073,7 +3450,9 @@
         </div>
         <div
           class="panel">
-          <h3>Tick Speed</h3>
+          <h3>Tick
+            Speed
+          </h3>
           <input
             type="range"
             min="500"
@@ -3091,7 +3470,8 @@
         </div>
         <div
           class="panel">
-          <h3>Zone</h3>
+          <h3>Zone
+          </h3>
           <div
             style="font-size:12px;font-weight:500"
             id="zone-name-disp">
@@ -4349,9 +4729,9 @@
     const AA_XP_PER_POINT = 2000;
     const CRAFTING_REROLL_COST = { common: 10, magic: 6, rare: 2, gold: 120 };
     const LOOT_FILTER_PRESETS = {
-      balanced: { label: 'Balanced', autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true },
-      gold: { label: 'Gold Farm', autoSellJunk: true, autoSellNormalGear: true, protectRarePlus: true },
-      rares: { label: 'Rare Hunt', autoSellJunk: true, autoSellNormalGear: false, protectRarePlus: true }
+      balanced: { label: 'Balanced', autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
+      gold: { label: 'Gold Farm', autoSellJunk: true, autoSellNormalGear: true, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
+      rares: { label: 'Rare Hunt', autoSellJunk: true, autoSellNormalGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false }
     };
     const AFK_GOALS = {
       balanced: { label: 'Balanced' },
@@ -4367,6 +4747,9 @@
       treasure: { label: 'Treasure Rush', playerDamageMult: 0.96, mobDamageMult: 0.94, healMult: 1, manaMult: 1, xpMult: 1.08, goldMult: 1.45, lootMult: 1.32, eliteChanceBonus: 0.03 },
       elites: { label: 'Elite Gauntlet', playerDamageMult: 1.05, mobDamageMult: 1.14, healMult: 1, manaMult: 1, xpMult: 1.32, goldMult: 1.24, lootMult: 1.16, eliteChanceBonus: 0.2 }
     };
+
+    // Max floors to auto-descend by default to prevent runaway loops
+    const DUNGEON_AUTO_DESCEND_MAX = 50;
 
     const AA_ARCHETYPE_NODES = {
       melee: [
@@ -4579,13 +4962,177 @@
 
     function getLootFilterState(targetChar) {
       if (!targetChar || !targetChar.lootFilter || typeof targetChar.lootFilter !== 'object') {
-        return { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true };
+        return {
+          autoSellJunk: false,
+          autoSellNormalGear: false,
+          protectRarePlus: true,
+          keywordRules: [
+            { match: 'bone', action: 'sell' },
+            { match: 'tattered', action: 'sell' },
+            { match: 'rusty', action: 'sell' },
+            { match: 'runeword', action: 'keep' },
+            { match: 'rare', action: 'keep' }
+          ]
+        };
       }
+
+      if (!Array.isArray(targetChar.lootFilter.keywordRules)) {
+        targetChar.lootFilter.keywordRules = [
+          { match: 'bone', action: 'sell' },
+          { match: 'tattered', action: 'sell' },
+          { match: 'rusty', action: 'sell' },
+          { match: 'runeword', action: 'keep' },
+          { match: 'rare', action: 'keep' }
+        ];
+      }
+
       return {
         autoSellJunk: !!targetChar.lootFilter.autoSellJunk,
         autoSellNormalGear: !!targetChar.lootFilter.autoSellNormalGear,
-        protectRarePlus: targetChar.lootFilter.protectRarePlus !== false
+        protectRarePlus: targetChar.lootFilter.protectRarePlus !== false,
+        autoEquipEmptySlots: !!targetChar.lootFilter.autoEquipEmptySlots,
+        autoEquipUpgradedEquipment: !!targetChar.lootFilter.autoEquipUpgradedEquipment,
+        autoEquipUpgradeMetric: targetChar.lootFilter.autoEquipUpgradeMetric || 'score',
+        autoEquipUpgradeThreshold: Number(targetChar.lootFilter.autoEquipUpgradeThreshold ?? 1),
+        keywordRules: targetChar.lootFilter.keywordRules
       };
+    }
+
+    function getLootFilterRule(item) {
+      if (!char) return null;
+
+      const lf = getLootFilterState(char);
+      const name = String(getItemDisplayName(item) || item || '').toLowerCase();
+
+      for (const rule of lf.keywordRules) {
+        if (!rule || !rule.match) continue;
+
+        const match = String(rule.match).toLowerCase().trim();
+        if (!match) continue;
+
+        if (name.includes(match)) {
+          return rule;
+        }
+      }
+
+      return null;
+    }
+
+    function getQualityRank(item) {
+      const quality = getItemQuality(item);
+      if (quality === 'Runeword') return 5;
+      if (quality === 'Unique') return 4;
+      if (quality === 'Rare') return 3;
+      if (quality === 'Magic') return 2;
+      return 1;
+    }
+
+    function getLootItemScore(item) {
+      const stats = getItemEffectiveStats(item) || { atk: 0, def: 0, hp: 0, mp: 0 };
+      return (stats.atk || 0) * 3 + (stats.def || 0) * 2 + (stats.hp || 0) * 0.25 + (stats.mp || 0) * 0.2;
+    }
+
+    function tryAutoEquipLootItem(item, sourceLabel) {
+      if (!char) return false;
+      const lf = getLootFilterState(char);
+      const data = getItemData(item);
+      if (!data || !data.slot) return false;
+      const slot = data.slot;
+      const current = char.equipment[slot];
+
+      if (lf.autoEquipEmptySlots && !current) {
+        char.equipment[slot] = item;
+        applyItemStats(item);
+        log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-equipped into empty ' + slot + ' slot.', 'loot');
+        renderAll();
+        autoSave();
+        return true;
+      }
+
+      if (!lf.autoEquipUpgradedEquipment || !current) {
+        return false;
+      }
+
+      const metric = lf.autoEquipUpgradeMetric || 'score';
+      const threshold = Number(lf.autoEquipUpgradeThreshold ?? 1);
+      const newStats = getItemEffectiveStats(item) || { atk: 0, def: 0, hp: 0, mp: 0 };
+      const oldStats = getItemEffectiveStats(current) || { atk: 0, def: 0, hp: 0, mp: 0 };
+      const newScore = getLootItemScore(item);
+      const oldScore = getLootItemScore(current);
+      let upgrade = false;
+
+      if (metric === 'quality') {
+        const newQuality = getQualityRank(item);
+        const oldQuality = getQualityRank(current);
+        if (newQuality > oldQuality) {
+          upgrade = true;
+        } else if (newQuality === oldQuality && newScore >= oldScore + threshold) {
+          upgrade = true;
+        }
+      } else if (metric === 'atk' || metric === 'def' || metric === 'hp' || metric === 'mp') {
+        upgrade = Number(newStats[metric] || 0) >= Number(oldStats[metric] || 0) + threshold;
+      } else {
+        upgrade = newScore >= oldScore + threshold;
+      }
+
+      if (!upgrade) return false;
+
+      unequipStats(current);
+      char.inventory.push(current);
+      char.equipment[slot] = item;
+      applyItemStats(item);
+      log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-equipped in place of ' + getItemDisplayName(current) + '.', 'loot');
+      renderAll();
+      autoSave();
+      return true;
+    }
+
+    function addLootFilterRule() {
+      if (!char) return;
+
+      const keywordInput = document.getElementById('loot-filter-keyword');
+      const actionInput = document.getElementById('loot-filter-action');
+
+      if (!keywordInput || !actionInput) return;
+
+      const keyword = keywordInput.value.trim();
+      const action = actionInput.value;
+
+      if (!keyword) {
+        log('Enter a keyword for the loot filter rule.', 'info');
+        return;
+      }
+
+      const lf = getLootFilterState(char);
+      lf.keywordRules.push({
+        match: keyword,
+        action
+      });
+
+      char.lootFilter.keywordRules = lf.keywordRules;
+
+      keywordInput.value = '';
+
+      log('Added loot filter rule: [' + action.toUpperCase() + '] ' + keyword, 'loot');
+      renderShop();
+      renderLootTab();
+      autoSave();
+    }
+
+    function removeLootFilterRule(index) {
+      if (!char) return;
+
+      const lf = getLootFilterState(char);
+
+      if (index < 0 || index >= lf.keywordRules.length) return;
+
+      const removed = lf.keywordRules.splice(index, 1)[0];
+      char.lootFilter.keywordRules = lf.keywordRules;
+
+      log('Removed loot filter rule: ' + removed.match, 'info');
+      renderShop();
+      renderLootTab();
+      autoSave();
     }
 
     function getContractMasteryState(targetChar) {
@@ -4837,11 +5384,15 @@
       targetChar.huntTargets = cleanedTargets;
 
       if (!targetChar.lootFilter || typeof targetChar.lootFilter !== 'object' || Array.isArray(targetChar.lootFilter)) {
-        targetChar.lootFilter = { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true };
+        targetChar.lootFilter = { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false };
       }
       targetChar.lootFilter.autoSellJunk = !!targetChar.lootFilter.autoSellJunk;
       targetChar.lootFilter.autoSellNormalGear = !!targetChar.lootFilter.autoSellNormalGear;
       targetChar.lootFilter.protectRarePlus = targetChar.lootFilter.protectRarePlus !== false;
+      targetChar.lootFilter.autoEquipEmptySlots = !!targetChar.lootFilter.autoEquipEmptySlots;
+      targetChar.lootFilter.autoEquipUpgradedEquipment = !!targetChar.lootFilter.autoEquipUpgradedEquipment;
+      targetChar.lootFilter.autoEquipUpgradeMetric = targetChar.lootFilter.autoEquipUpgradeMetric || 'score';
+      targetChar.lootFilter.autoEquipUpgradeThreshold = Number(targetChar.lootFilter.autoEquipUpgradeThreshold ?? 1);
       if (!targetChar.lootFilterPreset || !LOOT_FILTER_PRESETS[targetChar.lootFilterPreset]) {
         targetChar.lootFilterPreset = 'balanced';
       }
@@ -4911,7 +5462,7 @@
       if (!Number.isFinite(Number(targetChar.huntStreak.zone))) targetChar.huntStreak.zone = null;
 
       if (!targetChar.dungeon || typeof targetChar.dungeon !== 'object') {
-        targetChar.dungeon = { active: false, floor: 1, best: 1 };
+        targetChar.dungeon = { active: false, floor: 1, best: 1, autoDescend: false, autoLeaveOnDeath: false, modifier: 'balanced' };
       }
       targetChar.dungeon.active = !!targetChar.dungeon.active;
       targetChar.dungeon.floor = Math.max(1, Number(targetChar.dungeon.floor || 1));
@@ -4919,6 +5470,9 @@
       if (!targetChar.dungeon.modifier || !DUNGEON_MODIFIERS[targetChar.dungeon.modifier]) {
         targetChar.dungeon.modifier = 'balanced';
       }
+      targetChar.dungeon.autoDescend = !!targetChar.dungeon.autoDescend;
+      targetChar.dungeon.autoLeaveOnDeath = !!targetChar.dungeon.autoLeaveOnDeath;
+      targetChar.dungeon.autoDescendLimit = Number(targetChar.dungeon.autoDescendLimit ?? DUNGEON_AUTO_DESCEND_MAX);
 
       if (!targetChar.aa || typeof targetChar.aa !== 'object') {
         targetChar.aa = { points: 0, spent: 0, nodes: {} };
@@ -5546,7 +6100,7 @@
       }
       char.dungeon.modifier = id;
       log('Dungeon modifier set to ' + DUNGEON_MODIFIERS[id].label + '.', 'info');
-      renderZones();
+      renderDungeonTab();
       autoSave();
     }
 
@@ -5563,7 +6117,7 @@
       const mod = getDungeonModifierData(char.dungeon.modifier);
       log('You descend into the Endless Dungeon at floor ' + char.dungeon.floor + ' (' + mod.label + ').', 'info');
       renderAll();
-      renderZones();
+      renderDungeonTab();
       autoSave();
     }
 
@@ -5579,7 +6133,7 @@
       mob = null;
       log('You leave the Endless Dungeon.', 'info');
       renderAll();
-      renderZones();
+      renderDungeonTab();
       autoSave();
     }
 
@@ -5712,7 +6266,7 @@
     let bagInstallTargetIndex = 0;
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
-    const CURRENT_VERSION = '1.1.0';
+    const CURRENT_VERSION = '1.1.1';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -6195,22 +6749,22 @@
     // Each race config tweaks proportions, palette, and distinguishing
     // features on a shared SVG body. viewBox is fixed at 200×460.
     const RACE_AVATAR_CONFIG = {
-      'Human':      { skin: ['#e9c39b', '#b8895f'], hair: '#5a3a1c', hairStyle: 'short',  ear: 'round',   build: 'medium', tunic: ['#4a5d4a', '#2d3a2d'], pants: ['#3a2f25', '#1f1812'] },
-      'Barbarian':  { skin: ['#eecda0', '#c08856'], hair: '#c89a55', hairStyle: 'braids', ear: 'round',   build: 'huge',   tunic: ['#704a2a', '#3e2814'], pants: ['#3a2418', '#1c100a'], beard: true },
-      'Erudite':    { skin: ['#d7b189', '#8d6543'], hair: '#1a1a1a', hairStyle: 'bald',   ear: 'round',   build: 'lean',   tunic: ['#4a3a78', '#241948'], pants: ['#241948', '#0e0820'], hood: true },
-      'Wood Elf':   { skin: ['#f0d4ad', '#bd9466'], hair: '#7a4d18', hairStyle: 'long',   ear: 'pointed', build: 'lean',   tunic: ['#3a5a2a', '#1c2e14'], pants: ['#3a2f1a', '#1a1208'] },
-      'High Elf':   { skin: ['#f7e3c8', '#cca983'], hair: '#e8d27a', hairStyle: 'long',   ear: 'long-pointed', build: 'lean', tunic: ['#c9a13a', '#6f5414'], pants: ['#e8d8a8', '#9d8550'] },
-      'Dark Elf':   { skin: ['#7a6da8', '#3a3060'], hair: '#e8e8f4', hairStyle: 'long',   ear: 'long-pointed', build: 'lean', tunic: ['#2a1a4a', '#0e0820'], pants: ['#1a1230', '#080414'] },
-      'Half Elf':   { skin: ['#ecd0a5', '#b8895f'], hair: '#3a2814', hairStyle: 'short',  ear: 'pointed', build: 'medium', tunic: ['#3a4a78', '#1a2244'], pants: ['#3a2f25', '#1f1812'] },
-      'Dwarf':      { skin: ['#f0c89a', '#b58456'], hair: '#a13218', hairStyle: 'short',  ear: 'round',   build: 'short',  tunic: ['#7a3a2a', '#3e1810'], pants: ['#3a2418', '#1c100a'], beard: true },
-      'Troll':      { skin: ['#5a8c4a', '#2a5024'], hair: '#1a3a1a', hairStyle: 'mohawk', ear: 'pointed', build: 'huge',   tunic: ['#5a3a18', '#2c1c0a'], pants: ['#3a2418', '#1c100a'], tusks: true },
-      'Ogre':       { skin: ['#a89a5a', '#6a5e28'], hair: '#1a1a1a', hairStyle: 'none',   ear: 'round',   build: 'huge',   tunic: ['#5a4a28', '#2c2412'], pants: ['#3a2c14', '#1c1408'], tusks: true },
-      'Halfling':   { skin: ['#f0d0a0', '#b89060'], hair: '#7a4818', hairStyle: 'short',  ear: 'round',   build: 'short',  tunic: ['#3a5a2a', '#1c2e14'], pants: ['#5a3a1a', '#2c1c0a'] },
-      'Gnome':      { skin: ['#f4d4ac', '#bd9466'], hair: '#c83020', hairStyle: 'mohawk', ear: 'pointed', build: 'short',  tunic: ['#5a3a78', '#2c1c40'], pants: ['#3a2f25', '#1f1812'] },
-      'Iksar':      { skin: ['#5a8a3a', '#2c4a18'], hair: null,      hairStyle: 'none',   ear: 'none',    build: 'medium', tunic: ['#5a4a2a', '#2c2412'], pants: ['#3a2c14', '#1c1408'], snout: true, tail: true, scales: true },
-      'Vah Shir':   { skin: ['#c89a5a', '#7a5424'], hair: '#3a2814', hairStyle: 'mane',   ear: 'cat',     build: 'medium', tunic: ['#5a3a78', '#2c1c40'], pants: ['#3a2818', '#1c0e08'], snout: true, tail: true, whiskers: true },
-      'Froglok':    { skin: ['#6aa848', '#2c5a1c'], hair: null,      hairStyle: 'none',   ear: 'none',    build: 'short',  tunic: ['#3a5a2a', '#1c2e14'], pants: ['#2a3a1a', '#10180a'], frogHead: true },
-      'Drakkin':    { skin: ['#e8c8a8', '#b8896c'], hair: '#5a1818', hairStyle: 'long',   ear: 'pointed', build: 'medium', tunic: ['#7a2a3a', '#3a1018'], pants: ['#3a1818', '#1c0810'], hornsSmall: true, scales: 'cheek' }
+      'Human': { skin: ['#e9c39b', '#b8895f'], hair: '#5a3a1c', hairStyle: 'short', ear: 'round', build: 'medium', tunic: ['#4a5d4a', '#2d3a2d'], pants: ['#3a2f25', '#1f1812'] },
+      'Barbarian': { skin: ['#eecda0', '#c08856'], hair: '#c89a55', hairStyle: 'braids', ear: 'round', build: 'huge', tunic: ['#704a2a', '#3e2814'], pants: ['#3a2418', '#1c100a'], beard: true },
+      'Erudite': { skin: ['#d7b189', '#8d6543'], hair: '#1a1a1a', hairStyle: 'bald', ear: 'round', build: 'lean', tunic: ['#4a3a78', '#241948'], pants: ['#241948', '#0e0820'], hood: true },
+      'Wood Elf': { skin: ['#f0d4ad', '#bd9466'], hair: '#7a4d18', hairStyle: 'long', ear: 'pointed', build: 'lean', tunic: ['#3a5a2a', '#1c2e14'], pants: ['#3a2f1a', '#1a1208'] },
+      'High Elf': { skin: ['#f7e3c8', '#cca983'], hair: '#e8d27a', hairStyle: 'long', ear: 'long-pointed', build: 'lean', tunic: ['#c9a13a', '#6f5414'], pants: ['#e8d8a8', '#9d8550'] },
+      'Dark Elf': { skin: ['#7a6da8', '#3a3060'], hair: '#e8e8f4', hairStyle: 'long', ear: 'long-pointed', build: 'lean', tunic: ['#2a1a4a', '#0e0820'], pants: ['#1a1230', '#080414'] },
+      'Half Elf': { skin: ['#ecd0a5', '#b8895f'], hair: '#3a2814', hairStyle: 'short', ear: 'pointed', build: 'medium', tunic: ['#3a4a78', '#1a2244'], pants: ['#3a2f25', '#1f1812'] },
+      'Dwarf': { skin: ['#f0c89a', '#b58456'], hair: '#a13218', hairStyle: 'short', ear: 'round', build: 'short', tunic: ['#7a3a2a', '#3e1810'], pants: ['#3a2418', '#1c100a'], beard: true },
+      'Troll': { skin: ['#5a8c4a', '#2a5024'], hair: '#1a3a1a', hairStyle: 'mohawk', ear: 'pointed', build: 'huge', tunic: ['#5a3a18', '#2c1c0a'], pants: ['#3a2418', '#1c100a'], tusks: true },
+      'Ogre': { skin: ['#a89a5a', '#6a5e28'], hair: '#1a1a1a', hairStyle: 'none', ear: 'round', build: 'huge', tunic: ['#5a4a28', '#2c2412'], pants: ['#3a2c14', '#1c1408'], tusks: true },
+      'Halfling': { skin: ['#f0d0a0', '#b89060'], hair: '#7a4818', hairStyle: 'short', ear: 'round', build: 'short', tunic: ['#3a5a2a', '#1c2e14'], pants: ['#5a3a1a', '#2c1c0a'] },
+      'Gnome': { skin: ['#f4d4ac', '#bd9466'], hair: '#c83020', hairStyle: 'mohawk', ear: 'pointed', build: 'short', tunic: ['#5a3a78', '#2c1c40'], pants: ['#3a2f25', '#1f1812'] },
+      'Iksar': { skin: ['#5a8a3a', '#2c4a18'], hair: null, hairStyle: 'none', ear: 'none', build: 'medium', tunic: ['#5a4a2a', '#2c2412'], pants: ['#3a2c14', '#1c1408'], snout: true, tail: true, scales: true },
+      'Vah Shir': { skin: ['#c89a5a', '#7a5424'], hair: '#3a2814', hairStyle: 'mane', ear: 'cat', build: 'medium', tunic: ['#5a3a78', '#2c1c40'], pants: ['#3a2818', '#1c0e08'], snout: true, tail: true, whiskers: true },
+      'Froglok': { skin: ['#6aa848', '#2c5a1c'], hair: null, hairStyle: 'none', ear: 'none', build: 'short', tunic: ['#3a5a2a', '#1c2e14'], pants: ['#2a3a1a', '#10180a'], frogHead: true },
+      'Drakkin': { skin: ['#e8c8a8', '#b8896c'], hair: '#5a1818', hairStyle: 'long', ear: 'pointed', build: 'medium', tunic: ['#7a2a3a', '#3a1018'], pants: ['#3a1818', '#1c0810'], hornsSmall: true, scales: 'cheek' }
     };
 
     function getRaceAvatarConfig(race) {
@@ -6224,11 +6778,11 @@
       // Build proportions from body type
       // All coordinates target the same 200×460 viewBox.
       const builds = {
-        lean:   { headR: 24, headRy: 30, shoulderW: 36, hipW: 32, height: 1.0 },
+        lean: { headR: 24, headRy: 30, shoulderW: 36, hipW: 32, height: 1.0 },
         medium: { headR: 26, headRy: 32, shoulderW: 42, hipW: 38, height: 1.0 },
         stocky: { headR: 27, headRy: 30, shoulderW: 50, hipW: 46, height: 0.94 },
-        short:  { headR: 26, headRy: 28, shoulderW: 40, hipW: 38, height: 0.78 },
-        huge:   { headR: 32, headRy: 36, shoulderW: 64, hipW: 56, height: 1.08 }
+        short: { headR: 26, headRy: 28, shoulderW: 40, hipW: 38, height: 0.78 },
+        huge: { headR: 32, headRy: 36, shoulderW: 64, hipW: 56, height: 1.08 }
       };
       const b = builds[cfg.build] || builds.medium;
 
@@ -6238,16 +6792,16 @@
       const baseY = 430;
       // Pre-scale all Y coords against baseY
       const ys = {
-        headCy:    baseY - (380 * scale),
-        neckY:     baseY - (348 * scale),
-        torsoTop:  baseY - (334 * scale),
-        torsoBot:  baseY - (208 * scale),
-        beltTop:   baseY - (210 * scale),
-        beltBot:   baseY - (196 * scale),
-        legTop:    baseY - (196 * scale),
-        legBot:    baseY - (70 * scale),
-        footTop:   baseY - (70 * scale),
-        footBot:   baseY - (20 * scale)
+        headCy: baseY - (380 * scale),
+        neckY: baseY - (348 * scale),
+        torsoTop: baseY - (334 * scale),
+        torsoBot: baseY - (208 * scale),
+        beltTop: baseY - (210 * scale),
+        beltBot: baseY - (196 * scale),
+        legTop: baseY - (196 * scale),
+        legBot: baseY - (70 * scale),
+        footTop: baseY - (70 * scale),
+        footBot: baseY - (20 * scale)
       };
 
       const cx = 100;
@@ -6603,7 +7157,7 @@
         afkPinnedContractIdx: 0,
         huntTargets: {},
         huntStreak: { zone: null, target: '', count: 0 },
-        lootFilter: { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true },
+        lootFilter: { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
         lootFilterPreset: 'balanced',
         contractMastery: { level: 0, xp: 0, totalChains: 0 },
         afkGoal: 'balanced',
@@ -6780,8 +7334,8 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.0';
-        if (!silent) log('Upgraded save data to v1.1.0.', 'info');
+        oldChar.version = '1.1.1';
+        if (!silent) log('Upgraded save data to v1.1.1.', 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -6891,7 +7445,8 @@
       document.getElementById('hp-bar').style.width = Math.max(0, char.hp / char.maxHp * 100) + '%';
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
       document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
-      renderMob(); renderInv(); renderShop(); renderSpellbook();
+      renderMob(); renderInv(); renderShop(); renderLootTab(); renderSpellbook();
+      renderDungeonTab();
       renderAATab();
       renderPrestigeTab();
       const afkGoalSelect = document.getElementById('afk-goal-select');
@@ -7062,25 +7617,6 @@
       const event = getActiveZoneEvent(char.zone);
       document.getElementById('zone-desc-disp').textContent = ZONES[char.zone].desc + ' Event: ' + event.name + ' — ' + event.desc;
       document.getElementById('bind-zone-disp').textContent = 'Bind Point: ' + ZONES[char.bindZone || 0].name;
-      const dungeonInfo = document.getElementById('dungeon-info');
-      const dungeonSelect = document.getElementById('dungeon-modifier-select');
-      if (dungeonInfo) {
-        ensureExtendedSystems(char);
-        const mod = getDungeonModifierData(char.dungeon.modifier);
-        dungeonInfo.textContent = char.dungeon.active
-          ? ('Dungeon Active · Floor ' + char.dungeon.floor + ' · Best ' + char.dungeon.best + ' · Modifier: ' + mod.label)
-          : ('Dungeon Inactive · Best Floor ' + (char.dungeon.best || 1) + ' · Modifier: ' + mod.label);
-      }
-      if (dungeonSelect) {
-        dungeonSelect.innerHTML = '';
-        Object.entries(DUNGEON_MODIFIERS).forEach(([id, data]) => {
-          const opt = document.createElement('option');
-          opt.value = id;
-          opt.textContent = data.label;
-          dungeonSelect.appendChild(opt);
-        });
-        dungeonSelect.value = (char.dungeon && char.dungeon.modifier) || 'balanced';
-      }
       if (char.corpse) {
         const zoneName = ZONES[char.corpse.zone] ? ZONES[char.corpse.zone].name : 'Unknown';
         document.getElementById('corpse-disp').textContent = 'Corpse: ' + zoneName + ' (' + (char.corpse.gold || 0) + 'g)';
@@ -7549,6 +8085,8 @@
           '<button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal Gear: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
           '<select id="loot-filter-preset-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + presetOptions + '</select>' +
           '<button class="btn" onclick="setLootFilterPresetFromUI()">Apply Preset</button>';
       }
@@ -7608,7 +8146,7 @@
           <div class="eq-item-actions">
             <button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button>
           </div>
-          <div class="eq-item-actions" style="margin-top:6px">
+          <div class="eq-item-actions compact" style="margin-top:6px">
             <select id="craft-reroll-slot" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
               <option value="weapon">Weapon</option>
               <option value="chest">Chest</option>
@@ -7669,6 +8207,19 @@
         </div>
       `;
 
+      // Mystic Chest: a repeatable gold sink that gives random rewards (runewords, runes, shards, gear)
+      const mysticChestCost = Math.max(250, Math.floor(150 + char.level * 50));
+      shopHtml += `
+        <div class="eq-item-card">
+          <div class="eq-item-name rarity-unique">Mystic Chest</div>
+          <div class="eq-item-type">Pay to open a mysterious chest — chance for runes, shards, or gear.</div>
+          <div class="eq-item-bonus">${mysticChestCost} Gold</div>
+          <div class="eq-item-actions">
+            <button class="btn" onclick="purchaseMysticChest()">Open</button>
+          </div>
+        </div>
+      `;
+
       for (let i = 0; i < RUNE_TRANSMUTE_CHAIN.length - 1; i++) {
         const sourceRune = RUNE_TRANSMUTE_CHAIN[i];
         const resultRune = RUNE_TRANSMUTE_CHAIN[i + 1];
@@ -7689,6 +8240,120 @@
       }
 
       shopGrid.innerHTML = shopHtml;
+    }
+
+    function renderLootTab() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const lootTab = document.getElementById('tab-loot');
+      if (!lootTab) return;
+      const lf = getLootFilterState(char);
+      const presetId = LOOT_FILTER_PRESETS[char.lootFilterPreset] ? char.lootFilterPreset : 'balanced';
+      const presetOptions = Object.entries(LOOT_FILTER_PRESETS)
+        .map(([id, data]) => '<option value="' + id + '"' + (id === presetId ? ' selected' : '') + '>' + data.label + '</option>')
+        .join('');
+      const ruleList = (lf.keywordRules || []).map((rule, idx) =>
+        '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--bg-primary);padding:4px 6px;border-radius:var(--radius-md);font-size:11px;">' +
+        '<span>[' + rule.action.toUpperCase() + '] ' + rule.match + '</span>' +
+        '<button class="btn" style="font-size:10px;padding:2px 6px;" onclick="removeLootFilterRule(' + idx + ')">X</button>' +
+        '</div>'
+      ).join('');
+
+      const optionsPanel =
+        '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+        '<button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
+        '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal Gear: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
+        '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
+        '<button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
+        '<button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
+        '<select id="loot-filter-preset-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + presetOptions + '</select>' +
+        '<button class="btn" onclick="setLootFilterPresetFromUI()">Apply Preset</button>' +
+        '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;">' +
+        '<label style="font-size:11px;display:flex;align-items:center;gap:6px;">Upgrade Metric:' +
+        '<select id="loot-upgrade-metric-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' +
+        '<option value="score"' + (lf.autoEquipUpgradeMetric === 'score' ? ' selected' : '') + '>Score</option>' +
+        '<option value="atk"' + (lf.autoEquipUpgradeMetric === 'atk' ? ' selected' : '') + '>ATK</option>' +
+        '<option value="def"' + (lf.autoEquipUpgradeMetric === 'def' ? ' selected' : '') + '>DEF</option>' +
+        '<option value="hp"' + (lf.autoEquipUpgradeMetric === 'hp' ? ' selected' : '') + '>HP</option>' +
+        '<option value="mp"' + (lf.autoEquipUpgradeMetric === 'mp' ? ' selected' : '') + '>MP</option>' +
+        '<option value="quality"' + (lf.autoEquipUpgradeMetric === 'quality' ? ' selected' : '') + '>Quality</option>' +
+        '</select>' +
+        '</label>' +
+        '<label style="font-size:11px;display:flex;align-items:center;gap:6px;">Min Improvement:' +
+        '<input id="loot-upgrade-threshold" type="number" min="0" step="1" value="' + lf.autoEquipUpgradeThreshold + '" style="width:72px;font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' +
+        '</label>' +
+        '<button class="btn" onclick="setLootUpgradeCriteriaFromUI()">Save Criteria</button>' +
+        '</div>';
+
+      lootTab.querySelector('#loot-filter-options').innerHTML = optionsPanel;
+      const ruleListContainer = lootTab.querySelector('#loot-filter-rule-list');
+      if (ruleListContainer) {
+        ruleListContainer.innerHTML = ruleList;
+      }
+    }
+
+    function renderDungeonTab() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const dt = document.getElementById('tab-dungeon');
+      if (!dt) return;
+      const mod = getDungeonModifierData(char.dungeon.modifier);
+      const info = char.dungeon.active
+        ? ('Dungeon Active · Floor ' + char.dungeon.floor + ' · Best ' + char.dungeon.best + ' · Modifier: ' + mod.label)
+        : ('Dungeon Inactive · Best Floor ' + (char.dungeon.best || 1) + ' · Modifier: ' + mod.label);
+      const sel = dt.querySelector('#dungeon-modifier-select');
+      if (sel) {
+        sel.innerHTML = '';
+        Object.entries(DUNGEON_MODIFIERS).forEach(([id, data]) => {
+          const opt = document.createElement('option'); opt.value = id; opt.textContent = data.label; sel.appendChild(opt);
+        });
+        sel.value = (char.dungeon && char.dungeon.modifier) || 'balanced';
+      }
+      const infoEl = dt.querySelector('#dungeon-info');
+      if (infoEl) infoEl.textContent = info;
+
+      const modDetails = dt.querySelector('#dungeon-mod-details');
+      if (modDetails) {
+        modDetails.innerHTML = '<strong>' + mod.label + '</strong><div style="margin-top:6px">' + (mod.desc || '') + '</div>' +
+          '<div style="margin-top:6px">Loot x' + (mod.lootMult || 1) + ' · XP x' + (mod.xpMult || 1) + ' · Gold x' + (mod.goldMult || 1) + '</div>' +
+          '<div style="margin-top:8px">Auto-descend limit: <input id="dungeon-auto-limit" type="number" min="1" step="1" value="' + (char.dungeon.autoDescendLimit || DUNGEON_AUTO_DESCEND_MAX) + '" style="width:84px;margin-left:6px"> <button class="btn" onclick="setDungeonAutoDescendLimitFromUI()">Save</button></div>';
+      }
+
+      const autoDesc = dt.querySelector('#dungeon-auto-descend');
+      const autoLeave = dt.querySelector('#dungeon-auto-leave');
+      if (autoDesc) autoDesc.textContent = (char.dungeon.autoDescend ? 'On' : 'Off');
+      if (autoLeave) autoLeave.textContent = (char.dungeon.autoLeaveOnDeath ? 'On' : 'Off');
+    }
+
+    function advanceDungeonFloor() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (!char.dungeon.active) { log('You are not in the dungeon.', 'info'); return; }
+      char.dungeon.floor = Math.max(1, (char.dungeon.floor || 1) + 1);
+      char.dungeon.best = Math.max(char.dungeon.best || 1, char.dungeon.floor);
+      log('You descend to floor ' + char.dungeon.floor + '.', 'info');
+      renderAll(); renderDungeonTab(); autoSave();
+    }
+
+    function toggleDungeonOption(flag) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (!(flag in char.dungeon)) char.dungeon[flag] = false;
+      char.dungeon[flag] = !char.dungeon[flag];
+      log('Dungeon option ' + flag + ' = ' + (char.dungeon[flag] ? 'On' : 'Off') + '.', 'info');
+      renderDungeonTab(); autoSave();
+    }
+
+    function setDungeonAutoDescendLimitFromUI() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const inp = document.getElementById('dungeon-auto-limit');
+      if (!inp) return;
+      const val = Math.max(1, Math.floor(Number(inp.value) || DUNGEON_AUTO_DESCEND_MAX));
+      char.dungeon.autoDescendLimit = val;
+      log('Dungeon auto-descend limit set to ' + val + '.', 'info');
+      renderDungeonTab(); autoSave();
     }
 
     function renderQuests() {
@@ -7796,13 +8461,13 @@
         '<button class="btn" onclick="loadAAPreset(\'slot1\')">Load Preset 1</button>' +
         '<button class="btn" onclick="saveAAPreset(\'slot2\')">Save Preset 2</button>' +
         '<button class="btn" onclick="loadAAPreset(\'slot2\')">Load Preset 2</button>' +
-      '</div>';
+        '</div>';
 
       aaHtml += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
         (simActive
           ? '<button class="btn active" onclick="applyAASimulatorBuild()">Apply Sim Build</button><button class="btn" onclick="resetAASimulator()">Reset Sim</button><button class="btn" onclick="cancelAASimulator()">Cancel Sim</button>'
           : '<button class="btn" onclick="startAASimulator()">Start Simulator</button>') +
-      '</div>';
+        '</div>';
 
       const simA = char.aa && char.aa.sim && char.aa.sim.presets ? char.aa.sim.presets.A : null;
       const simB = char.aa && char.aa.sim && char.aa.sim.presets ? char.aa.sim.presets.B : null;
@@ -7813,7 +8478,7 @@
         '<button class="btn" onclick="loadAASimPreset(\'A\')" ' + (simA ? '' : 'disabled') + '>Load Sim A</button>' +
         '<button class="btn" onclick="saveAASimPreset(\'B\')">Save Sim B</button>' +
         '<button class="btn" onclick="loadAASimPreset(\'B\')" ' + (simB ? '' : 'disabled') + '>Load Sim B</button>' +
-      '</div>';
+        '</div>';
       aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary);margin-top:4px">Snapshots: A ' + spentA + ' pts · B ' + spentB + ' pts</div>';
 
       const liveSummary = getAABuildCompareSummary(char, char.aa.nodes || {});
@@ -7838,7 +8503,7 @@
         row('Mana Recovery', 'manaPct', '%') +
         row('Incoming Damage', 'incomingPct', '%') +
         row('Loot Mult', 'lootPct', '%') +
-      '</div>';
+        '</div>';
 
       const classPrefix = aaClassKey(char.cls) + '_';
       const capstoneNodes = aaNodes.filter(n => n.maxRank === 1);
@@ -7862,7 +8527,7 @@
             '<div class="quest-prog" style="margin-top:0">' + node.name + capstoneTag + ' (' + rank + '/' + node.maxRank + ') — ' + node.desc + '</div>' +
             nextGain + reqText +
             '<div style="margin-top:4px"><button class="btn" title="' + getAANodeNextGainText(node, rank) + '" onclick="' + investAction + '(\'' + node.key + '\')" ' + (canSpend ? '' : 'disabled') + '>Invest 1 AA' + (simActive ? ' (Sim)' : '') + '</button></div>' +
-          '</div>';
+            '</div>';
         });
         return html;
       }
@@ -7906,7 +8571,7 @@
         html += '<div style="margin-top:6px;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--bg-primary)">' +
           '<div class="quest-prog" style="margin-top:0">' + perk.label + ' (' + rank + '/' + perk.maxRank + ') — ' + perk.desc + '</div>' +
           '<div style="margin-top:4px"><button class="btn" onclick="spendPrestigePoint(\'' + id + '\')" ' + ((prestige.points > 0 && rank < perk.maxRank) ? '' : 'disabled') + '>Invest 1 Prestige</button></div>' +
-        '</div>';
+          '</div>';
       });
       html += '</div>';
 
@@ -8648,9 +9313,26 @@
         char.dungeon.floor += 1;
         char.dungeon.best = Math.max(char.dungeon.best || 1, char.dungeon.floor);
         log('Dungeon floor cleared. Next floor: ' + char.dungeon.floor + '.', 'info');
+        if (char.dungeon.autoDescend) {
+          const limit = Number(char.dungeon.autoDescendLimit ?? DUNGEON_AUTO_DESCEND_MAX);
+          const nextFloor = char.dungeon.floor;
+          if (nextFloor <= limit) {
+            log('Auto-descending to floor ' + nextFloor + '.', 'info');
+            spawnMob();
+          } else {
+            log('Auto-descend halted: reached configured limit of ' + limit + '.', 'info');
+            // disable to avoid repeated halting logs
+            char.dungeon.autoDescend = false;
+          }
+        }
       }
 
-      checkLevelUp(); renderQuests(); mob = null; renderAll(); autoSave();
+      checkLevelUp(); renderQuests();
+      // If we auto-descended to the next floor, spawnMob() already set `mob`; avoid clearing it.
+      if (!(char.dungeon && char.dungeon.active && char.dungeon.autoDescend)) {
+        mob = null;
+      }
+      renderAll(); autoSave();
     }
 
     function checkLevelUp() {
@@ -8695,8 +9377,15 @@
 
       mob = null;
 
+      // If configured to auto-leave the dungeon on death, disable dungeon state
+      if (char.dungeon && char.dungeon.active && char.dungeon.autoLeaveOnDeath) {
+        char.dungeon.active = false;
+        char.dungeon.floor = 1;
+        log('Dungeon exited due to death (auto-leave).', 'info');
+      }
+
       renderAll();
-      renderZones();
+      renderDungeonTab();
       autoSave();
     }
 
@@ -8769,17 +9458,38 @@
       if (!sel) return;
       applyLootFilterPreset(String(sel.value || 'balanced'));
       renderShop();
+      renderLootTab();
+      autoSave();
+    }
+
+    function setLootUpgradeCriteriaFromUI() {
+      if (!char) return;
+      const metricSelect = document.getElementById('loot-upgrade-metric-select');
+      const thresholdInput = document.getElementById('loot-upgrade-threshold');
+      if (!metricSelect || !thresholdInput) return;
+      const metric = String(metricSelect.value || 'score');
+      const threshold = Math.max(0, Number(thresholdInput.value) || 0);
+      if (!char.lootFilter || typeof char.lootFilter !== 'object') char.lootFilter = {};
+      char.lootFilter.autoEquipUpgradeMetric = metric;
+      char.lootFilter.autoEquipUpgradeThreshold = threshold;
+      log('Loot auto-equip upgrade criteria set to ' + metric.toUpperCase() + ' + ' + threshold + '.', 'info');
+      renderLootTab();
+      renderShop();
       autoSave();
     }
 
     function toggleLootFilter(flag) {
       if (!char) return;
       ensureExtendedSystems(char);
-      if (!(flag in char.lootFilter)) return;
+      if (!char.lootFilter || typeof char.lootFilter !== 'object') char.lootFilter = {};
+      if (!(flag in char.lootFilter)) {
+        char.lootFilter[flag] = false;
+      }
       char.lootFilter[flag] = !char.lootFilter[flag];
       char.lootFilterPreset = 'balanced';
       log('Loot filter updated: ' + flag + ' = ' + (char.lootFilter[flag] ? 'On' : 'Off') + '.', 'info');
       renderShop();
+      renderLootTab();
       autoSave();
     }
 
@@ -8805,10 +9515,36 @@
 
     function processLootDrop(item, sourceLabel = 'Looted') {
       if (!char) return;
+
+      const matchedRule = getLootFilterRule(item);
+
+      if (matchedRule) {
+        if (matchedRule.action === 'ignore') {
+          log(sourceLabel + ': ' + getItemDisplayName(item) + ' ignored by loot filter.', 'info');
+          return;
+        }
+
+        if (matchedRule.action === 'sell') {
+          const value = getItemSellValue(item);
+          char.gold += value;
+          log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-sold by rule for ' + value + 'g.', 'loot');
+          return;
+        }
+
+        if (matchedRule.action === 'keep') {
+          if (tryAutoEquipLootItem(item, sourceLabel)) return;
+          char.inventory.push(item);
+          log(sourceLabel + ': ' + getItemDisplayName(item) + ' kept by loot filter.', 'loot');
+          return;
+        }
+      }
+
       if (shouldAutoSellLootItem(item)) {
         const value = getItemSellValue(item);
         char.gold += value;
         log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-sold for ' + value + 'g.', 'loot');
+      } else if (tryAutoEquipLootItem(item, sourceLabel)) {
+        return;
       } else {
         char.inventory.push(item);
         log(sourceLabel + ': ' + getItemDisplayName(item), 'loot');
@@ -10082,6 +10818,54 @@
       autoSave();
     }
 
+    function purchaseMysticChest() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const cost = Math.max(250, Math.floor(150 + (char.level || 1) * 50));
+      if (char.gold < cost) {
+        log('Not enough gold for the Mystic Chest.', 'info');
+        return;
+      }
+      char.gold -= cost;
+      // reward roll
+      const r = Math.random();
+      if (r < 0.02) {
+        // jackpot: give a high-value rune (last in chain) and a unique shard
+        const topRune = RUNE_TRANSMUTE_CHAIN[RUNE_TRANSMUTE_CHAIN.length - 1];
+        char.runeStash = char.runeStash || [];
+        char.runeStash.push(topRune);
+        char.crafting = char.crafting || { shards: { common: 0, magic: 0, rare: 0, unique: 0 } };
+        char.crafting.shards.unique = (char.crafting.shards.unique || 0) + 1;
+        log('Mystic Chest exploded! You found a ' + topRune + ' and a Unique Shard!', 'loot');
+      } else if (r < 0.12) {
+        // rare gear
+        const lootBase = LOOT[Math.floor(Math.random() * LOOT.length)];
+        const loot = rollItemVariant(lootBase, 'mystic');
+        char.inventory.push(loot);
+        log('Mystic Chest yielded: ' + getItemDisplayName(loot) + '.', 'loot');
+      } else if (r < 0.4) {
+        // shards
+        const shardType = (Math.random() < 0.6) ? 'common' : (Math.random() < 0.7 ? 'magic' : 'rare');
+        char.crafting = char.crafting || { shards: { common: 0, magic: 0, rare: 0, unique: 0 } };
+        const amt = shardType === 'common' ? 5 : (shardType === 'magic' ? 2 : 1);
+        char.crafting.shards[shardType] = (char.crafting.shards[shardType] || 0) + amt;
+        log('Mystic Chest gave you +' + amt + ' ' + shardType + ' shards.', 'loot');
+      } else if (r < 0.7) {
+        // rune
+        const rune = RUNE_TRANSMUTE_CHAIN[Math.floor(Math.random() * RUNE_TRANSMUTE_CHAIN.length)];
+        char.runeStash = char.runeStash || [];
+        char.runeStash.push(rune);
+        log('Mystic Chest produced a rune: ' + rune + '.', 'loot');
+      } else {
+        // consolation: small refund
+        const refund = Math.floor(cost * (0.06 + Math.random() * 0.18));
+        char.gold += refund;
+        log('Mystic Chest was mostly empty. You recovered ' + refund + 'g.', 'info');
+      }
+      renderAll();
+      autoSave();
+    }
+
     function buyContainer(name) {
       const data = CONTAINER_ITEMS[name];
       if (!data || data.starter) {
@@ -10162,15 +10946,17 @@
     //  UI HELPERS
     // ══════════════════════════════════════════════
     function switchTab(tab) {
-      const tabs = ['combat', 'zone', 'quests', 'inv', 'runes', 'shop', 'spells', 'aa', 'prestige'];
+      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'inv', 'loot', 'runes', 'shop', 'spells', 'aa', 'prestige'];
       tabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
       });
       document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', tabs[i] === tab); });
       if (tab === 'combat') requestAnimationFrame(syncCombatLogSize);
       if (tab === 'zone') renderZones();
+      if (tab === 'dungeon') renderDungeonTab();
       if (tab === 'quests') renderQuests();
       if (tab === 'inv') renderInv();
+      if (tab === 'loot') renderLootTab();
       if (tab === 'runes') renderInv();
       if (tab === 'shop') renderShop();
       if (tab === 'spells') renderSpellbook();
