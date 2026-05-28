@@ -2598,11 +2598,16 @@
                   Active
                   Effects
                 </div>
-                <button
-                  class="btn"
-                  style="font-size:10px;padding:2px 8px"
-                  onclick="invokeShrine()">Invoke
-                  Shrine</button>
+                <div
+                  style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end">
+                  <button
+                    id="invoke-shrine-btn"
+                    class="btn"
+                    style="font-size:10px;padding:2px 8px"
+                    title="Spend gold for a random shrine effect"
+                    onclick="invokeShrine()">Invoke
+                    Random Shrine</button>
+                </div>
               </div>
               <div
                 id="status-effects"
@@ -3958,7 +3963,7 @@
       occultistReforge: 80,
       occultistSocket: 65
     };
-    const MAX_SHOP_SELLBACK_RATE = 0.65;
+    const MAX_SHOP_SELLBACK_RATE = 0.5;
 
     const MERCENARY_TYPES = {
       sellsword: {
@@ -5178,27 +5183,27 @@
         if (isContainerEntry(entry)) {
           const bagData = CONTAINER_ITEMS[getItemBaseName(entry)];
           const baseValue = Math.max(1, Math.floor(Number(bagData?.cost || 20)));
-          const payout = Math.max(12, Math.floor(baseValue * 0.45));
+          const payout = Math.max(8, Math.floor(baseValue * 0.32));
           const cap = Math.max(1, Math.floor(baseValue * MAX_SHOP_SELLBACK_RATE));
           return Math.min(payout, cap);
         }
-        return Math.floor(Math.random() * 10) + 5;
+        return Math.floor(Math.random() * 6) + 3;
       }
 
       const stats = getItemEffectiveStats(entry);
-      let value = 8;
-      value += (stats.atk || 0) * 3;
-      value += (stats.def || 0) * 3;
-      value += Math.floor((stats.hp || 0) / 12);
-      value += Math.floor((stats.mp || 0) / 12);
+      let value = 6;
+      value += (stats.atk || 0) * 2;
+      value += (stats.def || 0) * 2;
+      value += Math.floor((stats.hp || 0) / 16);
+      value += Math.floor((stats.mp || 0) / 16);
 
-      if (entry && typeof entry === 'object' && entry.quality === 'Rare') value += 18;
-      else if (entry && typeof entry === 'object' && entry.quality === 'Unique') value += 45;
-      else if (entry && typeof entry === 'object' && entry.quality === 'Runeword') value += 65;
-      else if (entry && typeof entry === 'object') value += 9;
+      if (entry && typeof entry === 'object' && entry.quality === 'Rare') value += 12;
+      else if (entry && typeof entry === 'object' && entry.quality === 'Unique') value += 30;
+      else if (entry && typeof entry === 'object' && entry.quality === 'Runeword') value += 40;
+      else if (entry && typeof entry === 'object') value += 6;
 
-      value += Math.floor(Math.random() * 6);
-      const fullValue = Math.max(6, value);
+      value += Math.floor(Math.random() * 4);
+      const fullValue = Math.max(4, value);
       return Math.max(1, Math.floor(fullValue * MAX_SHOP_SELLBACK_RATE));
     }
 
@@ -5274,9 +5279,9 @@
     const AA_XP_PER_POINT = 2000;
     const CRAFTING_REROLL_COST = { common: 10, magic: 6, rare: 2, gold: 120 };
     const LOOT_FILTER_PRESETS = {
-      balanced: { label: 'Balanced', autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
-      gold: { label: 'Gold Farm', autoSellJunk: true, autoSellNormalGear: true, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
-      rares: { label: 'Rare Hunt', autoSellJunk: true, autoSellNormalGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false }
+      balanced: { label: 'Balanced', autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
+      gold: { label: 'Gold Farm', autoSellJunk: true, autoSellNormalGear: true, autoSellBlueMagicGear: true, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
+      rares: { label: 'Rare Hunt', autoSellJunk: true, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false }
     };
     const AFK_GOALS = {
       balanced: { label: 'Balanced' },
@@ -5510,6 +5515,9 @@
         return {
           autoSellJunk: false,
           autoSellNormalGear: false,
+          autoSellBlueMagicGear: false,
+          autoSellRareGear: false,
+          autoSellLegendaryGear: false,
           protectRarePlus: true,
           keywordRules: [
             { match: 'bone', action: 'sell' },
@@ -5534,6 +5542,9 @@
       return {
         autoSellJunk: !!targetChar.lootFilter.autoSellJunk,
         autoSellNormalGear: !!targetChar.lootFilter.autoSellNormalGear,
+        autoSellBlueMagicGear: !!targetChar.lootFilter.autoSellBlueMagicGear,
+        autoSellRareGear: !!targetChar.lootFilter.autoSellRareGear,
+        autoSellLegendaryGear: !!targetChar.lootFilter.autoSellLegendaryGear,
         protectRarePlus: targetChar.lootFilter.protectRarePlus !== false,
         autoEquipEmptySlots: !!targetChar.lootFilter.autoEquipEmptySlots,
         autoEquipUpgradedEquipment: !!targetChar.lootFilter.autoEquipUpgradedEquipment,
@@ -5929,10 +5940,13 @@
       targetChar.huntTargets = cleanedTargets;
 
       if (!targetChar.lootFilter || typeof targetChar.lootFilter !== 'object' || Array.isArray(targetChar.lootFilter)) {
-        targetChar.lootFilter = { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false };
+        targetChar.lootFilter = { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false };
       }
       targetChar.lootFilter.autoSellJunk = !!targetChar.lootFilter.autoSellJunk;
       targetChar.lootFilter.autoSellNormalGear = !!targetChar.lootFilter.autoSellNormalGear;
+      targetChar.lootFilter.autoSellBlueMagicGear = !!targetChar.lootFilter.autoSellBlueMagicGear;
+      targetChar.lootFilter.autoSellRareGear = !!targetChar.lootFilter.autoSellRareGear;
+      targetChar.lootFilter.autoSellLegendaryGear = !!targetChar.lootFilter.autoSellLegendaryGear;
       targetChar.lootFilter.protectRarePlus = targetChar.lootFilter.protectRarePlus !== false;
       targetChar.lootFilter.autoEquipEmptySlots = !!targetChar.lootFilter.autoEquipEmptySlots;
       targetChar.lootFilter.autoEquipUpgradedEquipment = !!targetChar.lootFilter.autoEquipUpgradedEquipment;
@@ -6624,20 +6638,55 @@
       });
     }
 
+    const SHRINE_TYPES = {
+      fury: { id: 'shrine_fury', name: 'Shrine Fury', type: 'buff', atkBonus: 3, playerDamageMult: 1.12 },
+      ward: { id: 'shrine_ward', name: 'Shrine Ward', type: 'buff', defBonus: 2, mobDamageMult: 0.9 },
+      focus: { id: 'shrine_focus', name: 'Shrine Focus', type: 'buff', playerDamageMult: 1.08, manaMult: 1.2 },
+      vigor: { id: 'shrine_vigor', name: 'Shrine Vigor', type: 'buff', atkBonus: 1, defBonus: 1, healMult: 1.18 },
+      prosperity: { id: 'shrine_prosperity', name: 'Shrine Prosperity', type: 'buff', playerDamageMult: 1.05, manaMult: 1.1 },
+      chaos: { id: 'shrine_blight', name: 'Shrine Blight', type: 'debuff', playerDamageMult: 0.9, mobDamageMult: 1.12 }
+    };
+
+    function getShrineInvokeCost() {
+      return Math.max(80, Math.floor(45 + (char?.level || 1) * 14));
+    }
+
+    function renderShrineInvokeButton() {
+      const btn = document.getElementById('invoke-shrine-btn');
+      if (!btn || !char) return;
+      const cost = getShrineInvokeCost();
+      btn.textContent = 'Invoke Random Shrine (' + cost + 'g)';
+      btn.title = 'Spend ' + cost + ' gold for a random shrine effect';
+    }
+
     function invokeShrine() {
       if (!char) return;
       if (mob) {
         log('You cannot invoke a shrine during combat.', 'info');
         return;
       }
+
+      const cost = getShrineInvokeCost();
+      if (char.gold < cost) {
+        log('Not enough gold to invoke a shrine (' + cost + 'g).', 'info');
+        return;
+      }
+
+      char.gold -= cost;
+
+      const shrineKeys = Object.keys(SHRINE_TYPES);
+      const shrineType = shrineKeys[Math.floor(Math.random() * shrineKeys.length)];
+      const chosen = SHRINE_TYPES[shrineType] || SHRINE_TYPES.fury;
       const duration = 180000;
-      const roll = Math.random();
-      if (roll < 0.45) {
-        applyStatusEffect({ id: 'shrine_fury', name: 'Shrine Fury', type: 'buff', atkBonus: 3, playerDamageMult: 1.12, expiresAt: Date.now() + duration });
-      } else if (roll < 0.8) {
-        applyStatusEffect({ id: 'shrine_ward', name: 'Shrine Ward', type: 'buff', defBonus: 2, mobDamageMult: 0.9, expiresAt: Date.now() + duration });
-      } else {
-        applyStatusEffect({ id: 'shrine_blight', name: 'Shrine Blight', type: 'debuff', playerDamageMult: 0.9, mobDamageMult: 1.12, expiresAt: Date.now() + duration });
+
+      applyStatusEffect({
+        ...chosen,
+        expiresAt: Date.now() + duration
+      });
+
+      log('You spend ' + cost + 'g and invoke ' + chosen.name + '.', chosen.type === 'debuff' ? 'dmg' : 'info');
+      if (typeof showToast === 'function') {
+        showToast('Shrine invoked: ' + chosen.name + ' (-' + cost + 'g)', chosen.type === 'debuff' ? 'error' : 'success');
       }
       renderAll();
       autoSave();
@@ -7786,7 +7835,7 @@
         afkPinnedContractIdx: 0,
         huntTargets: {},
         huntStreak: { zone: null, target: '', count: 0 },
-        lootFilter: { autoSellJunk: false, autoSellNormalGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
+        lootFilter: { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
         lootFilterPreset: 'balanced',
         contractMastery: { level: 0, xp: 0, totalChains: 0 },
         afkGoal: 'balanced',
@@ -8145,6 +8194,7 @@
       renderCombatLogFilterUI();
       applyCombatLogFilterVisibility();
       renderAfkGoalStatus();
+      renderShrineInvokeButton();
       renderStatusEffects();
       requestAnimationFrame(syncCombatLogSize);
     }
@@ -8779,6 +8829,9 @@
         lootFilterControls.innerHTML =
           '<button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal Gear: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Blue (Magic) Gear: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellRareGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellRareGear\')">Auto-Sell Rare Gear: ' + (lf.autoSellRareGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Legendary Gear: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
@@ -8962,6 +9015,9 @@
         '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
         '<button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
         '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal Gear: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
+        '<button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Blue (Magic) Gear: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
+        '<button class="btn' + (lf.autoSellRareGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellRareGear\')">Auto-Sell Rare Gear: ' + (lf.autoSellRareGear ? 'On' : 'Off') + '</button>' +
+        '<button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Legendary Gear: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
         '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
         '<button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
         '<button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
@@ -9939,6 +9995,13 @@
       return 0.28 + ((lvl - 1) / 39) * 0.72;
     }
 
+    function getZoneProgressGoldMultiplier(zoneIdx) {
+      const maxIdx = Math.max(1, ZONES.length - 1);
+      const idx = Math.max(0, Math.min(maxIdx, Math.floor(Number(zoneIdx || 0))));
+      const t = idx / maxIdx;
+      return 0.72 + (t * 0.88);
+    }
+
     function killMob() {
       const zone = ZONES[char.zone];
       const event = getActiveZoneEvent(char.zone);
@@ -9949,10 +10012,13 @@
       const floor = char.dungeon.floor || 1;
       const dungeonMod = inDungeon ? getDungeonModifierData(char.dungeon.modifier) : getDungeonModifierData('balanced');
       const namedMult = mob.named ? 2.5 : 1;
+      const namedGoldMult = mob.named ? 1.85 : 1;
+      const eliteGoldMult = mob.elite ? 1.6 : 1;
       const dungeonMult = inDungeon ? (1 + floor * 0.08) : 1;
       const lowLevelGoldMult = getLowLevelGoldMultiplier(char.level);
+      const zoneProgressGoldMult = getZoneProgressGoldMultiplier(char.zone);
       const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1));
-      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult);
+      const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult * zoneProgressGoldMult);
       const killXp = awardExperience(xp, 'combat');
       char.gold += gold;
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
@@ -10161,6 +10227,9 @@
       const p = LOOT_FILTER_PRESETS[id];
       char.lootFilter.autoSellJunk = !!p.autoSellJunk;
       char.lootFilter.autoSellNormalGear = !!p.autoSellNormalGear;
+      char.lootFilter.autoSellBlueMagicGear = !!p.autoSellBlueMagicGear;
+      char.lootFilter.autoSellRareGear = !!p.autoSellRareGear;
+      char.lootFilter.autoSellLegendaryGear = !!p.autoSellLegendaryGear;
       char.lootFilter.protectRarePlus = p.protectRarePlus !== false;
       char.lootFilterPreset = id;
       if (!silent) {
@@ -10218,11 +10287,20 @@
       const isEquipment = !!getItemData(item);
       const isContainer = isContainerEntry(item);
 
-      if (lf.protectRarePlus && (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword')) {
-        return false;
-      }
       if (lf.autoSellNormalGear && isEquipment && quality === 'Normal') {
         return true;
+      }
+      if (lf.autoSellBlueMagicGear && isEquipment && quality === 'Magic') {
+        return true;
+      }
+      if (lf.autoSellRareGear && isEquipment && quality === 'Rare') {
+        return true;
+      }
+      if (lf.autoSellLegendaryGear && isEquipment && (quality === 'Unique' || quality === 'Runeword')) {
+        return true;
+      }
+      if (lf.protectRarePlus && (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword')) {
+        return false;
       }
       if (lf.autoSellJunk && !isEquipment && !isContainer) {
         return true;
@@ -11664,6 +11742,8 @@
         return;
       }
       char.gold -= cost;
+      let chestToast = '';
+      let chestToastType = 'success';
       // reward roll
       const r = Math.random();
       if (r < 0.02) {
@@ -11674,12 +11754,14 @@
         char.crafting = char.crafting || { shards: { common: 0, magic: 0, rare: 0, unique: 0 } };
         char.crafting.shards.unique = (char.crafting.shards.unique || 0) + 1;
         log('Mystic Chest exploded! You found a ' + topRune + ' and a Unique Shard!', 'loot');
+        chestToast = 'Mystic Chest: ' + topRune + ' +1 Unique Shard';
       } else if (r < 0.12) {
         // rare gear
         const lootBase = pickWeightedLootBase(char?.zone ?? 0, 'mystic');
         const loot = rollItemVariant(lootBase, 'mystic');
         char.inventory.push(loot);
         log('Mystic Chest yielded: ' + getItemDisplayName(loot) + '.', 'loot');
+        chestToast = 'Mystic Chest: ' + getItemDisplayName(loot);
       } else if (r < 0.4) {
         // shards
         const shardType = (Math.random() < 0.6) ? 'common' : (Math.random() < 0.7 ? 'magic' : 'rare');
@@ -11687,17 +11769,24 @@
         const amt = shardType === 'common' ? 5 : (shardType === 'magic' ? 2 : 1);
         char.crafting.shards[shardType] = (char.crafting.shards[shardType] || 0) + amt;
         log('Mystic Chest gave you +' + amt + ' ' + shardType + ' shards.', 'loot');
+        chestToast = 'Mystic Chest: +' + amt + ' ' + shardType + ' shards';
       } else if (r < 0.7) {
         // rune
         const rune = RUNE_TRANSMUTE_CHAIN[Math.floor(Math.random() * RUNE_TRANSMUTE_CHAIN.length)];
         char.runeStash = char.runeStash || [];
         char.runeStash.push(rune);
         log('Mystic Chest produced a rune: ' + rune + '.', 'loot');
+        chestToast = 'Mystic Chest: ' + rune;
       } else {
         // consolation: small refund
         const refund = Math.floor(cost * (0.06 + Math.random() * 0.18));
         char.gold += refund;
         log('Mystic Chest was mostly empty. You recovered ' + refund + 'g.', 'info');
+        chestToast = 'Mystic Chest: +' + refund + 'g refund';
+        chestToastType = 'info';
+      }
+      if (chestToast && typeof showToast === 'function') {
+        showToast(chestToast, chestToastType, 3200);
       }
       renderAll();
       autoSave();
