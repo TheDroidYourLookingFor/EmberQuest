@@ -65,105 +65,309 @@
       display: block;
     }
 
-    /* ── char select screen ── */
+    /* ══════════════════════════════════════════════
+       CHARACTER SELECT — EverQuest-inspired layout
+    ══════════════════════════════════════════════ */
+    #screen-charselect.active {
+      display: block;
+    }
+
     #screen-charselect {
-      max-width: 560px;
-      margin: 32px auto;
+      position: fixed;
+      inset: 0;
+      margin: 0;
+      max-width: none;
+      overflow: hidden;
+      /* Sky → distant temple gradient backdrop */
+      background:
+        radial-gradient(ellipse at 65% 38%, rgba(255, 220, 150, 0.35) 0%, rgba(255, 220, 150, 0) 55%),
+        linear-gradient(to bottom,
+          #6fb0d8 0%,
+          #93c5e0 35%,
+          #c9b687 62%,
+          #b8954c 78%,
+          #8a6b34 100%);
     }
 
-    #screen-charselect h1 {
-      font-size: 28px;
-      font-weight: 500;
-      text-align: center;
-      margin-bottom: 4px;
+    /* Faint stone "temple" silhouette behind the character */
+    #charselect-backdrop {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        /* Sun glow */
+        radial-gradient(circle at 62% 30%, rgba(255, 235, 180, 0.5), transparent 35%),
+        /* Ground circle */
+        radial-gradient(ellipse at 60% 85%, rgba(214, 158, 60, 0.5) 0%, transparent 40%);
     }
 
-    #screen-charselect .subtitle {
-      font-size: 13px;
-      color: var(--text-secondary);
-      text-align: center;
-      margin-bottom: 24px;
-    }
-
-    .slot-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .slot-card {
-      background: var(--bg-primary);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 14px 16px;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-      min-height: 90px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .slot-card:hover {
-      background: var(--bg-secondary);
-      border-color: var(--border-md);
-    }
-
-    .slot-card.selected {
-      border-color: #185FA5;
-      background: #E6F1FB;
-    }
-
-    @media(prefers-color-scheme:dark) {
-      .slot-card.selected {
-        background: #042C53;
-        border-color: #378ADD;
-      }
-    }
-
-    .slot-card.empty {
-      border-style: dashed;
-    }
-
-    .slot-name {
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .slot-meta {
-      font-size: 11px;
-      color: var(--text-secondary);
-      margin-top: 3px;
-    }
-
-    .slot-empty-label {
-      font-size: 13px;
-      color: var(--text-secondary);
+    /* Stone arch / pillar suggestion using SVG below */
+    #charselect-scene {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      pointer-events: none;
     }
 
-    .slot-actions {
+    #charselect-scene svg {
+      width: min(70%, 900px);
+      height: 90%;
+      opacity: 0.95;
+    }
+
+    /* Floating character name + zone, top-center over the scene */
+    #charselect-nameplate {
+      position: absolute;
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: #ffe14a;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-weight: 700;
+      text-shadow:
+        2px 2px 0 #000,
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        0 0 6px rgba(0, 0, 0, 0.7);
+      pointer-events: none;
+      z-index: 3;
+      letter-spacing: 0.02em;
+    }
+
+    #charselect-nameplate .np-name {
+      font-size: 26px;
+      line-height: 1.05;
+    }
+
+    #charselect-nameplate .np-zone {
+      font-size: 22px;
+      line-height: 1.1;
+      margin-top: 2px;
+    }
+
+    /* The character "avatar" — a stylized SVG figure where EQ shows the 3D model */
+    #charselect-avatar {
+      position: absolute;
+      left: 50%;
+      bottom: 4%;
+      transform: translateX(-50%);
+      height: 72%;
+      max-height: 640px;
+      width: auto;
+      aspect-ratio: 200 / 460;
+      pointer-events: none;
+      z-index: 2;
+      filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.35));
+    }
+
+    #charselect-avatar svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Left-side stone control panel */
+    #charselect-panel {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      bottom: 16px;
+      width: 280px;
+      z-index: 10;
       display: flex;
-      gap: 6px;
-      margin-top: 8px;
+      flex-direction: column;
+      gap: 10px;
+      padding: 16px 14px;
+      color: #e8e0c8;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      /* Weathered blue-stone parchment look */
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.15)),
+        linear-gradient(180deg, #4a5870 0%, #3a4660 50%, #2c3650 100%);
+      border: 2px solid #1c2238;
+      border-radius: 4px;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        inset 0 0 32px rgba(0, 0, 0, 0.4),
+        0 6px 18px rgba(0, 0, 0, 0.5);
     }
 
-    /* ── new char form ── */
+    /* Ornate header frame at the top of the panel */
+    .cs-header {
+      position: relative;
+      padding: 10px 14px;
+      text-align: center;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #f3e7c4;
+      letter-spacing: 0.04em;
+      background: linear-gradient(180deg, #2d3852 0%, #1d263e 100%);
+      border: 2px solid #0e1426;
+      border-radius: 3px;
+      box-shadow:
+        inset 0 0 0 1px #6a7da0,
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    /* Top action row: Explore / Delete / Rotate */
+    .cs-toprow {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    /* The slot list (vertical, 8 rows like EQ) */
+    .cs-slotlist {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .cs-slotlist::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .cs-slotlist::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 3px;
+    }
+
+    /* EverQuest-style stone button */
+    .eq-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 8px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ede4c4;
+      text-shadow: 1px 1px 2px #000;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      user-select: none;
+      background: linear-gradient(180deg, #6a7388 0%, #4d5670 50%, #353d54 100%);
+      border: 1.5px solid #131a2c;
+      border-radius: 3px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+        0 1px 2px rgba(0, 0, 0, 0.4);
+      transition: filter .12s, transform .05s;
+      min-height: 30px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .eq-btn:hover {
+      filter: brightness(1.12);
+    }
+
+    .eq-btn:active {
+      transform: translateY(1px);
+      filter: brightness(0.9);
+    }
+
+    .eq-btn.eq-charslot {
+      width: 100%;
+      min-height: 34px;
+      font-size: 14px;
+    }
+
+    /* The currently-selected character slot — yellow text, sunken look */
+    .eq-btn.eq-charslot.selected {
+      color: #ffe14a;
+      background: linear-gradient(180deg, #2c344a 0%, #1c2236 100%);
+      box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.6),
+        inset 0 0 0 1px #5a6580;
+      text-shadow: 1px 1px 2px #000, 0 0 6px rgba(255, 200, 60, 0.4);
+    }
+
+    .eq-btn.eq-charslot.empty {
+      color: #c9c0a3;
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .eq-btn.eq-small {
+      font-size: 12px;
+      padding: 5px 4px;
+      min-height: 26px;
+    }
+
+    /* Bottom Quit / Enter World row */
+    .cs-bottomrow {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .eq-btn.eq-primary {
+      background: linear-gradient(180deg, #7a8298 0%, #565f7c 50%, #3c4560 100%);
+      color: #fff7d6;
+    }
+
+    /* ── new char form (overlay modal on top of charselect) ── */
     #new-char-form {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(560px, calc(100% - 320px));
+      max-height: calc(100vh - 60px);
+      overflow-y: auto;
       background: var(--bg-primary);
-      border: 0.5px solid var(--border);
+      border: 2px solid #1c2238;
       border-radius: var(--radius-lg);
       padding: 20px;
-      margin-top: 12px;
+      z-index: 20;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
     }
 
     #new-char-form h2 {
       font-size: 15px;
       font-weight: 500;
       margin-bottom: 14px;
+    }
+
+    /* Hidden — the old slot grid container is no longer used for layout
+       but renderSlots() still writes to it; we render via #cs-slotlist instead. */
+    .slot-grid { display: none; }
+
+    /* Mobile / narrow viewports: stack the panel above the scene */
+    @media (max-width: 720px) {
+      #charselect-panel {
+        position: relative;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        width: auto;
+        margin: 10px;
+      }
+      #charselect-scene, #charselect-avatar, #charselect-nameplate, #charselect-backdrop {
+        display: none;
+      }
+      #new-char-form {
+        position: relative;
+        transform: none;
+        top: 0;
+        left: 0;
+        width: auto;
+        margin: 10px;
+      }
     }
 
     .class-grid {
@@ -1057,6 +1261,459 @@
       color: var(--text-secondary);
       background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
     }
+
+    /* ══════════════════════════════════════════════════
+       EVERQUEST-INSPIRED IN-GAME UI OVERRIDES
+       All rules scoped to #screen-game so the char-select
+       (and other screens) keep their existing look.
+    ══════════════════════════════════════════════════ */
+    #screen-game {
+      /* The murky stone backdrop you see in EQ — slight purple/gray gradient
+         meant to evoke a cave-temple environment behind the windows. */
+      background:
+        radial-gradient(ellipse at 30% 20%, #3a3550 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 90%, #2a2436 0%, transparent 50%),
+        linear-gradient(180deg, #1a1820 0%, #15131a 100%);
+      min-height: 100vh;
+      max-width: none;
+      padding: 8px;
+      margin: -12px;        /* cancel body padding so bg covers the screen */
+      color: #e8dfc4;
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+
+    /* Topbar becomes an EQ window title bar */
+    #screen-game #game-topbar {
+      background: linear-gradient(180deg, #2a2e3a 0%, #161823 100%);
+      border: 1px solid #0a0c14;
+      border-radius: 2px;
+      box-shadow:
+        inset 0 0 0 1px #5a607a,
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 2px 4px rgba(0,0,0,0.5);
+      color: #e8dfc4;
+      padding: 4px 10px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+
+    #screen-game #game-topbar .title {
+      font-size: 13px;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px #000;
+      letter-spacing: 0.03em;
+    }
+
+    /* Generic stone-panel "window" — semi-transparent dark with engraved
+       inner border. Mirrors EQ's translucent panels stacked on the world. */
+    #screen-game .panel {
+      background: linear-gradient(180deg,
+        rgba(28, 30, 42, 0.92) 0%,
+        rgba(20, 22, 32, 0.92) 100%);
+      border: 1px solid #0a0c14;
+      border-radius: 2px;
+      box-shadow:
+        inset 0 0 0 1px #4a5168,
+        inset 0 0 16px rgba(0,0,0,0.5),
+        0 3px 8px rgba(0,0,0,0.55);
+      color: #e8dfc4;
+      padding: 0;          /* title bar handles its own padding; content below */
+    }
+
+    /* Section header inside each panel acts as the window's title bar */
+    #screen-game .panel h3 {
+      background: linear-gradient(180deg, #2c3144 0%, #161a26 100%);
+      color: #e8dfc4;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      text-align: center;
+      padding: 4px 10px;
+      margin: 0 0 0 0;
+      border-bottom: 1px solid #0a0c14;
+      box-shadow:
+        inset 0 0 0 1px #5a607a,
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    /* Restore inner padding for the panel content (everything after h3) */
+    #screen-game .panel > *:not(h3) {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    #screen-game .panel > *:not(h3):last-child {
+      padding-bottom: 8px;
+    }
+    #screen-game .panel > h3 + * {
+      padding-top: 8px;
+    }
+
+    /* The center panel's tab bar replaces the title bar */
+    #screen-game #center-panel {
+      padding: 0;
+    }
+    #screen-game #center-panel > *:not(.tab-bar) {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    #screen-game #center-panel > *:last-child {
+      padding-bottom: 8px;
+    }
+
+    /* Tabs: classic EQ raised stone slabs */
+    #screen-game .tab-bar {
+      gap: 1px;
+      margin: 0;
+      padding: 4px 4px 0 4px;
+      background: linear-gradient(180deg, #2c3144 0%, #1a1d28 100%);
+      border-bottom: 1px solid #0a0c14;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+      flex-wrap: wrap;
+    }
+
+    #screen-game .tab {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 2px 2px 0 0;
+      border: 1px solid #0a0c14;
+      border-bottom: none;
+      background: linear-gradient(180deg, #3d4458 0%, #2a2f3e 100%);
+      color: #b8b0a0;
+      text-shadow: 1px 1px 2px #000;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+    }
+
+    #screen-game .tab.active {
+      background: linear-gradient(180deg, #5d6478 0%, #3d4458 100%);
+      color: #ffe7a8;
+      border-color: #5a607a;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        inset 0 -1px 0 rgba(0,0,0,0.3);
+    }
+
+    /* General buttons — beveled gray slabs */
+    #screen-game .btn,
+    #screen-game #game-topbar .btn {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ede4c4;
+      background: linear-gradient(180deg, #6a7388 0%, #4d5670 50%, #353d54 100%);
+      border: 1px solid #0a0c14;
+      border-radius: 2px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        inset 0 -1px 0 rgba(0,0,0,0.4),
+        0 1px 2px rgba(0,0,0,0.4);
+      text-shadow: 1px 1px 2px #000;
+      padding: 4px 10px;
+      transition: filter .12s;
+    }
+    #screen-game .btn:hover { filter: brightness(1.15); }
+    #screen-game .btn:active { filter: brightness(0.85); transform: translateY(1px); }
+
+    #screen-game .btn.active {
+      background: linear-gradient(180deg, #7a8298 0%, #565f7c 50%, #3c4560 100%);
+      color: #fff7d6;
+      box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.4),
+        inset 0 0 0 1px #6a7da0;
+    }
+    #screen-game .btn.danger {
+      background: linear-gradient(180deg, #8a3a3a 0%, #5a2424 50%, #3a1818 100%);
+      color: #ffd0c0;
+    }
+
+    /* Stat rows — EQ-style right-aligned green values */
+    #screen-game .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      margin: 1px 0;
+      padding: 0 2px;
+    }
+    #screen-game .stat-label {
+      color: #c8c0a8;
+    }
+    #screen-game .stat-val {
+      color: #6fdc6f;        /* the bright green seen for HP/AC in the screenshot */
+      font-weight: 700;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    /* Health/mana/xp bars: thinner with a pixel-stripe feel */
+    #screen-game .bar-wrap {
+      background: #08080c;
+      border: 1px solid #0a0c14;
+      box-shadow:
+        inset 0 0 0 1px #2a2e3a,
+        inset 0 1px 2px rgba(0,0,0,0.7);
+      height: 12px;
+      border-radius: 1px;
+    }
+    #screen-game .bar {
+      border-radius: 0;
+      background-image:
+        repeating-linear-gradient(90deg,
+          rgba(255,255,255,0.16) 0px,
+          rgba(255,255,255,0.16) 1px,
+          transparent 1px,
+          transparent 6px);
+    }
+    #screen-game .hp-bar { background-color: #c83232; }
+    #screen-game .mp-bar { background-color: #3a78d8; }
+    #screen-game .xp-bar { background-color: #58a020; }
+
+    /* Mob and character name plates */
+    #screen-game #mob-area {
+      background: rgba(8, 8, 12, 0.55);
+      border: 1px solid #0a0c14;
+      box-shadow: inset 0 0 0 1px #3a3f55;
+      border-radius: 2px;
+    }
+    #screen-game .mob-name {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffe7a8;
+      text-shadow: 1px 1px 2px #000;
+    }
+    #screen-game .mob-level {
+      color: #c8c0a8;
+      font-size: 11px;
+    }
+
+    /* Combat log: classic black box with colored text by channel */
+    #screen-game #combat-log {
+      background: #000;
+      border: 1px solid #0a0c14;
+      box-shadow:
+        inset 0 0 0 1px #3a3f55,
+        inset 0 0 8px rgba(0,0,0,0.8);
+      border-radius: 2px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 12px;
+      color: #d8d0b0;
+    }
+    #screen-game .log-dmg  { color: #ff7878; }   /* combat damage — bright red */
+    #screen-game .log-heal { color: #6fdc6f; }   /* heals — bright green */
+    #screen-game .log-info { color: #f8e060; }   /* yellow system text */
+    #screen-game .log-loot { color: #f0a830; }   /* orange loot */
+    #screen-game .log-lvl  { color: #a89cff; font-weight: 700; }
+
+    /* "Done" / close-style row at panel bottoms — give existing buttons
+       a slightly chunkier look when bare (no .btn class). */
+    #screen-game button {
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+
+    /* Form inputs in EQ skin */
+    #screen-game input[type=text],
+    #screen-game input[type=number],
+    #screen-game select,
+    #screen-game textarea {
+      background: #08080c;
+      color: #e8dfc4;
+      border: 1px solid #0a0c14;
+      box-shadow: inset 0 0 0 1px #3a3f55;
+      border-radius: 2px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 12px;
+      padding: 4px 8px;
+    }
+
+    /* Modal/dialog cards in the same theme */
+    #screen-game .modal-card,
+    .modal-card {
+      background: linear-gradient(180deg,
+        rgba(28, 30, 42, 0.98) 0%,
+        rgba(20, 22, 32, 0.98) 100%);
+      border: 1px solid #0a0c14;
+      box-shadow:
+        inset 0 0 0 1px #5a607a,
+        0 8px 32px rgba(0,0,0,0.7);
+      color: #e8dfc4;
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+    .modal-title {
+      color: #ffe7a8;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    /* Save indicator: subtle gold ticker like EQ system text */
+    #screen-game .save-indicator {
+      color: #c8c0a8;
+      font-size: 11px;
+    }
+
+    /* h3 inside tabs/sub-sections (not panel title bars) — those have no
+       direct .panel parent, e.g. inside #tab-inv. Keep them simple. */
+    #screen-game [id^="tab-"] h3 {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      color: #c8c0a8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 11px;
+      padding: 8px 0 4px 0;
+      margin: 0;
+      text-align: left;
+      text-shadow: none;
+    }
+
+    /* Item/inventory cells — sunken dark stone squares */
+    #screen-game .inv-slot,
+    #screen-game .equip-slot,
+    #screen-game .shop-slot {
+      background: linear-gradient(180deg, #2a2e3a 0%, #16182a 100%);
+      border: 1px solid #0a0c14;
+      box-shadow: inset 0 0 0 1px #3a3f55, inset 0 2px 4px rgba(0,0,0,0.6);
+      border-radius: 2px;
+      color: #e8dfc4;
+    }
+
+    /* Action queue items */
+    #screen-game .queue-item {
+      background: linear-gradient(180deg, #3d4458 0%, #2a2f3e 100%);
+      border: 1px solid #0a0c14;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+      color: #e8dfc4;
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+
+    /* Badges (e.g. mob difficulty) */
+    #screen-game .badge {
+      background: linear-gradient(180deg, #5a4218 0%, #2c1f08 100%);
+      color: #ffe7a8;
+      border: 1px solid #0a0c14;
+      text-shadow: 1px 1px 2px #000;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+
+    /* Headings inside the character panel — small, white serif */
+    #screen-game #char-name-disp {
+      color: #ffe7a8;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 14px;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px #000;
+    }
+    #screen-game #char-class-disp {
+      color: #c8c0a8;
+      font-size: 11px;
+    }
+
+    /* Force CSS variables to dark values inside the game screen so
+       components that reference --bg-primary / --bg-secondary work in
+       dark mode regardless of the browser's prefers-color-scheme. */
+    #screen-game {
+      --bg-primary: #1c1e2a;
+      --bg-secondary: #14161f;
+      --bg-tertiary: #08080c;
+      --text-primary: #e8dfc4;
+      --text-secondary: #b8b0a0;
+      --border: rgba(255, 255, 255, 0.12);
+      --border-md: rgba(255, 255, 255, 0.24);
+    }
+
+    /* Inventory paperdoll and bag area — match the panel stone aesthetic */
+    #screen-game .eq-paperdoll,
+    #screen-game .eq-bag-area {
+      background: rgba(8, 8, 12, 0.55);
+      border: 1px solid #0a0c14;
+      box-shadow: inset 0 0 0 1px #3a3f55;
+      border-radius: 2px;
+    }
+
+    /* Equipment slot squares — sunken stone */
+    #screen-game .eq-slot,
+    #screen-game .eq-empty-slot {
+      background: linear-gradient(180deg, #18192a 0%, #0c0d18 100%);
+      border: 1px solid #0a0c14;
+      box-shadow: inset 0 0 0 1px #3a3f55, inset 0 2px 4px rgba(0,0,0,0.7);
+      border-radius: 2px;
+      color: #c8c0a8;
+    }
+
+    #screen-game .eq-slot-name {
+      color: #b8b0a0;
+      text-shadow: 1px 1px 1px #000;
+    }
+
+    #screen-game .eq-slot-item {
+      color: #e8dfc4;
+      text-shadow: 1px 1px 1px #000;
+    }
+
+    #screen-game .eq-slot-stats {
+      color: #6fdc6f;
+    }
+
+    /* Bag tab buttons — small EQ-style pill tabs */
+    #screen-game .bag-tab-btn {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 11px;
+      color: #c8c0a8;
+      background: linear-gradient(180deg, #3d4458 0%, #2a2f3e 100%);
+      border: 1px solid #0a0c14;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+      border-radius: 2px;
+      padding: 3px 10px;
+    }
+    #screen-game .bag-tab-btn.active {
+      background: linear-gradient(180deg, #5d6478 0%, #3d4458 100%) !important;
+      color: #ffe7a8 !important;
+      border-color: #5a607a !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    #screen-game .bag-meta {
+      color: #c8c0a8;
+    }
+    #screen-game .eq-empty-bag {
+      color: #c8c0a8;
+    }
+
+    /* Shop item cards — make sure they look like the dark theme too */
+    #screen-game .shop-card,
+    #screen-game .shop-item,
+    #screen-game .quest-card,
+    #screen-game .zone-card {
+      background: linear-gradient(180deg, #1c1e2a 0%, #14161f 100%);
+      border: 1px solid #0a0c14;
+      box-shadow: inset 0 0 0 1px #3a3f55;
+      border-radius: 2px;
+      color: #e8dfc4;
+    }
+
+    /* Yellow/gold accent for prices and important numbers within cards */
+    #screen-game .shop-card,
+    #screen-game .quest-card {
+      color: #e8dfc4;
+    }
+
+    /* Section headers within tabs ("INVENTORY", "EQUIPPED", "BACKPACK",
+       "VILLAGE MERCHANT") need consistent treatment */
+    #screen-game [id^="tab-"] > div > div[style*="font-weight"],
+    #screen-game [id^="tab-"] strong {
+      color: #ffe7a8;
+    }
+
+    /* Make sure deeply-nested labels (e.g. "Showing Worn Pouch · Slots 1-8")
+       are readable on dark backgrounds */
+    #screen-game [style*="color:var(--text-secondary)"],
+    #screen-game [style*="color: var(--text-secondary)"] {
+      color: #b8b0a0 !important;
+    }
   </style>
 </head>
 
@@ -1075,21 +1732,92 @@
   <div
     id="screen-charselect"
     class="screen active">
-    <h1>EmberQuest -
-      Version 1.1.0
-    </h1>
-    <p
-      class="subtitle">
-      Select a
-      character slot
-      to play or
-      create a new
-      adventurer</p>
 
-    <div
-      class="slot-grid"
-      id="slot-grid">
+    <!-- Background gradients and lighting -->
+    <div id="charselect-backdrop"></div>
+
+    <!-- Decorative temple-arch scene -->
+    <div id="charselect-scene">
+      <svg viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="cs-stone" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#c9b9a0"/>
+            <stop offset="50%" stop-color="#9d8c72"/>
+            <stop offset="100%" stop-color="#6f5e48"/>
+          </linearGradient>
+          <linearGradient id="cs-gold" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#f0d27a"/>
+            <stop offset="100%" stop-color="#8a6a1f"/>
+          </linearGradient>
+          <linearGradient id="cs-floor" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#d6a04a"/>
+            <stop offset="100%" stop-color="#7a5320"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Left pillar -->
+        <rect x="60" y="430" width="80" height="200" fill="url(#cs-stone)" stroke="#3d2f1a" stroke-width="1.5"/>
+        <rect x="50" y="420" width="100" height="18" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1"/>
+        <rect x="50" y="625" width="100" height="14" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1"/>
+
+        <!-- Right pillar -->
+        <rect x="460" y="430" width="80" height="200" fill="url(#cs-stone)" stroke="#3d2f1a" stroke-width="1.5"/>
+        <rect x="450" y="420" width="100" height="18" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1"/>
+        <rect x="450" y="625" width="100" height="14" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1"/>
+
+        <!-- Central arch -->
+        <path d="M 170 640 L 170 340 Q 170 160 300 160 Q 430 160 430 340 L 430 640 Z"
+              fill="url(#cs-stone)" stroke="#3d2f1a" stroke-width="2"/>
+        <!-- Gold trim around arch -->
+        <path d="M 170 340 Q 170 160 300 160 Q 430 160 430 340"
+              fill="none" stroke="url(#cs-gold)" stroke-width="10"/>
+        <path d="M 170 340 Q 170 160 300 160 Q 430 160 430 340"
+              fill="none" stroke="#5b4314" stroke-width="1.5"/>
+
+        <!-- Inner arch (open) -->
+        <path d="M 210 640 L 210 360 Q 210 200 300 200 Q 390 200 390 360 L 390 640 Z"
+              fill="#5a7da3" opacity="0.55"/>
+
+        <!-- Ornamental keystone -->
+        <circle cx="300" cy="180" r="14" fill="url(#cs-gold)" stroke="#3d2f1a" stroke-width="1.5"/>
+
+        <!-- Floor disc with rune circle -->
+        <ellipse cx="300" cy="660" rx="240" ry="34" fill="url(#cs-floor)" stroke="#3d2f1a" stroke-width="1"/>
+        <ellipse cx="300" cy="660" rx="200" ry="26" fill="none" stroke="#5b3f12" stroke-width="1.5" opacity="0.7"/>
+        <ellipse cx="300" cy="660" rx="160" ry="20" fill="none" stroke="#5b3f12" stroke-width="1" opacity="0.5"/>
+      </svg>
     </div>
+
+    <!-- The character "model" — vector silhouette where EQ shows a 3D model -->
+    <!-- Race-aware character avatar — populated by buildAvatarSvg() -->
+    <div id="charselect-avatar" aria-hidden="true"></div>
+
+    <!-- Floating yellow nameplate above the character -->
+    <div id="charselect-nameplate">
+      <div class="np-name" id="np-name">No Character Selected</div>
+      <div class="np-zone" id="np-zone"></div>
+    </div>
+
+    <!-- LEFT-SIDE EverQuest control panel -->
+    <div id="charselect-panel">
+      <div class="cs-header">Character Select</div>
+
+      <div class="cs-toprow">
+        <div class="eq-btn eq-small" onclick="csExplore()">Explore</div>
+        <div class="eq-btn eq-small" onclick="csDelete()">Delete</div>
+        <div class="eq-btn eq-small" onclick="csRotate()">Rotate</div>
+      </div>
+
+      <div class="cs-slotlist" id="cs-slotlist"></div>
+
+      <div class="cs-bottomrow">
+        <div class="eq-btn" onclick="csQuit()">Quit</div>
+        <div class="eq-btn eq-primary" onclick="csEnterWorld()">Enter World</div>
+      </div>
+    </div>
+
+    <!-- Hidden legacy container kept so renderSlots() never errors -->
+    <div class="slot-grid" id="slot-grid"></div>
 
     <div
       id="new-char-form"
@@ -2390,7 +3118,7 @@
     // ══════════════════════════════════════════════
     //  CONSTANTS
     // ══════════════════════════════════════════════
-    const MAX_SLOTS = 4;
+    const MAX_SLOTS = 24;
     const SAVE_KEY = 'EmberQuest_slots';
 
     const CLASSES = {
@@ -4991,8 +5719,9 @@
     //  PERSISTENCE
     // ══════════════════════════════════════════════
     function loadSlots() {
-      try { slots = JSON.parse(localStorage.getItem(SAVE_KEY)) || [null, null, null, null]; }
-      catch (e) { slots = [null, null, null, null]; }
+      try { slots = JSON.parse(localStorage.getItem(SAVE_KEY)) || []; }
+      catch (e) { slots = []; }
+      if (!Array.isArray(slots)) slots = [];
       while (slots.length < MAX_SLOTS) slots.push(null);
     }
 
@@ -5159,7 +5888,8 @@
     }
 
     function applyImportedSlots(importedSlots) {
-      slots = importedSlots;
+      slots = Array.isArray(importedSlots) ? importedSlots.slice() : [];
+      while (slots.length < MAX_SLOTS) slots.push(null);
       activeSlot = -1;
       char = null;
       mob = null;
@@ -5411,43 +6141,396 @@
       setCreateStep('race');
     }
 
+    // Track which slot is currently highlighted on the character-select screen
+    var csSelectedSlot = -1;
+    var csAvatarRotation = 0;
+
     function renderSlots() {
-      const grid = document.getElementById('slot-grid');
-      grid.innerHTML = '';
-      slots.forEach((s, i) => {
-        const card = document.createElement('div');
-        card.className = 'slot-card' + (s ? '' : ' empty');
+      // Keep legacy hidden container empty
+      const legacy = document.getElementById('slot-grid');
+      if (legacy) legacy.innerHTML = '';
+
+      const list = document.getElementById('cs-slotlist');
+      if (!list) return;
+      list.innerHTML = '';
+
+      // If the previously-selected slot is now empty or out of range, pick the first occupied slot
+      if (csSelectedSlot < 0 || csSelectedSlot >= slots.length || !slots[csSelectedSlot]) {
+        const firstOccupied = slots.findIndex(s => s);
+        csSelectedSlot = firstOccupied; // -1 if none
+      }
+
+      // EverQuest-style vertical slot list — show all 24 slots.
+      const DISPLAY_ROWS = MAX_SLOTS;
+      for (let i = 0; i < DISPLAY_ROWS; i++) {
+        const s = slots[i];
+        const row = document.createElement('div');
+        row.className = 'eq-btn eq-charslot' + (s ? '' : ' empty') + (i === csSelectedSlot && s ? ' selected' : '');
+
         if (s) {
-          const zoneName = ZONES[s.zone] ? ZONES[s.zone].name : 'Unknown';
-          const played = formatLastPlayed(s.lastSaved);
-          const icon = CLASS_ICONS[s.cls] || 'ti-user';
-          const iconColor = CLASS_COLORS[s.cls] || '#6b6b67';
-          const raceName = s.race || 'Human';
-          card.innerHTML = `
-        <div>
-          <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
-            <i class="ti ${icon}" style="font-size:18px;color:${iconColor}"></i>
-            <div>
-              <div class="slot-name">${s.name}</div>
-              <div class="slot-meta">${raceName} ${s.cls} — Level ${s.level} &nbsp;·&nbsp; ${zoneName}</div>
-            </div>
-          </div>
-          <div style="font-size:10px;color:var(--text-secondary)">${played ? 'Last played ' + played : ''}</div>
-        </div>
-        <div class="slot-actions">
-          <button class="btn active" style="font-size:11px;padding:4px 10px" onclick="loadSlot(${i})"><i class="ti ti-player-play"></i> Play</button>
-          <button class="btn danger" style="font-size:11px;padding:4px 10px" onclick="deleteSlot(${i})"><i class="ti ti-trash"></i></button>
-        </div>`;
+          row.textContent = s.name;
+          row.title = `${s.race || 'Human'} ${s.cls} — Level ${s.level}`;
+          row.onclick = () => csSelectSlot(i);
+          row.ondblclick = () => { csSelectSlot(i); csEnterWorld(); };
         } else {
-          card.innerHTML = `
-        <div class="slot-empty-label"><i class="ti ti-plus" style="font-size:16px"></i> Empty slot</div>
-        <div style="margin-top:8px">
-          <button class="btn" style="font-size:11px;padding:4px 12px" onclick="openCreateForm(${i})"><i class="ti ti-user-plus"></i> New character</button>
-        </div>`;
+          row.textContent = 'Create a New Character';
+          row.onclick = () => openCreateForm(i);
         }
-        grid.appendChild(card);
-      });
+
+        list.appendChild(row);
+      }
+
+      updateNameplate();
     }
+
+    function csSelectSlot(i) {
+      if (!slots[i]) return;
+      csSelectedSlot = i;
+      renderSlots();
+    }
+
+    // ══════════════════════════════════════════════
+    //  RACE-AWARE CHARACTER-SELECT AVATAR
+    // ══════════════════════════════════════════════
+    // Each race config tweaks proportions, palette, and distinguishing
+    // features on a shared SVG body. viewBox is fixed at 200×460.
+    const RACE_AVATAR_CONFIG = {
+      'Human':      { skin: ['#e9c39b', '#b8895f'], hair: '#5a3a1c', hairStyle: 'short',  ear: 'round',   build: 'medium', tunic: ['#4a5d4a', '#2d3a2d'], pants: ['#3a2f25', '#1f1812'] },
+      'Barbarian':  { skin: ['#eecda0', '#c08856'], hair: '#c89a55', hairStyle: 'braids', ear: 'round',   build: 'huge',   tunic: ['#704a2a', '#3e2814'], pants: ['#3a2418', '#1c100a'], beard: true },
+      'Erudite':    { skin: ['#d7b189', '#8d6543'], hair: '#1a1a1a', hairStyle: 'bald',   ear: 'round',   build: 'lean',   tunic: ['#4a3a78', '#241948'], pants: ['#241948', '#0e0820'], hood: true },
+      'Wood Elf':   { skin: ['#f0d4ad', '#bd9466'], hair: '#7a4d18', hairStyle: 'long',   ear: 'pointed', build: 'lean',   tunic: ['#3a5a2a', '#1c2e14'], pants: ['#3a2f1a', '#1a1208'] },
+      'High Elf':   { skin: ['#f7e3c8', '#cca983'], hair: '#e8d27a', hairStyle: 'long',   ear: 'long-pointed', build: 'lean', tunic: ['#c9a13a', '#6f5414'], pants: ['#e8d8a8', '#9d8550'] },
+      'Dark Elf':   { skin: ['#7a6da8', '#3a3060'], hair: '#e8e8f4', hairStyle: 'long',   ear: 'long-pointed', build: 'lean', tunic: ['#2a1a4a', '#0e0820'], pants: ['#1a1230', '#080414'] },
+      'Half Elf':   { skin: ['#ecd0a5', '#b8895f'], hair: '#3a2814', hairStyle: 'short',  ear: 'pointed', build: 'medium', tunic: ['#3a4a78', '#1a2244'], pants: ['#3a2f25', '#1f1812'] },
+      'Dwarf':      { skin: ['#f0c89a', '#b58456'], hair: '#a13218', hairStyle: 'short',  ear: 'round',   build: 'short',  tunic: ['#7a3a2a', '#3e1810'], pants: ['#3a2418', '#1c100a'], beard: true },
+      'Troll':      { skin: ['#5a8c4a', '#2a5024'], hair: '#1a3a1a', hairStyle: 'mohawk', ear: 'pointed', build: 'huge',   tunic: ['#5a3a18', '#2c1c0a'], pants: ['#3a2418', '#1c100a'], tusks: true },
+      'Ogre':       { skin: ['#a89a5a', '#6a5e28'], hair: '#1a1a1a', hairStyle: 'none',   ear: 'round',   build: 'huge',   tunic: ['#5a4a28', '#2c2412'], pants: ['#3a2c14', '#1c1408'], tusks: true },
+      'Halfling':   { skin: ['#f0d0a0', '#b89060'], hair: '#7a4818', hairStyle: 'short',  ear: 'round',   build: 'short',  tunic: ['#3a5a2a', '#1c2e14'], pants: ['#5a3a1a', '#2c1c0a'] },
+      'Gnome':      { skin: ['#f4d4ac', '#bd9466'], hair: '#c83020', hairStyle: 'mohawk', ear: 'pointed', build: 'short',  tunic: ['#5a3a78', '#2c1c40'], pants: ['#3a2f25', '#1f1812'] },
+      'Iksar':      { skin: ['#5a8a3a', '#2c4a18'], hair: null,      hairStyle: 'none',   ear: 'none',    build: 'medium', tunic: ['#5a4a2a', '#2c2412'], pants: ['#3a2c14', '#1c1408'], snout: true, tail: true, scales: true },
+      'Vah Shir':   { skin: ['#c89a5a', '#7a5424'], hair: '#3a2814', hairStyle: 'mane',   ear: 'cat',     build: 'medium', tunic: ['#5a3a78', '#2c1c40'], pants: ['#3a2818', '#1c0e08'], snout: true, tail: true, whiskers: true },
+      'Froglok':    { skin: ['#6aa848', '#2c5a1c'], hair: null,      hairStyle: 'none',   ear: 'none',    build: 'short',  tunic: ['#3a5a2a', '#1c2e14'], pants: ['#2a3a1a', '#10180a'], frogHead: true },
+      'Drakkin':    { skin: ['#e8c8a8', '#b8896c'], hair: '#5a1818', hairStyle: 'long',   ear: 'pointed', build: 'medium', tunic: ['#7a2a3a', '#3a1018'], pants: ['#3a1818', '#1c0810'], hornsSmall: true, scales: 'cheek' }
+    };
+
+    function getRaceAvatarConfig(race) {
+      return RACE_AVATAR_CONFIG[race] || RACE_AVATAR_CONFIG['Human'];
+    }
+
+    // Build a full SVG portrait given a race name.
+    function buildAvatarSvg(race) {
+      const cfg = getRaceAvatarConfig(race);
+
+      // Build proportions from body type
+      // All coordinates target the same 200×460 viewBox.
+      const builds = {
+        lean:   { headR: 24, headRy: 30, shoulderW: 36, hipW: 32, height: 1.0 },
+        medium: { headR: 26, headRy: 32, shoulderW: 42, hipW: 38, height: 1.0 },
+        stocky: { headR: 27, headRy: 30, shoulderW: 50, hipW: 46, height: 0.94 },
+        short:  { headR: 26, headRy: 28, shoulderW: 40, hipW: 38, height: 0.78 },
+        huge:   { headR: 32, headRy: 36, shoulderW: 64, hipW: 56, height: 1.08 }
+      };
+      const b = builds[cfg.build] || builds.medium;
+
+      // Vertical layout — anchor feet at y≈420
+      // Scale the body around its bottom to support "short" / "huge" without clipping
+      const scale = b.height;
+      const baseY = 430;
+      // Pre-scale all Y coords against baseY
+      const ys = {
+        headCy:    baseY - (380 * scale),
+        neckY:     baseY - (348 * scale),
+        torsoTop:  baseY - (334 * scale),
+        torsoBot:  baseY - (208 * scale),
+        beltTop:   baseY - (210 * scale),
+        beltBot:   baseY - (196 * scale),
+        legTop:    baseY - (196 * scale),
+        legBot:    baseY - (70 * scale),
+        footTop:   baseY - (70 * scale),
+        footBot:   baseY - (20 * scale)
+      };
+
+      const cx = 100;
+      const skinG = `<linearGradient id="av-skin" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="${cfg.skin[0]}"/>
+          <stop offset="100%" stop-color="${cfg.skin[1]}"/>
+        </linearGradient>`;
+      const tunicG = `<linearGradient id="av-tunic" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="${cfg.tunic[0]}"/>
+          <stop offset="100%" stop-color="${cfg.tunic[1]}"/>
+        </linearGradient>`;
+      const pantsG = `<linearGradient id="av-pants" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="${cfg.pants[0]}"/>
+          <stop offset="100%" stop-color="${cfg.pants[1]}"/>
+        </linearGradient>`;
+      const beltG = `<linearGradient id="av-belt" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#caa54a"/>
+          <stop offset="100%" stop-color="#7a611f"/>
+        </linearGradient>`;
+
+      // ── Head & features ──
+      let head = '';
+      // Skull
+      if (cfg.frogHead) {
+        // Wide, low, bug-eyed frog skull
+        head += `<ellipse cx="${cx}" cy="${ys.headCy}" rx="${b.headR + 4}" ry="${b.headRy - 4}" fill="url(#av-skin)" stroke="#1a3018" stroke-width="1.2"/>`;
+        // Big bulging eyes on top
+        head += `<circle cx="${cx - 12}" cy="${ys.headCy - 14}" r="9" fill="url(#av-skin)" stroke="#1a3018" stroke-width="1"/>`;
+        head += `<circle cx="${cx + 12}" cy="${ys.headCy - 14}" r="9" fill="url(#av-skin)" stroke="#1a3018" stroke-width="1"/>`;
+        head += `<circle cx="${cx - 12}" cy="${ys.headCy - 14}" r="4" fill="#1a1a1a"/>`;
+        head += `<circle cx="${cx + 12}" cy="${ys.headCy - 14}" r="4" fill="#1a1a1a"/>`;
+        // Wide mouth
+        head += `<path d="M ${cx - 18} ${ys.headCy + 6} Q ${cx} ${ys.headCy + 16} ${cx + 18} ${ys.headCy + 6}" fill="none" stroke="#1a3018" stroke-width="1.6"/>`;
+      } else {
+        head += `<ellipse cx="${cx}" cy="${ys.headCy}" rx="${b.headR}" ry="${b.headRy}" fill="url(#av-skin)" stroke="#3d2916" stroke-width="1"/>`;
+        // Eyes
+        const eyeY = ys.headCy - 2;
+        const eyeColor = (race === 'Dark Elf') ? '#e84848' : (race === 'High Elf' ? '#3aa8d8' : (race === 'Iksar' ? '#e8c828' : '#2a1f12'));
+        head += `<circle cx="${cx - 9}" cy="${eyeY}" r="2" fill="${eyeColor}"/>`;
+        head += `<circle cx="${cx + 9}" cy="${eyeY}" r="2" fill="${eyeColor}"/>`;
+
+        // Snouts (Iksar, Vah Shir)
+        if (cfg.snout) {
+          head += `<ellipse cx="${cx}" cy="${ys.headCy + 10}" rx="14" ry="10" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.8"/>`;
+          head += `<ellipse cx="${cx - 4}" cy="${ys.headCy + 8}" rx="1.4" ry="2" fill="#1a1208"/>`;
+          head += `<ellipse cx="${cx + 4}" cy="${ys.headCy + 8}" rx="1.4" ry="2" fill="#1a1208"/>`;
+          if (race === 'Iksar') {
+            // small fangs
+            head += `<path d="M ${cx - 5} ${ys.headCy + 15} L ${cx - 3} ${ys.headCy + 19} L ${cx - 1} ${ys.headCy + 15} Z" fill="#fff8d0"/>`;
+            head += `<path d="M ${cx + 5} ${ys.headCy + 15} L ${cx + 3} ${ys.headCy + 19} L ${cx + 1} ${ys.headCy + 15} Z" fill="#fff8d0"/>`;
+          }
+        } else {
+          // Plain mouth
+          head += `<path d="M ${cx - 5} ${ys.headCy + 12} Q ${cx} ${ys.headCy + 15} ${cx + 5} ${ys.headCy + 12}" fill="none" stroke="#3d2916" stroke-width="1"/>`;
+        }
+
+        // Whiskers (Vah Shir)
+        if (cfg.whiskers) {
+          head += `<line x1="${cx - 14}" y1="${ys.headCy + 10}" x2="${cx - 28}" y2="${ys.headCy + 8}" stroke="#fff" stroke-width="0.6"/>`;
+          head += `<line x1="${cx - 14}" y1="${ys.headCy + 12}" x2="${cx - 28}" y2="${ys.headCy + 14}" stroke="#fff" stroke-width="0.6"/>`;
+          head += `<line x1="${cx + 14}" y1="${ys.headCy + 10}" x2="${cx + 28}" y2="${ys.headCy + 8}" stroke="#fff" stroke-width="0.6"/>`;
+          head += `<line x1="${cx + 14}" y1="${ys.headCy + 12}" x2="${cx + 28}" y2="${ys.headCy + 14}" stroke="#fff" stroke-width="0.6"/>`;
+        }
+
+        // Tusks (Troll, Ogre)
+        if (cfg.tusks) {
+          head += `<path d="M ${cx - 10} ${ys.headCy + 12} L ${cx - 12} ${ys.headCy + 22} L ${cx - 7} ${ys.headCy + 18} Z" fill="#fff8d0" stroke="#7a6a30" stroke-width="0.6"/>`;
+          head += `<path d="M ${cx + 10} ${ys.headCy + 12} L ${cx + 12} ${ys.headCy + 22} L ${cx + 7} ${ys.headCy + 18} Z" fill="#fff8d0" stroke="#7a6a30" stroke-width="0.6"/>`;
+        }
+
+        // Scale texture on cheeks (Drakkin)
+        if (cfg.scales === 'cheek') {
+          head += `<circle cx="${cx - 18}" cy="${ys.headCy + 6}" r="1.4" fill="#a04848" opacity="0.7"/>`;
+          head += `<circle cx="${cx - 14}" cy="${ys.headCy + 10}" r="1.4" fill="#a04848" opacity="0.7"/>`;
+          head += `<circle cx="${cx + 18}" cy="${ys.headCy + 6}" r="1.4" fill="#a04848" opacity="0.7"/>`;
+          head += `<circle cx="${cx + 14}" cy="${ys.headCy + 10}" r="1.4" fill="#a04848" opacity="0.7"/>`;
+        }
+
+        // Full-face scale texture (Iksar)
+        if (cfg.scales === true) {
+          for (let i = 0; i < 6; i++) {
+            const sx = cx - 18 + (i * 7);
+            head += `<circle cx="${sx}" cy="${ys.headCy + 16}" r="1" fill="#1c3010" opacity="0.5"/>`;
+          }
+        }
+      }
+
+      // ── Ears ──
+      let ears = '';
+      const earY = ys.headCy + 2;
+      if (cfg.ear === 'pointed') {
+        ears += `<path d="M ${cx - b.headR + 2} ${earY - 4} L ${cx - b.headR - 8} ${earY - 12} L ${cx - b.headR + 4} ${earY + 6} Z" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.8"/>`;
+        ears += `<path d="M ${cx + b.headR - 2} ${earY - 4} L ${cx + b.headR + 8} ${earY - 12} L ${cx + b.headR - 4} ${earY + 6} Z" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.8"/>`;
+      } else if (cfg.ear === 'long-pointed') {
+        ears += `<path d="M ${cx - b.headR + 2} ${earY - 2} L ${cx - b.headR - 14} ${earY - 22} L ${cx - b.headR + 4} ${earY + 8} Z" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.8"/>`;
+        ears += `<path d="M ${cx + b.headR - 2} ${earY - 2} L ${cx + b.headR + 14} ${earY - 22} L ${cx + b.headR - 4} ${earY + 8} Z" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.8"/>`;
+      } else if (cfg.ear === 'cat') {
+        // Triangular cat ears on top
+        ears += `<path d="M ${cx - 16} ${ys.headCy - b.headRy + 4} L ${cx - 22} ${ys.headCy - b.headRy - 14} L ${cx - 8} ${ys.headCy - b.headRy + 2} Z" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.8"/>`;
+        ears += `<path d="M ${cx + 16} ${ys.headCy - b.headRy + 4} L ${cx + 22} ${ys.headCy - b.headRy - 14} L ${cx + 8} ${ys.headCy - b.headRy + 2} Z" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.8"/>`;
+        // Inner ears
+        ears += `<path d="M ${cx - 18} ${ys.headCy - b.headRy - 4} L ${cx - 20} ${ys.headCy - b.headRy - 10} L ${cx - 14} ${ys.headCy - b.headRy - 3} Z" fill="#e8a8b0"/>`;
+        ears += `<path d="M ${cx + 18} ${ys.headCy - b.headRy - 4} L ${cx + 20} ${ys.headCy - b.headRy - 10} L ${cx + 14} ${ys.headCy - b.headRy - 3} Z" fill="#e8a8b0"/>`;
+      } else if (cfg.ear === 'round') {
+        ears += `<ellipse cx="${cx - b.headR}" cy="${earY}" rx="3" ry="6" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.6"/>`;
+        ears += `<ellipse cx="${cx + b.headR}" cy="${earY}" rx="3" ry="6" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.6"/>`;
+      }
+
+      // ── Hair / hood / horns ──
+      // Split into "back" (renders before the head) and "front" (renders after).
+      let hairBack = '';
+      let hairFront = '';
+      const topY = ys.headCy - b.headRy;
+      if (cfg.hood) {
+        // Dark robed hood for Erudites — fully wraps around head, painted on top
+        hairFront += `<path d="M ${cx - b.headR - 6} ${ys.headCy} Q ${cx - b.headR - 6} ${topY - 18} ${cx} ${topY - 22} Q ${cx + b.headR + 6} ${topY - 18} ${cx + b.headR + 6} ${ys.headCy} L ${cx + b.headR + 6} ${ys.headCy + 14} Q ${cx} ${ys.headCy + 10} ${cx - b.headR - 6} ${ys.headCy + 14} Z" fill="url(#av-tunic)" stroke="#0e0820" stroke-width="1"/>`;
+      } else if (cfg.hairStyle === 'short' && cfg.hair) {
+        // Short hair sits as a cap on top of the head
+        hairFront += `<path d="M ${cx - b.headR + 2} ${topY + 14} Q ${cx} ${topY - 6} ${cx + b.headR - 2} ${topY + 14} Q ${cx + b.headR - 2} ${topY + 6} ${cx} ${topY + 2} Q ${cx - b.headR + 2} ${topY + 6} ${cx - b.headR + 2} ${topY + 14} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
+      } else if (cfg.hairStyle === 'long' && cfg.hair) {
+        // Long hair: two side panels drape behind the head down past shoulders.
+        // Left back panel
+        hairBack += `<path d="M ${cx - b.headR + 4} ${topY + 4} L ${cx - b.headR - 6} ${ys.headCy + 38} L ${cx - 4} ${ys.headCy + 42} L ${cx - 4} ${topY + 10} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
+        // Right back panel
+        hairBack += `<path d="M ${cx + b.headR - 4} ${topY + 4} L ${cx + b.headR + 6} ${ys.headCy + 38} L ${cx + 4} ${ys.headCy + 42} L ${cx + 4} ${topY + 10} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
+        // Top fringe on the front, leaving the face visible
+        hairFront += `<path d="M ${cx - b.headR + 2} ${topY + 10} Q ${cx} ${topY - 6} ${cx + b.headR - 2} ${topY + 10} Q ${cx + b.headR - 4} ${topY + 4} ${cx} ${topY} Q ${cx - b.headR + 4} ${topY + 4} ${cx - b.headR + 2} ${topY + 10} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
+      } else if (cfg.hairStyle === 'mohawk' && cfg.hair) {
+        hairFront += `<path d="M ${cx - 4} ${topY + 6} L ${cx - 6} ${topY - 16} L ${cx} ${topY - 22} L ${cx + 6} ${topY - 16} L ${cx + 4} ${topY + 6} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
+      } else if (cfg.hairStyle === 'braids' && cfg.hair) {
+        // Top fringe in front, braids hanging behind
+        hairBack += `<rect x="${cx - b.headR - 2}" y="${ys.headCy}" width="6" height="40" rx="3" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
+        hairBack += `<rect x="${cx + b.headR - 4}" y="${ys.headCy}" width="6" height="40" rx="3" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
+        hairFront += `<path d="M ${cx - b.headR + 2} ${topY + 10} Q ${cx} ${topY - 4} ${cx + b.headR - 2} ${topY + 10} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
+      } else if (cfg.hairStyle === 'mane' && cfg.hair) {
+        // Vah Shir lion mane — render behind the head as a halo of fur
+        hairBack += `<path d="M ${cx - b.headR - 6} ${ys.headCy + 4} Q ${cx - b.headR - 14} ${topY - 4} ${cx} ${topY - 10} Q ${cx + b.headR + 14} ${topY - 4} ${cx + b.headR + 6} ${ys.headCy + 4} Q ${cx + b.headR + 10} ${ys.headCy + 20} ${cx} ${ys.headCy + 18} Q ${cx - b.headR - 10} ${ys.headCy + 20} ${cx - b.headR - 6} ${ys.headCy + 4} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6" opacity="0.85"/>`;
+      }
+
+      // Beard (dwarf, barbarian) — front, hanging from the face
+      if (cfg.beard) {
+        const beardColor = cfg.hair || '#7a4d18';
+        hairFront += `<path d="M ${cx - 16} ${ys.headCy + 16} Q ${cx - 22} ${ys.headCy + 48} ${cx} ${ys.headCy + 52} Q ${cx + 22} ${ys.headCy + 48} ${cx + 16} ${ys.headCy + 16} Q ${cx} ${ys.headCy + 22} ${cx - 16} ${ys.headCy + 16} Z" fill="${beardColor}" stroke="#1a0e08" stroke-width="0.6"/>`;
+      }
+
+      // Horns (Drakkin) — sit on top of head, render in front
+      if (cfg.hornsSmall) {
+        hairFront += `<path d="M ${cx - 12} ${topY + 4} L ${cx - 16} ${topY - 14} L ${cx - 8} ${topY + 2} Z" fill="#5a3018" stroke="#1a0a04" stroke-width="0.6"/>`;
+        hairFront += `<path d="M ${cx + 12} ${topY + 4} L ${cx + 16} ${topY - 14} L ${cx + 8} ${topY + 2} Z" fill="#5a3018" stroke="#1a0a04" stroke-width="0.6"/>`;
+      }
+
+      // ── Body ──
+      const shoulderL = cx - b.shoulderW / 2;
+      const shoulderR = cx + b.shoulderW / 2;
+      const hipL = cx - b.hipW / 2;
+      const hipR = cx + b.hipW / 2;
+
+      let neck = `<rect x="${cx - 8}" y="${ys.neckY}" width="16" height="${ys.torsoTop - ys.neckY + 2}" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.5"/>`;
+
+      // Torso
+      let torso = `<path d="M ${shoulderL} ${ys.torsoTop} L ${shoulderR} ${ys.torsoTop} L ${hipR + 2} ${ys.torsoBot} L ${hipL - 2} ${ys.torsoBot} Z" fill="url(#av-tunic)" stroke="#1a1a18" stroke-width="1"/>`;
+
+      // Shoulder pads
+      torso += `<ellipse cx="${shoulderL + 4}" cy="${ys.torsoTop + 8}" rx="18" ry="12" fill="#7a5a2a" stroke="#3d2914" stroke-width="1"/>`;
+      torso += `<ellipse cx="${shoulderR - 4}" cy="${ys.torsoTop + 8}" rx="18" ry="12" fill="#7a5a2a" stroke="#3d2914" stroke-width="1"/>`;
+
+      // Arms
+      const armTop = ys.torsoTop + 16;
+      const armBot = ys.torsoBot - 4;
+      torso += `<path d="M ${shoulderL - 8} ${armTop} L ${shoulderL - 14} ${armBot} L ${shoulderL + 4} ${armBot + 6} L ${shoulderL + 10} ${armTop + 6} Z" fill="url(#av-tunic)" stroke="#1a1a18" stroke-width="1"/>`;
+      torso += `<path d="M ${shoulderR + 8} ${armTop} L ${shoulderR + 14} ${armBot} L ${shoulderR - 4} ${armBot + 6} L ${shoulderR - 10} ${armTop + 6} Z" fill="url(#av-tunic)" stroke="#1a1a18" stroke-width="1"/>`;
+      // Hands
+      torso += `<ellipse cx="${shoulderL - 6}" cy="${armBot + 4}" rx="9" ry="11" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.5"/>`;
+      torso += `<ellipse cx="${shoulderR + 6}" cy="${armBot + 4}" rx="9" ry="11" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.5"/>`;
+
+      // Belt
+      let belt = `<rect x="${hipL - 2}" y="${ys.beltTop - 5}" width="${b.hipW + 4}" height="14" fill="url(#av-belt)" stroke="#3a2810" stroke-width="1"/>`;
+      belt += `<circle cx="${cx}" cy="${ys.beltTop + 2}" r="5" fill="#e8c45a" stroke="#5a4214" stroke-width="0.5"/>`;
+
+      // Legs
+      const legGap = 4;
+      const legW = (b.hipW - legGap) / 2;
+      let legs = `<path d="M ${hipL} ${ys.legTop} L ${hipL + legW} ${ys.legTop} L ${cx - 4} ${ys.legBot} L ${hipL + 4} ${ys.legBot} Z" fill="url(#av-pants)" stroke="#0f0a08" stroke-width="1"/>`;
+      legs += `<path d="M ${cx + 4} ${ys.legTop} L ${hipR} ${ys.legTop} L ${hipR - 4} ${ys.legBot} L ${cx + 4} ${ys.legBot} Z" fill="url(#av-pants)" stroke="#0f0a08" stroke-width="1"/>`;
+
+      // Boots
+      let boots = `<path d="M ${hipL + 4} ${ys.footTop} L ${cx - 4} ${ys.footTop} L ${cx - 4} ${ys.footBot - 4} Q ${cx - 18} ${ys.footBot + 4} ${hipL - 4} ${ys.footBot - 4} Z" fill="#3a2515" stroke="#0f0a08" stroke-width="1"/>`;
+      boots += `<path d="M ${cx + 4} ${ys.footTop} L ${hipR - 4} ${ys.footTop} L ${hipR + 4} ${ys.footBot - 4} Q ${cx + 18} ${ys.footBot + 4} ${cx + 4} ${ys.footBot - 4} Z" fill="#3a2515" stroke="#0f0a08" stroke-width="1"/>`;
+
+      // Tail (Iksar, Vah Shir)
+      let tail = '';
+      if (cfg.tail) {
+        const tailColor = (race === 'Vah Shir') ? cfg.skin[1] : '#3c5a1c';
+        tail += `<path d="M ${hipR - 2} ${ys.legTop + 10} Q ${hipR + 30} ${ys.legTop + 40} ${hipR + 18} ${ys.legBot - 20}" fill="none" stroke="${tailColor}" stroke-width="10" stroke-linecap="round"/>`;
+        tail += `<path d="M ${hipR - 2} ${ys.legTop + 10} Q ${hipR + 30} ${ys.legTop + 40} ${hipR + 18} ${ys.legBot - 20}" fill="none" stroke="#1a0e08" stroke-width="1" opacity="0.4"/>`;
+      }
+
+      return `<svg viewBox="0 0 200 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+        <defs>${skinG}${tunicG}${pantsG}${beltG}</defs>
+        ${tail}
+        ${neck}
+        ${torso}
+        ${belt}
+        ${legs}
+        ${boots}
+        ${hairBack}
+        ${head}
+        ${ears}
+        ${hairFront}
+      </svg>`;
+    }
+
+    function updateNameplate() {
+      const nameEl = document.getElementById('np-name');
+      const zoneEl = document.getElementById('np-zone');
+      const avatar = document.getElementById('charselect-avatar');
+      if (!nameEl || !zoneEl) return;
+
+      const s = (csSelectedSlot >= 0) ? slots[csSelectedSlot] : null;
+      if (s) {
+        nameEl.textContent = `${s.name} [${s.level} ${s.cls}]`;
+        const zoneName = (typeof ZONES !== 'undefined' && ZONES[s.zone]) ? ZONES[s.zone].name : '';
+        zoneEl.textContent = zoneName;
+        if (avatar) {
+          avatar.innerHTML = buildAvatarSvg(s.race || 'Human');
+          avatar.style.display = '';
+        }
+      } else {
+        nameEl.textContent = 'No Character Selected';
+        zoneEl.textContent = '';
+        if (avatar) {
+          avatar.innerHTML = '';
+          avatar.style.display = 'none';
+        }
+      }
+    }
+
+    // ── Top-row buttons ──
+    function csExplore() {
+      if (csSelectedSlot < 0 || !slots[csSelectedSlot]) {
+        if (typeof showToast === 'function') showToast('Select a character first.', 'info');
+        return;
+      }
+      // "Explore" in EQ lets you walk around — closest analog here is just entering the world.
+      csEnterWorld();
+    }
+
+    function csDelete() {
+      if (csSelectedSlot < 0 || !slots[csSelectedSlot]) {
+        if (typeof showToast === 'function') showToast('Select a character to delete.', 'info');
+        return;
+      }
+      deleteSlot(csSelectedSlot);
+    }
+
+    function csRotate() {
+      // Spin the avatar a quarter turn for fun — purely visual flourish
+      const avatar = document.getElementById('charselect-avatar');
+      if (!avatar) return;
+      csAvatarRotation = (csAvatarRotation + 90) % 360;
+      avatar.style.transition = 'transform 0.5s ease';
+      avatar.style.transform = `translateX(-50%) rotateY(${csAvatarRotation}deg)`;
+    }
+
+    // ── Bottom-row buttons ──
+    function csEnterWorld() {
+      if (csSelectedSlot < 0 || !slots[csSelectedSlot]) {
+        if (typeof showToast === 'function') showToast('Select a character first.', 'info');
+        return;
+      }
+      loadSlot(csSelectedSlot);
+    }
+
+    function csQuit() {
+      if (confirm('Quit EmberQuest?')) {
+        // No real "quit" in a webpage — close the tab if allowed, otherwise show a notice.
+        window.close();
+        setTimeout(() => {
+          if (typeof showToast === 'function') showToast('Close this tab to fully exit.', 'info');
+        }, 100);
+      }
+    }
+
 
     function openCreateForm(slotIdx) {
       pendingSlot = slotIdx;
