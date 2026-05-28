@@ -7978,6 +7978,8 @@
     }
 
     function loadSlot(i) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
       activeSlot = i;
       char = JSON.parse(JSON.stringify(slots[i]));
       // Run the migration checks before assigning it to the active char global
@@ -8033,6 +8035,8 @@
     }
 
     function goToCharSelect() {
+      clearTimeout(saveTimer);
+      saveTimer = null;
       if (char) {
         if (afkOn) {
           char.afkEnabled = true;
@@ -11725,7 +11729,7 @@
       autoUseSkills = !autoUseSkills;
       refreshAutoBattleButtons();
       log('Auto class skills ' + (autoUseSkills ? 'enabled' : 'disabled') + '.', 'info');
-      autoSave();
+      saveSlots();
     }
 
     function toggleAutoSkillSlot(slotIdx, event) {
@@ -11734,7 +11738,7 @@
       autoSkillSlots[slotIdx] = !(autoSkillSlots[slotIdx] !== false);
       refreshAutoBattleButtons();
       log('Auto skill slot ' + (slotIdx + 1) + ' ' + (autoSkillSlots[slotIdx] ? 'enabled' : 'disabled') + '.', 'info');
-      autoSave();
+      saveSlots();
     }
 
     function toggleAutoHpPotion(event) {
