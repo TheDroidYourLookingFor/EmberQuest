@@ -5953,6 +5953,19 @@
         targetChar.afkGoal = 'balanced';
       }
 
+      targetChar.autoUseSkills = targetChar.autoUseSkills !== false;
+      if (!Array.isArray(targetChar.autoSkillSlots) || targetChar.autoSkillSlots.length !== 6) {
+        targetChar.autoSkillSlots = [true, true, true, true, true, true];
+      } else {
+        targetChar.autoSkillSlots = targetChar.autoSkillSlots.slice(0, 6).map(v => v !== false);
+      }
+      targetChar.autoUseHpPotions = targetChar.autoUseHpPotions !== false;
+      targetChar.autoUseMpPotions = targetChar.autoUseMpPotions !== false;
+      targetChar.autoRestHpPercent = Math.max(5, Math.min(95, Math.floor(Number(targetChar.autoRestHpPercent || 40))));
+      targetChar.autoRestMpPercent = Math.max(5, Math.min(95, Math.floor(Number(targetChar.autoRestMpPercent || 20))));
+      targetChar.autoHpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(targetChar.autoHpPotionPercent || 35))));
+      targetChar.autoMpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(targetChar.autoMpPotionPercent || 20))));
+
       if (!targetChar.mercenary || typeof targetChar.mercenary !== 'object' || Array.isArray(targetChar.mercenary)) {
         targetChar.mercenary = { type: 'none', customName: '', totalPaid: 0, hires: 0, lastHiredAt: 0, totalUpkeepPaid: 0, nextUpkeepAt: 0, lastUpkeepPaidAt: 0, actionReadyAt: 0 };
       }
@@ -6847,6 +6860,14 @@
 
     function saveSlots() {
       if (char && activeSlot >= 0) {
+        char.autoUseSkills = autoUseSkills !== false;
+        char.autoSkillSlots = autoSkillSlots.slice(0, 6).map(v => v !== false);
+        char.autoUseHpPotions = autoUseHpPotions !== false;
+        char.autoUseMpPotions = autoUseMpPotions !== false;
+        char.autoRestHpPercent = Math.max(5, Math.min(95, Math.floor(Number(autoRestHpPercent || 40))));
+        char.autoRestMpPercent = Math.max(5, Math.min(95, Math.floor(Number(autoRestMpPercent || 20))));
+        char.autoHpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(autoHpPotionPercent || 35))));
+        char.autoMpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(autoMpPotionPercent || 20))));
         char.afkEnabled = afkOn;
         char.lastAfkAt = afkOn ? Date.now() : null;
         slots[activeSlot] = JSON.parse(JSON.stringify(char));
@@ -7966,6 +7987,20 @@
       if (!char.quests) char.quests = freshQuests();
       ensureExtendedSystems(char);
       ensureSpellState(char);
+
+      autoUseSkills = char.autoUseSkills !== false;
+      if (Array.isArray(char.autoSkillSlots) && char.autoSkillSlots.length) {
+        autoSkillSlots = char.autoSkillSlots.slice(0, 6).map(v => v !== false);
+        while (autoSkillSlots.length < 6) autoSkillSlots.push(true);
+      } else {
+        autoSkillSlots = [true, true, true, true, true, true];
+      }
+      autoUseHpPotions = char.autoUseHpPotions !== false;
+      autoUseMpPotions = char.autoUseMpPotions !== false;
+      autoRestHpPercent = Math.max(5, Math.min(95, Math.floor(Number(char.autoRestHpPercent || 40))));
+      autoRestMpPercent = Math.max(5, Math.min(95, Math.floor(Number(char.autoRestMpPercent || 20))));
+      autoHpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(char.autoHpPotionPercent || 35))));
+      autoMpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(char.autoMpPotionPercent || 20))));
 
       mob = null;
       afkOn = false; clearInterval(afkInterval); afkInterval = null;
@@ -11673,6 +11708,7 @@
       autoUseSkills = !autoUseSkills;
       refreshAutoBattleButtons();
       log('Auto class skills ' + (autoUseSkills ? 'enabled' : 'disabled') + '.', 'info');
+      autoSave();
     }
 
     function toggleAutoSkillSlot(slotIdx, event) {
@@ -11681,6 +11717,7 @@
       autoSkillSlots[slotIdx] = !(autoSkillSlots[slotIdx] !== false);
       refreshAutoBattleButtons();
       log('Auto skill slot ' + (slotIdx + 1) + ' ' + (autoSkillSlots[slotIdx] ? 'enabled' : 'disabled') + '.', 'info');
+      autoSave();
     }
 
     function toggleAutoHpPotion(event) {
