@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.1.1</title>
+    1.1.2</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -1798,6 +1798,86 @@
     #screen-game [style*="color: var(--text-secondary)"] {
       color: #b8b0a0 !important;
     }
+
+    /* Manual layout mode toggle: desktop stays default; mobile is opt-in. */
+    #screen-game.ui-layout-mobile #game-grid {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+
+    #screen-game.ui-layout-mobile #game-grid>div:last-child {
+      grid-column: auto;
+    }
+
+    #screen-game.ui-layout-mobile #game-topbar {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    #screen-game.ui-layout-mobile #game-topbar .title {
+      width: 100%;
+    }
+
+    #screen-game.ui-layout-mobile #game-topbar .btn {
+      flex: 1 1 calc(50% - 8px);
+      justify-content: center;
+      min-height: 40px;
+    }
+
+    #screen-game.ui-layout-mobile .tab-bar {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    #screen-game.ui-layout-mobile .tab {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    #screen-game.ui-layout-mobile .queue-item {
+      min-height: 40px;
+    }
+
+    #screen-game.ui-layout-mobile #combat-log {
+      min-height: 120px;
+    }
+
+    #screen-game.ui-layout-mobile .eq-inventory-layout,
+    #screen-game.ui-layout-mobile .eq-bag-grid {
+      grid-template-columns: 1fr;
+    }
+
+    /* Allow forcing the original desktop grid even on narrow devices. */
+    #screen-game.ui-layout-desktop {
+      overflow-x: auto;
+    }
+
+    #screen-game.ui-layout-desktop #game-topbar {
+      flex-wrap: nowrap !important;
+    }
+
+    #screen-game.ui-layout-desktop #game-topbar .title {
+      width: auto !important;
+    }
+
+    #screen-game.ui-layout-desktop #game-topbar .btn {
+      flex: 0 0 auto !important;
+      min-height: 0 !important;
+    }
+
+    #screen-game.ui-layout-desktop #game-grid {
+      grid-template-columns: 210px minmax(0, 1fr) 280px !important;
+      min-height: 560px !important;
+      min-width: 980px;
+    }
+
+    #screen-game.ui-layout-desktop #game-grid>div:last-child {
+      grid-column: auto !important;
+    }
   </style>
 </head>
 
@@ -2158,7 +2238,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.1</span>
+        1.1.2</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -2188,6 +2268,12 @@
         style="font-size:11px;padding:4px 10px"><i
           class="ti ti-users"></i>
         Characters</button>
+      <button
+        class="btn"
+        id="layout-mode-btn"
+        onclick="toggleLayoutMode()"
+        style="font-size:11px;padding:4px 10px">Layout:
+        Desktop</button>
     </div>
     <input
       id="import-save-input"
@@ -3530,6 +3616,7 @@
     // ══════════════════════════════════════════════
     const MAX_SLOTS = 24;
     const SAVE_KEY = 'EmberQuest_slots';
+    const UI_LAYOUT_KEY = 'EmberQuest_uiLayout';
 
     const CLASSES = {
       Warrior: { hp: 160, mp: 40, atk: 18, def: 12, mpRegen: 2, skill: 'Taunt', skillMp: 10, skillEffect: 'taunt' },
@@ -5023,9 +5110,9 @@
 
       const uniquePool = UNIQUE_ITEM_BY_BASE[baseName] || [];
       let uniqueChance = 0;
-      if (source === 'loot_named') uniqueChance = 0.03;
-      else if (source === 'loot') uniqueChance = 0.009;
-      else if (source === 'afk') uniqueChance = 0.004;
+      if (source === 'loot_named') uniqueChance = 0.015;
+      else if (source === 'loot') uniqueChance = 0.0035;
+      else if (source === 'afk') uniqueChance = 0.0015;
 
       if (uniquePool.length && uniqueChance > 0 && Math.random() < uniqueChance) {
         const chosen = uniquePool[Math.floor(Math.random() * uniquePool.length)];
@@ -6734,7 +6821,8 @@
     let pendingBagInstallTargets = {};
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
-    const CURRENT_VERSION = '1.1.1';
+    let uiLayoutMode = 'desktop';
+    const CURRENT_VERSION = '1.1.2';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -7070,6 +7158,42 @@
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
+    }
+
+    function normalizeUiLayoutMode(mode) {
+      return mode === 'mobile' ? 'mobile' : 'desktop';
+    }
+
+    function applyUiLayoutMode(mode, silent = false) {
+      uiLayoutMode = normalizeUiLayoutMode(mode);
+      const gameScreen = document.getElementById('screen-game');
+      if (gameScreen) {
+        gameScreen.classList.toggle('ui-layout-mobile', uiLayoutMode === 'mobile');
+        gameScreen.classList.toggle('ui-layout-desktop', uiLayoutMode === 'desktop');
+      }
+
+      const btn = document.getElementById('layout-mode-btn');
+      if (btn) {
+        btn.textContent = 'Layout: ' + (uiLayoutMode === 'mobile' ? 'Mobile' : 'Desktop');
+        btn.classList.toggle('active', uiLayoutMode === 'mobile');
+      }
+
+      try { localStorage.setItem(UI_LAYOUT_KEY, uiLayoutMode); } catch (e) { }
+      requestAnimationFrame(syncCombatLogSize);
+
+      if (!silent && char) {
+        log('Switched to ' + (uiLayoutMode === 'mobile' ? 'mobile' : 'desktop') + ' layout.', 'info');
+      }
+    }
+
+    function toggleLayoutMode() {
+      applyUiLayoutMode(uiLayoutMode === 'mobile' ? 'desktop' : 'mobile');
+    }
+
+    function loadUiLayoutPreference() {
+      let saved = 'desktop';
+      try { saved = localStorage.getItem(UI_LAYOUT_KEY) || 'desktop'; } catch (e) { }
+      applyUiLayoutMode(saved, true);
     }
 
     function formatLastPlayed(ts) {
@@ -7803,8 +7927,8 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.1';
-        if (!silent) log('Upgraded save data to v1.1.1.', 'info');
+        oldChar.version = '1.1.2';
+        if (!silent) log('Upgraded save data to v1.1.2.', 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -9742,6 +9866,12 @@
       log(cls.skill + ': ' + eff, 'dmg'); renderAll();
     }
 
+    function getLowLevelGoldMultiplier(level) {
+      const lvl = Math.max(1, Math.floor(Number(level || 1)));
+      if (lvl >= 40) return 1;
+      return 0.28 + ((lvl - 1) / 39) * 0.72;
+    }
+
     function killMob() {
       const zone = ZONES[char.zone];
       const event = getActiveZoneEvent(char.zone);
@@ -9753,8 +9883,9 @@
       const dungeonMod = inDungeon ? getDungeonModifierData(char.dungeon.modifier) : getDungeonModifierData('balanced');
       const namedMult = mob.named ? 2.5 : 1;
       const dungeonMult = inDungeon ? (1 + floor * 0.08) : 1;
+      const lowLevelGoldMult = getLowLevelGoldMultiplier(char.level);
       const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1));
-      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult);
+      const gold = Math.floor((Math.random() * 8 + mob.level * 3) * zone.goldMult * (mob.elite ? 2 : 1) * namedMult * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult);
       const killXp = awardExperience(xp, 'combat');
       char.gold += gold;
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
@@ -10896,26 +11027,17 @@
 
       if (rules.autoAdvanceContract) {
         const board = Array.isArray(char.eliteContracts) ? char.eliteContracts : [];
-        if (board.length > 1) {
+        if (board.length > 0) {
           const pinnedIdx = Math.max(0, Math.min(board.length - 1, Number(char.afkPinnedContractIdx || 0)));
           const pinned = board[pinnedIdx];
-          if (pinned && pinned.active && pinned.completed) {
-            let nextIdx = -1;
-            for (let i = 1; i <= board.length; i++) {
-              const idx = (pinnedIdx + i) % board.length;
-              const c = board[idx];
-              if (c && c.active && !c.completed) {
-                nextIdx = idx;
-                break;
-              }
-            }
-            if (nextIdx >= 0 && nextIdx !== pinnedIdx) {
-              char.afkPinnedContractIdx = nextIdx;
-              char.contractPrimaryIdx = nextIdx;
-              char.eliteContract = board[nextIdx];
-              setAfkGoalAction('Switched AFK contract to slot ' + (nextIdx + 1));
-            }
+
+          if (pinned && pinned.active && pinned.complete) {
+            // Auto-claim the AFK-pinned contract so the next chain step starts immediately.
+            claimEliteContractReward(pinnedIdx);
+            setAfkGoalAction('Auto-claimed AFK contract slot ' + (pinnedIdx + 1));
+            return;
           }
+
         }
       }
     }
@@ -11093,7 +11215,7 @@
         const elite = Math.random() < ((goal === 'contract' && contract && contract.bossStep) ? 0.28 : 0.1);
 
         const xp = Math.floor((20 + lvl * 15) * zone.xpMult * (elite ? 3 : 1));
-        const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1));
+        const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1) * getLowLevelGoldMultiplier(char.level));
         totalXp += xp;
         totalGold += gold;
 
@@ -11609,6 +11731,7 @@
     document.addEventListener('keydown', handleModalKeydown);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('resize', () => requestAnimationFrame(syncCombatLogSize));
+    loadUiLayoutPreference();
     loadSlots();
     renderSlots();
   </script>
