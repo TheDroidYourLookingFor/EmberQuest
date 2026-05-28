@@ -533,10 +533,21 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      flex: 1;
+      flex: 1 1 0;
       min-height: 0;
-      max-height: 100%;
+      height: 100%;
       overflow: hidden;
+    }
+
+    #tab-combat > * {
+      flex: 0 0 auto;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    #tab-combat > #combat-log {
+      flex: 1 1 0;
+      min-height: 80px;
     }
 
     #tab-zone,
@@ -554,11 +565,7 @@
       background: var(--bg-secondary);
       border-radius: var(--radius-md);
       padding: 8px;
-      height: 220px;
-      min-height: 0;
-      max-height: 220px;
-      flex: 0 0 auto;
-      overflow-y: scroll;
+      overflow-y: auto;
       overflow-x: hidden;
       box-sizing: border-box;
       font-size: 12px;
@@ -1238,6 +1245,56 @@
     .rarity-runeword {
       color: #2C9D5A;
       text-shadow: 0 0 6px rgba(44, 157, 90, 0.2);
+    }
+
+    .rarity-legendary {
+      color: #C72BC1;
+      text-shadow: 0 0 8px rgba(199, 43, 193, 0.35);
+      font-weight: 600;
+    }
+
+    /* Item tooltip */
+    #item-tooltip {
+      position: fixed;
+      z-index: 9999;
+      max-width: 280px;
+      padding: 8px 10px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-md);
+      border-radius: var(--radius-md);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      font-size: 11px;
+      color: var(--text-primary);
+      pointer-events: none;
+      display: none;
+      line-height: 1.45;
+    }
+    #item-tooltip .tt-name {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    #item-tooltip .tt-meta {
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    #item-tooltip .tt-stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    #item-tooltip .tt-up { color: #1D9E75; }
+    #item-tooltip .tt-down { color: #c44; }
+    #item-tooltip .tt-section {
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border);
+    }
+    #item-tooltip .tt-warn {
+      color: #c44;
+      font-size: 10px;
+      margin-top: 2px;
     }
 
     .eq-item-type {
@@ -2210,6 +2267,12 @@
             placeholder="Enter name"
             style="flex:1">
         </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px">
+          <input type="checkbox" id="hardcore-toggle" onchange="setHardcoreOnCreate(this.checked)">
+          <label for="hardcore-toggle" style="cursor:pointer">
+            <b style="color:#ff6b6b">Hardcore Mode</b> — +25% XP and gold. Death deletes this save permanently.
+          </label>
+        </div>
         <div
           class="form-btns">
           <button
@@ -2745,6 +2808,9 @@
             </p>
           </div>
           <div
+            id="damage-meter"
+            style="font-size:11px;color:var(--text-secondary);margin-top:6px;line-height:1.5;background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:4px 8px"></div>
+          <div
             id="combat-log-filters"
             style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
             <button
@@ -2820,6 +2886,11 @@
                 class="ti ti-skull"></i>
               Recover
               Corpse</button>
+            <button id="hunt-boss-btn" class="btn"
+              onclick="huntBoss()"
+              title="Challenge this zone's boss (30 min cooldown)"><i
+                class="ti ti-flame"></i>
+              Hunt Boss</button>
           </div>
         </div>
         <div
@@ -3002,6 +3073,27 @@
                 style="margin-bottom:10px">
                 Backpack
               </h3>
+              <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+                <select id="inv-sort-select" onchange="setInventorySort(this.value)" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+                  <option value="default">Sort: Default</option>
+                  <option value="quality">Sort: Quality</option>
+                  <option value="atk">Sort: ATK</option>
+                  <option value="def">Sort: DEF</option>
+                  <option value="level">Sort: iLvl</option>
+                  <option value="value">Sort: Value</option>
+                </select>
+                <select id="inv-filter-select" onchange="setInventoryFilter(this.value)" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+                  <option value="all">Filter: All</option>
+                  <option value="weapon">Weapons</option>
+                  <option value="armor">Armor</option>
+                  <option value="accessory">Accessories</option>
+                  <option value="misc">Misc</option>
+                  <option value="magicplus">Magic+</option>
+                </select>
+                <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px">
+                  <input type="checkbox" id="inv-overflow-toggle" onchange="toggleAutoVendorOverflow(this.checked)"> Auto-vendor on full bags
+                </label>
+              </div>
               <div
                 id="bag-tab-row"
                 class="bag-tab-row">
@@ -4506,15 +4598,19 @@
       char.mercenary.actionReadyAt = now + (merc.supportCooldownMs || 2200);
       if (Math.random() > Number(merc.supportChance || 0.6)) return false;
 
+      const gearMult = (typeof getMercDamageBonusMult === 'function') ? getMercDamageBonusMult(char) : 1;
+
       if (mercType === 'sellsword') {
-        const dmg = Math.max(3, Math.floor(level * 1.35 + char.atk * 0.18 + Math.random() * 5));
+        const dmg = Math.max(3, Math.floor((level * 1.35 + char.atk * 0.18 + Math.random() * 5) * gearMult));
         mob.hp -= dmg;
+        addDamageMeterEntry('merc', dmg);
         log(mercName + ' cuts ' + mob.name + ' for ' + dmg + ' damage.', 'dmg');
       } else if (mercType === 'hexer') {
-        const dmg = Math.max(2, Math.floor(level * 1.05 + char.atk * 0.1 + Math.random() * 4));
+        const dmg = Math.max(2, Math.floor((level * 1.05 + char.atk * 0.1 + Math.random() * 4) * gearMult));
         const atkDebuff = Math.max(1, Math.floor(level / 26) + 1);
         const defDebuff = Math.max(1, Math.floor(level / 30) + 1);
         mob.hp -= dmg;
+        addDamageMeterEntry('merc', dmg);
         mob.atk = Math.max(1, mob.atk - atkDebuff);
         mob.def = Math.max(0, mob.def - defDebuff);
         log(mercName + ' hexes ' + mob.name + ' for ' + dmg + ' damage and weakens it.', 'dmg');
@@ -4525,8 +4621,9 @@
           char.hp = Math.min(char.maxHp, char.hp + healAmt);
           log(mercName + ' mends you for ' + healAmt + ' HP.', 'heal');
         } else {
-          const dmg = Math.max(2, Math.floor(level * 0.9 + char.mpRegen * 1.2 + Math.random() * 3));
+          const dmg = Math.max(2, Math.floor((level * 0.9 + char.mpRegen * 1.2 + Math.random() * 3) * gearMult));
           mob.hp -= dmg;
+          addDamageMeterEntry('merc', dmg);
           log(mercName + ' smites ' + mob.name + ' for ' + dmg + ' damage.', 'dmg');
         }
       }
@@ -4687,7 +4784,7 @@
 
     function getItemQuality(entry) {
       if (!entry || typeof entry !== 'object') return 'Normal';
-      if (entry.quality === 'Magic' || entry.quality === 'Rare' || entry.quality === 'Unique' || entry.quality === 'Runeword') return entry.quality;
+      if (entry.quality === 'Magic' || entry.quality === 'Rare' || entry.quality === 'Unique' || entry.quality === 'Runeword' || entry.quality === 'Legendary') return entry.quality;
       return 'Normal';
     }
 
@@ -4697,6 +4794,7 @@
       if (quality === 'Rare') return 'rarity-rare';
       if (quality === 'Unique') return 'rarity-unique';
       if (quality === 'Runeword') return 'rarity-runeword';
+      if (quality === 'Legendary') return 'rarity-legendary';
       return '';
     }
 
@@ -4953,7 +5051,7 @@
       if (!base) return null;
 
       const quality = getItemQuality(entry);
-      const uniqueRollMult = quality === 'Unique' ? 1.75 : 1;
+      const uniqueRollMult = quality === 'Unique' ? 1.75 : (quality === 'Legendary' ? 1.4 : 1);
 
       const stats = {
         atk: base.atk || 0,
@@ -4974,13 +5072,19 @@
         stats.def += 2;
         stats.hp += 12;
         stats.mp += 12;
+      } else if (quality === 'Legendary') {
+        stats.atk += PHASE2.legendaryStatBoost.atk;
+        stats.def += PHASE2.legendaryStatBoost.def;
+        stats.hp += PHASE2.legendaryStatBoost.hp;
+        stats.mp += PHASE2.legendaryStatBoost.mp;
       }
 
       if (entry && typeof entry === 'object' && Array.isArray(entry.sockets)) {
         entry.sockets.forEach(r => {
           const rune = RUNE_DATA[r];
           if (!rune) return;
-          stats[rune.stat] = (stats[rune.stat] || 0) + rune.value;
+          const val = (typeof getRuneSocketValue === 'function') ? getRuneSocketValue(rune) : (rune.value || 0);
+          stats[rune.stat] = (stats[rune.stat] || 0) + val;
         });
       }
 
@@ -5027,9 +5131,13 @@
 
       const cleanName = (typeof entry.name === 'string' && entry.name.trim()) ? entry.name.trim() : baseName;
       const rawQuality = entry.quality;
-      const cleanQuality = (rawQuality === 'Magic' || rawQuality === 'Rare' || rawQuality === 'Unique' || rawQuality === 'Runeword') ? rawQuality : (Object.keys(cleanRolls).length ? 'Magic' : 'Normal');
+      const cleanQuality = (rawQuality === 'Magic' || rawQuality === 'Rare' || rawQuality === 'Unique' || rawQuality === 'Runeword' || rawQuality === 'Legendary') ? rawQuality : (Object.keys(cleanRolls).length ? 'Magic' : 'Normal');
       const normalized = { base: baseName, name: cleanName, rolls: cleanRolls, quality: cleanQuality };
       if (cleanQuality === 'Unique' && typeof entry.uniqueId === 'string') normalized.uniqueId = entry.uniqueId;
+      const ilvl = Number(entry.ilvl);
+      if (Number.isFinite(ilvl) && ilvl > 0) normalized.ilvl = Math.max(1, Math.floor(ilvl));
+      const lreq = Number(entry.levelReq);
+      if (Number.isFinite(lreq) && lreq > 0) normalized.levelReq = Math.max(1, Math.floor(lreq));
       if (entry.locked) normalized.locked = true;
       if (entry.favorite) normalized.favorite = true;
 
@@ -5123,11 +5231,25 @@
       const data = ITEM_DATA[baseName];
       if (!data) return baseName;
 
+      // Item level: scales with mob/zone level (cap close to player level for sanity)
+      const mobLvl = (typeof mob === 'object' && mob && Number.isFinite(Number(mob.level))) ? Number(mob.level) : (char?.level || 1);
+      const ilvl = Math.max(1, Math.floor(mobLvl + Math.floor(Math.random() * 3) - 1));
+      const levelReq = Math.max(1, ilvl - PHASE2.levelReqOffset);
+
       const uniquePool = UNIQUE_ITEM_BY_BASE[baseName] || [];
       let uniqueChance = 0;
       if (source === 'loot_named') uniqueChance = 0.015;
       else if (source === 'loot') uniqueChance = 0.0035;
       else if (source === 'afk') uniqueChance = 0.0015;
+
+      // Legendary chance — much rarer than unique
+      const legendaryChance = source === 'loot_named' ? PHASE2.legendaryChanceNamed : (source === 'loot' ? PHASE2.legendaryChanceRegular : 0);
+      if (legendaryChance > 0 && Math.random() < legendaryChance) {
+        const legendary = rollLegendaryVariant(baseName, data);
+        legendary.ilvl = ilvl;
+        legendary.levelReq = levelReq;
+        return legendary;
+      }
 
       if (uniquePool.length && uniqueChance > 0 && Math.random() < uniqueChance) {
         const chosen = uniquePool[Math.floor(Math.random() * uniquePool.length)];
@@ -5136,7 +5258,9 @@
           name: chosen.name,
           rolls: Object.assign({}, chosen.rolls),
           quality: 'Unique',
-          uniqueId: chosen.id
+          uniqueId: chosen.id,
+          ilvl,
+          levelReq
         };
       }
 
@@ -5173,7 +5297,9 @@
         base: baseName,
         name,
         rolls,
-        quality: picks.length > 1 ? 'Rare' : 'Magic'
+        quality: picks.length > 1 ? 'Rare' : 'Magic',
+        ilvl,
+        levelReq
       };
     }
 
@@ -5200,6 +5326,7 @@
       if (entry && typeof entry === 'object' && entry.quality === 'Rare') value += 12;
       else if (entry && typeof entry === 'object' && entry.quality === 'Unique') value += 30;
       else if (entry && typeof entry === 'object' && entry.quality === 'Runeword') value += 40;
+      else if (entry && typeof entry === 'object' && entry.quality === 'Legendary') value += 75;
       else if (entry && typeof entry === 'object') value += 6;
 
       value += Math.floor(Math.random() * 4);
@@ -5576,6 +5703,7 @@
 
     function getQualityRank(item) {
       const quality = getItemQuality(item);
+      if (quality === 'Legendary') return 6;
       if (quality === 'Runeword') return 5;
       if (quality === 'Unique') return 4;
       if (quality === 'Rare') return 3;
@@ -5593,6 +5721,7 @@
       const lf = getLootFilterState(char);
       const data = getItemData(item);
       if (!data || !data.slot) return false;
+      if (!canPlayerEquip(item)) return false;
       const slot = data.slot;
       const current = char.equipment[slot];
 
@@ -5859,6 +5988,12 @@
     }
 
     function ensureExtendedSystems(targetChar) {
+      if (typeof ensureStatsState === 'function') ensureStatsState(targetChar);
+      if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(targetChar);
+      if (typeof ensurePetState === 'function') ensurePetState(targetChar);
+      if (typeof ensureAuditState === 'function') ensureAuditState(targetChar);
+      if (!targetChar.bossCooldowns || typeof targetChar.bossCooldowns !== 'object') targetChar.bossCooldowns = {};
+      if (typeof targetChar.hardcore !== 'boolean') targetChar.hardcore = false;
       if (!targetChar.classQuest || typeof targetChar.classQuest !== 'object') {
         targetChar.classQuest = createClassQuestState(targetChar.cls);
       }
@@ -5893,6 +6028,30 @@
       targetChar.prestige.spent = Object.keys(PRESTIGE_PERKS).reduce((sum, id) => sum + Math.max(0, Math.floor(Number(targetChar.prestige.perks[id] || 0))), 0);
       targetChar.prestige.points = Math.max(0, Math.floor(Number(targetChar.prestige.points || 0)));
       targetChar.prestige.lastStarterGrantRank = Math.max(0, Math.min(targetChar.prestige.rank, Math.floor(Number(targetChar.prestige.lastStarterGrantRank || 0))));
+
+      // Class specialization (PHASE 3)
+      if (typeof targetChar.spec !== 'string' || !targetChar.spec) targetChar.spec = null;
+      if (targetChar.spec && typeof CLASS_SPECS !== 'undefined') {
+        const valid = (CLASS_SPECS[targetChar.cls] || []).some(s => s.id === targetChar.spec);
+        if (!valid) {
+          // Class changed or spec removed: rewind bonuses if any and clear
+          if (targetChar.specAppliedFlat && typeof removeSpecFlatBonuses === 'function') {
+            removeSpecFlatBonuses(targetChar, targetChar.specAppliedFlat);
+          }
+          targetChar.spec = null;
+          targetChar.specAppliedFlat = null;
+        }
+      }
+      if (targetChar.specAppliedFlat && typeof targetChar.specAppliedFlat === 'object') {
+        targetChar.specAppliedFlat = {
+          atk: Math.floor(Number(targetChar.specAppliedFlat.atk || 0)),
+          def: Math.floor(Number(targetChar.specAppliedFlat.def || 0)),
+          hp: Math.floor(Number(targetChar.specAppliedFlat.hp || 0)),
+          mp: Math.floor(Number(targetChar.specAppliedFlat.mp || 0))
+        };
+      } else if (targetChar.specAppliedFlat !== null) {
+        targetChar.specAppliedFlat = null;
+      }
 
       if (!Array.isArray(targetChar.statusEffects)) targetChar.statusEffects = [];
       targetChar.statusEffects = targetChar.statusEffects
@@ -5940,7 +6099,7 @@
       targetChar.huntTargets = cleanedTargets;
 
       if (!targetChar.lootFilter || typeof targetChar.lootFilter !== 'object' || Array.isArray(targetChar.lootFilter)) {
-        targetChar.lootFilter = { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false };
+        targetChar.lootFilter = { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false, autoVendorOverflow: false };
       }
       targetChar.lootFilter.autoSellJunk = !!targetChar.lootFilter.autoSellJunk;
       targetChar.lootFilter.autoSellNormalGear = !!targetChar.lootFilter.autoSellNormalGear;
@@ -5950,6 +6109,7 @@
       targetChar.lootFilter.protectRarePlus = targetChar.lootFilter.protectRarePlus !== false;
       targetChar.lootFilter.autoEquipEmptySlots = !!targetChar.lootFilter.autoEquipEmptySlots;
       targetChar.lootFilter.autoEquipUpgradedEquipment = !!targetChar.lootFilter.autoEquipUpgradedEquipment;
+      targetChar.lootFilter.autoVendorOverflow = !!targetChar.lootFilter.autoVendorOverflow;
       targetChar.lootFilter.autoEquipUpgradeMetric = targetChar.lootFilter.autoEquipUpgradeMetric || 'score';
       targetChar.lootFilter.autoEquipUpgradeThreshold = Number(targetChar.lootFilter.autoEquipUpgradeThreshold ?? 1);
       if (!targetChar.lootFilterPreset || !LOOT_FILTER_PRESETS[targetChar.lootFilterPreset]) {
@@ -6300,15 +6460,20 @@
         log(node.name + ' is already max rank.', 'info');
         return;
       }
+      const cost = (typeof getAANodeCost === 'function') ? getAANodeCost(node) : 1;
+      if ((char.aa.points || 0) < cost) {
+        log(node.name + ' requires ' + cost + ' AA points.', 'info');
+        return;
+      }
       const req = getAANodeRequirementState(char, node, allNodes);
       if (!req.met) {
         log('Requires: ' + req.missing.join(', ') + '.', 'info');
         return;
       }
       char.aa.nodes[node.key] = rank + 1;
-      char.aa.points -= 1;
-      char.aa.spent += 1;
-      log('AA upgraded: ' + node.name + ' (' + char.aa.nodes[node.key] + '/' + node.maxRank + ').', 'lvl');
+      char.aa.points -= cost;
+      char.aa.spent += cost;
+      log('AA upgraded: ' + node.name + ' (' + char.aa.nodes[node.key] + '/' + node.maxRank + ')' + (cost > 1 ? ' [-' + cost + ' pts]' : '') + '.', 'lvl');
       renderAll();
       renderAATab();
       autoSave();
@@ -6460,6 +6625,11 @@
         log(node.name + ' is already max rank in simulator.', 'info');
         return;
       }
+      const cost = (typeof getAANodeCost === 'function') ? getAANodeCost(node) : 1;
+      if ((char.aa.sim.points || 0) < cost) {
+        log(node.name + ' requires ' + cost + ' simulator points.', 'info');
+        return;
+      }
 
       const req = getAANodeRequirementState(char, node, allNodes, char.aa.sim.nodes);
       if (!req.met) {
@@ -6468,7 +6638,7 @@
       }
 
       char.aa.sim.nodes[node.key] = rank + 1;
-      char.aa.sim.points -= 1;
+      char.aa.sim.points -= cost;
       renderAATab();
     }
 
@@ -6486,7 +6656,7 @@
       allNodes.forEach(node => {
         const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number(char.aa.sim.nodes[node.key] || 0))));
         target[node.key] = rank;
-        spent += rank;
+        spent += rank * ((typeof getAANodeCost === 'function') ? getAANodeCost(node) : 1);
       });
 
       const totalOwned = Math.max(0, Number(char.aa.points || 0)) + Math.max(0, Number(char.aa.spent || 0));
@@ -6511,7 +6681,7 @@
       if (!char) return;
       ensureExtendedSystems(char);
       const nodes = getAANodesForClass(char.cls);
-      const spent = nodes.reduce((sum, node) => sum + Number(char.aa.nodes[node.key] || 0), 0);
+      const spent = nodes.reduce((sum, node) => sum + Number(char.aa.nodes[node.key] || 0) * ((typeof getAANodeCost === 'function') ? getAANodeCost(node) : 1), 0);
       if (spent <= 0) {
         log('No AA points are invested.', 'info');
         return;
@@ -6602,6 +6772,1173 @@
       char.statusEffects = char.statusEffects.filter(e => e.id !== effect.id);
       char.statusEffects.push(effect);
       log(effect.name + ' applied.', effect.type === 'debuff' ? 'dmg' : 'info');
+    }
+
+    // ══════════════════════════════════════════════
+    //  PHASE 1 — Combat depth: crits/dodges, mob DoT/stun, GCD, tank redirect, meter
+    // ══════════════════════════════════════════════
+    const PHASE1 = {
+      gcdMs: 800,
+      playerCrit: 0.05,
+      playerCritMult: 1.6,
+      playerDodge: 0.04,
+      mobCrit: 0.04,
+      mobCritMult: 1.5,
+      mobDodgeBase: 0.03,
+      eliteCritBonus: 0.03,
+      namedCritBonus: 0.06,
+      mercTankAbsorbChance: 0.18,
+      mercTankAbsorbMin: 0.30,
+      mercTankAbsorbMax: 0.50,
+      stunOnCritChance: 0.10,
+      stunDurationMs: 1500,
+      poisonDotDps: 4,
+      poisonDotDurationMs: 12000
+    };
+
+    // ── Mob status effects (separate from player statusEffects) ──
+    function ensureMobStatusList() {
+      if (!mob) return;
+      if (!Array.isArray(mob.statusEffects)) mob.statusEffects = [];
+    }
+    function applyMobStatusEffect(effect) {
+      if (!mob || !effect) return;
+      ensureMobStatusList();
+      mob.statusEffects = mob.statusEffects.filter(e => e.id !== effect.id);
+      mob.statusEffects.push(effect);
+    }
+    function isMobStunned() {
+      if (!mob || !Array.isArray(mob.statusEffects)) return false;
+      const now = Date.now();
+      return mob.statusEffects.some(e => e.kind === 'stun' && Number(e.expiresAt) > now);
+    }
+    function tickMobStatusEffects() {
+      if (!mob || !Array.isArray(mob.statusEffects) || !mob.statusEffects.length) return false;
+      const now = Date.now();
+      let died = false;
+      const remaining = [];
+      mob.statusEffects.forEach(e => {
+        if (Number(e.expiresAt) <= now) {
+          log(mob.name + "'s " + e.name + ' fades.', 'info');
+          return;
+        }
+        if (e.kind === 'dot' && Number(e.dps) > 0) {
+          const dmg = Math.max(1, Math.floor(e.dps));
+          mob.hp -= dmg;
+          log(e.name + ' on ' + mob.name + ' ticks for ' + dmg + '.', 'dmg');
+          addDamageMeterEntry('dot', dmg);
+          if (mob.hp <= 0) died = true;
+        }
+        remaining.push(e);
+      });
+      mob.statusEffects = remaining;
+      return died;
+    }
+
+    // ── GCD (only blocks manual actions; AFK auto-cast uses silent=true) ──
+    let phase1GcdReadyAt = 0;
+    function consumeGcd() {
+      const now = Date.now();
+      if (now < phase1GcdReadyAt) return false;
+      phase1GcdReadyAt = now + PHASE1.gcdMs;
+      return true;
+    }
+
+    // ── Crit/dodge rolls ──
+    function rollPlayerCrit(baseDmg) {
+      const aa = getAACombatModifiers(char);
+      const spec = (typeof getSpecModifiers === 'function') ? getSpecModifiers(char) : { critBonus: 0, critMultBonus: 0 };
+      const chance = PHASE1.playerCrit + (aa.critChanceBonus || 0) + (spec.critBonus || 0);
+      const mult = PHASE1.playerCritMult + (aa.critMultBonus || 0) + (spec.critMultBonus || 0);
+      if (Math.random() < chance) return { dmg: Math.max(1, Math.floor(baseDmg * mult)), crit: true };
+      return { dmg: baseDmg, crit: false };
+    }
+    function rollMobDodge() {
+      let dodge = PHASE1.mobDodgeBase;
+      if (mob && mob.elite) dodge += 0.02;
+      if (mob && mob.named) dodge += 0.03;
+      return Math.random() < dodge;
+    }
+    function rollPlayerDodge() {
+      const aa = getAACombatModifiers(char);
+      const spec = (typeof getSpecModifiers === 'function') ? getSpecModifiers(char) : { dodgeBonus: 0 };
+      return Math.random() < (PHASE1.playerDodge + (aa.dodgeChanceBonus || 0) + (spec.dodgeBonus || 0));
+    }
+    function rollMobCrit(baseDmg) {
+      let chance = PHASE1.mobCrit;
+      if (mob && mob.elite) chance += PHASE1.eliteCritBonus;
+      if (mob && mob.named) chance += PHASE1.namedCritBonus;
+      if (Math.random() < chance) return { dmg: Math.max(1, Math.floor(baseDmg * PHASE1.mobCritMult)), crit: true };
+      return { dmg: baseDmg, crit: false };
+    }
+
+    // ── Tank-merc damage redirect (any active merc has a small absorb chance) ──
+    function applyMercTankRedirect(incomingDmg) {
+      if (incomingDmg <= 0) return 0;
+      if (!char || !char.mercenary || char.mercenary.type === 'none') return incomingDmg;
+      const merc = MERCENARY_TYPES[char.mercenary.type];
+      if (!merc) return incomingDmg;
+      if (Math.random() >= PHASE1.mercTankAbsorbChance) return incomingDmg;
+      const span = PHASE1.mercTankAbsorbMax - PHASE1.mercTankAbsorbMin;
+      const absorbed = Math.max(1, Math.floor(incomingDmg * (PHASE1.mercTankAbsorbMin + Math.random() * span)));
+      log(getMercenaryDisplayName() + ' intercepts ' + absorbed + ' damage for you!', 'info');
+      return Math.max(0, incomingDmg - absorbed);
+    }
+
+    // ── Damage meter (session-scoped, not persisted) ──
+    const damageMeter = {
+      startedAt: Date.now(),
+      byPlayer: 0, bySpell: 0, byMerc: 0, byDot: 0,
+      taken: 0, kills: 0, hits: 0, crits: 0, dodges: 0
+    };
+    function addDamageMeterEntry(source, amount) {
+      amount = Math.max(0, Math.floor(amount));
+      if (source === 'player') { damageMeter.byPlayer += amount; damageMeter.hits++; }
+      else if (source === 'spell') { damageMeter.bySpell += amount; damageMeter.hits++; }
+      else if (source === 'merc') { damageMeter.byMerc += amount; damageMeter.hits++; }
+      else if (source === 'dot') { damageMeter.byDot += amount; }
+      else if (source === 'taken') { damageMeter.taken += amount; }
+    }
+    function addDamageMeterCrit() { damageMeter.crits++; }
+    function addDamageMeterDodge() { damageMeter.dodges++; }
+    function addDamageMeterKill() { damageMeter.kills++; }
+    function resetDamageMeter() {
+      damageMeter.startedAt = Date.now();
+      damageMeter.byPlayer = damageMeter.bySpell = damageMeter.byMerc = damageMeter.byDot = 0;
+      damageMeter.taken = damageMeter.kills = damageMeter.hits = damageMeter.crits = damageMeter.dodges = 0;
+      renderDamageMeter();
+    }
+    function renderDamageMeter() {
+      const host = document.getElementById('damage-meter');
+      if (!host) return;
+      const totalOut = damageMeter.byPlayer + damageMeter.bySpell + damageMeter.byMerc + damageMeter.byDot;
+      const elapsedSec = Math.max(1, Math.floor((Date.now() - damageMeter.startedAt) / 1000));
+      const dps = (totalOut / elapsedSec).toFixed(1);
+      const critPct = damageMeter.hits ? Math.round(damageMeter.crits / damageMeter.hits * 100) : 0;
+      host.innerHTML =
+        '<span title="Total damage dealt">DMG <b>' + totalOut.toLocaleString() + '</b></span> · ' +
+        '<span title="Damage per second">DPS <b>' + dps + '</b></span> · ' +
+        '<span title="Damage taken">Taken <b>' + damageMeter.taken.toLocaleString() + '</b></span> · ' +
+        '<span title="Crit rate">Crit <b>' + critPct + '%</b></span> · ' +
+        '<span title="Dodges">Dodge <b>' + damageMeter.dodges + '</b></span> · ' +
+        '<span title="Kills">Kills <b>' + damageMeter.kills + '</b></span>' +
+        ' <button class="btn" style="font-size:10px;padding:1px 6px;margin-left:4px" onclick="resetDamageMeter()">Reset</button>';
+    }
+    setInterval(() => { try { renderDamageMeter(); } catch (e) { /* noop */ } }, 1000);
+
+    // ══════════════════════════════════════════════
+    //  PHASE 2 — Itemization: Legendary tier, item level, tooltip, sort/filter, overflow vendor
+    // ══════════════════════════════════════════════
+    const PHASE2 = {
+      legendaryChanceNamed: 0.025,
+      legendaryChanceRegular: 0.0015,
+      legendaryAffixCount: 3,
+      legendaryStatBoost: { atk: 3, def: 3, hp: 16, mp: 16 },
+      levelReqOffset: 2,
+      overflowSoftCap: 20
+    };
+
+    // Inventory view state (transient — not saved)
+    const invView = { sort: 'default', filter: 'all' };
+
+    function getItemLevel(entry) {
+      if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.ilvl))) {
+        return Math.max(1, Math.floor(Number(entry.ilvl)));
+      }
+      return 0;
+    }
+    function getItemLevelReq(entry) {
+      if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.levelReq))) {
+        return Math.max(1, Math.floor(Number(entry.levelReq)));
+      }
+      return 0;
+    }
+    function canPlayerEquip(entry) {
+      const req = getItemLevelReq(entry);
+      if (!req) return true;
+      return (char?.level || 1) >= req;
+    }
+
+    function isLegendary(entry) {
+      return entry && typeof entry === 'object' && entry.quality === 'Legendary';
+    }
+
+    function rollLegendaryVariant(baseName, data) {
+      const pool = ITEM_AFFIX_POOL[data.slot] || [];
+      const picks = [];
+      const used = new Set();
+      const want = Math.min(PHASE2.legendaryAffixCount, pool.length);
+      while (picks.length < want && used.size < pool.length) {
+        const idx = Math.floor(Math.random() * pool.length);
+        if (used.has(idx)) continue;
+        used.add(idx);
+        picks.push(pool[idx]);
+      }
+      const rolls = {};
+      picks.forEach(affix => {
+        // Legendary rolls land in the upper half of the range, +30% bonus
+        const range = affix.max - affix.min;
+        const mid = affix.min + Math.ceil(range / 2);
+        const value = mid + Math.floor(Math.random() * Math.max(1, affix.max - mid + 1));
+        rolls[affix.stat] = (rolls[affix.stat] || 0) + Math.floor(value * 1.3);
+      });
+      const prefix = picks[0]?.prefix || 'Mythic';
+      const suffix = picks[1]?.suffix || 'Legends';
+      return {
+        base: baseName,
+        name: prefix + ' ' + baseName + ' of ' + suffix,
+        rolls,
+        quality: 'Legendary'
+      };
+    }
+
+    // ── Item tooltip ──
+    function ensureItemTooltip() {
+      let tt = document.getElementById('item-tooltip');
+      if (!tt) {
+        tt = document.createElement('div');
+        tt.id = 'item-tooltip';
+        document.body.appendChild(tt);
+      }
+      return tt;
+    }
+    function hideItemTooltip() {
+      const tt = document.getElementById('item-tooltip');
+      if (tt) tt.style.display = 'none';
+    }
+    function positionItemTooltip(evt) {
+      const tt = document.getElementById('item-tooltip');
+      if (!tt) return;
+      const pad = 14;
+      const w = tt.offsetWidth || 240;
+      const h = tt.offsetHeight || 120;
+      let x = evt.clientX + pad;
+      let y = evt.clientY + pad;
+      if (x + w > window.innerWidth - 4) x = evt.clientX - w - pad;
+      if (y + h > window.innerHeight - 4) y = evt.clientY - h - pad;
+      tt.style.left = Math.max(2, x) + 'px';
+      tt.style.top = Math.max(2, y) + 'px';
+    }
+    function formatStatLine(label, val, diff) {
+      let arrow = '';
+      if (diff > 0) arrow = ' <span class="tt-up">▲ +' + diff + '</span>';
+      else if (diff < 0) arrow = ' <span class="tt-down">▼ ' + diff + '</span>';
+      return '<div class="tt-stat"><span>' + label + '</span><span>+' + (val || 0) + arrow + '</span></div>';
+    }
+    function buildItemTooltipHTML(item) {
+      if (!item) return '';
+      const name = getItemDisplayName(item);
+      const data = getItemData(item) || {};
+      const stats = getItemEffectiveStats(item) || { atk: 0, def: 0, hp: 0, mp: 0 };
+      const quality = getItemQuality(item);
+      const rarityClass = getItemRarityClass(item);
+      const slot = data.slot || '';
+      const ilvl = getItemLevel(item);
+      const req = getItemLevelReq(item);
+      const current = (slot && char.equipment) ? char.equipment[slot] : null;
+      const curStats = current ? (getItemEffectiveStats(current) || { atk: 0, def: 0, hp: 0, mp: 0 }) : null;
+      const meta = [
+        data.type || (isRuneEntry(item) ? 'Rune' : 'Misc'),
+        slot ? ('Slot: ' + slot) : '',
+        ilvl ? ('iLvl ' + ilvl) : '',
+        req ? ('Requires Lv ' + req) : '',
+        quality !== 'Normal' ? quality : ''
+      ].filter(Boolean).join(' · ');
+
+      let html = '<div class="tt-name ' + rarityClass + '">' + name + '</div>';
+      html += '<div class="tt-meta">' + meta + '</div>';
+      ['atk', 'def', 'hp', 'mp'].forEach(stat => {
+        const v = stats[stat] || 0;
+        if (!v && !(curStats && curStats[stat])) return;
+        const diff = curStats ? (v - (curStats[stat] || 0)) : 0;
+        html += formatStatLine(stat.toUpperCase(), v, current ? diff : 0);
+      });
+      if (current) {
+        html += '<div class="tt-section" style="font-size:10px;color:var(--text-secondary)">vs equipped: ' + getItemDisplayName(current) + '</div>';
+      }
+      if (req && (char?.level || 1) < req) {
+        html += '<div class="tt-warn">Requires Level ' + req + ' to equip.</div>';
+      }
+      const sets = getItemSetName(item);
+      if (sets) html += '<div class="tt-section" style="font-size:10px;color:#8a7;">Set: ' + sets + '</div>';
+      return html;
+    }
+    function showItemTooltipForInventoryIndex(idx, evt) {
+      if (!char || idx < 0 || idx >= char.inventory.length) return;
+      const item = char.inventory[idx];
+      if (!item) return;
+      const tt = ensureItemTooltip();
+      tt.innerHTML = buildItemTooltipHTML(item);
+      tt.style.display = 'block';
+      positionItemTooltip(evt);
+    }
+    function showItemTooltipForEquippedSlot(slot, evt) {
+      if (!char || !char.equipment || !char.equipment[slot]) return;
+      const tt = ensureItemTooltip();
+      tt.innerHTML = buildItemTooltipHTML(char.equipment[slot]);
+      tt.style.display = 'block';
+      positionItemTooltip(evt);
+    }
+    document.addEventListener('scroll', hideItemTooltip, true);
+    window.addEventListener('blur', hideItemTooltip);
+
+    // ── Inventory sort/filter ──
+    function setInventorySort(sort) {
+      invView.sort = sort || 'default';
+      renderInv();
+    }
+    function setInventoryFilter(filter) {
+      invView.filter = filter || 'all';
+      renderInv();
+    }
+    function toggleAutoVendorOverflow(on) {
+      if (!char) return;
+      const lf = getLootFilterState(char);
+      lf.autoVendorOverflow = !!on;
+      autoSave();
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // PHASE 3 — Progression: class specializations, AA cost scaling,
+    // rune tier multiplier on sockets, prestige respec.
+    // ────────────────────────────────────────────────────────────────────────
+    const PHASE3 = {
+      specUnlockLevel: 30,
+      specRespecCostBase: 300,
+      specRespecCostPerLevel: 20,
+      aaCapstoneCost: 3,
+      aaAdvancedNodeIds: ['titan', 'tempest', 'unending', 'arcane_will', 'serenity', 'dread_focus'], // soft list, currently unused; capstones use cost 3
+      runeTierBonusPerTier: 0.20, // +20% value per tier above 1 (tier 1 = 1.0x, tier 2 = 1.2x, tier 3 = 1.4x)
+      prestigeRespecCostBase: 2500,
+      prestigeRespecCostPerRank: 800
+    };
+
+    const CLASS_SPECS = {
+      Warrior: [
+        { id: 'protector', name: 'Protector', desc: 'Frontline guardian. +20 DEF, +60 HP, +3% dodge.', flat: { atk: 0, def: 20, hp: 60, mp: 0 }, mods: { dodgeBonus: 0.03 } },
+        { id: 'conqueror', name: 'Conqueror', desc: 'Aggressive striker. +20 ATK, +30 HP, +5% crit.', flat: { atk: 20, def: 0, hp: 30, mp: 0 }, mods: { critBonus: 0.05 } }
+      ],
+      Cleric: [
+        { id: 'soulkeeper', name: 'Soulkeeper', desc: 'Healing focus. +30 MP, +40 HP, +10% healing.', flat: { atk: 0, def: 5, hp: 40, mp: 30 }, mods: { healMultBonus: 0.10 } },
+        { id: 'templar', name: 'Templar', desc: 'Battle priest. +10 ATK, +10 DEF, +5% spell power.', flat: { atk: 10, def: 10, hp: 20, mp: 10 }, mods: { spellPowerMultBonus: 0.05 } }
+      ],
+      Paladin: [
+        { id: 'lightbringer', name: 'Lightbringer', desc: 'Holy aggressor. +15 ATK, +5% spell power, +5% crit.', flat: { atk: 15, def: 5, hp: 30, mp: 15 }, mods: { spellPowerMultBonus: 0.05, critBonus: 0.05 } },
+        { id: 'sentinel', name: 'Sentinel', desc: 'Stalwart defender. +20 DEF, +50 HP, +3% dodge.', flat: { atk: 0, def: 20, hp: 50, mp: 10 }, mods: { dodgeBonus: 0.03 } }
+      ],
+      Ranger: [
+        { id: 'marksman', name: 'Marksman', desc: 'Precision archer. +18 ATK, +6% crit, +1.7x crit multiplier.', flat: { atk: 18, def: 0, hp: 20, mp: 10 }, mods: { critBonus: 0.06, critMultBonus: 0.10 } },
+        { id: 'pathfinder', name: 'Pathfinder', desc: 'Wilderness scout. +10 ATK, +10 DEF, +5% loot.', flat: { atk: 10, def: 10, hp: 30, mp: 10 }, mods: { lootMultBonus: 0.05 } }
+      ],
+      'Shadow Knight': [
+        { id: 'plaguebearer', name: 'Plaguebearer', desc: 'DoT specialist. +15 ATK, +20 MP, +8% spell power.', flat: { atk: 15, def: 5, hp: 30, mp: 20 }, mods: { spellPowerMultBonus: 0.08 } },
+        { id: 'reaver', name: 'Reaver', desc: 'Life-stealing brute. +15 ATK, +15 DEF, +40 HP.', flat: { atk: 15, def: 15, hp: 40, mp: 5 }, mods: { lifestealBonus: 0.03 } }
+      ],
+      Druid: [
+        { id: 'stormcaller', name: 'Stormcaller', desc: 'Nature\'s wrath. +25 MP, +10% spell power, +5% crit.', flat: { atk: 5, def: 0, hp: 20, mp: 25 }, mods: { spellPowerMultBonus: 0.10, critBonus: 0.05 } },
+        { id: 'lifebound', name: 'Lifebound', desc: 'Restorative caster. +40 HP, +20 MP, +10% healing.', flat: { atk: 0, def: 5, hp: 40, mp: 20 }, mods: { healMultBonus: 0.10 } }
+      ],
+      Monk: [
+        { id: 'iron_fist', name: 'Iron Fist', desc: 'Striking master. +20 ATK, +5% crit, +1.7x crit mult.', flat: { atk: 20, def: 0, hp: 20, mp: 5 }, mods: { critBonus: 0.05, critMultBonus: 0.10 } },
+        { id: 'serene_wind', name: 'Serene Wind', desc: 'Evasive master. +10 DEF, +5% dodge, +30 HP.', flat: { atk: 5, def: 10, hp: 30, mp: 5 }, mods: { dodgeBonus: 0.05 } }
+      ],
+      Bard: [
+        { id: 'maestro', name: 'Maestro', desc: 'Spellweaver. +20 MP, +8% spell power, +5% healing.', flat: { atk: 5, def: 5, hp: 20, mp: 20 }, mods: { spellPowerMultBonus: 0.08, healMultBonus: 0.05 } },
+        { id: 'duelist', name: 'Duelist', desc: 'Sword-singer. +15 ATK, +10 DEF, +3% dodge.', flat: { atk: 15, def: 10, hp: 30, mp: 10 }, mods: { dodgeBonus: 0.03 } }
+      ],
+      Rogue: [
+        { id: 'assassin', name: 'Assassin', desc: 'Lethal striker. +25 ATK, +8% crit, +1.8x crit mult.', flat: { atk: 25, def: 0, hp: 10, mp: 5 }, mods: { critBonus: 0.08, critMultBonus: 0.20 } },
+        { id: 'thief', name: 'Thief', desc: 'Wealth seeker. +15 ATK, +5% loot, +10% gold.', flat: { atk: 15, def: 5, hp: 20, mp: 5 }, mods: { lootMultBonus: 0.05, goldMultBonus: 0.10 } }
+      ],
+      Shaman: [
+        { id: 'totemist', name: 'Totemist', desc: 'Spirit caster. +25 MP, +8% spell power.', flat: { atk: 5, def: 5, hp: 20, mp: 25 }, mods: { spellPowerMultBonus: 0.08 } },
+        { id: 'ancestor', name: 'Ancestor', desc: 'Wisdom keeper. +30 HP, +20 MP, +8% healing.', flat: { atk: 0, def: 5, hp: 30, mp: 20 }, mods: { healMultBonus: 0.08 } }
+      ],
+      Necromancer: [
+        { id: 'lichlord', name: 'Lichlord', desc: 'Pure caster. +30 MP, +12% spell power.', flat: { atk: 0, def: 0, hp: 20, mp: 30 }, mods: { spellPowerMultBonus: 0.12 } },
+        { id: 'pestilence', name: 'Pestilence', desc: 'DoT lord. +20 MP, +8% spell power, +5% crit.', flat: { atk: 5, def: 0, hp: 30, mp: 20 }, mods: { spellPowerMultBonus: 0.08, critBonus: 0.05 } }
+      ],
+      Wizard: [
+        { id: 'archmage', name: 'Archmage', desc: 'Burst nuker. +30 MP, +15% spell power, +5% crit.', flat: { atk: 0, def: 0, hp: 10, mp: 30 }, mods: { spellPowerMultBonus: 0.15, critBonus: 0.05 } },
+        { id: 'magus', name: 'Magus', desc: 'Sustained caster. +40 MP, +10% mana recovery.', flat: { atk: 0, def: 5, hp: 20, mp: 40 }, mods: { manaMultBonus: 0.10 } }
+      ],
+      Magician: [
+        { id: 'elementalist', name: 'Elementalist', desc: 'Pet & nuke. +25 MP, +10% spell power, +5% crit.', flat: { atk: 0, def: 0, hp: 20, mp: 25 }, mods: { spellPowerMultBonus: 0.10, critBonus: 0.05 } },
+        { id: 'conjurer', name: 'Conjurer', desc: 'Endurance caster. +35 MP, +30 HP, +8% mana recovery.', flat: { atk: 0, def: 5, hp: 30, mp: 35 }, mods: { manaMultBonus: 0.08 } }
+      ],
+      Enchanter: [
+        { id: 'illusionist', name: 'Illusionist', desc: 'Mind weaver. +25 MP, +8% spell power, +3% dodge.', flat: { atk: 0, def: 5, hp: 20, mp: 25 }, mods: { spellPowerMultBonus: 0.08, dodgeBonus: 0.03 } },
+        { id: 'beguiler', name: 'Beguiler', desc: 'Resource controller. +35 MP, +10% mana recovery.', flat: { atk: 0, def: 5, hp: 20, mp: 35 }, mods: { manaMultBonus: 0.10 } }
+      ],
+      Beastlord: [
+        { id: 'warden', name: 'Warden', desc: 'Pet master. +12 ATK, +12 DEF, +30 HP.', flat: { atk: 12, def: 12, hp: 30, mp: 10 }, mods: {} },
+        { id: 'feralist', name: 'Feralist', desc: 'Savage hunter. +20 ATK, +6% crit, +5% loot.', flat: { atk: 20, def: 0, hp: 20, mp: 5 }, mods: { critBonus: 0.06, lootMultBonus: 0.05 } }
+      ],
+      Berserker: [
+        { id: 'reaver_zerker', name: 'Reaver', desc: 'Glass cannon. +30 ATK, +8% crit, +0.2x crit mult.', flat: { atk: 30, def: -5, hp: 20, mp: 0 }, mods: { critBonus: 0.08, critMultBonus: 0.20 } },
+        { id: 'juggernaut', name: 'Juggernaut', desc: 'Unstoppable. +15 ATK, +15 DEF, +60 HP.', flat: { atk: 15, def: 15, hp: 60, mp: 0 }, mods: {} }
+      ]
+    };
+
+    function getClassSpecChoices(cls) {
+      return CLASS_SPECS[cls] || [];
+    }
+
+    function getCurrentSpecData(targetChar) {
+      if (!targetChar || !targetChar.spec) return null;
+      const choices = getClassSpecChoices(targetChar.cls);
+      return choices.find(s => s.id === targetChar.spec) || null;
+    }
+
+    function getSpecModifiers(targetChar) {
+      const spec = getCurrentSpecData(targetChar);
+      const empty = { critBonus: 0, critMultBonus: 0, dodgeBonus: 0, healMultBonus: 0, spellPowerMultBonus: 0, manaMultBonus: 0, lootMultBonus: 0, goldMultBonus: 0, lifestealBonus: 0 };
+      if (!spec || !spec.mods) return empty;
+      return Object.assign(empty, spec.mods);
+    }
+
+    function isSpecUnlocked(targetChar) {
+      return !!(targetChar && Number(targetChar.level || 0) >= PHASE3.specUnlockLevel);
+    }
+
+    function getClassSpecRespecCost(targetChar) {
+      const lvl = Math.max(1, Number(targetChar?.level || 1));
+      return PHASE3.specRespecCostBase + Math.floor(lvl * PHASE3.specRespecCostPerLevel);
+    }
+
+    function applySpecFlatBonuses(targetChar, flat) {
+      if (!targetChar || !flat) return;
+      const dHp = Math.floor(flat.hp || 0);
+      const dMp = Math.floor(flat.mp || 0);
+      targetChar.atk = Math.max(0, (targetChar.atk || 0) + Math.floor(flat.atk || 0));
+      targetChar.def = Math.max(0, (targetChar.def || 0) + Math.floor(flat.def || 0));
+      targetChar.maxHp = Math.max(1, (targetChar.maxHp || 1) + dHp);
+      targetChar.maxMp = Math.max(0, (targetChar.maxMp || 0) + dMp);
+      targetChar.hp = Math.min(targetChar.maxHp, (targetChar.hp || 0) + Math.max(0, dHp));
+      targetChar.mp = Math.min(targetChar.maxMp, (targetChar.mp || 0) + Math.max(0, dMp));
+    }
+
+    function removeSpecFlatBonuses(targetChar, flat) {
+      if (!targetChar || !flat) return;
+      const dHp = Math.floor(flat.hp || 0);
+      const dMp = Math.floor(flat.mp || 0);
+      targetChar.atk = Math.max(0, (targetChar.atk || 0) - Math.floor(flat.atk || 0));
+      targetChar.def = Math.max(0, (targetChar.def || 0) - Math.floor(flat.def || 0));
+      targetChar.maxHp = Math.max(1, (targetChar.maxHp || 1) - dHp);
+      targetChar.maxMp = Math.max(0, (targetChar.maxMp || 0) - dMp);
+      targetChar.hp = Math.min(targetChar.maxHp, targetChar.hp || 0);
+      targetChar.mp = Math.min(targetChar.maxMp, targetChar.mp || 0);
+    }
+
+    function pickClassSpec(specId) {
+      if (!char) return;
+      if (!isSpecUnlocked(char)) {
+        log('Specialization unlocks at level ' + PHASE3.specUnlockLevel + '.', 'info');
+        return;
+      }
+      if (char.spec) {
+        log('You already have a specialization. Respec first to change.', 'info');
+        return;
+      }
+      const choices = getClassSpecChoices(char.cls);
+      const choice = choices.find(s => s.id === specId);
+      if (!choice) {
+        log('Unknown specialization.', 'info');
+        return;
+      }
+      char.spec = choice.id;
+      char.specAppliedFlat = Object.assign({ atk: 0, def: 0, hp: 0, mp: 0 }, choice.flat);
+      applySpecFlatBonuses(char, char.specAppliedFlat);
+      log('Specialization chosen: ' + choice.name + '.', 'lvl');
+      if (typeof showToast === 'function') showToast('Spec: ' + choice.name, 'info');
+      renderAll();
+      if (typeof renderAATab === 'function') renderAATab();
+      autoSave();
+    }
+
+    function respecClassSpec() {
+      if (!char) return;
+      if (!char.spec) {
+        log('You have no specialization to respec.', 'info');
+        return;
+      }
+      const cost = getClassSpecRespecCost(char);
+      if ((char.gold || 0) < cost) {
+        log('Need ' + cost + 'g to respec your specialization.', 'info');
+        return;
+      }
+      char.gold -= cost;
+      removeSpecFlatBonuses(char, char.specAppliedFlat || { atk: 0, def: 0, hp: 0, mp: 0 });
+      char.specAppliedFlat = null;
+      char.spec = null;
+      log('Specialization cleared for ' + cost + 'g. Pick a new one.', 'lvl');
+      renderAll();
+      if (typeof renderAATab === 'function') renderAATab();
+      autoSave();
+    }
+
+    // ── AA per-node cost (capstones cost more) ──
+    function getAANodeCost(node) {
+      if (!node || !node.id) return 1;
+      if (String(node.id).startsWith('cap_')) return PHASE3.aaCapstoneCost;
+      return 1;
+    }
+
+    // ── Rune tier multiplier (applied at socket-read time) ──
+    function getRuneSocketValue(rune) {
+      if (!rune) return 0;
+      const tier = Math.max(1, Math.floor(Number(rune.tier || 1)));
+      const mult = 1 + (tier - 1) * PHASE3.runeTierBonusPerTier;
+      return Math.floor((rune.value || 0) * mult);
+    }
+
+    // ── Prestige respec ──
+    function getPrestigeRespecCost(targetChar) {
+      const rank = Math.max(0, Number(targetChar?.prestige?.rank || 0));
+      return PHASE3.prestigeRespecCostBase + Math.floor(rank * PHASE3.prestigeRespecCostPerRank);
+    }
+
+    function respecPrestige() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const p = char.prestige;
+      if (!p) return;
+      const investedRanks = Object.values(p.perks || {}).reduce((s, v) => s + Math.max(0, Math.floor(Number(v) || 0)), 0);
+      if (investedRanks <= 0) {
+        log('No prestige perks are invested.', 'info');
+        return;
+      }
+      const cost = getPrestigeRespecCost(char);
+      if ((char.gold || 0) < cost) {
+        log('Need ' + cost + 'g to respec prestige perks.', 'info');
+        return;
+      }
+      char.gold -= cost;
+      p.perks = {};
+      p.spent = 0;
+      p.points = Math.max(0, Number(p.points || 0)) + investedRanks;
+      log('Prestige respecced for ' + cost + 'g. Refunded ' + investedRanks + ' points.', 'loot');
+      renderAll();
+      if (typeof renderPrestigeTab === 'function') renderPrestigeTab();
+      autoSave();
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // PHASE 4 — Content & retention: bosses, daily quests, achievements,
+    // titles, expanded zone events, hardcore mode.
+    // ────────────────────────────────────────────────────────────────────────
+    const PHASE4 = {
+      bossCooldownMs: 30 * 60 * 1000, // 30 real-time minutes per zone boss
+      bossHpMult: 6,
+      bossAtkMult: 2.2,
+      bossDefMult: 1.8,
+      bossXpMult: 5,
+      bossGoldMult: 4,
+      bossLegendaryChance: 0.18, // very likely legendary drop on boss kill
+      dailyResetMs: 24 * 60 * 60 * 1000,
+      dailyQuestCount: 3,
+      dailyXpMult: 2.0,
+      dailyGoldMult: 2.0,
+      hardcoreXpBonus: 0.25,
+      hardcoreGoldBonus: 0.25
+    };
+
+    // Per-zone boss definitions. Loot 'rare' field on each zone is reused as a guaranteed reward base.
+    const BOSS_BY_ZONE = {
+      0: { name: 'Vermin Tyrant', mob: 'Field Rat', mechanic: 'enrage' },
+      1: { name: 'Bog Sovereign', mob: 'Mossback Turtle', mechanic: 'venom' },
+      2: { name: 'Gnoll Warlord Karruk', mob: 'Gnoll Warrior', mechanic: 'ward' },
+      3: { name: 'Lich Baron Veldrin', mob: 'Restless Zombie', mechanic: 'enrage' },
+      4: { name: 'Ironhand the Unbroken', mob: 'Iron Sentinel', mechanic: 'ward' },
+      5: { name: 'Frostwyrm Caelirix', mob: 'Frost Wraith', mechanic: 'venom' },
+      6: { name: 'Inferno Archon', mob: 'Ember Adept', mechanic: 'enrage' },
+      7: { name: 'Sea Witch Marathi', mob: 'Tide Cultist', mechanic: 'ward' },
+      8: { name: 'Sand King Azhar', mob: 'Dune Stalker', mechanic: 'venom' },
+      9: { name: 'Void Empress', mob: 'Void Acolyte', mechanic: 'ward' },
+      10: { name: 'Storm Tyrant Zephyron', mob: 'Storm Caller', mechanic: 'enrage' },
+      11: { name: 'Plague Lord Sythris', mob: 'Plague Bearer', mechanic: 'venom' },
+      12: { name: 'Crimson Magister', mob: 'Crimson Cultist', mechanic: 'ward' },
+      13: { name: 'Star Devourer', mob: 'Star Reaver', mechanic: 'enrage' },
+      14: { name: 'Bone Emperor', mob: 'Bone Lord', mechanic: 'ward' },
+      15: { name: 'Dread Behemoth', mob: 'Dread Hulk', mechanic: 'enrage' },
+      16: { name: 'Hollow Sovereign', mob: 'Hollow Knight', mechanic: 'venom' },
+      17: { name: 'Twilight Sovereign', mob: 'Twilight Drake', mechanic: 'ward' },
+      18: { name: 'World-Ender', mob: 'Apocalypse Herald', mechanic: 'enrage' }
+    };
+
+    // ── Bosses ──
+    function getBossForZone(zoneIdx) {
+      const cfg = BOSS_BY_ZONE[zoneIdx];
+      if (cfg) return cfg;
+      const zone = ZONES[zoneIdx];
+      if (!zone || !zone.mobs || !zone.mobs.length) return null;
+      return { name: 'Champion of ' + zone.name, mob: zone.mobs[0], mechanic: 'ward' };
+    }
+    function getBossCooldowns(targetChar) {
+      if (!targetChar.bossCooldowns || typeof targetChar.bossCooldowns !== 'object') targetChar.bossCooldowns = {};
+      return targetChar.bossCooldowns;
+    }
+    function getBossReadyAt(zoneIdx) {
+      const cd = getBossCooldowns(char);
+      return Math.max(0, Number(cd[String(zoneIdx)] || 0));
+    }
+    function isBossReady(zoneIdx) {
+      return Date.now() >= getBossReadyAt(zoneIdx);
+    }
+    function setBossCooldown(zoneIdx) {
+      const cd = getBossCooldowns(char);
+      cd[String(zoneIdx)] = Date.now() + PHASE4.bossCooldownMs;
+    }
+    function huntBoss() {
+      if (!char) return;
+      if (mob) { log('Finish your current fight first.', 'info'); return; }
+      if (char.dungeon && char.dungeon.active) { log('Bosses are zone fights, leave the dungeon first.', 'info'); return; }
+      const zoneIdx = char.zone;
+      const boss = getBossForZone(zoneIdx);
+      if (!boss) { log('No boss exists in this zone.', 'info'); return; }
+      if (!isBossReady(zoneIdx)) {
+        const remaining = Math.max(0, getBossReadyAt(zoneIdx) - Date.now());
+        const mins = Math.ceil(remaining / 60000);
+        log('Boss is recovering. Try again in ~' + mins + ' min.', 'info');
+        return;
+      }
+      const lvl = Math.max(1, char.level + 2);
+      const hp = Math.floor((30 + lvl * 18) * PHASE4.bossHpMult);
+      const mech = NAMED_MECHANICS.find(m => m.id === boss.mechanic) || NAMED_MECHANICS[0];
+      mob = {
+        name: '[Boss] ' + boss.name,
+        level: lvl,
+        hp, maxHp: hp,
+        atk: Math.floor((5 + lvl * 2) * PHASE4.bossAtkMult),
+        def: Math.floor((2 + lvl) * PHASE4.bossDefMult),
+        baseName: boss.mob,
+        elite: true,
+        named: true,
+        boss: true,
+        namedMechanic: mech,
+        enrageTriggered: false,
+        wardReady: false,
+        turnCount: 0,
+        statusEffects: []
+      };
+      log('A great evil rises: ' + mob.name + ' challenges you!', 'lvl');
+      if (typeof showToast === 'function') showToast('Boss encounter: ' + boss.name, 'info');
+      renderMob();
+      if (typeof renderAll === 'function') renderAll();
+    }
+
+    // Award boss-specific loot and stamp cooldown. Called from killMob() when mob.boss is true.
+    function onBossKilled() {
+      if (!mob || !mob.boss) return;
+      const zoneIdx = char.zone;
+      const boss = getBossForZone(zoneIdx);
+      setBossCooldown(zoneIdx);
+      const zone = ZONES[zoneIdx];
+      // Guaranteed legendary roll on boss-base (use loot_named to maximize chance), with a configurable bonus.
+      if (Math.random() < PHASE4.bossLegendaryChance && typeof rollLegendaryVariant === 'function') {
+        const data = ITEM_DATA[zone.rare] || ITEM_DATA[boss?.mob];
+        if (data) {
+          const legendary = rollLegendaryVariant(zone.rare, data);
+          legendary.ilvl = Math.max(1, mob.level + 1);
+          legendary.levelReq = Math.max(1, legendary.ilvl - PHASE2.levelReqOffset);
+          processLootDrop(legendary, 'Boss Loot');
+        }
+      }
+      // Always drop a Unique-class item via standard pipeline (rollItemVariant with loot_named).
+      const guaranteed = rollItemVariant(zone.rare, 'loot_named');
+      processLootDrop(guaranteed, 'Boss Loot');
+      // Achievement hook
+      bumpStat('bossKills', 1);
+      checkAchievements();
+    }
+
+    // ── Daily Quests ──
+    function ensureDailyQuestState(targetChar) {
+      if (!Array.isArray(targetChar.dailyQuests)) targetChar.dailyQuests = [];
+      if (!Number.isFinite(Number(targetChar.dailyReset))) targetChar.dailyReset = 0;
+    }
+    function getDailyMobChoices() {
+      const zone = ZONES[char.zone] || ZONES[0];
+      const pool = (zone.mobs || []).slice();
+      // Mix in a couple lower-zone mobs for variety
+      const prev = char.zone > 0 ? (ZONES[char.zone - 1]?.mobs || []) : [];
+      return pool.concat(prev).slice(0, 6);
+    }
+    function rollDailyQuests() {
+      ensureDailyQuestState(char);
+      const choices = getDailyMobChoices();
+      if (!choices.length) { char.dailyQuests = []; return; }
+      const used = new Set();
+      const quests = [];
+      while (quests.length < PHASE4.dailyQuestCount && used.size < choices.length) {
+        const m = choices[Math.floor(Math.random() * choices.length)];
+        if (used.has(m)) continue;
+        used.add(m);
+        const count = 6 + Math.floor(Math.random() * 6); // 6-11
+        const xp = Math.floor((40 + char.level * 18) * count * 0.25 * PHASE4.dailyXpMult);
+        const gold = Math.floor((10 + char.level * 4) * count * 0.25 * PHASE4.dailyGoldMult);
+        quests.push({ name: 'Daily: ' + m, desc: 'Defeat ' + count + ' ' + m, mob: m, count, xp, gold, done: false, claimed: false, prog: 0, daily: true });
+      }
+      char.dailyQuests = quests;
+      char.dailyReset = Date.now() + PHASE4.dailyResetMs;
+      log('Daily quests refreshed.', 'lvl');
+    }
+    function checkDailyRollover() {
+      if (!char) return;
+      ensureDailyQuestState(char);
+      if (Date.now() >= Number(char.dailyReset || 0)) rollDailyQuests();
+    }
+    function tickDailyQuestProgress(baseName) {
+      if (!char || !Array.isArray(char.dailyQuests)) return;
+      const prestige = (typeof getPrestigeModifiers === 'function') ? getPrestigeModifiers(char) : { goldMult: 1 };
+      char.dailyQuests.forEach(q => {
+        if (!q || q.done || q.mob !== baseName) return;
+        q.prog = Math.min(q.count, (q.prog || 0) + 1);
+        if (q.prog >= q.count) {
+          q.done = true;
+          log('Daily quest objective complete: ' + q.name + '. Claim in the Quests tab.', 'lvl');
+        }
+      });
+    }
+    function claimDailyQuest(idx) {
+      if (!char || !Array.isArray(char.dailyQuests)) return;
+      const q = char.dailyQuests[idx];
+      if (!q || !q.done || q.claimed) return;
+      q.claimed = true;
+      const prestige = (typeof getPrestigeModifiers === 'function') ? getPrestigeModifiers(char) : { goldMult: 1 };
+      const xpAward = awardExperience(q.xp, 'quest');
+      const goldAward = Math.floor(q.gold * prestige.goldMult);
+      char.gold += goldAward;
+      log('Daily quest claimed: ' + q.name + '! +' + xpAward.regularXp + ' XP, +' + goldAward + 'g', 'loot');
+      bumpStat('dailiesClaimed', 1);
+      checkAchievements();
+      renderAll();
+      if (typeof renderQuests === 'function') renderQuests();
+      autoSave();
+    }
+
+    // ── Achievements & Titles ──
+    const ACHIEVEMENTS = [
+      { id: 'first_blood', name: 'First Blood', desc: 'Defeat your first enemy.', title: 'Initiate', check: s => s.kills >= 1 },
+      { id: 'centurion', name: 'Centurion', desc: 'Defeat 100 enemies.', title: 'Centurion', check: s => s.kills >= 100 },
+      { id: 'slaughter', name: 'Slaughter', desc: 'Defeat 1,000 enemies.', title: 'Bloodletter', check: s => s.kills >= 1000 },
+      { id: 'genocide', name: 'World-Killer', desc: 'Defeat 10,000 enemies.', title: 'World-Killer', check: s => s.kills >= 10000 },
+      { id: 'elite_hunter', name: 'Elite Hunter', desc: 'Slay 50 elites.', title: 'Elite Hunter', check: s => s.eliteKills >= 50 },
+      { id: 'named_slayer', name: 'Named Slayer', desc: 'Slay 25 named foes.', title: 'Named Slayer', check: s => s.namedKills >= 25 },
+      { id: 'first_boss', name: 'Giant-Killer', desc: 'Slay your first zone boss.', title: 'Giant-Killer', check: s => s.bossKills >= 1 },
+      { id: 'boss_master', name: 'Boss Master', desc: 'Slay 10 zone bosses.', title: 'Boss Master', check: s => s.bossKills >= 10 },
+      { id: 'persistent', name: 'Persistent', desc: 'Die 10 times.', title: 'Stubborn', check: s => s.deaths >= 10 },
+      { id: 'daily_grind', name: 'Daily Grind', desc: 'Claim 25 daily quests.', title: 'Daily Grinder', check: s => (s.dailiesClaimed || 0) >= 25 },
+      { id: 'wealthy', name: 'Wealthy', desc: 'Reach 100,000 lifetime gold earned.', title: 'Wealthy', check: s => (s.goldEarned || 0) >= 100000 },
+      { id: 'ironwill', name: 'Ironwill', desc: 'Reach level 50 in Hardcore mode.', title: 'Ironwilled', check: (s, c) => !!c.hardcore && c.level >= 50 }
+    ];
+
+    function ensureStatsState(targetChar) {
+      if (!targetChar.stats || typeof targetChar.stats !== 'object') {
+        targetChar.stats = { kills: 0, namedKills: 0, eliteKills: 0, bossKills: 0, deaths: 0, goldEarned: 0, dailiesClaimed: 0 };
+      }
+      ['kills', 'namedKills', 'eliteKills', 'bossKills', 'deaths', 'goldEarned', 'dailiesClaimed'].forEach(k => {
+        if (!Number.isFinite(Number(targetChar.stats[k]))) targetChar.stats[k] = 0;
+      });
+      if (!targetChar.achievements || typeof targetChar.achievements !== 'object') targetChar.achievements = {};
+      if (typeof targetChar.activeTitle !== 'string') targetChar.activeTitle = '';
+    }
+    function bumpStat(key, by) {
+      if (!char) return;
+      ensureStatsState(char);
+      const cur = Number(char.stats[key] || 0);
+      char.stats[key] = cur + Math.floor(Number(by || 0));
+    }
+    function checkAchievements() {
+      if (!char) return;
+      ensureStatsState(char);
+      let unlockedAny = false;
+      ACHIEVEMENTS.forEach(a => {
+        if (char.achievements[a.id]) return;
+        if (a.check(char.stats, char)) {
+          char.achievements[a.id] = { unlockedAt: Date.now() };
+          log('Achievement unlocked: ' + a.name + ' — ' + a.desc, 'lvl');
+          if (typeof showToast === 'function') showToast('Achievement: ' + a.name, 'info');
+          unlockedAny = true;
+        }
+      });
+      if (unlockedAny && typeof autoSave === 'function') autoSave();
+    }
+    function getAvailableTitles() {
+      if (!char) return [];
+      ensureStatsState(char);
+      return ACHIEVEMENTS.filter(a => char.achievements[a.id] && a.title).map(a => a.title);
+    }
+    function setActiveTitle(title) {
+      if (!char) return;
+      ensureStatsState(char);
+      if (title && !getAvailableTitles().includes(title)) {
+        log('You have not earned that title.', 'info');
+        return;
+      }
+      char.activeTitle = title || '';
+      if (typeof renderAll === 'function') renderAll();
+      autoSave();
+    }
+
+    // ── Hardcore mode ──
+    function isHardcore(targetChar) { return !!(targetChar && targetChar.hardcore); }
+    function setHardcoreOnCreate(on) {
+      // Stored in a transient global until createCharacter() reads it
+      pendingHardcore = !!on;
+    }
+    let pendingHardcore = false;
+
+    // ────────────────────────────────────────────────────────────────────────
+    // PHASE 5 — Companions, merc gear, faction gates, recipe scrolls.
+    // ────────────────────────────────────────────────────────────────────────
+    const PHASE5 = {
+      petActionChance: 0.30,
+      petBaseDamage: 6,
+      petDamagePerLevel: 1.2,
+      mercGearAtkDamageBonusPerPoint: 0.018, // each merc-gear ATK point adds 1.8% to merc damage
+      recipeScrollPrice: 800,
+      petTameGoldCost: { wolf: 1200, hawk: 1800, imp: 2600, spirit: 4000 }
+    };
+
+    // Pet catalog. mod fields stack on AA modifiers in renderAll / combat math hooks below.
+    const PETS = {
+      wolf: { id: 'wolf', name: 'Dire Wolf', icon: 'ti-paw',
+        desc: 'A loyal hunter that lunges at your foes for physical damage.',
+        kind: 'damage', mod: { atkBonus: 0, lootMult: 1.0, goldMult: 1.0 } },
+      hawk: { id: 'hawk', name: 'Storm Hawk', icon: 'ti-feather',
+        desc: 'Scouts the field for treasure and rare drops.',
+        kind: 'utility', mod: { lootMult: 1.10, goldMult: 1.05 } },
+      imp: { id: 'imp', name: 'Mischief Imp', icon: 'ti-flame',
+        desc: 'Bursts of arcane fire scorch the enemy.',
+        kind: 'damage', mod: { atkBonus: 0 } },
+      spirit: { id: 'spirit', name: 'Healing Spirit', icon: 'ti-spark',
+        desc: 'Mends your wounds between strikes.',
+        kind: 'support', mod: { healMult: 1.15 } }
+    };
+
+    function ensurePetState(targetChar) {
+      if (!targetChar.pets || typeof targetChar.pets !== 'object' || Array.isArray(targetChar.pets)) {
+        targetChar.pets = { active: 'none', owned: [], lastActionAt: 0 };
+      }
+      if (!Array.isArray(targetChar.pets.owned)) targetChar.pets.owned = [];
+      targetChar.pets.owned = targetChar.pets.owned.filter(id => !!PETS[id]);
+      if (typeof targetChar.pets.active !== 'string') targetChar.pets.active = 'none';
+      if (targetChar.pets.active !== 'none' && !targetChar.pets.owned.includes(targetChar.pets.active)) {
+        targetChar.pets.active = 'none';
+      }
+      if (!Number.isFinite(Number(targetChar.pets.lastActionAt))) targetChar.pets.lastActionAt = 0;
+    }
+    function getActivePet(targetChar = char) {
+      if (!targetChar || !targetChar.pets || targetChar.pets.active === 'none') return null;
+      return PETS[targetChar.pets.active] || null;
+    }
+    function getPetModifiers(targetChar = char) {
+      const p = getActivePet(targetChar);
+      const base = { lootMult: 1, goldMult: 1, healMult: 1 };
+      if (!p) return base;
+      return Object.assign(base, p.mod || {});
+    }
+    function tamePet(id) {
+      if (!char) return;
+      ensurePetState(char);
+      const pet = PETS[id];
+      if (!pet) return;
+      if (char.pets.owned.includes(id)) { log('You already own a ' + pet.name + '.', 'info'); return; }
+      const cost = PHASE5.petTameGoldCost[id] || 1000;
+      if ((char.gold || 0) < cost) { log('Need ' + cost + 'g to tame ' + pet.name + '.', 'info'); return; }
+      char.gold -= cost;
+      char.pets.owned.push(id);
+      if (char.pets.active === 'none') char.pets.active = id;
+      log('Tamed ' + pet.name + ' for ' + cost + 'g.', 'loot');
+      if (typeof renderAll === 'function') renderAll();
+      autoSave();
+    }
+    function setActivePet(id) {
+      if (!char) return;
+      ensurePetState(char);
+      if (id !== 'none' && !char.pets.owned.includes(id)) { log('You do not own that pet.', 'info'); return; }
+      char.pets.active = id;
+      const pet = PETS[id];
+      log(pet ? ('Active companion: ' + pet.name + '.') : 'Companion dismissed.', 'info');
+      if (typeof renderAll === 'function') renderAll();
+      autoSave();
+    }
+    // Pet combat action: small chance per attack to deal damage. Hooked from doAttack.
+    function triggerPetAction() {
+      if (!char || !mob) return false;
+      const pet = getActivePet(char);
+      if (!pet) return false;
+      if (pet.kind !== 'damage' && pet.kind !== 'utility') {
+        if (pet.kind === 'support' && char.hp < char.maxHp) {
+          if (Math.random() < PHASE5.petActionChance * 0.5) {
+            const heal = Math.max(1, Math.floor(char.maxHp * 0.04));
+            char.hp = Math.min(char.maxHp, char.hp + heal);
+            log(pet.name + ' mends you for ' + heal + ' HP.', 'heal');
+            return true;
+          }
+        }
+        return false;
+      }
+      if (Math.random() >= PHASE5.petActionChance) return false;
+      const dmg = Math.max(1, Math.floor(PHASE5.petBaseDamage + char.level * PHASE5.petDamagePerLevel));
+      mob.hp -= dmg;
+      log(pet.name + ' strikes ' + mob.name + ' for ' + dmg + '!', 'dmg');
+      if (typeof addDamageMeterEntry === 'function') addDamageMeterEntry('pet', dmg);
+      if (mob.hp <= 0) {
+        if (typeof killMob === 'function') killMob();
+      }
+      return true;
+    }
+
+    // ── Merc gear ──
+    function ensureMercGearState(targetChar) {
+      if (!targetChar.mercenary || typeof targetChar.mercenary !== 'object') return;
+      if (!targetChar.mercenary.gear || typeof targetChar.mercenary.gear !== 'object') {
+        targetChar.mercenary.gear = { weapon: null };
+      }
+    }
+    function getMercDamageBonusMult(targetChar = char) {
+      if (!targetChar || !targetChar.mercenary) return 1;
+      const gear = targetChar.mercenary.gear;
+      if (!gear || !gear.weapon) return 1;
+      const stats = (typeof getItemEffectiveStats === 'function') ? getItemEffectiveStats(gear.weapon) : null;
+      const atk = stats && stats.atk ? stats.atk : 0;
+      return 1 + atk * PHASE5.mercGearAtkDamageBonusPerPoint;
+    }
+    function equipMercWeaponFromInv(invIdx) {
+      if (!char) return;
+      ensureMercGearState(char);
+      if (!char.mercenary || char.mercenary.type === 'none') { log('Hire a mercenary first.', 'info'); return; }
+      const item = char.inventory[invIdx];
+      if (!item) return;
+      const data = (typeof getItemData === 'function') ? getItemData(item) : null;
+      if (!data || data.slot !== 'weapon') { log('Only weapons can be issued to a mercenary.', 'info'); return; }
+      const prev = char.mercenary.gear.weapon;
+      char.mercenary.gear.weapon = item;
+      char.inventory.splice(invIdx, 1);
+      if (prev) char.inventory.push(prev);
+      log('Issued ' + (item.name || data.name || 'weapon') + ' to your mercenary.', 'info');
+      if (typeof renderAll === 'function') renderAll();
+      autoSave();
+    }
+    function unequipMercWeapon() {
+      if (!char || !char.mercenary || !char.mercenary.gear || !char.mercenary.gear.weapon) return;
+      char.inventory.push(char.mercenary.gear.weapon);
+      char.mercenary.gear.weapon = null;
+      log('Recovered the mercenary weapon.', 'info');
+      if (typeof renderAll === 'function') renderAll();
+      autoSave();
+    }
+
+    // ── Faction-gated shop items ──
+    // Tiers map to numeric thresholds matching getFactionTier breaks.
+    const FACTION_TIER_VALUE = { 'Threatening': -200, 'Dubious': -89, 'Indifferent': -29, 'Amiable': 30, 'Kindly': 90, 'Ally': 200 };
+    function meetsFactionGate(tierName) {
+      if (!tierName) return true;
+      const need = FACTION_TIER_VALUE[tierName];
+      if (need === undefined) return true;
+      return Number(char.faction || 0) >= need;
+    }
+    // Per-item faction requirements (additive to existing pricing discounts).
+    const SHOP_FACTION_GATES = {
+      'Steel Longsword': null,
+      'Knight Chestplate': 'Amiable',
+      'Recipe Scroll': 'Amiable'
+    };
+    function getShopGateLabel(name) {
+      const tier = SHOP_FACTION_GATES[name];
+      if (!tier) return '';
+      return meetsFactionGate(tier) ? ('Unlocked at ' + tier) : ('Requires ' + tier + ' faction');
+    }
+
+    // ── Recipe Scroll ──
+    function buyRecipeScroll() {
+      if (!char) return;
+      if (!meetsFactionGate(SHOP_FACTION_GATES['Recipe Scroll'])) {
+        log('The merchant refuses to sell you a Recipe Scroll until your faction improves.', 'info');
+        return;
+      }
+      const cost = (typeof getMerchantPrice === 'function') ? getMerchantPrice(PHASE5.recipeScrollPrice) : PHASE5.recipeScrollPrice;
+      if ((char.gold || 0) < cost) { log('Need ' + cost + 'g for a Recipe Scroll.', 'info'); return; }
+      const known = new Set((char.discoveredRunewords || []));
+      const unknownRecipes = Object.values(RUNEWORD_RECIPES).filter(r => !known.has(r.name));
+      if (!unknownRecipes.length) {
+        log('You already know every runeword recipe. The scroll would be wasted.', 'info');
+        return;
+      }
+      char.gold -= cost;
+      const reveal = unknownRecipes[Math.floor(Math.random() * unknownRecipes.length)];
+      if (!Array.isArray(char.discoveredRunewords)) char.discoveredRunewords = [];
+      char.discoveredRunewords.push(reveal.name);
+      log('Recipe Scroll consumed: discovered Runeword "' + reveal.name + '" — runes ' + reveal.runes.join(' + ') + '.', 'loot');
+      if (typeof showToast === 'function') showToast('Recipe revealed: ' + reveal.name, 'info');
+      if (typeof renderAll === 'function') renderAll();
+      autoSave();
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // PHASE 6 — Save audit, enemy scaling, gold sinks, hardened guards.
+    // ════════════════════════════════════════════════════════════════════
+    const PHASE6 = {
+      zoneLevelFloor: true,
+      zoneRangeAbovePlayer: 2,
+      highLevelHpScale: 1.012,
+      tributeBaseGold: 2500,
+      tributeGoldPerLevel: 350,
+      tributeFactionPerDonation: 1,
+      tributeDailyCap: 25,
+      tributeFactionMax: 200
+    };
+
+    function ensureAuditState(targetChar) {
+      if (!targetChar) return;
+      if (!targetChar.tribute || typeof targetChar.tribute !== 'object') {
+        targetChar.tribute = { day: '', given: 0 };
+      }
+      if (typeof targetChar.tribute.day !== 'string') targetChar.tribute.day = '';
+      if (!Number.isFinite(Number(targetChar.tribute.given))) targetChar.tribute.given = 0;
+    }
+
+    function auditCharacter(c) {
+      if (!c) return 0;
+      let fixes = 0;
+      if (!Number.isFinite(Number(c.level)) || c.level < 1) { c.level = 1; fixes++; }
+      if (c.level > 100) { c.level = 100; fixes++; }
+      if (!Number.isFinite(Number(c.maxHp)) || c.maxHp < 1) { c.maxHp = 50; fixes++; }
+      if (!Number.isFinite(Number(c.maxMp)) || c.maxMp < 0) { c.maxMp = 0; fixes++; }
+      if (!Number.isFinite(Number(c.hp))) { c.hp = c.maxHp; fixes++; }
+      if (!Number.isFinite(Number(c.mp))) { c.mp = c.maxMp; fixes++; }
+      if (c.hp < 0) { c.hp = 0; fixes++; }
+      if (c.hp > c.maxHp) { c.hp = c.maxHp; fixes++; }
+      if (c.mp < 0) { c.mp = 0; fixes++; }
+      if (c.mp > c.maxMp) { c.mp = c.maxMp; fixes++; }
+      if (!Number.isFinite(Number(c.gold)) || c.gold < 0) { c.gold = Math.max(0, Number(c.gold) || 0); fixes++; }
+      if (!Number.isFinite(Number(c.xp)) || c.xp < 0) { c.xp = 0; fixes++; }
+      if (!Number.isFinite(Number(c.aaPoints)) || c.aaPoints < 0) { c.aaPoints = 0; fixes++; }
+      if (!Array.isArray(c.inventory)) { c.inventory = []; fixes++; }
+      else {
+        const cleaned = c.inventory.filter(x => x && (typeof x === 'object' || typeof x === 'string'));
+        if (cleaned.length !== c.inventory.length) fixes++;
+        c.inventory = cleaned;
+      }
+      if (c.bossCooldowns && typeof c.bossCooldowns === 'object') {
+        const now = Date.now();
+        Object.keys(c.bossCooldowns).forEach(k => {
+          const v = Number(c.bossCooldowns[k]);
+          if (!Number.isFinite(v) || v < now - 86400000 || v > now + 7 * 86400000) {
+            delete c.bossCooldowns[k];
+            fixes++;
+          }
+        });
+      }
+      if (typeof ZONES !== 'undefined' && Array.isArray(ZONES)) {
+        if (!Number.isFinite(Number(c.zone)) || c.zone < 0 || c.zone >= ZONES.length) { c.zone = 0; fixes++; }
+        if (c.bindZone !== undefined && c.bindZone !== null && (!Number.isFinite(Number(c.bindZone)) || c.bindZone < 0 || c.bindZone >= ZONES.length)) {
+          c.bindZone = 0; fixes++;
+        }
+      }
+      if (c.equipment && typeof c.equipment === 'object' && typeof canPlayerEquip === 'function') {
+        Object.keys(c.equipment).forEach(slot => {
+          const it = c.equipment[slot];
+          if (!it) return;
+          try {
+            if (!canPlayerEquip(it)) {
+              if (typeof unequipStats === 'function') unequipStats(it);
+              c.inventory.push(it);
+              c.equipment[slot] = null;
+              fixes++;
+            }
+          } catch (e) { /* swallow */ }
+        });
+      }
+      ensureAuditState(c);
+      return fixes;
+    }
+
+    function getZoneMobLevel(zone, playerLevel) {
+      const floor = (PHASE6.zoneLevelFloor && zone && Number.isFinite(Number(zone.minLvl))) ? Number(zone.minLvl) : 1;
+      const base = Math.max(1, playerLevel + Math.floor(Math.random() * (PHASE6.zoneRangeAbovePlayer + 2)) - 1);
+      return Math.max(floor, base);
+    }
+    function scaleMobHp(rawHp, level) {
+      if (level <= 30) return Math.max(1, Math.floor(rawHp));
+      const k = Math.pow(PHASE6.highLevelHpScale, level - 30);
+      return Math.max(1, Math.floor(rawHp * k));
+    }
+
+    function tributeTodayKey() {
+      const d = new Date();
+      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    }
+    function getTributeCost() {
+      const lvl = Math.max(1, Number(char ? char.level : 1) || 1);
+      const base = PHASE6.tributeBaseGold + lvl * PHASE6.tributeGoldPerLevel;
+      return (typeof getMerchantPrice === 'function') ? getMerchantPrice(base) : base;
+    }
+    function getTributeRemainingToday() {
+      if (!char) return 0;
+      ensureAuditState(char);
+      const today = tributeTodayKey();
+      if (char.tribute.day !== today) return PHASE6.tributeDailyCap;
+      return Math.max(0, PHASE6.tributeDailyCap - Number(char.tribute.given || 0));
+    }
+    function donateFactionTribute() {
+      if (!char) return;
+      ensureAuditState(char);
+      const today = tributeTodayKey();
+      if (char.tribute.day !== today) { char.tribute.day = today; char.tribute.given = 0; }
+      if (char.tribute.given >= PHASE6.tributeDailyCap) {
+        log('Your tribute today is done. The shrine will accept more tomorrow.', 'info');
+        return;
+      }
+      if (Number(char.faction || 0) >= PHASE6.tributeFactionMax) {
+        log('You are already in the highest standing. Further tribute is refused.', 'info');
+        return;
+      }
+      const cost = getTributeCost();
+      if ((char.gold || 0) < cost) { log('Need ' + cost + 'g to make a tribute.', 'info'); return; }
+      char.gold -= cost;
+      char.tribute.given += PHASE6.tributeFactionPerDonation;
+      if (typeof adjustFaction === 'function') {
+        adjustFaction(PHASE6.tributeFactionPerDonation, 'tribute');
+      } else {
+        char.faction = (Number(char.faction) || 0) + PHASE6.tributeFactionPerDonation;
+      }
+      log('Tribute accepted (-' + cost + 'g, +' + PHASE6.tributeFactionPerDonation + ' faction).', 'loot');
+      if (typeof renderAll === 'function') renderAll();
+      autoSave();
+    }
+
+    function applyInventoryView(items, startIndex) {
+      // Returns an array of { item, absoluteIndex } already filtered/sorted (transient view)
+      const tagged = items.map((item, i) => ({ item, absoluteIndex: startIndex + i }));
+      const filtered = tagged.filter(({ item }) => {
+        if (invView.filter === 'all') return true;
+        const data = getItemData(item);
+        const slot = data ? data.slot : null;
+        if (invView.filter === 'weapon') return slot === 'weapon' || slot === 'offhand';
+        if (invView.filter === 'armor') return ['chest', 'legs', 'feet'].includes(slot);
+        if (invView.filter === 'accessory') return ['charm', 'ring', 'amulet', 'neck'].includes(slot);
+        if (invView.filter === 'misc') return !data && !isRuneEntry(item);
+        if (invView.filter === 'magicplus') {
+          const q = getItemQuality(item);
+          return q === 'Magic' || q === 'Rare' || q === 'Unique' || q === 'Runeword' || q === 'Legendary';
+        }
+        return true;
+      });
+      if (invView.sort === 'quality') {
+        filtered.sort((a, b) => getQualityRank(b.item) - getQualityRank(a.item));
+      } else if (invView.sort === 'atk') {
+        filtered.sort((a, b) => ((getItemEffectiveStats(b.item)?.atk || 0) - (getItemEffectiveStats(a.item)?.atk || 0)));
+      } else if (invView.sort === 'def') {
+        filtered.sort((a, b) => ((getItemEffectiveStats(b.item)?.def || 0) - (getItemEffectiveStats(a.item)?.def || 0)));
+      } else if (invView.sort === 'level') {
+        filtered.sort((a, b) => getItemLevel(b.item) - getItemLevel(a.item));
+      } else if (invView.sort === 'value') {
+        filtered.sort((a, b) => getItemSellValue(b.item) - getItemSellValue(a.item));
+      }
+      return filtered;
     }
 
     function getStatusEffectModifiers(targetChar) {
@@ -6894,7 +8231,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.1.2';
+    const CURRENT_VERSION = '1.3.0';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -7818,7 +9155,8 @@
         spellCooldowns: {},
         quests: freshQuests(),
         statusEffects: [],
-        mercenary: { type: 'none', customName: '', totalPaid: 0, hires: 0, lastHiredAt: 0, totalUpkeepPaid: 0, nextUpkeepAt: 0, lastUpkeepPaidAt: 0, actionReadyAt: 0 },
+        mercenary: { type: 'none', customName: '', totalPaid: 0, hires: 0, lastHiredAt: 0, totalUpkeepPaid: 0, nextUpkeepAt: 0, lastUpkeepPaidAt: 0, actionReadyAt: 0, gear: { weapon: null } },
+        pets: { active: 'none', owned: [], lastActionAt: 0 },
         prestige: { rank: 0, points: 0, spent: 0, perks: { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 }, lastStarterGrantRank: 0 },
         aa: { points: 0, spent: 0, nodes: {}, xpProgress: 0, xpAllocPct: 0 },
         afkProfiles: { slot1: null, slot2: null, slot3: null },
@@ -7835,15 +9173,23 @@
         afkPinnedContractIdx: 0,
         huntTargets: {},
         huntStreak: { zone: null, target: '', count: 0 },
-        lootFilter: { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
+        lootFilter: { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false, autoVendorOverflow: false },
         lootFilterPreset: 'balanced',
         contractMastery: { level: 0, xp: 0, totalChains: 0 },
         afkGoal: 'balanced',
         logFilters: { dmg: true, loot: true, info: true },
         dungeon: { active: false, floor: 1, best: 1, modifier: 'balanced' },
         classQuest: createClassQuestState(selectedClass),
+        hardcore: !!pendingHardcore,
+        stats: { kills: 0, namedKills: 0, eliteKills: 0, bossKills: 0, deaths: 0, goldEarned: 0, dailiesClaimed: 0 },
+        achievements: {},
+        activeTitle: '',
+        dailyQuests: [],
+        dailyReset: 0,
+        bossCooldowns: {},
         afkEnabled: false, lastAfkAt: null, lastSaved: Date.now()
       };
+      pendingHardcore = false;
       slots[pendingSlot] = newChar;
       saveSlots();
       loadSlot(pendingSlot);
@@ -8014,6 +9360,31 @@
       if (oldChar.version === '1.0.9') {
         oldChar.version = '1.1.2';
         if (!silent) log('Upgraded save data to v1.1.2.', 'info');
+      }
+
+      if (oldChar.version === '1.1.2') {
+        if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
+        if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
+        if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
+        if (typeof oldChar.hardcore !== 'boolean') oldChar.hardcore = false;
+        oldChar.version = '1.2.0';
+        if (!silent) log('Upgraded save data to v1.2.0 (bosses, dailies, achievements).', 'info');
+      }
+
+      if (oldChar.version === '1.2.0') {
+        if (typeof ensurePetState === 'function') ensurePetState(oldChar);
+        if (oldChar.mercenary && (!oldChar.mercenary.gear || typeof oldChar.mercenary.gear !== 'object')) {
+          oldChar.mercenary.gear = { weapon: null };
+        }
+        oldChar.version = '1.2.1';
+        if (!silent) log('Upgraded save data to v1.2.1 (pets, merc gear).', 'info');
+      }
+
+      if (oldChar.version === '1.2.1') {
+        if (typeof ensureAuditState === 'function') ensureAuditState(oldChar);
+        const auditFixes = (typeof auditCharacter === 'function') ? auditCharacter(oldChar) : 0;
+        oldChar.version = '1.3.0';
+        if (!silent) log('Upgraded save data to v1.3.0 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -8196,6 +9567,7 @@
       renderAfkGoalStatus();
       renderShrineInvokeButton();
       renderStatusEffects();
+      renderDamageMeter();
       requestAnimationFrame(syncCombatLogSize);
     }
 
@@ -8239,44 +9611,24 @@
     }
 
     function syncCombatLogSize() {
-      const centerPanel = document.getElementById('center-panel');
-      const tabBar = centerPanel ? centerPanel.querySelector('.tab-bar') : null;
+      // Layout is handled entirely by CSS grid on #tab-combat now.
+      // Clear any inline sizing left from older versions of this function.
       const combatTab = document.getElementById('tab-combat');
       const logEl = document.getElementById('combat-log');
-      const mobArea = document.getElementById('mob-area');
-      if (!centerPanel || !tabBar || !combatTab || !logEl || !mobArea) return;
-      if (combatTab.style.display === 'none') return;
-
-      const actionRow = logEl.nextElementSibling;
-      if (!actionRow) return;
-
-      const bodyStyles = getComputedStyle(document.body);
-      const bodyPadBottom = parseFloat(bodyStyles.paddingBottom || '0') || 0;
-      const panelTop = centerPanel.getBoundingClientRect().top;
-      const viewportAvailable = Math.floor(window.innerHeight - panelTop - bodyPadBottom);
-
-      const centerStyles = getComputedStyle(centerPanel);
-      const centerGap = parseFloat(centerStyles.rowGap || centerStyles.gap || '0') || 0;
-      const centerInnerHeight = Math.max(360, Math.min(680, viewportAvailable));
-
-      const combatHeight = Math.max(220, Math.floor(centerInnerHeight - tabBar.offsetHeight - centerGap - 20));
-      combatTab.style.height = combatHeight + 'px';
-      combatTab.style.minHeight = combatHeight + 'px';
-      combatTab.style.maxHeight = combatHeight + 'px';
-
-      const styles = getComputedStyle(combatTab);
-      const gap = parseFloat(styles.rowGap || styles.gap || '0') || 0;
-      const available = combatHeight - mobArea.offsetHeight - actionRow.offsetHeight - (gap * 2) - 25;
-      const minHeight = window.matchMedia('(max-width:760px)').matches ? 120 : 150;
-      const h = Number.isFinite(available) ? Math.max(minHeight, Math.floor(available) - 50) : 170;
-
-      logEl.style.height = h + 'px';
-      logEl.style.minHeight = h + 'px';
-      logEl.style.maxHeight = h + 'px';
-      logEl.style.flex = '0 0 auto';
-      logEl.style.overflowY = 'scroll';
-      logEl.style.overflowX = 'hidden';
-      logEl.style.boxSizing = 'border-box';
+      if (combatTab) {
+        combatTab.style.height = '';
+        combatTab.style.minHeight = '';
+        combatTab.style.maxHeight = '';
+      }
+      if (logEl) {
+        logEl.style.height = '';
+        logEl.style.minHeight = '';
+        logEl.style.maxHeight = '';
+        logEl.style.flex = '';
+        logEl.style.overflowY = '';
+        logEl.style.overflowX = '';
+        logEl.style.boxSizing = '';
+      }
     }
 
     function renderZones() {
@@ -8519,6 +9871,9 @@
       slots.forEach(slot => {
         const el = document.getElementById('slot-' + slot);
         const item = char.equipment[slot];
+        el.onmouseenter = null;
+        el.onmousemove = null;
+        el.onmouseleave = null;
 
         if (!item) {
           el.innerHTML = 'Empty';
@@ -8553,6 +9908,9 @@
           : '';
 
         el.innerHTML = `<div class="eq-item-name ${rarityClass}">${label}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>${setLine}<div class="eq-slot-actions"><button class="btn" onclick="unequipItem('${slot}')">Unequip</button>${socketBtn}${insertRuneBtn}</div>`;
+        el.onmouseenter = (e) => showItemTooltipForEquippedSlot(slot, e);
+        el.onmousemove = positionItemTooltip;
+        el.onmouseleave = hideItemTooltip;
       });
     }
 
@@ -8638,7 +9996,8 @@
       const start = bagLayout.slice(0, activeBagIndex).reduce((sum, b) => sum + b.slots, 0);
       const activeBag = bagLayout[activeBagIndex];
       const end = start + activeBag.slots;
-      const visibleItems = char.inventory.slice(start, end);
+      const rawVisibleItems = char.inventory.slice(start, end);
+      const viewItems = applyInventoryView(rawVisibleItems, start);
       bagMeta.textContent = activeBag.overflow
         ? 'Overflow slots (your bags are full). Total items: ' + char.inventory.length
         : ('Showing ' + activeBag.name + ' · Slots ' + (start + 1) + '-' + end + ' · Total items: ' + char.inventory.length);
@@ -8647,8 +10006,15 @@
         bagMeta.textContent += ' · Active Sets: ' + setBonus.names.join(', ') + ' (+' + setBonus.atk + ' ATK, +' + setBonus.def + ' DEF)';
       }
 
-      visibleItems.forEach((item, localIndex) => {
-        const absoluteIndex = start + localIndex;
+      // Sync sort/filter selects (in case they were re-rendered)
+      const sortSel = document.getElementById('inv-sort-select');
+      const filterSel = document.getElementById('inv-filter-select');
+      if (sortSel && sortSel.value !== invView.sort) sortSel.value = invView.sort;
+      if (filterSel && filterSel.value !== invView.filter) filterSel.value = invView.filter;
+      const overflowChk = document.getElementById('inv-overflow-toggle');
+      if (overflowChk) overflowChk.checked = !!(getLootFilterState(char).autoVendorOverflow);
+
+      viewItems.forEach(({ item, absoluteIndex }) => {
         const data = getItemData(item) || {};
         const stats = getItemEffectiveStats(item) || {};
         let bonus = '';
@@ -8717,6 +10083,12 @@
 
         const card = document.createElement('div');
         card.className = 'eq-item-card';
+        if (isEquip) {
+          card.dataset.invIndex = String(absoluteIndex);
+          card.addEventListener('mouseenter', (e) => showItemTooltipForInventoryIndex(absoluteIndex, e));
+          card.addEventListener('mousemove', positionItemTooltip);
+          card.addEventListener('mouseleave', hideItemTooltip);
+        }
 
         if (locked || favorite) {
           const tag = [];
@@ -8725,11 +10097,16 @@
           itemType = itemType + ' · ' + tag.join(' · ');
         }
 
+        const ilvl = getItemLevel(item);
+        const lreq = getItemLevelReq(item);
+        const lvlBadge = (ilvl || lreq) ? `<div class="eq-item-type">${ilvl ? ('iLvl ' + ilvl) : ''}${(ilvl && lreq) ? ' · ' : ''}${lreq ? ('Req Lv ' + lreq) : ''}${(lreq && (char?.level || 1) < lreq) ? ' <span style="color:#c44">(too low)</span>' : ''}</div>` : '';
+
         card.innerHTML = `
       <div class="eq-item-top">
         <div>
           <div class="eq-item-name ${rarityClass}">${itemName}</div>
           <div class="eq-item-type">${itemType}${qualityTag}</div>
+          ${lvlBadge}
         </div>
       </div>
 
@@ -8749,7 +10126,9 @@
         el.appendChild(card);
       });
 
-      const emptyCount = Math.max(0, activeBag.slots - visibleItems.length);
+      const emptyCount = (invView.filter === 'all' && invView.sort === 'default')
+        ? Math.max(0, activeBag.slots - viewItems.length)
+        : 0;
       for (let i = 0; i < emptyCount; i++) {
         const empty = document.createElement('div');
         empty.className = 'eq-empty-slot';
@@ -8927,11 +10306,83 @@
           <div class="eq-item-name">Knight Chestplate</div>
           <div class="eq-item-type">Armor</div>
           <div class="eq-item-bonus">+18 DEF · +80 HP · ${chestPrice} Gold</div>
+          <div class="eq-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Knight Chestplate')}</div>
           <div class="eq-item-actions">
-            <button class="btn" onclick="buyShopItem('Knight Chestplate')">Buy</button>
+            <button class="btn" onclick="buyShopItem('Knight Chestplate')" ${meetsFactionGate(SHOP_FACTION_GATES['Knight Chestplate']) ? '' : 'disabled'}>Buy</button>
+          </div>
+        </div>
+
+        <div class="eq-item-card">
+          <div class="eq-item-name rarity-rare">Recipe Scroll</div>
+          <div class="eq-item-type">Reveals one random unknown Runeword recipe in your compendium.</div>
+          <div class="eq-item-bonus">${getMerchantPrice(PHASE5.recipeScrollPrice)} Gold</div>
+          <div class="eq-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Recipe Scroll')}</div>
+          <div class="eq-item-actions">
+            <button class="btn" onclick="buyRecipeScroll()" ${meetsFactionGate(SHOP_FACTION_GATES['Recipe Scroll']) ? '' : 'disabled'}>Buy &amp; Read</button>
           </div>
         </div>
       `;
+
+      // ── Pet Stable (PHASE 5) ──
+      ensurePetState(char);
+      const activePetId = char.pets.active;
+      shopHtml += `
+        <div class="eq-item-card">
+          <div class="eq-item-name">Pet Stable</div>
+          <div class="eq-item-type">Tame a companion. Active pet aids you in combat or grants passive bonuses.</div>
+          <div class="eq-item-actions compact" style="margin-top:6px">
+            <select onchange="setActivePet(this.value)" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+              <option value="none"${activePetId === 'none' ? ' selected' : ''}>None</option>
+              ${char.pets.owned.map(id => `<option value="${id}"${activePetId === id ? ' selected' : ''}>${PETS[id].name}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      `;
+      Object.values(PETS).forEach(p => {
+        const owned = char.pets.owned.includes(p.id);
+        const cost = PHASE5.petTameGoldCost[p.id] || 1000;
+        shopHtml += `
+        <div class="eq-item-card">
+          <div class="eq-item-name"><i class="ti ${p.icon}"></i> ${p.name}${owned ? ' ✓' : ''}</div>
+          <div class="eq-item-type">${p.kind === 'damage' ? 'Combat Companion' : (p.kind === 'support' ? 'Support Companion' : 'Utility Companion')}</div>
+          <div class="eq-item-bonus">${p.desc}</div>
+          <div class="eq-item-bonus">${owned ? 'Owned' : (cost + ' Gold to tame')}</div>
+          <div class="eq-item-actions">
+            ${owned
+              ? (activePetId === p.id
+                ? '<button class="btn active" disabled>Active</button>'
+                : `<button class="btn" onclick="setActivePet('${p.id}')">Set Active</button>`)
+              : `<button class="btn" onclick="tamePet('${p.id}')" ${(char.gold || 0) >= cost ? '' : 'disabled'}>Tame</button>`}
+          </div>
+        </div>
+        `;
+      });
+
+      // ── Merc Gear (PHASE 5) ──
+      if (char.mercenary && char.mercenary.type !== 'none') {
+        const gearW = char.mercenary.gear && char.mercenary.gear.weapon;
+        const mercName = getMercenaryDisplayName();
+        const stats = gearW && typeof getItemEffectiveStats === 'function' ? getItemEffectiveStats(gearW) : null;
+        const atk = stats && stats.atk ? stats.atk : 0;
+        const invWeapons = (char.inventory || []).map((it, i) => ({ it, i })).filter(({ it }) => {
+          const d = getItemData(it); return d && d.slot === 'weapon';
+        });
+        const weaponOpts = invWeapons.map(({ it, i }) => `<option value="${i}">${(it.name || (getItemData(it) || {}).name || 'Weapon')}</option>`).join('');
+        shopHtml += `
+        <div class="eq-item-card">
+          <div class="eq-item-name">${mercName}'s Weapon</div>
+          <div class="eq-item-type">Mercenary Gear · Each ATK on this weapon adds ${(PHASE5.mercGearAtkDamageBonusPerPoint * 100).toFixed(1)}% to merc damage.</div>
+          <div class="eq-item-bonus">${gearW ? ((gearW.name || 'Weapon') + ' (+' + atk + ' ATK, +' + Math.round(atk * PHASE5.mercGearAtkDamageBonusPerPoint * 100) + '% merc dmg)') : 'No weapon issued.'}</div>
+          <div class="eq-item-actions compact" style="margin-top:6px;flex-wrap:wrap">
+            ${invWeapons.length
+              ? `<select id="merc-gear-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">${weaponOpts}</select>
+                 <button class="btn" onclick="equipMercWeaponFromInv(Number(document.getElementById('merc-gear-select').value))">Issue Weapon</button>`
+              : '<span class="eq-item-type" style="font-size:10px">No weapons in inventory.</span>'}
+            ${gearW ? '<button class="btn" onclick="unequipMercWeapon()">Recover Weapon</button>' : ''}
+          </div>
+        </div>
+        `;
+      }
 
       const bagItems = Object.entries(CONTAINER_ITEMS).filter(([_, data]) => !data.starter);
       bagItems.forEach(([name, data]) => {
@@ -8968,6 +10419,22 @@
           <div class="eq-item-bonus">${mysticChestCost} Gold</div>
           <div class="eq-item-actions">
             <button class="btn" onclick="purchaseMysticChest()">Open</button>
+          </div>
+        </div>
+      `;
+
+      // PHASE 6 — Faction Tribute (gold sink for reputation)
+      const tributeCost = (typeof getTributeCost === 'function') ? getTributeCost() : PHASE6.tributeBaseGold;
+      const tributeLeft = (typeof getTributeRemainingToday === 'function') ? getTributeRemainingToday() : PHASE6.tributeDailyCap;
+      const tributeAtMax = Number(char.faction || 0) >= PHASE6.tributeFactionMax;
+      const tributeDisabled = (tributeLeft <= 0) || tributeAtMax || (char.gold || 0) < tributeCost;
+      shopHtml += `
+        <div class="eq-item-card">
+          <div class="eq-item-name rarity-magic">Faction Tribute</div>
+          <div class="eq-item-type">Offer gold at the shrine for +${PHASE6.tributeFactionPerDonation} faction (daily cap ${PHASE6.tributeDailyCap}).</div>
+          <div class="eq-item-bonus">${tributeCost} Gold · Remaining today: ${tributeLeft}${tributeAtMax ? ' · MAXED' : ''}</div>
+          <div class="eq-item-actions">
+            <button class="btn${tributeDisabled ? '' : ' active'}" onclick="donateFactionTribute()" ${tributeDisabled ? 'disabled' : ''}>Donate</button>
           </div>
         </div>
       `;
@@ -9169,6 +10636,47 @@
           '</div>';
         el.appendChild(contract);
       });
+
+      // ── Daily Quests (PHASE 4) ──
+      checkDailyRollover();
+      if (Array.isArray(char.dailyQuests) && char.dailyQuests.length) {
+        const dailyHeader = document.createElement('div');
+        dailyHeader.className = 'quest';
+        const resetIn = Math.max(0, Number(char.dailyReset || 0) - Date.now());
+        const hours = Math.floor(resetIn / 3600000);
+        const mins = Math.floor((resetIn % 3600000) / 60000);
+        dailyHeader.innerHTML = '<div class="quest-name">Daily Quests</div>' +
+          '<div class="quest-prog">Resets in ' + hours + 'h ' + mins + 'm. Earn bonus XP and gold for kill targets.</div>';
+        el.appendChild(dailyHeader);
+        char.dailyQuests.forEach((q, idx) => {
+          const d = document.createElement('div'); d.className = 'quest';
+          const statusTag = q.claimed ? ' ✓ Claimed' : (q.done ? ' — Ready to claim' : '');
+          d.innerHTML = '<div class="quest-name">' + q.name + statusTag + '</div>' +
+            '<div class="quest-prog">' + q.desc + ' (' + (q.prog || 0) + '/' + q.count + ')</div>' +
+            '<div class="quest-prog">Reward: ' + q.xp + ' XP · ' + q.gold + 'g</div>' +
+            '<div style="display:flex;gap:6px;margin-top:6px"><button class="btn" onclick="claimDailyQuest(' + idx + ')" ' + ((q.done && !q.claimed) ? '' : 'disabled') + '>Claim</button></div>';
+          el.appendChild(d);
+        });
+      }
+
+      // ── Achievements & Titles (PHASE 4) ──
+      ensureStatsState(char);
+      const achCard = document.createElement('div');
+      achCard.className = 'quest';
+      const unlockedCount = Object.keys(char.achievements || {}).length;
+      let achHtml = '<div class="quest-name">Achievements (' + unlockedCount + '/' + ACHIEVEMENTS.length + ')</div>';
+      const titles = getAvailableTitles();
+      if (titles.length) {
+        achHtml += '<div class="quest-prog">Active Title: <select onchange="setActiveTitle(this.value)" style="margin-left:4px;font-size:11px"><option value=""' + (char.activeTitle ? '' : ' selected') + '>(none)</option>' +
+          titles.map(t => '<option value="' + t + '"' + (char.activeTitle === t ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></div>';
+      }
+      achHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">Kills ' + char.stats.kills + ' · Named ' + char.stats.namedKills + ' · Elite ' + char.stats.eliteKills + ' · Bosses ' + char.stats.bossKills + ' · Deaths ' + char.stats.deaths + '</div>';
+      ACHIEVEMENTS.forEach(a => {
+        const got = !!char.achievements[a.id];
+        achHtml += '<div class="quest-prog" style="font-size:11px;' + (got ? '' : 'opacity:0.55;') + '">' + (got ? '✓ ' : '· ') + '<b>' + a.name + '</b> — ' + a.desc + (a.title ? ' (Title: ' + a.title + ')' : '') + '</div>';
+      });
+      achCard.innerHTML = achHtml;
+      el.appendChild(achCard);
     }
 
     function renderAATab() {
@@ -9193,6 +10701,41 @@
       const aaXpToNext = Math.max(0, AA_XP_PER_POINT - aaXpProgress);
       let aaHtml = '<div class="quest-name">Alternate Advancement</div>' +
         '<div class="quest-prog">Class: ' + char.cls + ' · ' + (simActive ? 'Simulator Points: ' : 'Unspent Points: ') + aaPoints + ' · Unlocks at level ' + AA_UNLOCK_LEVEL + '+</div>';
+
+      // ── Class Specialization (PHASE 3) ──
+      const specChoices = getClassSpecChoices(char.cls);
+      if (specChoices.length) {
+        const cur = getCurrentSpecData(char);
+        const specUnlocked = isSpecUnlocked(char);
+        const respecCost = getClassSpecRespecCost(char);
+        aaHtml += '<div style="margin-top:8px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary)">' +
+          '<div class="quest-name" style="margin:0 0 6px 0">Class Specialization' + (cur ? ' — ' + cur.name : '') + '</div>';
+        if (!specUnlocked) {
+          aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">Unlocks at level ' + PHASE3.specUnlockLevel + '. Locked in until you pay to respec.</div>';
+        } else if (!cur) {
+          aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">Choose one specialization to permanently boost your build (paid respec).</div>';
+        } else {
+          aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">' + cur.desc + '</div>' +
+            '<div style="margin-top:6px"><button class="btn" onclick="respecClassSpec()" ' + ((char.gold || 0) >= respecCost ? '' : 'disabled') + '>Respec Specialization (' + respecCost + 'g)</button></div>';
+        }
+        if (!cur && specUnlocked) {
+          specChoices.forEach(s => {
+            const f = s.flat || {};
+            const flatLine = [
+              f.atk ? ((f.atk > 0 ? '+' : '') + f.atk + ' ATK') : '',
+              f.def ? ((f.def > 0 ? '+' : '') + f.def + ' DEF') : '',
+              f.hp ? ((f.hp > 0 ? '+' : '') + f.hp + ' HP') : '',
+              f.mp ? ((f.mp > 0 ? '+' : '') + f.mp + ' MP') : ''
+            ].filter(Boolean).join(', ');
+            aaHtml += '<div style="margin-top:6px;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--bg-primary)">' +
+              '<div class="quest-prog" style="margin-top:0"><b>' + s.name + '</b> — ' + s.desc + '</div>' +
+              (flatLine ? '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">Flat: ' + flatLine + '</div>' : '') +
+              '<div style="margin-top:4px"><button class="btn" onclick="pickClassSpec(\'' + s.id + '\')">Choose ' + s.name + '</button></div>' +
+              '</div>';
+          });
+        }
+        aaHtml += '</div>';
+      }
 
       aaHtml += '<div class="quest-prog" style="margin-top:6px">Prestige and Ascension are now in the Prestige tab.</div>';
 
@@ -9274,14 +10817,16 @@
         nodes.forEach(node => {
           const rank = Number(activeNodes[node.key] || 0);
           const req = getAANodeRequirementState(char, node, aaNodes, activeNodes);
-          const canSpend = aaPoints > 0 && rank < node.maxRank && req.met;
+          const nodeCost = (typeof getAANodeCost === 'function') ? getAANodeCost(node) : 1;
+          const canSpend = aaPoints >= nodeCost && rank < node.maxRank && req.met;
           const capstoneTag = node.maxRank === 1 ? ' <span class="badge badge-rare" style="font-size:10px">Capstone</span>' : '';
+          const costTag = nodeCost > 1 ? ' <span style="font-size:10px;color:var(--text-secondary)">[' + nodeCost + ' pts]</span>' : '';
           const reqText = req.met ? '' : ('<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">Requires: ' + req.missing.join(', ') + '</div>');
           const nextGain = '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">' + getAANodeNextGainText(node, rank) + '</div>';
           html += '<div style="margin-top:6px;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary)">' +
-            '<div class="quest-prog" style="margin-top:0">' + node.name + capstoneTag + ' (' + rank + '/' + node.maxRank + ') — ' + node.desc + '</div>' +
+            '<div class="quest-prog" style="margin-top:0">' + node.name + capstoneTag + costTag + ' (' + rank + '/' + node.maxRank + ') — ' + node.desc + '</div>' +
             nextGain + reqText +
-            '<div style="margin-top:4px"><button class="btn" title="' + getAANodeNextGainText(node, rank) + '" onclick="' + investAction + '(\'' + node.key + '\')" ' + (canSpend ? '' : 'disabled') + '>Invest 1 AA' + (simActive ? ' (Sim)' : '') + '</button></div>' +
+            '<div style="margin-top:4px"><button class="btn" title="' + getAANodeNextGainText(node, rank) + '" onclick="' + investAction + '(\'' + node.key + '\')" ' + (canSpend ? '' : 'disabled') + '>Invest ' + nodeCost + ' AA' + (simActive ? ' (Sim)' : '') + '</button></div>' +
             '</div>';
         });
         return html;
@@ -9317,6 +10862,7 @@
         '<div class="quest-prog">Current bonuses: +' + Math.round((prestigeMods.xpMult - 1) * 100) + '% XP · +' + Math.round((prestigeMods.goldMult - 1) * 100) + '% Gold · +' + Math.round((prestigeMods.lootMult - 1) * 100) + '% Loot · +' + Math.round((prestigeMods.playerDamageMult - 1) * 100) + '% Damage · ' + Math.round((prestigeMods.mobDamageMult - 1) * 100) + '% Incoming</div>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
         '<button class="btn" onclick="ascendCharacter()" ' + ((char.level >= PRESTIGE_LEVEL_REQ) ? '' : 'disabled') + '>Ascend (Lv ' + PRESTIGE_LEVEL_REQ + '+)</button>' +
+        '<button class="btn" onclick="respecPrestige()" ' + ((char.gold || 0) >= getPrestigeRespecCost(char) && (prestige.spent || 0) > 0 ? '' : 'disabled') + '>Respec Perks (' + getPrestigeRespecCost(char) + 'g)</button>' +
         '</div>';
 
       html += '<div style="margin-top:8px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary)">' +
@@ -9412,6 +10958,10 @@
       char.atk = base.atk;
       char.def = base.def;
       char.mpRegen = base.mpRegen;
+
+      // Specialization is reset on ascension; re-pick at level 30.
+      char.spec = null;
+      char.specAppliedFlat = null;
 
       ['weapon', 'chest', 'legs', 'feet', 'offhand', 'charm'].forEach(slot => {
         if (char.equipment && char.equipment[slot]) applyItemStats(char.equipment[slot]);
@@ -9688,6 +11238,12 @@
         return false;
       }
 
+      // GCD: only enforced for manual (non-silent) casts; AFK auto-cast is paced by tickMs
+      if (!silent && !consumeGcd()) {
+        log('Global cooldown — wait a moment.', 'info');
+        return false;
+      }
+
       if (char.mp < sp.mp) {
         if (!silent) log('Not enough MP for ' + sp.name + '.', 'info');
         return false;
@@ -9708,6 +11264,7 @@
       if (sp.kind === 'damage' || sp.kind === 'damage_weaken' || sp.kind === 'damage_poison') {
         const dmg = Math.max(1, Math.floor((char.atk * sp.power + Math.random() * sp.variance) * aa.spellPowerMult * (prestige.playerDamageMult || 1) * (event.spellDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
         mob.hp -= dmg;
+        addDamageMeterEntry('spell', dmg);
         log(sp.name + ' hits ' + mob.name + ' for ' + dmg + ' damage!', 'dmg');
 
         if (sp.kind === 'damage_weaken') {
@@ -9718,7 +11275,20 @@
         if (sp.kind === 'damage_poison' && mob.hp > 0 && Math.random() < 0.55) {
           const poison = (sp.poisonMin || 6) + Math.floor(Math.random() * ((sp.poisonMax || 16) - (sp.poisonMin || 6) + 1));
           mob.hp -= poison;
+          addDamageMeterEntry('spell', poison);
           log('Poison ticks for ' + poison + ' extra damage.', 'dmg');
+        }
+
+        // Seed a lingering DoT for poison/burn spells
+        if (sp.kind === 'damage_poison' && mob.hp > 0) {
+          const dps = Math.max(2, Math.floor(PHASE1.poisonDotDps + (char.level || 1) * 0.4));
+          applyMobStatusEffect({
+            id: 'poison_' + sp.id,
+            name: sp.name + ' Poison',
+            kind: 'dot',
+            dps,
+            expiresAt: Date.now() + PHASE1.poisonDotDurationMs
+          });
         }
 
         if (mob.hp <= 0) {
@@ -9853,10 +11423,11 @@
         : (hasForcedTarget ? zoneTarget : (named ? namedPool[Math.floor(Math.random() * namedPool.length)] : zone.mobs[Math.floor(Math.random() * zone.mobs.length)]));
       const lvl = inDungeon
         ? Math.max(1, char.level + Math.floor(floor / 2))
-        : Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
+        : (typeof getZoneMobLevel === 'function' ? getZoneMobLevel(zone, char.level) : Math.max(1, char.level + Math.floor(Math.random() * 3) - 1));
       const elite = inDungeon ? (dungeonBoss || Math.random() < (0.2 + (dungeonMod.eliteChanceBonus || 0))) : (Math.random() < 0.1);
       const namedMult = named ? 1.8 : 1;
-      const hp = Math.floor((30 + lvl * 18) * (elite ? 2.5 : 1) * namedMult);
+      const rawHp = (30 + lvl * 18) * (elite ? 2.5 : 1) * namedMult;
+      const hp = (typeof scaleMobHp === 'function') ? scaleMobHp(rawHp, lvl) : Math.max(1, Math.floor(rawHp));
       const namedMechanic = named ? NAMED_MECHANICS[Math.floor(Math.random() * NAMED_MECHANICS.length)] : null;
       mob = {
         name: (named ? '[Named] ' : (elite ? '[Elite] ' : '')) + mobName,
@@ -9871,7 +11442,8 @@
         namedMechanic,
         enrageTriggered: false,
         wardReady: false,
-        turnCount: 0
+        turnCount: 0,
+        statusEffects: []
       };
       if (hasForcedTarget && !inDungeon) {
         log('Tracking target: ' + zoneTarget + '.', 'info');
@@ -9896,14 +11468,46 @@
       let dmg = Math.max(1, playerAtk - mob.def + Math.floor(Math.random() * 6) - 2);
       dmg = Math.max(1, Math.floor(dmg * aa.playerDamageMult * prestige.playerDamageMult * (event.playerDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
 
-      if (mob.namedMechanic && mob.namedMechanic.id === 'ward' && mob.wardReady) {
-        dmg = Math.max(1, Math.floor(dmg * 0.55));
-        mob.wardReady = false;
-        log(mob.name + ' absorbs part of the hit with Arcane Ward.', 'info');
+      // Mob dodge
+      if (rollMobDodge()) {
+        log(mob.name + ' dodges your attack!', 'info');
+        addDamageMeterDodge();
+        // Skip to enemy counter-attack (still costs the player a turn)
+        dmg = 0;
+      } else {
+        // Player crit roll
+        const critRoll = rollPlayerCrit(dmg);
+        dmg = critRoll.dmg;
+        if (critRoll.crit) {
+          addDamageMeterCrit();
+          // Chance to stun on crit
+          if (Math.random() < PHASE1.stunOnCritChance) {
+            applyMobStatusEffect({
+              id: 'stun',
+              name: 'Stunned',
+              kind: 'stun',
+              expiresAt: Date.now() + PHASE1.stunDurationMs
+            });
+            log('Critical strike stuns ' + mob.name + '!', 'dmg');
+          }
+        }
+
+        if (mob.namedMechanic && mob.namedMechanic.id === 'ward' && mob.wardReady) {
+          dmg = Math.max(1, Math.floor(dmg * 0.55));
+          mob.wardReady = false;
+          log(mob.name + ' absorbs part of the hit with Arcane Ward.', 'info');
+        }
+
+        mob.hp -= dmg;
+        addDamageMeterEntry('player', dmg);
+        log(char.name + (critRoll.crit ? ' CRITS ' : ' attacks ') + mob.name + ' for ' + dmg + (critRoll.crit ? ' damage!' : ' damage.'), 'dmg');
       }
 
-      mob.hp -= dmg;
-      log(char.name + ' attacks ' + mob.name + ' for ' + dmg + ' damage.', 'dmg');
+      // DoT tick on mob (poison/burn applied earlier by spells)
+      if (mob.hp > 0 && tickMobStatusEffects()) {
+        killMob();
+        return true;
+      }
 
       if (mob.namedMechanic && mob.namedMechanic.id === 'enrage' && !mob.enrageTriggered && mob.hp > 0 && mob.hp <= Math.floor(mob.maxHp * 0.4)) {
         mob.enrageTriggered = true;
@@ -9919,14 +11523,39 @@
         return true;
       }
 
+      if (mob.hp > 0 && typeof triggerPetAction === 'function' && triggerPetAction()) {
+        if (!mob || mob.hp <= 0) return true;
+      }
+
       if (mob.hp <= 0) { killMob(); return true; }
 
       mob.turnCount = (mob.turnCount || 0) + 1;
 
+      // Mob counter-attack — skip entirely if stunned
+      if (isMobStunned()) {
+        log(mob.name + ' is stunned and cannot retaliate.', 'info');
+        renderAll();
+        return false;
+      }
+
+      // Player dodge
+      if (rollPlayerDodge()) {
+        log('You dodge ' + mob.name + "'s attack!", 'info');
+        addDamageMeterDodge();
+        renderAll();
+        return false;
+      }
+
       let md = Math.max(1, mob.atk - playerDef + Math.floor(Math.random() * 4) - 1);
       md = Math.max(1, Math.floor(md * aa.mobDamageMult * prestige.mobDamageMult * (event.mobDamageMult || 1) * (fx.mobDamageMult || 1) * (dungeonMod.mobDamageMult || 1)));
+      // Mob crit roll
+      const mobCritRoll = rollMobCrit(md);
+      md = mobCritRoll.dmg;
+      // Tank-merc damage redirect
+      md = applyMercTankRedirect(md);
       char.hp -= md;
-      log(mob.name + ' hits back for ' + md + '!', 'dmg');
+      addDamageMeterEntry('taken', md);
+      log(mob.name + (mobCritRoll.crit ? ' CRITS you for ' : ' hits back for ') + md + (mobCritRoll.crit ? '!' : '!'), 'dmg');
 
       if (mob.namedMechanic && mob.namedMechanic.id === 'venom' && Math.random() < 0.35 && char.hp > 0) {
         const venomDmg = Math.max(1, Math.floor(mob.level * 0.8 + Math.random() * 6));
@@ -9978,11 +11607,11 @@
       let eff = '';
       if (cls.skillEffect === 'fire' || cls.skillEffect === 'holy') {
         const dmg = Math.floor(char.atk * 2.5 + Math.random() * 15);
-        if (mob) { mob.hp -= dmg; eff = 'hits ' + mob.name + ' for ' + dmg + ' magic damage'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
+        if (mob) { mob.hp -= dmg; addDamageMeterEntry('spell', dmg); eff = 'hits ' + mob.name + ' for ' + dmg + ' magic damage'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
         else eff = 'fizzles (no target)';
       } else if (cls.skillEffect === 'back') {
         const dmg = Math.floor(char.atk * 3 + Math.random() * 20);
-        if (mob) { mob.hp -= dmg; eff = 'Backstabs ' + mob.name + ' for ' + dmg + '!'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
+        if (mob) { mob.hp -= dmg; addDamageMeterEntry('player', dmg); eff = 'Backstabs ' + mob.name + ' for ' + dmg + '!'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
         else eff = 'no target';
       } else { eff = 'taunts the enemy!'; if (mob) mob.atk = Math.max(1, mob.atk - 3); }
       if (mob && triggerMercenarySupport('skill')) return;
@@ -10006,6 +11635,11 @@
       const zone = ZONES[char.zone];
       const event = getActiveZoneEvent(char.zone);
       ensureExtendedSystems(char);
+      if (typeof addDamageMeterKill === 'function') addDamageMeterKill();
+      const wasBoss = !!mob.boss;
+      bumpStat('kills', 1);
+      if (mob.named) bumpStat('namedKills', 1);
+      if (mob.elite) bumpStat('eliteKills', 1);
       const aa = getAACombatModifiers(char);
       const prestige = getPrestigeModifiers(char);
       const inDungeon = !!char.dungeon.active;
@@ -10017,11 +11651,13 @@
       const dungeonMult = inDungeon ? (1 + floor * 0.08) : 1;
       const lowLevelGoldMult = getLowLevelGoldMultiplier(char.level);
       const zoneProgressGoldMult = getZoneProgressGoldMultiplier(char.zone);
-      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1));
-      const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult * zoneProgressGoldMult);
+      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (mob.boss ? PHASE4.bossXpMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreXpBonus) : 1) * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1));
+      const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (mob.boss ? PHASE4.bossGoldMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreGoldBonus) : 1) * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult * zoneProgressGoldMult * (typeof getPetModifiers === 'function' ? (getPetModifiers(char).goldMult || 1) : 1));
       const killXp = awardExperience(xp, 'combat');
       char.gold += gold;
+      bumpStat('goldEarned', gold);
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
+      if (typeof tickDailyQuestProgress === 'function') tickDailyQuestProgress(mob.baseName);
       log(mob.name + ' is slain! +' + killXp.regularXp + ' XP' + (killXp.aaXp > 0 ? (' (+' + killXp.aaXp + ' AA XP)') : '') + ', +' + gold + 'g', 'loot');
 
       const contract = getPrimaryContract(char);
@@ -10078,7 +11714,7 @@
           }
         }
       });
-      if (Math.random() < ((mob.named ? 0.8 : 0.4) * (event.lootMult || 1) * (dungeonMod.lootMult || 1) * (aa.lootMult || 1) * (prestige.lootMult || 1) * streakLootMult)) {
+      if (Math.random() < ((mob.named ? 0.8 : 0.4) * (event.lootMult || 1) * (dungeonMod.lootMult || 1) * (aa.lootMult || 1) * (prestige.lootMult || 1) * streakLootMult * (typeof getPetModifiers === 'function' ? (getPetModifiers(char).lootMult || 1) : 1))) {
         const lootBase = Math.random() < 0.05 ? zone.rare : pickWeightedLootBase(char.zone, mob.named ? 'loot_named' : 'loot');
         const loot = rollItemVariant(lootBase, mob.named ? 'loot_named' : 'loot');
         processLootDrop(loot, 'Looted');
@@ -10091,6 +11727,9 @@
       }
 
       grantRunewordEvolutionXp();
+
+      if (wasBoss && typeof onBossKilled === 'function') onBossKilled();
+      checkAchievements();
 
       if (inDungeon) {
         char.dungeon.floor += 1;
@@ -10141,6 +11780,22 @@
     }
 
     function die() {
+      bumpStat('deaths', 1);
+      if (char.hardcore) {
+        log('HARDCORE DEATH: ' + char.name + ' the ' + char.cls + ' has fallen forever at level ' + char.level + '.', 'dmg');
+        if (typeof showToast === 'function') showToast('Hardcore death — save deleted.', 'error');
+        try {
+          slots[currentSlot] = null;
+          saveSlots();
+        } catch (e) { /* swallow */ }
+        mob = null;
+        char = null;
+        try {
+          document.getElementById('screen-menu').style.display = 'block';
+          document.getElementById('screen-game').style.display = 'none';
+        } catch (e) { /* swallow */ }
+        return;
+      }
       const bindZone = char.bindZone ?? char.zone;
       const lostGold = Math.floor(char.gold * 0.15);
       char.gold = Math.max(0, char.gold - lostGold);
@@ -10296,10 +11951,10 @@
       if (lf.autoSellRareGear && isEquipment && quality === 'Rare') {
         return true;
       }
-      if (lf.autoSellLegendaryGear && isEquipment && (quality === 'Unique' || quality === 'Runeword')) {
+      if (lf.autoSellLegendaryGear && isEquipment && (quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary')) {
         return true;
       }
-      if (lf.protectRarePlus && (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword')) {
+      if (lf.protectRarePlus && (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary')) {
         return false;
       }
       if (lf.autoSellJunk && !isEquipment && !isContainer) {
@@ -10328,6 +11983,7 @@
 
         if (matchedRule.action === 'keep') {
           if (tryAutoEquipLootItem(item, sourceLabel)) return;
+          if (handleOverflowVendor(item, sourceLabel)) return;
           char.inventory.push(item);
           log(sourceLabel + ': ' + getItemDisplayName(item) + ' kept by loot filter.', 'loot');
           return;
@@ -10340,9 +11996,41 @@
         log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-sold for ' + value + 'g.', 'loot');
       } else if (tryAutoEquipLootItem(item, sourceLabel)) {
         return;
+      } else if (handleOverflowVendor(item, sourceLabel)) {
+        return;
       } else {
         char.inventory.push(item);
         log(sourceLabel + ': ' + getItemDisplayName(item), 'loot');
+        maybeWarnOverflow();
+      }
+    }
+
+    // Auto-vendor drops when bags are full and toggle is enabled. Protect favorites/locked items implicitly (they came from rules above).
+    function handleOverflowVendor(item, sourceLabel) {
+      const lf = getLootFilterState(char);
+      if (!lf.autoVendorOverflow) return false;
+      const bagLayout = getBagLayout(char);
+      const capacity = bagLayout.filter(b => !b.overflow).reduce((s, b) => s + b.slots, 0);
+      if (char.inventory.length < capacity) return false;
+      const quality = getItemQuality(item);
+      // Never auto-vendor Rare+ via overflow even if toggle is on
+      if (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary') return false;
+      const value = getItemSellValue(item);
+      char.gold += value;
+      log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-vendored (bags full) for ' + value + 'g.', 'loot');
+      return true;
+    }
+
+    function maybeWarnOverflow() {
+      if (!char) return;
+      const bagLayout = getBagLayout(char);
+      const capacity = bagLayout.filter(b => !b.overflow).reduce((s, b) => s + b.slots, 0);
+      const over = char.inventory.length - capacity;
+      if (over === 1) {
+        log('Your bags are full. New drops are going to overflow.', 'info');
+        if (typeof showToast === 'function') showToast('Bags full — items overflowing', 'error');
+      } else if (over > 0 && over % PHASE2.overflowSoftCap === 0) {
+        if (typeof showToast === 'function') showToast('Overflow at +' + over + ' items', 'error');
       }
     }
 
@@ -10845,6 +12533,13 @@
         return;
       }
 
+      if (!canPlayerEquip(item)) {
+        const req = getItemLevelReq(item);
+        log('You must be Level ' + req + ' to equip ' + getItemDisplayName(item) + '.', 'info');
+        if (typeof showToast === 'function') showToast('Requires Level ' + req, 'error');
+        return;
+      }
+
       const slot = data.slot;
       const oldItem = char.equipment[slot];
 
@@ -11266,6 +12961,7 @@
 
     function afkTick() {
       if (!char) return;
+      if (typeof checkDailyRollover === 'function') checkDailyRollover();
       applySmartAfkGoal(true);
       runAfkAutomationRules();
 
@@ -11715,6 +13411,11 @@
         'Steel Longsword': SHOP_BASE_PRICES.steelLongsword,
         'Knight Chestplate': SHOP_BASE_PRICES.knightChestplate
       };
+
+      if (typeof SHOP_FACTION_GATES === 'object' && SHOP_FACTION_GATES[item] && !meetsFactionGate(SHOP_FACTION_GATES[item])) {
+        log('The merchant will not sell you the ' + item + ' until you reach ' + SHOP_FACTION_GATES[item] + ' faction.', 'info');
+        return;
+      }
 
       const cost = getMerchantPrice(prices[item]);
 
