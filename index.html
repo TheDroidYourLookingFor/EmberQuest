@@ -4947,6 +4947,9 @@
       const base = getItemData(entry);
       if (!base) return null;
 
+      const quality = getItemQuality(entry);
+      const uniqueRollMult = quality === 'Unique' ? 1.75 : 1;
+
       const stats = {
         atk: base.atk || 0,
         def: base.def || 0,
@@ -4957,8 +4960,15 @@
       if (entry && typeof entry === 'object' && entry.rolls && typeof entry.rolls === 'object') {
         ['atk', 'def', 'hp', 'mp'].forEach(stat => {
           const rolled = Number(entry.rolls[stat] || 0);
-          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled);
+          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * uniqueRollMult);
         });
+      }
+
+      if (quality === 'Unique') {
+        stats.atk += 2;
+        stats.def += 2;
+        stats.hp += 12;
+        stats.mp += 12;
       }
 
       if (entry && typeof entry === 'object' && Array.isArray(entry.sockets)) {
@@ -8019,7 +8029,8 @@
       const aa = getAACombatModifiers(char);
       document.getElementById('atk-disp').textContent = char.atk + aa.atkBonus;
       document.getElementById('def-disp').textContent = char.def + aa.defBonus;
-      document.getElementById('gold-disp').textContent = char.gold + 'g';
+      const goldValue = Math.max(0, Math.floor(Number(char.gold || 0))).toLocaleString();
+      document.getElementById('gold-disp').textContent = goldValue;
       document.getElementById('faction-disp').textContent = getFactionTier(char.faction || 0);
       const activeMerc = getActiveMercenary();
       const mercNameDisp = document.getElementById('merc-name-disp');
