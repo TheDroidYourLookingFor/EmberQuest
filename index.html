@@ -6858,7 +6858,7 @@
       while (slots.length < MAX_SLOTS) slots.push(null);
     }
 
-    function saveSlots() {
+    function saveSlots(options = {}) {
       if (char && activeSlot >= 0) {
         char.autoUseSkills = autoUseSkills !== false;
         char.autoSkillSlots = autoSkillSlots.slice(0, 6).map(v => v !== false);
@@ -6868,8 +6868,13 @@
         char.autoRestMpPercent = Math.max(5, Math.min(95, Math.floor(Number(autoRestMpPercent || 20))));
         char.autoHpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(autoHpPotionPercent || 35))));
         char.autoMpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(autoMpPotionPercent || 20))));
-        char.afkEnabled = afkOn;
-        char.lastAfkAt = afkOn ? Date.now() : null;
+        if (options && options.preserveAfkState) {
+          char.afkEnabled = !!char.afkEnabled;
+          char.lastAfkAt = char.afkEnabled ? Math.max(1, Math.floor(Number(char.lastAfkAt || Date.now()))) : null;
+        } else {
+          char.afkEnabled = afkOn;
+          char.lastAfkAt = afkOn ? Date.now() : null;
+        }
         slots[activeSlot] = JSON.parse(JSON.stringify(char));
       }
       try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) { }
@@ -8028,8 +8033,20 @@
     }
 
     function goToCharSelect() {
-      if (afkOn) toggleAFK();
-      if (char) { char.lastSaved = Date.now(); saveSlots(); }
+      if (char) {
+        if (afkOn) {
+          char.afkEnabled = true;
+          char.lastAfkAt = Date.now();
+          clearInterval(afkInterval);
+          afkInterval = null;
+          afkOn = false;
+        } else {
+          char.afkEnabled = false;
+          char.lastAfkAt = null;
+        }
+        char.lastSaved = Date.now();
+        saveSlots({ preserveAfkState: true });
+      }
       showScreen('screen-charselect');
       renderSlots();
     }
