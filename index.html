@@ -3316,17 +3316,28 @@
                 <i class="ti ti-bolt"
                   style="font-size:14px"></i>
                 <span
-                  style="flex:1">Use
-                  Class
-                  Skill</span>
-
-                <button
-                  class="btn active"
-                  id="skill-auto-btn"
-                  onclick="toggleAutoSkill(event)"
-                  style="font-size:10px;padding:2px 8px">
-                  ON
-                </button>
+                  style="flex:1;display:flex;flex-direction:column;gap:4px">
+                  <span style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <span>Use
+                      Class
+                      Skill</span>
+                    <button
+                      class="btn active"
+                      id="skill-auto-btn"
+                      onclick="toggleAutoSkill(event)"
+                      style="font-size:10px;padding:2px 8px">
+                      ON
+                    </button>
+                  </span>
+                  <span style="display:flex;flex-wrap:wrap;gap:4px">
+                    <button class="btn active" id="skill-slot-1-btn" data-static-label="1" onclick="toggleAutoSkillSlot(0, event)" style="font-size:10px;padding:2px 7px">1</button>
+                    <button class="btn active" id="skill-slot-2-btn" data-static-label="2" onclick="toggleAutoSkillSlot(1, event)" style="font-size:10px;padding:2px 7px">2</button>
+                    <button class="btn active" id="skill-slot-3-btn" data-static-label="3" onclick="toggleAutoSkillSlot(2, event)" style="font-size:10px;padding:2px 7px">3</button>
+                    <button class="btn active" id="skill-slot-4-btn" data-static-label="4" onclick="toggleAutoSkillSlot(3, event)" style="font-size:10px;padding:2px 7px">4</button>
+                    <button class="btn active" id="skill-slot-5-btn" data-static-label="5" onclick="toggleAutoSkillSlot(4, event)" style="font-size:10px;padding:2px 7px">5</button>
+                    <button class="btn active" id="skill-slot-6-btn" data-static-label="6" onclick="toggleAutoSkillSlot(5, event)" style="font-size:10px;padding:2px 7px">6</button>
+                  </span>
+                </span>
               </div>
 
               <div
@@ -5869,6 +5880,11 @@
         }
         if (!Array.isArray(p.queue)) p.queue = ['attack', 'skill', 'potion_heal', 'potion_mana', 'auto_loot', 'heal_if_low', 'rest_if_oom', 'respawn_mob'];
         p.autoUseSkills = p.autoUseSkills !== false;
+        if (!Array.isArray(p.autoSkillSlots) || p.autoSkillSlots.length !== 6) {
+          p.autoSkillSlots = [true, true, true, true, true, true];
+        } else {
+          p.autoSkillSlots = p.autoSkillSlots.slice(0, 6).map(v => v !== false);
+        }
         p.autoUseHpPotions = p.autoUseHpPotions !== false;
         p.autoUseMpPotions = p.autoUseMpPotions !== false;
         p.autoRestHpPercent = Math.max(5, Math.min(95, Math.floor(Number(p.autoRestHpPercent || 40))));
@@ -6698,6 +6714,7 @@
     let dragSetupDone = false;
     let saveTimer = null;
     let autoUseSkills = true;
+    let autoSkillSlots = [true, true, true, true, true, true];
     let autoUseHpPotions = true;
     let autoUseMpPotions = true;
     let autoRestHpPercent = 40;
@@ -10665,14 +10682,32 @@
     function setAutoToggleButtonState(btnId, enabled) {
       const btn = document.getElementById(btnId);
       if (!btn) return;
-      btn.textContent = enabled ? 'ON' : 'OFF';
+      if (btn.dataset.staticLabel) {
+        btn.textContent = btn.dataset.staticLabel;
+      } else {
+        btn.textContent = enabled ? 'ON' : 'OFF';
+      }
       btn.classList.toggle('active', !!enabled);
+      btn.style.background = enabled ? '#1F8F4A' : '#8B2B2B';
+      btn.style.borderColor = enabled ? '#1F8F4A' : '#8B2B2B';
+      btn.style.color = enabled ? '#F3FFF7' : '#FFF1F1';
     }
 
     function refreshAutoBattleButtons() {
       setAutoToggleButtonState('skill-auto-btn', autoUseSkills);
       setAutoToggleButtonState('hp-potion-auto-btn', autoUseHpPotions);
       setAutoToggleButtonState('mp-potion-auto-btn', autoUseMpPotions);
+      const maxSkillSlots = getMaxMemorizedSpellSlots(char);
+      for (let i = 0; i < 6; i++) {
+        const btnId = 'skill-slot-' + (i + 1) + '-btn';
+        const btn = document.getElementById(btnId);
+        if (!btn) continue;
+        const unlocked = i < maxSkillSlots;
+        btn.style.display = unlocked ? 'inline-flex' : 'none';
+        if (unlocked) {
+          setAutoToggleButtonState(btnId, autoSkillSlots[i] !== false);
+        }
+      }
     }
 
     function getCurrentAfkProfileSnapshot() {
@@ -10681,6 +10716,7 @@
       return {
         queue: getQueueOrder(),
         autoUseSkills: !!autoUseSkills,
+        autoSkillSlots: autoSkillSlots.slice(0, 6).map(v => v !== false),
         autoUseHpPotions: !!autoUseHpPotions,
         autoUseMpPotions: !!autoUseMpPotions,
         autoRestHpPercent: Math.max(5, Math.min(95, Math.floor(Number(autoRestHpPercent || 40)))),
@@ -10699,6 +10735,12 @@
       if (!profile || typeof profile !== 'object') return false;
 
       autoUseSkills = profile.autoUseSkills !== false;
+      if (Array.isArray(profile.autoSkillSlots) && profile.autoSkillSlots.length) {
+        autoSkillSlots = profile.autoSkillSlots.slice(0, 6).map(v => v !== false);
+        while (autoSkillSlots.length < 6) autoSkillSlots.push(true);
+      } else {
+        autoSkillSlots = [true, true, true, true, true, true];
+      }
       autoUseHpPotions = profile.autoUseHpPotions !== false;
       autoUseMpPotions = profile.autoUseMpPotions !== false;
 
@@ -10999,6 +11041,7 @@
           if (autoUseSkills) {
             const maxSlots = getMaxMemorizedSpellSlots(char);
             for (let i = 0; i < maxSlots; i++) {
+              if (autoSkillSlots[i] === false) continue;
               if (castMemorizedSpell(i, true)) {
                 return;
               }
@@ -11495,50 +11538,30 @@
       event.stopPropagation();
 
       autoUseSkills = !autoUseSkills;
+      refreshAutoBattleButtons();
+      log('Auto class skills ' + (autoUseSkills ? 'enabled' : 'disabled') + '.', 'info');
+    }
 
-      const btn = document.getElementById('skill-auto-btn');
-
-      if (autoUseSkills) {
-        btn.textContent = 'ON';
-        btn.classList.add('active');
-        log('Auto class skills enabled.', 'info');
-      } else {
-        btn.textContent = 'OFF';
-        btn.classList.remove('active');
-        log('Auto class skills disabled.', 'info');
-      }
+    function toggleAutoSkillSlot(slotIdx, event) {
+      if (event) event.stopPropagation();
+      if (!Number.isInteger(slotIdx) || slotIdx < 0 || slotIdx >= 6) return;
+      autoSkillSlots[slotIdx] = !(autoSkillSlots[slotIdx] !== false);
+      refreshAutoBattleButtons();
+      log('Auto skill slot ' + (slotIdx + 1) + ' ' + (autoSkillSlots[slotIdx] ? 'enabled' : 'disabled') + '.', 'info');
     }
 
     function toggleAutoHpPotion(event) {
       event.stopPropagation();
       autoUseHpPotions = !autoUseHpPotions;
-      const btn = document.getElementById('hp-potion-auto-btn');
-
-      if (autoUseHpPotions) {
-        btn.textContent = 'ON';
-        btn.classList.add('active');
-        log('Auto HP potion enabled.', 'info');
-      } else {
-        btn.textContent = 'OFF';
-        btn.classList.remove('active');
-        log('Auto HP potion disabled.', 'info');
-      }
+      refreshAutoBattleButtons();
+      log('Auto HP potion ' + (autoUseHpPotions ? 'enabled' : 'disabled') + '.', 'info');
     }
 
     function toggleAutoMpPotion(event) {
       event.stopPropagation();
       autoUseMpPotions = !autoUseMpPotions;
-      const btn = document.getElementById('mp-potion-auto-btn');
-
-      if (autoUseMpPotions) {
-        btn.textContent = 'ON';
-        btn.classList.add('active');
-        log('Auto MP potion enabled.', 'info');
-      } else {
-        btn.textContent = 'OFF';
-        btn.classList.remove('active');
-        log('Auto MP potion disabled.', 'info');
-      }
+      refreshAutoBattleButtons();
+      log('Auto MP potion ' + (autoUseMpPotions ? 'enabled' : 'disabled') + '.', 'info');
     }
 
     function updateSpeed(val) {
