@@ -1101,7 +1101,7 @@
 
     .eq-paperdoll-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 8px;
     }
 
@@ -1114,8 +1114,9 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: center;
+      align-items: stretch;
       text-align: center;
+      overflow: hidden;
     }
 
     .eq-slot-name {
@@ -1128,12 +1129,28 @@
     .eq-slot-item {
       font-size: 11px;
       font-weight: 500;
+      width: 100%;
     }
 
     .eq-slot-stats {
       font-size: 10px;
       color: #378ADD;
       margin-top: 2px;
+    }
+
+    .eq-slot-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+      margin-top: 6px;
+      width: 100%;
+    }
+
+    .eq-slot-actions .btn {
+      font-size: 10px;
+      padding: 3px 7px;
+      width: 100%;
+      white-space: normal;
     }
 
     .eq-bag-area {
@@ -2382,6 +2399,16 @@
           <div
             class="stat-row">
             <span
+              class="stat-label">Mercenary</span><span
+              class="stat-val"
+              id="merc-name-disp">None</span>
+          </div>
+          <div
+            style="font-size:10px;color:var(--text-secondary);margin:2px 0 6px"
+            id="merc-role-disp">No contract active.</div>
+          <div
+            class="stat-row">
+            <span
               class="stat-label">HP
               Potions</span><span
               class="stat-val"
@@ -2887,18 +2914,6 @@
               <div
                 id="bag-tab-row"
                 class="bag-tab-row">
-              </div>
-              <div
-                style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-                <label
-                  for="bag-install-target-select"
-                  style="font-size:10px;color:var(--text-secondary)">Bag
-                  install
-                  target:</label>
-                <select
-                  id="bag-install-target-select"
-                  style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
-                </select>
               </div>
               <div
                 id="bag-meta"
@@ -3602,20 +3617,49 @@
       'Rusty Dagger': { slot: 'weapon', atk: 4, type: 'Piercing Weapon' },
       'Worn Shortsword': { slot: 'weapon', atk: 7, type: 'Sword' },
       'Cracked Staff': { slot: 'weapon', atk: 5, mp: 20, type: 'Staff' },
+      'Bronze Hatchet': { slot: 'weapon', atk: 6, type: 'Axe' },
+      'Ashen Longbow': { slot: 'weapon', atk: 9, type: 'Bow' },
+      'Runed Mace': { slot: 'weapon', atk: 11, mp: 18, type: 'Mace' },
+      'Velium Spear': { slot: 'weapon', atk: 14, type: 'Polearm' },
+
       'Tattered Robe': { slot: 'chest', def: 3, mp: 10, type: 'Cloth Armor' },
+      'Studded Jerkin': { slot: 'chest', def: 6, hp: 24, type: 'Leather Armor' },
+      'Scaled Cuirass': { slot: 'chest', def: 11, hp: 42, type: 'Scale Armor' },
+      'Frostwoven Mantle': { slot: 'chest', def: 9, mp: 36, type: 'Mystic Armor' },
       'Ghoul-Touched Cloak': { slot: 'chest', def: 8, hp: 30, type: 'Rare Cloak' },
-      'Rawhide Boots': { slot: 'feet', def: 2, hp: 10, type: 'Leather Boots' },
       'Hate Infused Plate': { slot: 'chest', def: 15, hp: 60, type: 'Plate Armor' },
-      'Gnoll Fang Earring': { slot: 'charm', atk: 2, def: 2, type: 'Charm' },
+      'Knight Chestplate': { slot: 'chest', def: 18, hp: 80, type: 'Plate Armor' },
+
+      'Patchwork Leggings': { slot: 'legs', def: 4, hp: 14, type: 'Cloth Leggings' },
+      'Chain Legguards': { slot: 'legs', def: 8, hp: 28, type: 'Chain Legguards' },
+      'Runed Greaves': { slot: 'legs', def: 12, hp: 40, mp: 12, type: 'Runed Greaves' },
+
+      'Rawhide Boots': { slot: 'feet', def: 2, hp: 10, type: 'Leather Boots' },
+      'Traveler Sandals': { slot: 'feet', def: 3, mp: 8, type: 'Sandals' },
+      'Iron Sabatons': { slot: 'feet', def: 7, hp: 22, type: 'Plate Boots' },
+      'Glacier Treads': { slot: 'feet', def: 10, hp: 34, type: 'Frost Boots' },
+
       'Cazic Quill': { slot: 'offhand', mp: 35, atk: 3, type: 'Focus Item' },
-      'Steel Longsword': { slot: 'weapon', atk: 12, type: 'Sword' },
-      'Knight Chestplate': { slot: 'chest', def: 18, hp: 80, type: 'Plate Armor' }
+      'Bone Ward Totem': { slot: 'offhand', def: 5, hp: 18, type: 'Totem' },
+      'Mirror Shield': { slot: 'offhand', def: 9, hp: 26, type: 'Shield' },
+      'Storm Orb': { slot: 'offhand', atk: 5, mp: 40, type: 'Orb' },
+
+      'Gnoll Fang Earring': { slot: 'charm', atk: 2, def: 2, type: 'Charm' },
+      'Ember Sigil': { slot: 'charm', atk: 3, hp: 12, type: 'Charm' },
+      'Warden Idol': { slot: 'charm', def: 4, hp: 20, type: 'Charm' },
+      'Astral Loop': { slot: 'charm', mp: 28, atk: 2, type: 'Charm' },
+
+      'Steel Longsword': { slot: 'weapon', atk: 12, type: 'Sword' }
     };
 
     const WEAPON_PROCS = {
       'Rusty Dagger': { name: 'Jagged Wound', chance: 0.12, type: 'poison', min: 4, max: 9 },
       'Worn Shortsword': { name: 'Sundering Slash', chance: 0.1, type: 'damage', min: 6, max: 12, weaken: 1 },
       'Cracked Staff': { name: 'Mana Surge', chance: 0.12, type: 'mana', min: 10, max: 20 },
+      'Bronze Hatchet': { name: 'Rending Chop', chance: 0.11, type: 'damage', min: 7, max: 14, weaken: 1 },
+      'Ashen Longbow': { name: 'Kindled Volley', chance: 0.1, type: 'poison', min: 8, max: 15 },
+      'Runed Mace': { name: 'Glyph Burst', chance: 0.12, type: 'mana', min: 12, max: 24 },
+      'Velium Spear': { name: 'Piercing Gale', chance: 0.13, type: 'damage', min: 11, max: 20, weaken: 2 },
       'Steel Longsword': { name: 'Steel Tempest', chance: 0.14, type: 'damage', min: 12, max: 22, weaken: 2 }
     };
 
@@ -3631,11 +3675,46 @@
       'Twilight Scholar': {
         pieces: ['Cracked Staff', 'Tattered Robe', 'Cazic Quill'],
         bonus2: { atk: 2, def: 2, procChance: 0.02 }
+      },
+      'Wild Hunter': {
+        pieces: ['Ashen Longbow', 'Studded Jerkin', 'Traveler Sandals'],
+        bonus2: { atk: 3, def: 2, procChance: 0.02 }
+      },
+      'Storm Vanguard': {
+        pieces: ['Velium Spear', 'Runed Greaves', 'Mirror Shield'],
+        bonus2: { atk: 4, def: 3, procChance: 0.03 }
+      },
+      'Ashen Seer': {
+        pieces: ['Runed Mace', 'Frostwoven Mantle', 'Astral Loop'],
+        bonus2: { atk: 3, def: 2, procChance: 0.03 }
       }
     };
 
 
-    const LOOT = ['Rusty Dagger', 'Tattered Robe', 'Rawhide Boots', 'Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Cracked Staff', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot'];
+    const LOOT = [
+      'Rusty Dagger', 'Worn Shortsword', 'Cracked Staff', 'Bronze Hatchet', 'Ashen Longbow',
+      'Tattered Robe', 'Studded Jerkin', 'Patchwork Leggings', 'Rawhide Boots', 'Traveler Sandals',
+      'Gnoll Fang Earring', 'Ember Sigil', 'Bone Ward Totem',
+      'Steel Longsword', 'Knight Chestplate', 'Chain Legguards', 'Iron Sabatons', 'Mirror Shield', 'Warden Idol',
+      'Runed Mace', 'Velium Spear', 'Scaled Cuirass', 'Frostwoven Mantle', 'Runed Greaves', 'Glacier Treads', 'Storm Orb', 'Astral Loop',
+      'Ghoul-Touched Cloak', 'Hate Infused Plate', 'Cazic Quill',
+      'Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot'
+    ];
+    const LOOT_TIER_STARTER = [
+      'Rusty Dagger', 'Worn Shortsword', 'Cracked Staff', 'Bronze Hatchet',
+      'Tattered Robe', 'Studded Jerkin', 'Patchwork Leggings', 'Rawhide Boots', 'Traveler Sandals',
+      'Gnoll Fang Earring', 'Ember Sigil', 'Bone Ward Totem'
+    ];
+    const LOOT_TIER_MID = [
+      'Ashen Longbow', 'Steel Longsword', 'Runed Mace',
+      'Scaled Cuirass', 'Ghoul-Touched Cloak', 'Chain Legguards', 'Iron Sabatons',
+      'Cazic Quill', 'Mirror Shield', 'Warden Idol', 'Astral Loop'
+    ];
+    const LOOT_TIER_ADVANCED = [
+      'Velium Spear', 'Knight Chestplate', 'Hate Infused Plate', 'Frostwoven Mantle',
+      'Runed Greaves', 'Glacier Treads', 'Storm Orb'
+    ];
+    const LOOT_MISC_BASES = ['Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot'];
     const ITEM_AFFIX_POOL = {
       weapon: [
         { stat: 'atk', min: 1, max: 5, prefix: 'Jagged', suffix: 'Slaying' },
@@ -3677,17 +3756,74 @@
       'Cracked Staff': [
         { id: 'stormspine', name: 'Stormspine', rolls: { atk: 6, mp: 44 } }
       ],
+      'Bronze Hatchet': [
+        { id: 'briarcleaver', name: 'Briarcleaver', rolls: { atk: 12, hp: 18 } }
+      ],
+      'Ashen Longbow': [
+        { id: 'embersight', name: 'Embersight', rolls: { atk: 14, mp: 20 } }
+      ],
+      'Runed Mace': [
+        { id: 'glyphbreaker', name: 'Glyphbreaker', rolls: { atk: 13, mp: 34 } }
+      ],
+      'Velium Spear': [
+        { id: 'icethorn_pike', name: 'Icethorn Pike', rolls: { atk: 18, def: 5 } }
+      ],
       'Tattered Robe': [
         { id: 'veil_of_ashes', name: 'Veil of Ashes', rolls: { def: 7, mp: 42 } }
+      ],
+      'Studded Jerkin': [
+        { id: 'wolfhide_harness', name: 'Wolfhide Harness', rolls: { def: 9, hp: 34 } }
+      ],
+      'Scaled Cuirass': [
+        { id: 'basilisk_carapace', name: 'Basilisk Carapace', rolls: { def: 12, hp: 48 } }
+      ],
+      'Frostwoven Mantle': [
+        { id: 'winterveil', name: 'Winterveil', rolls: { def: 10, mp: 50 } }
       ],
       'Rawhide Boots': [
         { id: 'duststep', name: 'Duststep', rolls: { def: 5, hp: 30 } }
       ],
+      'Patchwork Leggings': [
+        { id: 'trailbound_wraps', name: 'Trailbound Wraps', rolls: { def: 7, hp: 28 } }
+      ],
+      'Chain Legguards': [
+        { id: 'vanguard_legplates', name: 'Vanguard Legplates', rolls: { def: 11, hp: 36 } }
+      ],
+      'Runed Greaves': [
+        { id: 'sigil_treads', name: 'Sigil Treads', rolls: { def: 14, hp: 44, mp: 18 } }
+      ],
+      'Traveler Sandals': [
+        { id: 'wayfarer_step', name: 'Wayfarer Step', rolls: { def: 6, mp: 20 } }
+      ],
+      'Iron Sabatons': [
+        { id: 'dreadmarch_boots', name: 'Dreadmarch Boots', rolls: { def: 10, hp: 34 } }
+      ],
+      'Glacier Treads': [
+        { id: 'frozen_stride', name: 'Frozen Stride', rolls: { def: 12, hp: 44 } }
+      ],
       'Gnoll Fang Earring': [
         { id: 'packlords_trophy', name: "Packlord's Trophy", rolls: { atk: 4, def: 4, hp: 22 } }
       ],
+      'Ember Sigil': [
+        { id: 'emberheart_seal', name: 'Emberheart Seal', rolls: { atk: 5, hp: 26 } }
+      ],
+      'Warden Idol': [
+        { id: 'idol_of_oaks', name: 'Idol of Oaks', rolls: { def: 6, hp: 34 } }
+      ],
+      'Astral Loop': [
+        { id: 'starlit_band', name: 'Starlit Band', rolls: { atk: 4, mp: 40 } }
+      ],
       'Cazic Quill': [
         { id: 'quill_of_fear', name: 'Quill of Fear', rolls: { atk: 7, mp: 50 } }
+      ],
+      'Bone Ward Totem': [
+        { id: 'totem_of_laments', name: 'Totem of Laments', rolls: { def: 7, hp: 30 } }
+      ],
+      'Mirror Shield': [
+        { id: 'aegis_of_reflection', name: 'Aegis of Reflection', rolls: { def: 12, hp: 38 } }
+      ],
+      'Storm Orb': [
+        { id: 'stormcore', name: 'Stormcore', rolls: { atk: 8, mp: 56 } }
       ],
       'Steel Longsword': [
         { id: 'oathcleaver', name: 'Oathcleaver', rolls: { atk: 16, hp: 30 } }
@@ -3724,6 +3860,44 @@
       occultistReforge: 80,
       occultistSocket: 65
     };
+    const MAX_SHOP_SELLBACK_RATE = 0.65;
+
+    const MERCENARY_TYPES = {
+      sellsword: {
+        name: 'Sellsword',
+        role: 'Damage',
+        desc: 'A hardened blade who adds steady weapon damage every combat round.',
+        baseCost: 180,
+        levelScale: 18,
+        upkeepBase: 36,
+        upkeepScale: 3,
+        supportChance: 0.62,
+        supportCooldownMs: 2200
+      },
+      hexer: {
+        name: 'Hexer',
+        role: 'Debuff',
+        desc: 'A curse-caster who weakens enemy offense and defense while chipping in damage.',
+        baseCost: 210,
+        levelScale: 20,
+        upkeepBase: 42,
+        upkeepScale: 3,
+        supportChance: 0.56,
+        supportCooldownMs: 2300
+      },
+      templar: {
+        name: 'Templar',
+        role: 'Healing',
+        desc: 'A battlefield healer who restores health and can strike when you are already stable.',
+        baseCost: 240,
+        levelScale: 22,
+        upkeepBase: 48,
+        upkeepScale: 4,
+        supportChance: 0.58,
+        supportCooldownMs: 2300
+      }
+    };
+    const MERCENARY_UPKEEP_INTERVAL_MS = 180000;
 
     const NAMED_BY_ZONE = {
       0: ['a rabid rat king', 'a bat matriarch'],
@@ -4058,6 +4232,207 @@
       for (let i = 0; i < dateKey.length; i++) hash += dateKey.charCodeAt(i) * (i + 3);
       const idx = Math.abs(hash + (zi * 17)) % ZONE_EVENTS.length;
       return ZONE_EVENTS[idx];
+    }
+
+    function getMercenaryHireCost(mercType, targetChar = char) {
+      const merc = MERCENARY_TYPES[mercType];
+      if (!merc) return 0;
+      const level = Math.max(1, Number(targetChar?.level || 1));
+      return getMerchantPrice(merc.baseCost + Math.floor(level * merc.levelScale));
+    }
+
+    function getMercenaryUpkeepCost(mercType, targetChar = char) {
+      const merc = MERCENARY_TYPES[mercType];
+      if (!merc) return 0;
+      const level = Math.max(1, Number(targetChar?.level || 1));
+      return getMerchantPrice(merc.upkeepBase + Math.floor(level * merc.upkeepScale));
+    }
+
+    function formatMercenaryCountdown(ms) {
+      const totalSec = Math.max(0, Math.ceil(ms / 1000));
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      if (mins <= 0) return secs + 's';
+      return mins + 'm ' + secs + 's';
+    }
+
+    function getActiveMercenary(targetChar = char) {
+      if (!targetChar || !targetChar.mercenary) return null;
+      return MERCENARY_TYPES[targetChar.mercenary.type] || null;
+    }
+
+    function getMercenaryDisplayName(targetChar = char) {
+      const merc = getActiveMercenary(targetChar);
+      if (!merc) return 'None';
+      const customName = String(targetChar?.mercenary?.customName || '').trim();
+      return customName || merc.name;
+    }
+
+    function renameMercenaryPrompt() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const merc = getActiveMercenary();
+      if (!merc) {
+        log('Hire a mercenary before renaming.', 'info');
+        return;
+      }
+
+      const currentName = getMercenaryDisplayName();
+      const proposed = window.prompt('Rename mercenary (1-24 chars). Leave blank to reset to default.', currentName);
+      if (proposed === null) return;
+
+      const trimmed = String(proposed).trim().slice(0, 24);
+      if (!trimmed || trimmed.toLowerCase() === merc.name.toLowerCase()) {
+        char.mercenary.customName = '';
+        log('Mercenary name reset to ' + merc.name + '.', 'info');
+      } else {
+        char.mercenary.customName = trimmed;
+        log('Mercenary renamed to ' + trimmed + '.', 'info');
+      }
+
+      renderAll();
+      autoSave();
+    }
+
+    function processMercenaryUpkeep(targetChar = char) {
+      if (!targetChar || !targetChar.mercenary) return;
+
+      const mercType = targetChar.mercenary.type || 'none';
+      const mercData = MERCENARY_TYPES[mercType];
+      if (!mercData) {
+        targetChar.mercenary.nextUpkeepAt = 0;
+        return;
+      }
+
+      const now = Date.now();
+      if (!Number.isFinite(Number(targetChar.mercenary.nextUpkeepAt)) || Number(targetChar.mercenary.nextUpkeepAt) <= 0) {
+        targetChar.mercenary.nextUpkeepAt = now + MERCENARY_UPKEEP_INTERVAL_MS;
+        return;
+      }
+
+      let nextDueAt = Number(targetChar.mercenary.nextUpkeepAt);
+      if (now < nextDueAt) return;
+
+      const cyclesDue = Math.floor((now - nextDueAt) / MERCENARY_UPKEEP_INTERVAL_MS) + 1;
+      const upkeepPerCycle = getMercenaryUpkeepCost(mercType, targetChar);
+      const affordableCycles = Math.floor(Math.max(0, Number(targetChar.gold || 0)) / Math.max(1, upkeepPerCycle));
+      const paidCycles = Math.min(cyclesDue, affordableCycles);
+
+      if (paidCycles > 0) {
+        const totalPaid = upkeepPerCycle * paidCycles;
+        targetChar.gold -= totalPaid;
+        targetChar.mercenary.totalUpkeepPaid = Math.max(0, Number(targetChar.mercenary.totalUpkeepPaid || 0)) + totalPaid;
+        targetChar.mercenary.lastUpkeepPaidAt = now;
+        nextDueAt += paidCycles * MERCENARY_UPKEEP_INTERVAL_MS;
+        targetChar.mercenary.nextUpkeepAt = nextDueAt;
+        log('Mercenary wages paid: ' + totalPaid + 'g (' + paidCycles + ' cycle' + (paidCycles === 1 ? '' : 's') + ').', 'info');
+      }
+
+      if (paidCycles < cyclesDue) {
+        const failedMercName = getMercenaryDisplayName(targetChar);
+        targetChar.mercenary.type = 'none';
+        targetChar.mercenary.customName = '';
+        targetChar.mercenary.nextUpkeepAt = 0;
+        targetChar.mercenary.actionReadyAt = 0;
+        log(failedMercName + ' contract ended due to unpaid wages.', 'info');
+      }
+    }
+
+    function hireMercenary(mercType) {
+      if (!char || !MERCENARY_TYPES[mercType]) return;
+      ensureExtendedSystems(char);
+
+      const merc = MERCENARY_TYPES[mercType];
+      const currentType = char.mercenary.type || 'none';
+      if (currentType === mercType) {
+        log(merc.name + ' is already under contract.', 'info');
+        return;
+      }
+
+      const cost = getMercenaryHireCost(mercType);
+      if (char.gold < cost) {
+        log('Not enough gold to hire ' + merc.name + ' (' + cost + 'g).', 'info');
+        return;
+      }
+
+      char.gold -= cost;
+      char.mercenary.type = mercType;
+      char.mercenary.customName = '';
+      char.mercenary.totalPaid = Math.max(0, Number(char.mercenary.totalPaid || 0)) + cost;
+      char.mercenary.hires = Math.max(0, Number(char.mercenary.hires || 0)) + 1;
+      char.mercenary.lastHiredAt = Date.now();
+      char.mercenary.nextUpkeepAt = Date.now() + MERCENARY_UPKEEP_INTERVAL_MS;
+      char.mercenary.actionReadyAt = 0;
+
+      log((currentType !== 'none' ? 'Contract switched. ' : '') + getMercenaryDisplayName() + ' joins your group for ' + cost + ' gold.', 'loot');
+      renderAll();
+      autoSave();
+    }
+
+    function dismissMercenary() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const merc = getActiveMercenary();
+      if (!merc) {
+        log('No mercenary is currently hired.', 'info');
+        return;
+      }
+
+      const mercName = getMercenaryDisplayName();
+      char.mercenary.type = 'none';
+      char.mercenary.customName = '';
+      char.mercenary.nextUpkeepAt = 0;
+      char.mercenary.actionReadyAt = 0;
+      log(mercName + ' leaves the group.', 'info');
+      renderAll();
+      autoSave();
+    }
+
+    function triggerMercenarySupport(source = 'attack') {
+      if (!char || !mob) return false;
+      ensureExtendedSystems(char);
+      const mercType = char.mercenary.type || 'none';
+      const merc = MERCENARY_TYPES[mercType];
+      if (!merc) return false;
+
+      const mercName = getMercenaryDisplayName();
+      const level = Math.max(1, Number(char.level || 1));
+      const now = Date.now();
+
+      if (Number(char.mercenary.actionReadyAt || 0) > now) return false;
+      char.mercenary.actionReadyAt = now + (merc.supportCooldownMs || 2200);
+      if (Math.random() > Number(merc.supportChance || 0.6)) return false;
+
+      if (mercType === 'sellsword') {
+        const dmg = Math.max(3, Math.floor(level * 1.35 + char.atk * 0.18 + Math.random() * 5));
+        mob.hp -= dmg;
+        log(mercName + ' cuts ' + mob.name + ' for ' + dmg + ' damage.', 'dmg');
+      } else if (mercType === 'hexer') {
+        const dmg = Math.max(2, Math.floor(level * 1.05 + char.atk * 0.1 + Math.random() * 4));
+        const atkDebuff = Math.max(1, Math.floor(level / 26) + 1);
+        const defDebuff = Math.max(1, Math.floor(level / 30) + 1);
+        mob.hp -= dmg;
+        mob.atk = Math.max(1, mob.atk - atkDebuff);
+        mob.def = Math.max(0, mob.def - defDebuff);
+        log(mercName + ' hexes ' + mob.name + ' for ' + dmg + ' damage and weakens it.', 'dmg');
+      } else if (mercType === 'templar') {
+        const hurt = char.maxHp - char.hp;
+        if (hurt > Math.floor(char.maxHp * 0.08)) {
+          const healAmt = Math.min(hurt, Math.max(6, Math.floor(char.maxHp * 0.07 + level * 1.1 + Math.random() * 7)));
+          char.hp = Math.min(char.maxHp, char.hp + healAmt);
+          log(mercName + ' mends you for ' + healAmt + ' HP.', 'heal');
+        } else {
+          const dmg = Math.max(2, Math.floor(level * 0.9 + char.mpRegen * 1.2 + Math.random() * 3));
+          mob.hp -= dmg;
+          log(mercName + ' smites ' + mob.name + ' for ' + dmg + ' damage.', 'dmg');
+        }
+      }
+
+      if (mob.hp <= 0) {
+        killMob();
+        return true;
+      }
+      return false;
     }
 
     function getSpellFactionRequirement(sp) {
@@ -4579,6 +4954,58 @@
       return normalized;
     }
 
+    function pickWeightedLootBase(zoneIdx = null, source = 'loot') {
+      const ziRaw = zoneIdx === null ? Number(char?.zone || 0) : Number(zoneIdx);
+      const zi = Math.max(0, Math.min(ZONES.length - 1, Number.isFinite(ziRaw) ? Math.floor(ziRaw) : 0));
+      const zoneMinLvl = Number(ZONES[zi]?.minLvl || 1);
+
+      let starterWeight = 0.7;
+      let midWeight = 0.2;
+      let advancedWeight = 0.1;
+      let miscWeight = 0.15;
+
+      if (zoneMinLvl >= 65) {
+        starterWeight = 0.1; midWeight = 0.33; advancedWeight = 0.57; miscWeight = 0.06;
+      } else if (zoneMinLvl >= 45) {
+        starterWeight = 0.18; midWeight = 0.42; advancedWeight = 0.4; miscWeight = 0.08;
+      } else if (zoneMinLvl >= 25) {
+        starterWeight = 0.34; midWeight = 0.43; advancedWeight = 0.23; miscWeight = 0.11;
+      } else if (zoneMinLvl >= 12) {
+        starterWeight = 0.52; midWeight = 0.32; advancedWeight = 0.16; miscWeight = 0.13;
+      }
+
+      if (source === 'mystic') {
+        starterWeight *= 0.45;
+        midWeight *= 1.05;
+        advancedWeight *= 1.5;
+        miscWeight *= 0.5;
+      }
+
+      const roll = Math.random();
+      const weightedEquipPools = [
+        { weight: starterWeight, pool: LOOT_TIER_STARTER },
+        { weight: midWeight, pool: LOOT_TIER_MID },
+        { weight: advancedWeight, pool: LOOT_TIER_ADVANCED }
+      ];
+
+      let acc = 0;
+      for (const entry of weightedEquipPools) {
+        acc += entry.weight;
+        if (roll <= acc) {
+          const validPool = entry.pool.filter(name => LOOT.includes(name));
+          if (validPool.length) return validPool[Math.floor(Math.random() * validPool.length)];
+          break;
+        }
+      }
+
+      if (Math.random() < miscWeight) {
+        const miscPool = LOOT_MISC_BASES.filter(name => LOOT.includes(name));
+        if (miscPool.length) return miscPool[Math.floor(Math.random() * miscPool.length)];
+      }
+
+      return LOOT[Math.floor(Math.random() * LOOT.length)];
+    }
+
     function rollItemVariant(baseName, source = 'loot') {
       const data = ITEM_DATA[baseName];
       if (!data) return baseName;
@@ -4642,7 +5069,10 @@
       if (!data) {
         if (isContainerEntry(entry)) {
           const bagData = CONTAINER_ITEMS[getItemBaseName(entry)];
-          return Math.max(12, Math.floor((bagData?.cost || 20) * 0.45));
+          const baseValue = Math.max(1, Math.floor(Number(bagData?.cost || 20)));
+          const payout = Math.max(12, Math.floor(baseValue * 0.45));
+          const cap = Math.max(1, Math.floor(baseValue * MAX_SHOP_SELLBACK_RATE));
+          return Math.min(payout, cap);
         }
         return Math.floor(Math.random() * 10) + 5;
       }
@@ -4660,7 +5090,8 @@
       else if (entry && typeof entry === 'object') value += 9;
 
       value += Math.floor(Math.random() * 6);
-      return Math.max(6, value);
+      const fullValue = Math.max(6, value);
+      return Math.max(1, Math.floor(fullValue * MAX_SHOP_SELLBACK_RATE));
     }
 
     function getRerollCost(entry) {
@@ -5413,6 +5844,19 @@
       if (!targetChar.afkGoal || !AFK_GOALS[targetChar.afkGoal]) {
         targetChar.afkGoal = 'balanced';
       }
+
+      if (!targetChar.mercenary || typeof targetChar.mercenary !== 'object' || Array.isArray(targetChar.mercenary)) {
+        targetChar.mercenary = { type: 'none', customName: '', totalPaid: 0, hires: 0, lastHiredAt: 0, totalUpkeepPaid: 0, nextUpkeepAt: 0, lastUpkeepPaidAt: 0, actionReadyAt: 0 };
+      }
+      targetChar.mercenary.type = MERCENARY_TYPES[targetChar.mercenary.type] ? targetChar.mercenary.type : 'none';
+      targetChar.mercenary.customName = String(targetChar.mercenary.customName || '').trim().slice(0, 24);
+      targetChar.mercenary.totalPaid = Math.max(0, Math.floor(Number(targetChar.mercenary.totalPaid || 0)));
+      targetChar.mercenary.hires = Math.max(0, Math.floor(Number(targetChar.mercenary.hires || 0)));
+      targetChar.mercenary.lastHiredAt = Math.max(0, Math.floor(Number(targetChar.mercenary.lastHiredAt || 0)));
+      targetChar.mercenary.totalUpkeepPaid = Math.max(0, Math.floor(Number(targetChar.mercenary.totalUpkeepPaid || 0)));
+      targetChar.mercenary.nextUpkeepAt = Math.max(0, Math.floor(Number(targetChar.mercenary.nextUpkeepAt || 0)));
+      targetChar.mercenary.lastUpkeepPaidAt = Math.max(0, Math.floor(Number(targetChar.mercenary.lastUpkeepPaidAt || 0)));
+      targetChar.mercenary.actionReadyAt = Math.max(0, Math.floor(Number(targetChar.mercenary.actionReadyAt || 0)));
 
       if (!targetChar.afkProfiles || typeof targetChar.afkProfiles !== 'object' || Array.isArray(targetChar.afkProfiles)) {
         targetChar.afkProfiles = { slot1: null, slot2: null, slot3: null };
@@ -6270,6 +6714,7 @@
     let afkHiddenAt = null;
     let activeBagIndex = 0;
     let bagInstallTargetIndex = 0;
+    let pendingBagInstallTargets = {};
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     const CURRENT_VERSION = '1.1.1';
@@ -7147,6 +7592,7 @@
         spellCooldowns: {},
         quests: freshQuests(),
         statusEffects: [],
+        mercenary: { type: 'none', customName: '', totalPaid: 0, hires: 0, lastHiredAt: 0, totalUpkeepPaid: 0, nextUpkeepAt: 0, lastUpkeepPaidAt: 0, actionReadyAt: 0 },
         prestige: { rank: 0, points: 0, spent: 0, perks: { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 }, lastStarterGrantRank: 0 },
         aa: { points: 0, spent: 0, nodes: {}, xpProgress: 0, xpAllocPct: 0 },
         afkProfiles: { slot1: null, slot2: null, slot3: null },
@@ -7416,6 +7862,7 @@
       if (!char) return;
       ensureSpellState(char);
       ensureExtendedSystems(char);
+      processMercenaryUpkeep(char);
       cleanupStatusEffects(char, true);
       document.getElementById('char-name-disp').textContent = char.name;
       document.getElementById('char-class-disp').textContent = (char.race ? char.race + ' ' : '') + char.cls + ' — Level ' + char.level;
@@ -7433,6 +7880,20 @@
       document.getElementById('def-disp').textContent = char.def + aa.defBonus;
       document.getElementById('gold-disp').textContent = char.gold + 'g';
       document.getElementById('faction-disp').textContent = getFactionTier(char.faction || 0);
+      const activeMerc = getActiveMercenary();
+      const mercNameDisp = document.getElementById('merc-name-disp');
+      const mercRoleDisp = document.getElementById('merc-role-disp');
+      if (mercNameDisp) mercNameDisp.textContent = activeMerc ? getMercenaryDisplayName() : 'None';
+      if (mercRoleDisp) {
+        if (activeMerc) {
+          const upkeep = getMercenaryUpkeepCost(char.mercenary.type || 'none');
+          const dueAt = Number(char.mercenary.nextUpkeepAt || 0);
+          const untilDue = dueAt > 0 ? Math.max(0, dueAt - Date.now()) : MERCENARY_UPKEEP_INTERVAL_MS;
+          mercRoleDisp.textContent = activeMerc.role + ' · Upkeep ' + upkeep + 'g / 3m · Due in ' + formatMercenaryCountdown(untilDue);
+        } else {
+          mercRoleDisp.textContent = 'No contract active.';
+        }
+      }
       const hpPotionsTotal = (char.healpotions || 0) + (char.healpotions_lhp || 0);
       const mpPotionsTotal = (char.manapotions || 0) + (char.manapotions_lmp || 0);
       document.getElementById('hp-potion').textContent = hpPotionsTotal + ' pots';
@@ -7451,7 +7912,9 @@
       document.getElementById('hp-bar').style.width = Math.max(0, char.hp / char.maxHp * 100) + '%';
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
       document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
-      renderMob(); renderInv(); renderShop(); renderLootTab(); renderSpellbook();
+      renderMob();
+      if (!isBagInstallSelectorActive()) renderInv();
+      renderShop(); renderLootTab(); renderSpellbook();
       renderDungeonTab();
       renderAATab();
       renderPrestigeTab();
@@ -7816,8 +8279,39 @@
         const rarityClass = getItemRarityClass(item);
         const setName = getItemSetName(item);
         const setLine = setName ? `<div class="eq-slot-stats">Set: ${setName}</div>` : '';
-        el.innerHTML = `<div class="eq-item-name ${rarityClass}">${label}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>${setLine}`;
+        const quality = getItemQuality(item);
+        const locked = isItemLocked(item);
+        const socketable = quality !== 'Unique' && quality !== 'Runeword';
+        const socketObj = socketable ? toSocketableItem(item) : null;
+        const hasSocketRoom = socketObj ? socketObj.maxSockets < getSocketCapacityForBase(socketObj.base) : false;
+        const hasEmptySocket = socketObj ? (socketObj.maxSockets > 0 && socketObj.sockets.some(s => !s)) : false;
+        const hasRuneInBag = hasAnyRuneAvailable();
+        const socketCost = socketable ? getSocketCost(item) : 0;
+        const socketBtn = socketable && hasSocketRoom
+          ? `<button class="btn" onclick="addSocketToItem('${slot}')" ${locked ? 'disabled' : ''}>Add Socket (${socketCost}g)</button>`
+          : '';
+        const insertRuneBtn = socketable && hasEmptySocket
+          ? `<button class="btn" onclick="insertRuneIntoItem('${slot}')" ${(locked || !hasRuneInBag) ? 'disabled' : ''}>Insert Rune</button>`
+          : '';
+
+        el.innerHTML = `<div class="eq-item-name ${rarityClass}">${label}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>${setLine}<div class="eq-slot-actions"><button class="btn" onclick="unequipItem('${slot}')">Unequip</button>${socketBtn}${insertRuneBtn}</div>`;
       });
+    }
+
+    function isBagInstallSelectorActive() {
+      const active = document.activeElement;
+      return !!(active && active.id && active.id.startsWith('bag-install-target-'));
+    }
+
+    function getPendingBagInstallTarget(index, maxBagCount) {
+      const raw = pendingBagInstallTargets[index];
+      const parsed = Number.isFinite(Number(raw)) ? Math.floor(Number(raw)) : 0;
+      return Math.max(0, Math.min(Math.max(0, maxBagCount - 1), parsed));
+    }
+
+    function setPendingBagInstallTarget(index, targetBagIndex) {
+      if (index < 0) return;
+      pendingBagInstallTargets[index] = Math.max(0, Math.floor(Number(targetBagIndex) || 0));
     }
 
     function renderInv() {
@@ -7827,7 +8321,6 @@
 
       const el = document.getElementById('inv-list');
       const tabRow = document.getElementById('bag-tab-row');
-      const installTargetSelect = document.getElementById('bag-install-target-select');
       const bagMeta = document.getElementById('bag-meta');
       const runeMeta = document.getElementById('rune-stash-meta');
       const runeList = document.getElementById('rune-stash-list');
@@ -7872,23 +8365,6 @@
       const bagLayout = getBagLayout(char);
       activeBagIndex = Math.max(0, Math.min(activeBagIndex, bagLayout.length - 1));
       const realBagCount = Math.max(1, char.bags.length);
-      bagInstallTargetIndex = Math.max(0, Math.min(bagInstallTargetIndex, realBagCount - 1));
-
-      if (installTargetSelect) {
-        installTargetSelect.innerHTML = '';
-        for (let i = 0; i < realBagCount; i++) {
-          const opt = document.createElement('option');
-          opt.value = String(i);
-          opt.textContent = 'Bag ' + (i + 1);
-          installTargetSelect.appendChild(opt);
-        }
-        installTargetSelect.value = String(bagInstallTargetIndex);
-        installTargetSelect.onchange = () => {
-          const next = Number(installTargetSelect.value || 0);
-          bagInstallTargetIndex = Math.max(0, Math.min(realBagCount - 1, Number.isFinite(next) ? next : 0));
-          renderInv();
-        };
-      }
 
       bagLayout.forEach((bag, b) => {
         const btn = document.createElement('button');
@@ -7972,6 +8448,15 @@
           bonus = runeData ? ('+' + runeData.value + ' ' + runeData.stat.toUpperCase()) : 'Rune';
         }
 
+        const selectedInstallTarget = isContainer ? getPendingBagInstallTarget(absoluteIndex, realBagCount) : 0;
+        const installTargetOptions = isContainer
+          ? Array.from({ length: realBagCount }, (_, bagIndex) => {
+            const currentBagName = char.bags[bagIndex];
+            const currentBagSlots = (CONTAINER_ITEMS[currentBagName] || CONTAINER_ITEMS['Worn Pouch']).slots;
+            return '<option value="' + bagIndex + '" ' + (bagIndex === selectedInstallTarget ? 'selected' : '') + '>Bag ' + (bagIndex + 1) + ' (' + currentBagSlots + ' slots)</option>';
+          }).join('')
+          : '';
+
         const card = document.createElement('div');
         card.className = 'eq-item-card';
 
@@ -7993,7 +8478,7 @@
       <div class="eq-item-bonus">${bonus || 'No stats'}</div>
 
       <div class="eq-item-actions compact">
-        ${isContainer ? `<button class="btn" onclick="installContainerFromInventory(${absoluteIndex})">Install in Bag ${bagInstallTargetIndex + 1}</button>` : (isEquip ? `<button class="btn" onclick="equipItem(${absoluteIndex})">Equip</button>` : '')}
+        ${isContainer ? `<select id="bag-install-target-${absoluteIndex}" onchange="setPendingBagInstallTarget(${absoluteIndex}, this.value)" style="font-size:11px;padding:3px 7px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">${installTargetOptions}</select><button class="btn" onclick="installContainerFromInventory(${absoluteIndex}, getPendingBagInstallTarget(${absoluteIndex}, ${realBagCount}))">Install</button>` : (isEquip ? `<button class="btn" onclick="equipItem(${absoluteIndex})">Equip</button>` : '')}
         ${socketBtn}
         ${insertRuneBtn}
         ${rerollBtn}
@@ -8015,7 +8500,7 @@
       }
     }
 
-    function installContainerFromInventory(index) {
+    function installContainerFromInventory(index, targetBagIndex = 0) {
       if (index < 0 || index >= char.inventory.length) return;
       ensureBagState(char);
 
@@ -8033,8 +8518,8 @@
 
       const bagLayout = getBagLayout(char);
       const realBagCount = Math.max(1, char.bags.length);
-      bagInstallTargetIndex = Math.max(0, Math.min(bagInstallTargetIndex, realBagCount - 1));
-      const targetBag = bagLayout[bagInstallTargetIndex];
+      const resolvedTargetIndex = Math.max(0, Math.min(realBagCount - 1, Number.isFinite(targetBagIndex) ? targetBagIndex : 0));
+      const targetBag = bagLayout[resolvedTargetIndex];
       if (!targetBag || targetBag.overflow) {
         log('Select a real bag tab to install this container.', 'info');
         return;
@@ -8093,56 +8578,56 @@
           '<button class="btn" onclick="setLootFilterPresetFromUI()">Apply Preset</button>';
       }
 
-      let shopHtml = `
+      const renderPotionCard = (name, effectText, basePriceKey, ownedKey, buyOneHandler, buyTenHandler) => {
+        const price = getMerchantPrice(SHOP_BASE_PRICES[basePriceKey]);
+        const sellPrice = getPotionSellPrice(SHOP_BASE_PRICES[basePriceKey]);
+        const owned = Math.max(0, Number(char[ownedKey] || 0));
+        const disabledAttr = owned > 0 ? '' : 'disabled';
+        return `
         <div class="eq-item-card">
-          <div class="eq-item-name">Minor Healing Potion</div>
-          <div class="eq-item-type">Restores 50 HP</div>
-          <div class="eq-item-bonus">${hpMinorPrice} Gold</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="buyHpPotion()">Buy</button>
-            <button class="btn" onclick="buyHpPotion_10()">Buy x10</button>
+          <div class="eq-item-name">${name}</div>
+          <div class="eq-item-type">${effectText}</div>
+          <div class="eq-item-bonus">Buy: ${price} Gold · Sell: ${sellPrice} Gold</div>
+          <div class="eq-item-actions compact">
+            <button class="btn" onclick="${buyOneHandler}()">Buy</button>
+            <button class="btn" onclick="${buyTenHandler}()">Buy x10</button>
+            <button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},false)" ${disabledAttr}>Sell 1</button>
+            <button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},true)" ${disabledAttr}>Sell All</button>
           </div>
-          <div class="eq-item-owned" style="display: flex; flex-direction: column; justify-content: flex-end; height: 100px; width: 100px;">Owned: ${char.healpotions || 0}</div>
-        </div>
-
-        <div class="eq-item-card">
-          <div class="eq-item-name">Minor Mana Potion</div>
-          <div class="eq-item-type">Restores 50 MP</div>
-          <div class="eq-item-bonus">${mpMinorPrice} Gold</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="buyMpPotion()">Buy</button>
-            <button class="btn" onclick="buyMpPotion_10()">Buy x10</button>
-          </div>
-          <div class="eq-item-owned" style="display: flex; flex-direction: column; justify-content: flex-end; height: 100px; width: 100px;">Owned: ${char.manapotions || 0}</div>
+          <div class="eq-item-owned">Owned: ${owned}</div>
         </div>
       `;
+      };
+
+      let shopHtml =
+        renderPotionCard('Minor Healing Potion', 'Restores 50 HP', 'hpMinor', 'healpotions', 'buyHpPotion', 'buyHpPotion_10') +
+        renderPotionCard('Minor Mana Potion', 'Restores 50 MP', 'mpMinor', 'manapotions', 'buyMpPotion', 'buyMpPotion_10');
 
       // Gate Light Potions behind character level > 10 (shows up starting at Level 11)
       if (char.level > 10) {
+        shopHtml +=
+          renderPotionCard('Light Healing Potion', 'Restores 125 HP', 'hpLight', 'healpotions_lhp', 'buyHpPotion_LHP', 'buyHpPotion_LHP_10') +
+          renderPotionCard('Light Mana Potion', 'Restores 125 MP', 'mpLight', 'manapotions_lmp', 'buyMpPotion_LMP', 'buyMpPotion_LMP_10');
+      }
+
+      const activeMercType = char.mercenary?.type || 'none';
+      Object.entries(MERCENARY_TYPES).forEach(([mercType, mercData]) => {
+        const hireCost = getMercenaryHireCost(mercType);
+        const upkeepCost = getMercenaryUpkeepCost(mercType);
+        const isActive = activeMercType === mercType;
         shopHtml += `
           <div class="eq-item-card">
-            <div class="eq-item-name">Light Healing Potion</div>
-            <div class="eq-item-type">Restores 125 HP</div>
-            <div class="eq-item-bonus">${hpLightPrice} Gold</div>
-            <div class="eq-item-actions">
-              <button class="btn" onclick="buyHpPotion_LHP()">Buy</button>
-              <button class="btn" onclick="buyHpPotion_LHP_10()">Buy x10</button>
+            <div class="eq-item-name">${mercData.name}</div>
+            <div class="eq-item-type">Mercenary · ${mercData.role}</div>
+            <div class="eq-item-bonus">${mercData.desc}</div>
+            <div class="eq-item-type">Hire: ${hireCost} Gold · Upkeep: ${upkeepCost} Gold / 3m${isActive ? ' · Active' : ''}</div>
+            <div class="eq-item-actions compact">
+              <button class="btn${isActive ? ' active' : ''}" onclick="hireMercenary('${mercType}')" ${isActive ? 'disabled' : ''}>${isActive ? 'Active' : 'Hire'}</button>
+              ${isActive ? '<button class="btn" onclick="renameMercenaryPrompt()">Rename</button><button class="btn danger" onclick="dismissMercenary()">Dismiss</button>' : ''}
             </div>
-            <div class="eq-item-owned" style="display: flex; flex-direction: column; justify-content: flex-end; height: 100px; width: 100px;">Owned: ${char.healpotions_lhp || 0}</div>
-          </div>
-
-          <div class="eq-item-card">
-            <div class="eq-item-name">Light Mana Potion</div>
-            <div class="eq-item-type">Restores 125 MP</div>
-            <div class="eq-item-bonus">${mpLightPrice} Gold</div>
-            <div class="eq-item-actions">
-              <button class="btn" onclick="buyMpPotion_LMP()">Buy</button>
-              <button class="btn" onclick="buyMpPotion_LMP_10()">Buy x10</button>
-            </div>
-            <div class="eq-item-owned" style="display: flex; flex-direction: column; justify-content: flex-end; height: 100px; width: 100px;">Owned: ${char.manapotions_lmp || 0}</div>
           </div>
         `;
-      }
+      });
 
       shopHtml += `
         <div class="eq-item-card">
@@ -8797,7 +9282,7 @@
           <div class="eq-item-name">${sp.name}</div>
           <div class="eq-item-type">${sp.mp} MP · ${sp.cooldown}s cooldown${cd > 0 ? ' · Ready in ' + cd + 's' : ''}</div>
           <div class="eq-item-bonus">${sp.desc}</div>
-          <div class="eq-item-actions">
+          <div class="eq-item-actions compact">
             ${memBtns.join('')}
           </div>
         `;
@@ -8988,6 +9473,12 @@
         log(sp.name + ' restores ' + manaAmt + ' MP.', 'heal');
       }
 
+      if (mob && triggerMercenarySupport('spell')) {
+        char.spellCooldowns[sp.id] = Date.now() + sp.cooldown * 1000;
+        autoSave();
+        return true;
+      }
+
       char.spellCooldowns[sp.id] = Date.now() + sp.cooldown * 1000;
       renderAll();
       autoSave();
@@ -9160,6 +9651,10 @@
         return true;
       }
 
+      if (mob.hp > 0 && triggerMercenarySupport('attack')) {
+        return true;
+      }
+
       if (mob.hp <= 0) { killMob(); return true; }
 
       mob.turnCount = (mob.turnCount || 0) + 1;
@@ -9226,6 +9721,7 @@
         if (mob) { mob.hp -= dmg; eff = 'Backstabs ' + mob.name + ' for ' + dmg + '!'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
         else eff = 'no target';
       } else { eff = 'taunts the enemy!'; if (mob) mob.atk = Math.max(1, mob.atk - 3); }
+      if (mob && triggerMercenarySupport('skill')) return;
       log(cls.skill + ': ' + eff, 'dmg'); renderAll();
     }
 
@@ -9302,7 +9798,7 @@
         }
       });
       if (Math.random() < ((mob.named ? 0.8 : 0.4) * (event.lootMult || 1) * (dungeonMod.lootMult || 1) * (aa.lootMult || 1) * (prestige.lootMult || 1) * streakLootMult)) {
-        const lootBase = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
+        const lootBase = Math.random() < 0.05 ? zone.rare : pickWeightedLootBase(char.zone, mob.named ? 'loot_named' : 'loot');
         const loot = rollItemVariant(lootBase, mob.named ? 'loot_named' : 'loot');
         processLootDrop(loot, 'Looted');
       }
@@ -9886,9 +10382,48 @@
       autoSave();
     }
 
-    function addSocketToItem(index) {
-      if (index < 0 || index >= char.inventory.length) return;
-      const entry = char.inventory[index];
+    function getGearTarget(target) {
+      if (typeof target === 'number') {
+        if (target < 0 || target >= char.inventory.length) return null;
+        return {
+          kind: 'inventory',
+          entry: char.inventory[target],
+          set(nextEntry) {
+            char.inventory[target] = nextEntry;
+          }
+        };
+      }
+
+      if (typeof target === 'string') {
+        if (!char.equipment || !char.equipment[target]) return null;
+        return {
+          kind: 'equipment',
+          slot: target,
+          entry: char.equipment[target],
+          set(nextEntry) {
+            char.equipment[target] = nextEntry;
+          }
+        };
+      }
+
+      return null;
+    }
+
+    function replaceGearTarget(targetInfo, nextEntry, preserveStats = true) {
+      if (!targetInfo) return;
+      if (targetInfo.kind === 'equipment' && preserveStats) {
+        unequipStats(targetInfo.entry);
+        targetInfo.set(nextEntry);
+        applyItemStats(nextEntry);
+        return;
+      }
+      targetInfo.set(nextEntry);
+    }
+
+    function addSocketToItem(target) {
+      const targetInfo = getGearTarget(target);
+      if (!targetInfo) return;
+      const entry = targetInfo.entry;
       if (isItemLocked(entry)) {
         log('Item is locked. Unlock it before socket changes.', 'info');
         return;
@@ -9927,16 +10462,17 @@
       obj.maxSockets += 1;
       if (!Array.isArray(obj.sockets)) obj.sockets = [];
       while (obj.sockets.length < obj.maxSockets) obj.sockets.push(null);
-      char.inventory[index] = obj;
+      replaceGearTarget(targetInfo, obj, false);
 
       log('Occultist added a socket to ' + getItemDisplayName(obj) + ' for ' + cost + 'g.', 'loot');
       renderAll();
       autoSave();
     }
 
-    function insertRuneIntoItem(index) {
-      if (index < 0 || index >= char.inventory.length) return;
-      const entry = char.inventory[index];
+    function insertRuneIntoItem(target) {
+      const targetInfo = getGearTarget(target);
+      if (!targetInfo) return;
+      const entry = targetInfo.entry;
       if (isItemLocked(entry)) {
         log('Item is locked. Unlock it before socket changes.', 'info');
         return;
@@ -9971,8 +10507,7 @@
         return;
       }
 
-      const itemIndex = index;
-      obj = toSocketableItem(char.inventory[itemIndex]);
+      obj = toSocketableItem(targetInfo.entry);
       if (!obj) return;
 
       const targetIdx = obj.sockets.findIndex(s => !s);
@@ -9983,9 +10518,26 @@
 
       obj.sockets[targetIdx] = runeName;
       tryApplyRuneword(obj);
-      char.inventory[itemIndex] = obj;
+      replaceGearTarget(targetInfo, obj, true);
 
       log('Inserted ' + runeName + ' into ' + getItemDisplayName(obj) + '.', 'loot');
+      renderAll();
+      autoSave();
+    }
+
+    function unequipItem(slot) {
+      if (!char || !char.equipment || !char.equipment[slot]) return;
+      const item = char.equipment[slot];
+
+      unequipStats(item);
+      char.equipment[slot] = null;
+      char.inventory.push(item);
+
+      const bagCount = getBagLayout(char).length;
+      if (activeBagIndex >= bagCount) activeBagIndex = bagCount - 1;
+
+      log('Unequipped ' + getItemDisplayName(item) + '.', 'loot');
+
       renderAll();
       autoSave();
     }
@@ -10527,7 +11079,7 @@
         }
 
         if (Math.random() < 0.4) {
-          const lootBase = Math.random() < 0.05 ? zone.rare : LOOT[Math.floor(Math.random() * LOOT.length)];
+          const lootBase = Math.random() < 0.05 ? zone.rare : pickWeightedLootBase(simZoneIdx, 'afk');
           const loot = rollItemVariant(lootBase, 'afk');
           if (shouldAutoSellLootItem(loot)) {
             const value = getItemSellValue(loot);
@@ -10600,6 +11152,30 @@
       char.healpotions += 1;
 
       log('Bought a healing potion.', 'loot');
+
+      renderAll();
+      autoSave();
+    }
+
+    function getPotionSellPrice(basePrice) {
+      return Math.max(1, Math.floor(getMerchantPrice(basePrice) * 0.5));
+    }
+
+    function sellPotionStock(potionKey, potionName, basePrice, sellAll = false) {
+      if (!char) return;
+
+      const owned = Math.max(0, Number(char[potionKey] || 0));
+      if (owned <= 0) {
+        log('No ' + potionName.toLowerCase() + ' to sell.', 'info');
+        return;
+      }
+
+      const quantity = sellAll ? owned : 1;
+      const totalGold = getPotionSellPrice(basePrice) * quantity;
+      char[potionKey] = owned - quantity;
+      char.gold += totalGold;
+
+      log('Sold ' + quantity + ' ' + potionName.toLowerCase() + (quantity === 1 ? '' : 's') + ' for ' + totalGold + ' gold.', 'loot');
 
       renderAll();
       autoSave();
@@ -10868,7 +11444,7 @@
         log('Mystic Chest exploded! You found a ' + topRune + ' and a Unique Shard!', 'loot');
       } else if (r < 0.12) {
         // rare gear
-        const lootBase = LOOT[Math.floor(Math.random() * LOOT.length)];
+        const lootBase = pickWeightedLootBase(char?.zone ?? 0, 'mystic');
         const loot = rollItemVariant(lootBase, 'mystic');
         char.inventory.push(loot);
         log('Mystic Chest yielded: ' + getItemDisplayName(loot) + '.', 'loot');
