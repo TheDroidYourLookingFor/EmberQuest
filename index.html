@@ -1235,6 +1235,12 @@
       margin-top: 5px;
     }
 
+    .eq-item-owned {
+      font-size: 15px;
+      color: #ffffff;
+      margin-top: 5px;
+    }
+
     .eq-item-actions {
       display: flex;
       gap: 6px;
@@ -2686,6 +2692,16 @@
               onclick="fleeCombat()"><i
                 class="ti ti-run"></i>
               Flee</button>
+            <button class="btn"
+              onclick="senseCorpse()"><i
+                class="ti ti-radar-2"></i>
+              Sense
+              Corpse</button>
+            <button class="btn"
+              onclick="recoverCorpse()"><i
+                class="ti ti-skull"></i>
+              Recover
+              Corpse</button>
           </div>
         </div>
         <div
@@ -2710,18 +2726,6 @@
               Gate
               to
               Bind</button>
-            <button
-              class="btn"
-              onclick="senseCorpse()"><i
-                class="ti ti-radar-2"></i>
-              Sense
-              Corpse</button>
-            <button
-              class="btn"
-              onclick="recoverCorpse()"><i
-                class="ti ti-skull"></i>
-              Recover
-              Corpse</button>
           </div>
           <div
             style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
@@ -3709,10 +3713,12 @@
     const RUNEWORD_EVOLUTION_MULT_PER_TIER = 0.2;
     const RUNE_TRANSMUTE_CHAIN = ['Rune: El', 'Rune: Tir', 'Rune: Tal', 'Rune: Ort', 'Rune: Sol', 'Rune: Dol'];
     const SHOP_BASE_PRICES = {
-      hpMinor: 5,
-      mpMinor: 5,
-      hpLight: 100,
-      mpLight: 100,
+      hpMinor: 50,
+      mpMinor: 50,
+      hpLesser: 250,
+      mpLesser: 250,
+      hpLight: 500,
+      mpLight: 500,
       steelLongsword: 40,
       knightChestplate: 55,
       occultistReforge: 80,
@@ -3756,10 +3762,10 @@
     ];
 
     const CONTAINER_ITEMS = {
-      'Worn Pouch': { slots: 8, cost: 0, starter: true },
-      'Small Bag': { slots: 10, cost: 45 },
-      "Traveler's Pack": { slots: 12, cost: 95 },
-      'Tailored Backpack': { slots: 14, cost: 165 }
+      'Worn Pouch': { slots: 10, cost: 0, starter: true },
+      'Small Bag': { slots: 20, cost: 250 },
+      "Traveler's Pack": { slots: 30, cost: 750 },
+      'Tailored Backpack': { slots: 40, cost: 1500 }
     };
 
     const SPELLBOOK_BY_CLASS = {
@@ -7907,10 +7913,6 @@
         bagMeta.textContent += ' · Active Sets: ' + setBonus.names.join(', ') + ' (+' + setBonus.atk + ' ATK, +' + setBonus.def + ' DEF)';
       }
 
-      if (!char.inventory.length) {
-        el.innerHTML = '<div class="eq-empty-bag">Your bags are empty.</div>';
-      }
-
       visibleItems.forEach((item, localIndex) => {
         const absoluteIndex = start + localIndex;
         const data = getItemData(item) || {};
@@ -8100,6 +8102,7 @@
             <button class="btn" onclick="buyHpPotion()">Buy</button>
             <button class="btn" onclick="buyHpPotion_10()">Buy x10</button>
           </div>
+          <div class="eq-item-owned" style="display: flex; flex-direction: column; justify-content: flex-end; height: 100px; width: 100px;">Owned: ${char.healpotions || 0}</div>
         </div>
 
         <div class="eq-item-card">
@@ -8110,6 +8113,7 @@
             <button class="btn" onclick="buyMpPotion()">Buy</button>
             <button class="btn" onclick="buyMpPotion_10()">Buy x10</button>
           </div>
+          <div class="eq-item-owned" style="display: flex; flex-direction: column; justify-content: flex-end; height: 100px; width: 100px;">Owned: ${char.manapotions || 0}</div>
         </div>
       `;
 
@@ -8124,6 +8128,7 @@
               <button class="btn" onclick="buyHpPotion_LHP()">Buy</button>
               <button class="btn" onclick="buyHpPotion_LHP_10()">Buy x10</button>
             </div>
+            <div class="eq-item-owned" style="display: flex; flex-direction: column; justify-content: flex-end; height: 100px; width: 100px;">Owned: ${char.healpotions_lhp || 0}</div>
           </div>
 
           <div class="eq-item-card">
@@ -8134,6 +8139,7 @@
               <button class="btn" onclick="buyMpPotion_LMP()">Buy</button>
               <button class="btn" onclick="buyMpPotion_LMP_10()">Buy x10</button>
             </div>
+            <div class="eq-item-owned" style="display: flex; flex-direction: column; justify-content: flex-end; height: 100px; width: 100px;">Owned: ${char.manapotions_lmp || 0}</div>
           </div>
         `;
       }
@@ -10249,24 +10255,47 @@
         const mpTotal = Math.max(0, Number(char.manapotions || 0) + Number(char.manapotions_lmp || 0));
         const hpNeed = Math.max(0, target - hpTotal);
         const mpNeed = Math.max(0, target - mpTotal);
-        const hpCost = getMerchantPrice(SHOP_BASE_PRICES.hpMinor);
-        const mpCost = getMerchantPrice(SHOP_BASE_PRICES.mpMinor);
-
-        if (hpNeed > 0 && char.gold >= hpCost) {
-          const buyCount = Math.min(hpNeed, Math.floor(char.gold / hpCost));
-          if (buyCount > 0) {
-            char.gold -= buyCount * hpCost;
-            char.healpotions = Number(char.healpotions || 0) + buyCount;
-            setAfkGoalAction('Auto-bought ' + buyCount + ' HP potion' + (buyCount === 1 ? '' : 's'));
+        const hpCostMinor = getMerchantPrice(SHOP_BASE_PRICES.hpMinor);
+        const mpCostMinor = getMerchantPrice(SHOP_BASE_PRICES.mpMinor);
+        const hpCostLesser = getMerchantPrice(SHOP_BASE_PRICES.hpLesser);
+        const mpCostLesser = getMerchantPrice(SHOP_BASE_PRICES.mpLesser);
+        let hpPotionCost = hpCostMinor;
+        let mpPotionCost = mpCostMinor;
+        let potionType = 'Minor';
+        if (char.level >= 10) {
+          if (char.gold >= hpCostLesser) {
+            hpPotionCost = hpCostLesser;
+            potionType = 'Lesser';
+          }
+          if (char.gold >= mpCostLesser) {
+            mpPotionCost = mpCostLesser;
+            potionType = 'Lesser';
           }
         }
 
-        if (mpNeed > 0 && char.gold >= mpCost) {
-          const buyCount = Math.min(mpNeed, Math.floor(char.gold / mpCost));
+        if (hpNeed > 0 && char.gold >= hpPotionCost) {
+          const buyCount = Math.min(hpNeed, Math.floor(char.gold / hpPotionCost));
           if (buyCount > 0) {
-            char.gold -= buyCount * mpCost;
-            char.manapotions = Number(char.manapotions || 0) + buyCount;
-            setAfkGoalAction('Auto-bought ' + buyCount + ' MP potion' + (buyCount === 1 ? '' : 's'));
+            char.gold -= buyCount * hpPotionCost;
+            if (potionType === 'Lesser') {
+              char.healpotions_lhp = Number(char.healpotions_lhp || 0) + buyCount;
+            } else {
+              char.healpotions = Number(char.healpotions || 0) + buyCount;
+            }
+            setAfkGoalAction('Auto-bought ' + buyCount + ' ' + potionType + ' HP potion' + (buyCount === 1 ? '' : 's'));
+          }
+        }
+
+        if (mpNeed > 0 && char.gold >= mpPotionCost) {
+          const buyCount = Math.min(mpNeed, Math.floor(char.gold / mpPotionCost));
+          if (buyCount > 0) {
+            char.gold -= buyCount * mpPotionCost;
+            if (potionType === 'Lesser') {
+              char.manapotions_lmp = Number(char.manapotions_lmp || 0) + buyCount;
+            } else {
+              char.manapotions = Number(char.manapotions || 0) + buyCount;
+            }
+            setAfkGoalAction('Auto-bought ' + buyCount + ' ' + potionType + ' MP potion' + (buyCount === 1 ? '' : 's'));
           }
         }
       }
