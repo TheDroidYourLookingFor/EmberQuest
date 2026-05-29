@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.2.2</title>
+    1.2.4</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -1183,49 +1183,74 @@
     /* ── EQ inventory ── */
     .eq-inventory-layout {
       display: grid;
-      grid-template-columns: minmax(160px, 190px) minmax(0, 1fr);
-      gap: 12px;
+      grid-template-columns: minmax(170px, 200px) minmax(0, 1fr);
+      gap: 14px;
       min-width: 0;
     }
 
+    /* Paperdoll panel */
     .eq-paperdoll {
       background: var(--bg-secondary);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      position: sticky;
+      top: 0;
+    }
+
+    .eq-paperdoll > h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
     }
 
     .eq-paperdoll-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 8px;
+      gap: 6px;
     }
 
     .eq-slot {
-      min-height: 58px;
       background: var(--bg-primary);
-      border: 1px dashed var(--border-md);
+      border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      padding: 6px;
+      padding: 7px 9px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: stretch;
-      text-align: center;
+      gap: 3px;
       overflow: hidden;
+      transition: border-color .15s;
+    }
+
+    .eq-slot:has(.eq-item-name) {
+      border-color: var(--border-md);
     }
 
     .eq-slot-name {
-      font-size: 10px;
+      font-size: 9px;
+      font-weight: 700;
       color: var(--text-secondary);
       text-transform: uppercase;
-      margin-bottom: 3px;
+      letter-spacing: .07em;
     }
 
     .eq-slot-item {
       font-size: 11px;
       font-weight: 500;
       width: 100%;
+    }
+
+    /* Stat chips inside equipped slots */
+    .eq-slot .eq-item-stats-grid {
+      margin-top: 3px;
+    }
+
+    .eq-slot .eq-stat-chip {
+      font-size: 9px;
+      padding: 1px 4px;
     }
 
     .eq-slot-stats {
@@ -1235,75 +1260,115 @@
     }
 
     .eq-slot-actions {
-      display: grid;
-      grid-template-columns: 1fr;
+      display: flex;
+      flex-wrap: wrap;
       gap: 4px;
-      margin-top: 6px;
+      margin-top: 5px;
       width: 100%;
     }
 
     .eq-slot-actions .btn {
       font-size: 10px;
       padding: 3px 7px;
-      width: 100%;
-      white-space: normal;
+      flex: 1 1 auto;
+      white-space: nowrap;
     }
 
+    /* Bag area */
     .eq-bag-area {
       background: var(--bg-secondary);
-      border-radius: var(--radius-md);
-      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px;
       min-width: 0;
+    }
+
+    .eq-bag-area > h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
     }
 
     .bag-tab-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
       margin-bottom: 8px;
     }
 
     .bag-tab-btn {
       font-size: 10px;
-      padding: 3px 8px;
-      border-radius: var(--radius-md);
-      border: 0.5px solid var(--border);
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
       background: var(--bg-primary);
       cursor: pointer;
       color: var(--text-secondary);
+      transition: all .15s;
+    }
+
+    .bag-tab-btn:hover {
+      border-color: var(--border-md);
+      color: var(--text-primary);
     }
 
     .bag-tab-btn.active {
-      color: var(--text-primary);
+      color: #fff;
       border-color: #378ADD;
-      background: #E6F1FB;
+      background: #378ADD;
     }
 
     @media(prefers-color-scheme:dark) {
       .bag-tab-btn.active {
-        background: #0C447C;
-        color: #B5D4F4;
+        background: #1a5fa8;
+        border-color: #378ADD;
+        color: #e8f4ff;
       }
     }
 
     .bag-meta {
       font-size: 10px;
       color: var(--text-secondary);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      padding: 5px 8px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
     }
 
     .eq-bag-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
       gap: 8px;
       min-width: 0;
     }
 
+    /* Item cards */
     .eq-item-card {
       background: var(--bg-primary);
-      border: 0.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      padding: 8px;
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .eq-item-card:hover {
+      border-color: var(--border-md);
+      box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    }
+
+    /* Rarity accent bar on left of card */
+    .eq-item-card .eq-item-inner {
+      padding: 9px 10px 8px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     .eq-item-top {
@@ -1315,7 +1380,8 @@
 
     .eq-item-name {
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
+      line-height: 1.3;
     }
 
     .rarity-common {
@@ -1405,8 +1471,10 @@
       font-size: 10px;
       color: var(--text-secondary);
       margin-top: 2px;
+      line-height: 1.4;
     }
 
+    /* Legacy flat bonus line (kept for non-grid contexts) */
     .eq-item-bonus {
       font-size: 10px;
       color: #1D9E75;
@@ -1416,26 +1484,65 @@
     .eq-item-stats-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
-      margin-top: 6px;
+      gap: 3px;
+      margin-top: 7px;
     }
 
     .eq-stat-chip {
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 700;
       color: #1D9E75;
-      background: rgba(29, 158, 117, 0.1);
-      border: 1px solid rgba(29, 158, 117, 0.3);
-      border-radius: 4px;
-      padding: 1px 6px;
+      background: rgba(29, 158, 117, 0.08);
+      border: 1px solid rgba(29, 158, 117, 0.28);
+      border-radius: 3px;
+      padding: 1px 5px;
       white-space: nowrap;
+      letter-spacing: .02em;
     }
 
     @media (prefers-color-scheme: dark) {
       .eq-stat-chip {
-        background: rgba(29, 158, 117, 0.15);
-        border-color: rgba(29, 158, 117, 0.4);
+        background: rgba(29, 158, 117, 0.13);
+        border-color: rgba(29, 158, 117, 0.38);
+        color: #2bc997;
       }
+    }
+
+    /* Socket row */
+    .eq-socket-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-top: 5px;
+      padding-top: 5px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .eq-rune-chip {
+      font-size: 10px;
+      font-weight: 600;
+      border: 1px solid;
+      border-radius: 3px;
+      padding: 1px 5px;
+      white-space: nowrap;
+      letter-spacing: .01em;
+    }
+
+    .eq-rune-filled {
+      background: rgba(0,0,0,.06);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .eq-rune-filled {
+        background: rgba(255,255,255,.05);
+      }
+    }
+
+    .eq-rune-empty {
+      color: var(--text-secondary);
+      border-color: var(--border);
+      border-style: dashed;
+      opacity: .6;
     }
 
     .eq-item-owned {
@@ -1444,6 +1551,7 @@
       margin-top: 5px;
     }
 
+    /* Action button bar — pinned to card bottom */
     .eq-item-actions {
       display: flex;
       gap: 6px;
@@ -1452,13 +1560,32 @@
 
     .eq-item-actions.compact {
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 3px;
+      margin-top: auto;
+      padding: 7px 10px 8px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
     }
 
     .eq-item-actions.compact .btn {
       font-size: 10px;
       padding: 3px 7px;
-      max-width: 100%;
+    }
+
+    /* Primary action (Equip) stands out */
+    .eq-item-actions.compact .btn:first-child {
+      background: rgba(55, 138, 221, 0.12);
+      border-color: rgba(55, 138, 221, 0.4);
+      color: #378ADD;
+      font-weight: 600;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .eq-item-actions.compact .btn:first-child {
+        background: rgba(55, 138, 221, 0.18);
+        border-color: rgba(55, 138, 221, 0.5);
+        color: #7abfff;
+      }
     }
 
     .eq-empty-bag {
@@ -1467,15 +1594,18 @@
     }
 
     .eq-empty-slot {
-      border: 1px dashed var(--border-md);
+      border: 1px dashed var(--border);
       border-radius: var(--radius-md);
-      min-height: 112px;
+      min-height: 96px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
       color: var(--text-secondary);
-      background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+      opacity: .5;
     }
 
     /* ══════════════════════════════════════════════════
@@ -2608,7 +2738,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.2.2</span>
+        1.2.4</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3356,19 +3486,14 @@
         <div
           id="tab-inv"
           style="display:none">
-          <h3>
-            Inventory
-          </h3>
+          <h3 style="display:none">Inventory</h3>
 
           <div
             class="eq-inventory-layout">
 
             <div
               class="eq-paperdoll">
-              <h3
-                style="margin-bottom:10px">
-                Equipped
-              </h3>
+              <h3>Equipped</h3>
 
               <div
                 class="eq-paperdoll-grid">
@@ -3454,12 +3579,9 @@
 
             <div
               class="eq-bag-area">
-              <h3
-                style="margin-bottom:10px">
-                Backpack
-              </h3>
-              <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-                <select id="inv-sort-select" onchange="setInventorySort(this.value)" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+              <h3>Backpack</h3>
+              <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+                <select id="inv-sort-select" onchange="setInventorySort(this.value)" style="font-size:11px;padding:4px 9px;border:1px solid var(--border-md);border-radius:20px;background:var(--bg-primary);color:var(--text-primary);cursor:pointer">
                   <option value="default">Sort: Default</option>
                   <option value="quality">Sort: Quality</option>
                   <option value="atk">Sort: ATK</option>
@@ -3467,7 +3589,7 @@
                   <option value="level">Sort: iLvl</option>
                   <option value="value">Sort: Value</option>
                 </select>
-                <select id="inv-filter-select" onchange="setInventoryFilter(this.value)" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+                <select id="inv-filter-select" onchange="setInventoryFilter(this.value)" style="font-size:11px;padding:4px 9px;border:1px solid var(--border-md);border-radius:20px;background:var(--bg-primary);color:var(--text-primary);cursor:pointer">
                   <option value="all">Filter: All</option>
                   <option value="weapon">Weapons</option>
                   <option value="armor">Armor</option>
@@ -3475,8 +3597,8 @@
                   <option value="misc">Misc</option>
                   <option value="magicplus">Magic+</option>
                 </select>
-                <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:4px">
-                  <input type="checkbox" id="inv-overflow-toggle" onchange="toggleAutoVendorOverflow(this.checked)"> Auto-vendor on full bags
+                <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:5px;cursor:pointer">
+                  <input type="checkbox" id="inv-overflow-toggle" onchange="toggleAutoVendorOverflow(this.checked)"> Auto-vendor overflow
                 </label>
               </div>
               <div
@@ -3782,7 +3904,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.2.2 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.2.4 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -6896,6 +7018,8 @@
           autoEquipUpgradeMetric: 'score',
           autoEquipUpgradeThreshold: 1,
           autoVendorOverflow: false,
+          autoSellDisplacedGear: false,
+          autoEquipBeforeAutoSell: false,
           keywordRules: [
             { match: 'bone', action: 'sell' },
             { match: 'tattered', action: 'sell' },
@@ -6928,6 +7052,8 @@
         autoEquipUpgradeMetric: targetChar.lootFilter.autoEquipUpgradeMetric || 'score',
         autoEquipUpgradeThreshold: Number(targetChar.lootFilter.autoEquipUpgradeThreshold ?? 1),
         autoVendorOverflow: !!targetChar.lootFilter.autoVendorOverflow,
+        autoSellDisplacedGear: !!targetChar.lootFilter.autoSellDisplacedGear,
+        autoEquipBeforeAutoSell: !!targetChar.lootFilter.autoEquipBeforeAutoSell,
         keywordRules: targetChar.lootFilter.keywordRules
       };
     }
@@ -7014,10 +7140,16 @@
       if (!upgrade) return false;
 
       unequipStats(current);
-      char.inventory.push(current);
       char.equipment[slot] = item;
       applyItemStats(item);
-      log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-equipped in place of ' + getItemDisplayName(current) + '.', 'loot');
+      if (lf.autoSellDisplacedGear && !isItemLocked(current) && !isItemFavorite(current)) {
+        const sellValue = getItemSellValue(current);
+        char.gold += sellValue;
+        log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-equipped; old ' + getItemDisplayName(current) + ' sold for ' + fmt(sellValue) + 'g.', 'loot');
+      } else {
+        char.inventory.push(current);
+        log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-equipped in place of ' + getItemDisplayName(current) + '.', 'loot');
+      }
       renderAll();
       autoSave();
       return true;
@@ -7400,7 +7532,7 @@
       targetChar.huntTargets = cleanedTargets;
 
       if (!targetChar.lootFilter || typeof targetChar.lootFilter !== 'object' || Array.isArray(targetChar.lootFilter)) {
-        targetChar.lootFilter = { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false, autoVendorOverflow: false };
+        targetChar.lootFilter = { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false, autoVendorOverflow: false, autoSellDisplacedGear: false, autoEquipBeforeAutoSell: false };
       }
       targetChar.lootFilter.autoSellJunk = !!targetChar.lootFilter.autoSellJunk;
       targetChar.lootFilter.autoSellNormalGear = !!targetChar.lootFilter.autoSellNormalGear;
@@ -9504,7 +9636,7 @@
         return;
       }
       const lvl = Math.max(1, char.level + 2);
-      const hp = Math.floor((30 + lvl * 18) * PHASE4.bossHpMult);
+      const hp = Math.floor((60 + lvl * 25) * PHASE4.bossHpMult);
       const mech = NAMED_MECHANICS.find(m => m.id === boss.mechanic) || NAMED_MECHANICS[0];
       mob = {
         name: '[Boss] ' + boss.name,
@@ -9948,7 +10080,7 @@
     const PHASE6 = {
       zoneLevelFloor: true,
       zoneRangeAbovePlayer: 2,
-      highLevelHpScale: 1.012,
+      highLevelHpScale: 1.12,
       tributeBaseGold: 2500,
       tributeGoldPerLevel: 350,
       tributeFactionPerDonation: 1,
@@ -11552,7 +11684,7 @@
         afkPinnedContractIdx: 0,
         huntTargets: {},
         huntStreak: { zone: null, target: '', count: 0 },
-        lootFilter: { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false, autoVendorOverflow: false },
+        lootFilter: { autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false, autoVendorOverflow: false, autoSellDisplacedGear: false, autoEquipBeforeAutoSell: false },
         lootFilterPreset: 'balanced',
         contractMastery: { level: 0, xp: 0, totalChains: 0 },
         afkGoal: 'balanced',
@@ -11847,11 +11979,11 @@
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
         if (typeof oldChar.hardcore !== 'boolean') oldChar.hardcore = false;
-        oldChar.version = '1.2.2';
-        if (!silent) log('Upgraded save data to v1.2.2 (bosses, dailies, achievements).', 'info');
+        oldChar.version = '1.2.4';
+        if (!silent) log('Upgraded save data to v1.2.4 (bosses, dailies, achievements).', 'info');
       }
 
-      if (oldChar.version === '1.2.2') {
+      if (oldChar.version === '1.2.4') {
         if (typeof ensurePetState === 'function') ensurePetState(oldChar);
         if (oldChar.mercenary && (!oldChar.mercenary.gear || typeof oldChar.mercenary.gear !== 'object')) {
           oldChar.mercenary.gear = { weapon: null };
@@ -12426,8 +12558,36 @@
           ? `<button class="btn" onclick="insertRuneIntoItem('${slot}')" ${(locked || !hasRuneInBag) ? 'disabled' : ''}>Insert Rune</button>`
           : '';
 
+        const rarityBorder = {
+          'rarity-legendary': '#F97316', 'rarity-mythic': '#EF4444',
+          'rarity-epic': '#A855F7',      'rarity-runeword': '#EAB308',
+          'rarity-rare': '#3B82F6',      'rarity-magic': '#22C55E',
+          'rarity-uncommon': '#22C55E'
+        }[rarityClass] || 'var(--border)';
         const statChips = stats.map(s => `<span class="eq-stat-chip">${s}</span>`).join('');
-        el.innerHTML = `<div class="eq-item-name ${rarityClass}">${label}</div><div class="eq-item-stats-grid">${statChips || '<span style="color:var(--text-secondary);font-size:11px">No stats</span>'}</div>${setLine}<div class="eq-slot-actions"><button class="btn" onclick="unequipItem('${slot}')">Unequip</button>${socketBtn}${insertRuneBtn}</div>`;
+
+        // Build socket row for equipped items
+        const RUNE_STAT_COLOR_EQ = { atk: '#F97316', def: '#3B82F6', hp: '#22C55E', mp: '#A855F7' };
+        let eqSocketRowHtml = '';
+        // Use normalised socket obj so plain-string items don't break
+        const _sockObj = (item && typeof item === 'object') ? toSocketableItem(item) : null;
+        if (_sockObj && _sockObj.maxSockets > 0) {
+          const maxSock = _sockObj.maxSockets;
+          const sockArr = Array.isArray(_sockObj.sockets) ? _sockObj.sockets.slice(0, maxSock) : [];
+          while (sockArr.length < maxSock) sockArr.push(null);
+          const sockChips = sockArr.map(r => {
+            if (r && RUNE_DATA[r]) {
+              const rd = RUNE_DATA[r];
+              const col = RUNE_STAT_COLOR_EQ[rd.stat] || '#999';
+              return '<span class="eq-rune-chip eq-rune-filled" style="border-color:' + col + ';color:' + col + '" title="' + r + '">'
+                + rd.id + ' <span style="opacity:.75">+' + rd.value + ' ' + rd.stat.toUpperCase() + '</span></span>';
+            }
+            return '<span class="eq-rune-chip eq-rune-empty" title="Empty socket">◇ Empty</span>';
+          }).join('');
+          eqSocketRowHtml = '<div class="eq-socket-row">' + sockChips + '</div>';
+        }
+
+        el.innerHTML = `<div style="border-left:3px solid ${rarityBorder};padding-left:6px"><div class="eq-item-name ${rarityClass}" style="font-size:11px">${label}</div><div class="eq-item-stats-grid">${statChips || '<span style="color:var(--text-secondary);font-size:10px;opacity:.6">No stats</span>'}</div>${eqSocketRowHtml}${setLine}</div><div class="eq-slot-actions"><button class="btn" onclick="unequipItem('${slot}')">Unequip</button>${socketBtn}${insertRuneBtn}</div>`;
         el.onmouseenter = (e) => showItemTooltipForEquippedSlot(slot, e);
         el.onmousemove = positionItemTooltip;
         el.onmouseleave = hideItemTooltip;
@@ -12558,8 +12718,7 @@
           if (stats[k]) bonus += ' +' + stats[k] + ' ' + ABILITY_LABELS[k];
         });
 
-        const sockets = getSocketSummary(item);
-        if (sockets) bonus += ` · [${sockets}]`;
+        // sockets rendered separately below as visual chips
 
         const quality = getItemQuality(item);
         const qualityTag = quality !== 'Normal' ? (' • ' + getItemQualityLabel(item)) : '';
@@ -12624,37 +12783,68 @@
           card.addEventListener('mouseleave', hideItemTooltip);
         }
 
-        if (locked || favorite) {
-          const tag = [];
-          if (favorite) tag.push('Favorite');
-          if (locked) tag.push('Locked');
-          itemType = itemType + ' · ' + tag.join(' · ');
-        }
+        // locked/favorite shown as badge icons in card header
 
         const ilvl = getItemLevel(item);
         const lvlBadge = ilvl ? `<div class="eq-item-type">iLvl ${ilvl}</div>` : '';
 
-        card.innerHTML = `
-      <div class="eq-item-top">
-        <div>
-          <div class="eq-item-name ${rarityClass}">${itemName}</div>
-          <div class="eq-item-type">${itemType}${qualityTag}</div>
-          ${lvlBadge}
-        </div>
-      </div>
+        // Rarity border accent colour
+        const rarityBorderColor = {
+          'rarity-legendary': '#F97316', 'rarity-mythic': '#EF4444',
+          'rarity-epic': '#A855F7',      'rarity-runeword': '#EAB308',
+          'rarity-rare': '#3B82F6',      'rarity-magic': '#22C55E',
+          'rarity-uncommon': '#22C55E'
+        }[rarityClass] || 'transparent';
 
-      <div class="eq-item-stats-grid">${bonus ? bonus.trim().split(/(?=\+)/).filter(Boolean).map(chip => '<span class="eq-stat-chip">' + chip.trim() + '</span>').join('') : '<span style="color:var(--text-secondary);font-size:11px">No stats</span>'}</div>
+        const statChipsHtml = bonus
+          ? bonus.trim().split(/(?=\+)/).filter(Boolean).map(chip => '<span class="eq-stat-chip">' + chip.trim() + '</span>').join('')
+          : '<span style="color:var(--text-secondary);font-size:10px;opacity:.6">No stats</span>';
 
-      <div class="eq-item-actions compact">
-        ${isContainer ? `<select id="bag-install-target-${absoluteIndex}" onchange="setPendingBagInstallTarget(${absoluteIndex}, this.value)" style="font-size:11px;padding:3px 7px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">${installTargetOptions}</select><button class="btn" onclick="installContainerFromInventory(${absoluteIndex}, getPendingBagInstallTarget(${absoluteIndex}, ${realBagCount}))">Install</button>` : (isEquip ? `<button class="btn" onclick="equipItem(${absoluteIndex})">Equip</button>` : '')}
-        ${socketBtn}
-        ${insertRuneBtn}
-        ${rerollBtn}
-        <button class="btn" onclick="toggleInventoryItemFlag(${absoluteIndex}, 'favorite')">${favorite ? 'Unfavorite' : 'Favorite'}</button>
-        <button class="btn" onclick="toggleInventoryItemFlag(${absoluteIndex}, 'locked')">${locked ? 'Unlock' : 'Lock'}</button>
-        <button class="btn" onclick="sellItem(${absoluteIndex})" ${locked ? 'disabled' : ''}>Sell</button>
-      </div>
-    `;
+        // Socket row — one chip per socket slot
+        const RUNE_STAT_COLOR = { atk: '#F97316', def: '#3B82F6', hp: '#22C55E', mp: '#A855F7' };
+        let socketRowHtml = '';
+        if (item && typeof item === 'object' && Number(item.maxSockets) > 0) {
+          const maxSock = Number(item.maxSockets);
+          const sockArr = Array.isArray(item.sockets) ? item.sockets.slice(0, maxSock) : [];
+          while (sockArr.length < maxSock) sockArr.push(null);
+          const sockChips = sockArr.map(r => {
+            if (r && RUNE_DATA[r]) {
+              const rd = RUNE_DATA[r];
+              const col = RUNE_STAT_COLOR[rd.stat] || '#999';
+              return '<span class="eq-rune-chip eq-rune-filled" style="border-color:' + col + ';color:' + col + '" title="' + r + '">'
+                + rd.id + ' <span style="opacity:.75">+' + rd.value + ' ' + rd.stat.toUpperCase() + '</span></span>';
+            }
+            return '<span class="eq-rune-chip eq-rune-empty" title="Empty socket">◇ Empty</span>';
+          }).join('');
+          socketRowHtml = '<div class="eq-socket-row">' + sockChips + '</div>';
+        }
+
+        const flagBadges = (locked || favorite)
+          ? '<div style="display:flex;gap:3px;flex-shrink:0">' + (favorite ? '<span style="font-size:10px" title="Favorite">⭐</span>' : '') + (locked ? '<span style="font-size:10px" title="Locked">🔒</span>' : '') + '</div>'
+          : '';
+        const containerBtn = isContainer
+          ? '<select id="bag-install-target-' + absoluteIndex + '" onchange="setPendingBagInstallTarget(' + absoluteIndex + ', this.value)" style="font-size:11px;padding:3px 7px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + installTargetOptions + '</select><button class=\"btn\" onclick=\"installContainerFromInventory(' + absoluteIndex + ', getPendingBagInstallTarget(' + absoluteIndex + ', ' + realBagCount + '))\">Install</button>'
+          : (isEquip ? '<button class=\"btn\" onclick=\"equipItem(' + absoluteIndex + ')\">Equip</button>' : '');
+        card.innerHTML =
+          '<div class="eq-item-inner" style="border-left:3px solid ' + rarityBorderColor + ';padding-left:9px">' +
+            '<div class="eq-item-top">' +
+              '<div style="min-width:0;flex:1">' +
+                '<div class="eq-item-name ' + rarityClass + '" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + itemName + '</div>' +
+                '<div class="eq-item-type">' + itemType + qualityTag + '</div>' +
+                lvlBadge +
+              '</div>' +
+              flagBadges +
+            '</div>' +
+            '<div class="eq-item-stats-grid">' + statChipsHtml + '</div>' +
+            socketRowHtml +
+          '</div>' +
+          '<div class="eq-item-actions compact">' +
+            containerBtn +
+            socketBtn + insertRuneBtn + rerollBtn +
+            '<button class="btn" onclick="toggleInventoryItemFlag(' + absoluteIndex + ', \'favorite\')">' + (favorite ? '★ Unfav' : '☆ Fav') + '</button>' +
+            '<button class="btn" onclick="toggleInventoryItemFlag(' + absoluteIndex + ', \'locked\')">' + (locked ? '🔓 Unlock' : '🔒 Lock') + '</button>' +
+            '<button class="btn" onclick="sellItem(' + absoluteIndex + ')"' + (locked ? ' disabled' : '') + '>Sell</button>' +
+          '</div>';
 
         el.appendChild(card);
       });
@@ -12747,6 +12937,8 @@
           '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellDisplacedGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellDisplacedGear\')">Auto-Sell Displaced Gear: ' + (lf.autoSellDisplacedGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoEquipBeforeAutoSell ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipBeforeAutoSell\')">Try Equip Before Selling: ' + (lf.autoEquipBeforeAutoSell ? 'On' : 'Off') + '</button>' +
           '<select id="loot-filter-preset-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + presetOptions + '</select>' +
           '<button class="btn" onclick="setLootFilterPresetFromUI()">Apply Preset</button>';
       }
@@ -12988,6 +13180,8 @@
         '    <div style="display:flex;flex-wrap:wrap;gap:6px;">' +
         '      <button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" title="Auto-equip new loot into empty equipment slots." onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
         '      <button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" title="Auto-equip gear only when it is better than your current equipment." onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoSellDisplacedGear ? ' active' : '') + '" title="When auto-equip replaces a piece of gear, sell the old item instead of moving it to your inventory. Locked and favorited items are always kept." onclick="toggleLootFilter(\'autoSellDisplacedGear\')">Auto-Sell Displaced Gear: ' + (lf.autoSellDisplacedGear ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoEquipBeforeAutoSell ? ' active' : '') + '" title="Before auto-selling a looted item, first check if it is an upgrade over your equipped gear. If it is, equip it instead of selling it." onclick="toggleLootFilter(\'autoEquipBeforeAutoSell\')">Try Equip Before Selling: ' + (lf.autoEquipBeforeAutoSell ? 'On' : 'Off') + '</button>' +
         '      <button class="btn' + (lf.autoVendorOverflow ? ' active' : '') + '" title="Sell overflow loot automatically when inventory space is full." onclick="toggleLootFilter(\'autoVendorOverflow\')">Auto-Vendor Overflow: ' + (lf.autoVendorOverflow ? 'On' : 'Off') + '</button>' +
         '    </div>' +
         '    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">' +
@@ -14099,7 +14293,7 @@
         : (typeof getZoneMobLevel === 'function' ? getZoneMobLevel(zone, char.level) : Math.max(1, char.level + Math.floor(Math.random() * 3) - 1));
       const elite = inDungeon ? (dungeonBoss || Math.random() < (0.2 + (dungeonMod.eliteChanceBonus || 0))) : (Math.random() < 0.1);
       const namedMult = named ? 2.8 : 1;
-      const rawHp = (30 + lvl * 18) * (elite ? 2.5 : 1) * namedMult;
+      const rawHp = (60 + lvl * 25) * (elite ? 2.5 : 1) * namedMult;
       const hp = (typeof scaleMobHp === 'function') ? scaleMobHp(rawHp, lvl) : Math.max(1, Math.floor(rawHp));
       const namedMechanic = named ? NAMED_MECHANICS[Math.floor(Math.random() * NAMED_MECHANICS.length)] : null;
       // Mob ATK is anchored to a % of the player's actual max HP so it stays
@@ -14823,6 +15017,12 @@
           log(sourceLabel + ': ' + getItemDisplayName(item) + ' kept by loot filter.', 'loot');
           return;
         }
+      }
+
+      // If enabled, give auto-equip first crack even on items that would be auto-sold.
+      const _lf = getLootFilterState(char);
+      if (_lf.autoEquipBeforeAutoSell && shouldAutoSellLootItem(item)) {
+        if (tryAutoEquipLootItem(item, sourceLabel)) return;
       }
 
       if (shouldAutoSellLootItem(item)) {
