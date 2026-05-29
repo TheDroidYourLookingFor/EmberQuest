@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.1.13</title>
+    1.1.15</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2566,7 +2566,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.13</span>
+        1.1.15</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -2702,6 +2702,38 @@
       </div>
     </div>
     <div
+      id="rune-insert-modal"
+      class="modal-backdrop"
+      onclick="if(event.target===this)closeRuneInsertModal()">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rune-insert-title">
+        <div
+          class="modal-title"
+          id="rune-insert-title">
+          Insert a Rune
+        </div>
+        <div
+          class="modal-subtitle"
+          id="rune-insert-subtitle">
+        </div>
+        <div
+          id="rune-insert-list"
+          style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+        </div>
+        <div
+          class="modal-actions">
+          <button
+            class="btn"
+            onclick="closeRuneInsertModal()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
       id="game-grid">
       <!-- Left: Character + Quests -->
       <div
@@ -2795,6 +2827,18 @@
               class="stat-label">DEF</span><span
               class="stat-val"
               id="def-disp"></span>
+          </div>
+          <div
+            class="stat-row"
+            style="flex-direction:column;align-items:stretch;gap:4px">
+            <span
+              class="stat-label"
+              style="font-size:10px;letter-spacing:.05em"
+              title="Ability scores (base + gear). Modifier in parentheses.">ABILITIES</span>
+            <div
+              id="abilities-disp"
+              style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px 8px;font-size:11px">
+            </div>
           </div>
           <div
             class="stat-row">
@@ -4163,6 +4207,111 @@
       Beastmaster: { hp: 125, mp: 95, atk: 17, def: 9, mpRegen: 6, skill: 'Savage Claw', skillMp: 16, skillEffect: 'back' },
       Berserker: { hp: 150, mp: 40, atk: 21, def: 8, mpRegen: 2, skill: 'Frenzied Axe', skillMp: 12, skillEffect: 'back' }
     };
+
+    // ══════════════════════════════════════════════
+    //  D&D-STYLE ABILITY SCORES (STR/DEX/CON/INT/WIS/CHA)
+    //  A light secondary layer: scores are set per-class at creation, grow a
+    //  little with level, and can be rolled as bonuses on new gear. Their D&D
+    //  modifiers (floor((score-10)/2)) feed point-of-use combat bonuses, so we
+    //  never have to recompute the game's stored HP/MP/ATK/DEF totals.
+    // ══════════════════════════════════════════════
+    const ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+    const ABILITY_LABELS = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' };
+    const ABILITY_FULL = {
+      str: 'Strength', dex: 'Dexterity', con: 'Constitution',
+      int: 'Intelligence', wis: 'Wisdom', cha: 'Charisma'
+    };
+    const ABILITY_EFFECT_TEXT = {
+      str: '+attack power', dex: '+crit & dodge', con: 'damage reduction',
+      int: '+spell damage', wis: '+mana regen', cha: '+gold find'
+    };
+    const CLASS_ABILITIES = {
+      Warrior: { str: 15, dex: 12, con: 14, int: 8, wis: 10, cha: 9 },
+      Cleric: { str: 11, dex: 9, con: 12, int: 10, wis: 15, cha: 12 },
+      Paladin: { str: 14, dex: 9, con: 13, int: 8, wis: 11, cha: 13 },
+      Ranger: { str: 12, dex: 15, con: 12, int: 10, wis: 13, cha: 8 },
+      'Death Knight': { str: 14, dex: 10, con: 13, int: 11, wis: 9, cha: 12 },
+      Druid: { str: 10, dex: 11, con: 12, int: 13, wis: 15, cha: 10 },
+      Monk: { str: 13, dex: 15, con: 13, int: 9, wis: 13, cha: 8 },
+      Bard: { str: 9, dex: 13, con: 10, int: 12, wis: 11, cha: 15 },
+      Rogue: { str: 11, dex: 15, con: 11, int: 12, wis: 9, cha: 12 },
+      Shaman: { str: 10, dex: 10, con: 12, int: 12, wis: 15, cha: 11 },
+      Necromancer: { str: 8, dex: 10, con: 11, int: 15, wis: 13, cha: 10 },
+      Wizard: { str: 8, dex: 11, con: 10, int: 15, wis: 13, cha: 10 },
+      Conjurer: { str: 8, dex: 10, con: 10, int: 15, wis: 13, cha: 11 },
+      Enchanter: { str: 8, dex: 11, con: 10, int: 14, wis: 12, cha: 15 },
+      Beastmaster: { str: 13, dex: 13, con: 12, int: 9, wis: 12, cha: 11 },
+      Berserker: { str: 15, dex: 12, con: 14, int: 8, wis: 8, cha: 9 }
+    };
+    // The two highest abilities for a class gain +1 every few levels.
+    const ABILITY_GROWTH_EVERY = 4;
+    function getClassPrimaryAbilities(cls) {
+      const base = CLASS_ABILITIES[cls] || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+      return ABILITIES.slice().sort((a, b) => (base[b] || 0) - (base[a] || 0)).slice(0, 2);
+    }
+    function rollClassAbilities(cls, level = 1) {
+      const base = CLASS_ABILITIES[cls] || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+      const out = {};
+      ABILITIES.forEach(k => { out[k] = Math.max(1, Math.floor(Number(base[k] || 10))); });
+      const growths = Math.floor(Math.max(1, level) / ABILITY_GROWTH_EVERY);
+      if (growths > 0) {
+        getClassPrimaryAbilities(cls).forEach(k => { out[k] += growths; });
+      }
+      return out;
+    }
+    function abilityMod(score) {
+      return Math.floor((Math.max(1, Number(score) || 10) - 10) / 2);
+    }
+    // Ability bonuses contributed by equipped gear (rolls.str etc.).
+    function getEquippedAbilityBonuses(targetChar) {
+      const out = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+      if (!targetChar || !targetChar.equipment) return out;
+      Object.values(targetChar.equipment).forEach(item => {
+        if (!item || typeof item !== 'object' || !item.rolls) return;
+        ABILITIES.forEach(k => {
+          const v = Number(item.rolls[k] || 0);
+          if (Number.isFinite(v) && v > 0) out[k] += v;
+        });
+      });
+      return out;
+    }
+    function getEffectiveAbilityScores(targetChar) {
+      const baseScores = (targetChar && targetChar.abilities) ? targetChar.abilities : {};
+      const gear = getEquippedAbilityBonuses(targetChar);
+      const out = {};
+      ABILITIES.forEach(k => {
+        out[k] = Math.max(1, Math.floor(Number(baseScores[k] || 10))) + (gear[k] || 0);
+      });
+      return out;
+    }
+    // Point-of-use combat bonuses derived from effective ability modifiers.
+    // Modifiers are clamped at 0 so abilities are a pure bonus layer (no
+    // penalties for a class's dump stats).
+    function getAbilityModifiers(targetChar) {
+      const s = getEffectiveAbilityScores(targetChar);
+      const pos = k => Math.max(0, abilityMod(s[k]));
+      return {
+        atkBonus: pos('str') * 2,
+        critBonus: pos('dex') * 0.01,
+        dodgeBonus: pos('dex') * 0.005,
+        mitigation: pos('con'),
+        spellBonus: pos('int') * 2,
+        mpRegenBonus: pos('wis'),
+        goldBonus: pos('cha') * 0.02
+      };
+    }
+
+    // Describe ability-score rolls on a piece of gear (for inventory tooltips).
+    function describeItemAbilityRolls(item) {
+      if (!item || typeof item !== 'object' || !item.rolls) return '';
+      let out = '';
+      ABILITIES.forEach(k => {
+        const v = Number(item.rolls[k] || 0);
+        if (Number.isFinite(v) && v > 0) out += ' +' + v + ' ' + ABILITY_LABELS[k];
+      });
+      return out;
+    }
+
     const CLASS_ICONS = {
       Warrior: 'ti-shield', Cleric: 'ti-heart', Paladin: 'ti-shield-check', Ranger: 'ti-bow', 'Death Knight': 'ti-moon-stars',
       Druid: 'ti-leaf', Monk: 'ti-karate', Bard: 'ti-music', Rogue: 'ti-knife', Shaman: 'ti-bolt', Necromancer: 'ti-skull',
@@ -4351,31 +4500,40 @@
       weapon: [
         { stat: 'atk', min: 1, max: 5, prefix: 'Jagged', suffix: 'Slaying' },
         { stat: 'atk', min: 2, max: 7, prefix: 'Brutal', suffix: 'Carnage' },
-        { stat: 'mp', min: 6, max: 24, prefix: 'Mystic', suffix: 'Focus' }
+        { stat: 'mp', min: 6, max: 24, prefix: 'Mystic', suffix: 'Focus' },
+        { stat: 'str', min: 1, max: 3, prefix: 'Mighty', suffix: 'the Bull' },
+        { stat: 'dex', min: 1, max: 3, prefix: 'Agile', suffix: 'the Fox' }
       ],
       chest: [
         { stat: 'def', min: 1, max: 5, prefix: 'Sturdy', suffix: 'the Bear' },
         { stat: 'hp', min: 10, max: 38, prefix: 'Vigorous', suffix: 'Vitality' },
-        { stat: 'mp', min: 8, max: 28, prefix: 'Runed', suffix: 'the Sage' }
+        { stat: 'mp', min: 8, max: 28, prefix: 'Runed', suffix: 'the Sage' },
+        { stat: 'con', min: 1, max: 3, prefix: 'Stalwart', suffix: 'the Ox' }
       ],
       legs: [
         { stat: 'def', min: 1, max: 4, prefix: 'Guarded', suffix: 'Warding' },
-        { stat: 'hp', min: 8, max: 30, prefix: 'Hardened', suffix: 'Fortitude' }
+        { stat: 'hp', min: 8, max: 30, prefix: 'Hardened', suffix: 'Fortitude' },
+        { stat: 'con', min: 1, max: 2, prefix: 'Tough', suffix: 'the Boar' }
       ],
       feet: [
         { stat: 'def', min: 1, max: 3, prefix: 'Surefooted', suffix: 'Balance' },
-        { stat: 'hp', min: 6, max: 20, prefix: 'Stout', suffix: 'Endurance' }
+        { stat: 'hp', min: 6, max: 20, prefix: 'Stout', suffix: 'Endurance' },
+        { stat: 'dex', min: 1, max: 2, prefix: 'Swift', suffix: 'the Hare' }
       ],
       offhand: [
         { stat: 'atk', min: 1, max: 3, prefix: 'Keen', suffix: 'Precision' },
         { stat: 'mp', min: 8, max: 26, prefix: 'Arcane', suffix: 'Insight' },
-        { stat: 'def', min: 1, max: 3, prefix: 'Warded', suffix: 'Protection' }
+        { stat: 'def', min: 1, max: 3, prefix: 'Warded', suffix: 'Protection' },
+        { stat: 'int', min: 1, max: 3, prefix: 'Clever', suffix: 'the Owl' },
+        { stat: 'wis', min: 1, max: 3, prefix: 'Wise', suffix: 'the Oracle' }
       ],
       charm: [
         { stat: 'atk', min: 1, max: 2, prefix: 'Savage', suffix: 'Striking' },
         { stat: 'def', min: 1, max: 2, prefix: 'Blessed', suffix: 'Guarding' },
         { stat: 'hp', min: 6, max: 20, prefix: 'Hearty', suffix: 'Life' },
-        { stat: 'mp', min: 6, max: 20, prefix: 'Sage', suffix: 'Mana' }
+        { stat: 'mp', min: 6, max: 20, prefix: 'Sage', suffix: 'Mana' },
+        { stat: 'cha', min: 1, max: 3, prefix: 'Charming', suffix: 'Allure' },
+        { stat: 'wis', min: 1, max: 2, prefix: 'Insightful', suffix: 'the Mind' }
       ]
     };
     const UNIQUE_ITEM_BY_BASE = {
@@ -4465,21 +4623,51 @@
       ]
     };
     const RUNE_DATA = {
+      // Tier 1-3 (original) — flat stat runes
       'Rune: El': { id: 'El', stat: 'atk', value: 3, tier: 1 },
       'Rune: Tir': { id: 'Tir', stat: 'mp', value: 14, tier: 1 },
       'Rune: Tal': { id: 'Tal', stat: 'def', value: 3, tier: 2 },
       'Rune: Ort': { id: 'Ort', stat: 'hp', value: 24, tier: 2 },
       'Rune: Sol': { id: 'Sol', stat: 'atk', value: 6, tier: 3 },
-      'Rune: Dol': { id: 'Dol', stat: 'hp', value: 38, tier: 3 }
+      'Rune: Dol': { id: 'Dol', stat: 'hp', value: 38, tier: 3 },
+      // Tier 4-6 (new) — bigger flat stats for mid/late game and runewords
+      'Rune: Kor': { id: 'Kor', stat: 'atk', value: 10, tier: 4 },
+      'Rune: Bron': { id: 'Bron', stat: 'def', value: 9, tier: 4 },
+      'Rune: Lyr': { id: 'Lyr', stat: 'mp', value: 56, tier: 4 },
+      'Rune: Vald': { id: 'Vald', stat: 'hp', value: 70, tier: 5 },
+      'Rune: Zhar': { id: 'Zhar', stat: 'atk', value: 15, tier: 5 },
+      'Rune: Morr': { id: 'Morr', stat: 'def', value: 15, tier: 6 }
     };
+    // Runeword recipes: socket the listed runes into the base item to forge it.
+    // bonus may carry flat stats (atk/def/hp/mp) AND special effects
+    // (crit, lifesteal, goldFind, xpFind) that scale with runeword evolution.
     const RUNEWORD_RECIPES = {
+      // ── Original ──
       'Steel Longsword': { runes: ['Rune: El', 'Rune: Tir'], name: 'Runeword: Steel', bonus: { atk: 12, mp: 20 } },
       'Knight Chestplate': { runes: ['Rune: Tal', 'Rune: Ort'], name: 'Runeword: Bulwark', bonus: { def: 10, hp: 60 } },
-      'Cracked Staff': { runes: ['Rune: Tir', 'Rune: Sol'], name: 'Runeword: Sparkspine', bonus: { atk: 8, mp: 44 } }
+      'Cracked Staff': { runes: ['Rune: Tir', 'Rune: Sol'], name: 'Runeword: Sparkspine', bonus: { atk: 8, mp: 44 } },
+      // ── Weapons ──
+      'Rusty Dagger': { runes: ['Rune: El', 'Rune: Sol'], name: 'Runeword: Bloodfang', bonus: { atk: 8, lifesteal: 0.05 } },
+      'Worn Shortsword': { runes: ['Rune: El', 'Rune: Tal'], name: 'Runeword: Tempo', bonus: { atk: 9, crit: 0.04 } },
+      'Bronze Hatchet': { runes: ['Rune: Sol', 'Rune: Kor'], name: 'Runeword: Plunder', bonus: { atk: 14, goldFind: 0.20 } },
+      'Ashen Longbow': { runes: ['Rune: Tir', 'Rune: Zhar'], name: "Runeword: Hunter's Mark", bonus: { atk: 16, crit: 0.05, xpFind: 0.15 } },
+      'Runed Mace': { runes: ['Rune: Tal', 'Rune: Bron'], name: 'Runeword: Crusher', bonus: { atk: 12, def: 14 } },
+      'Glacite Spear': { runes: ['Rune: Zhar', 'Rune: Morr'], name: 'Runeword: Wyrmpierce', bonus: { atk: 28, def: 14, crit: 0.06 } },
+      // ── Chests ──
+      'Tattered Robe': { runes: ['Rune: Tir', 'Rune: Lyr'], name: 'Runeword: Mana Weave', bonus: { mp: 90, xpFind: 0.15 } },
+      'Studded Jerkin': { runes: ['Rune: Tal', 'Rune: Ort'], name: 'Runeword: Warden', bonus: { def: 8, hp: 55 } },
+      'Scaled Cuirass': { runes: ['Rune: Ort', 'Rune: Bron'], name: 'Runeword: Aegis', bonus: { def: 14, hp: 80, lifesteal: 0.04 } },
+      'Frostwoven Mantle': { runes: ['Rune: Lyr', 'Rune: Vald'], name: 'Runeword: Frostheart', bonus: { mp: 80, hp: 90 } },
+      'Hate Infused Plate': { runes: ['Rune: Vald', 'Rune: Morr'], name: 'Runeword: Dreadplate', bonus: { def: 26, hp: 150, lifesteal: 0.06 } },
+      // ── Offhands ──
+      'Mirror Shield': { runes: ['Rune: Tal', 'Rune: Vald'], name: 'Runeword: Sanctuary', bonus: { def: 16, hp: 110 } },
+      'Storm Orb': { runes: ['Rune: Tir', 'Rune: Sol'], name: 'Runeword: Stormcaller', bonus: { atk: 10, mp: 60, crit: 0.04 } },
+      'Bone Ward Totem': { runes: ['Rune: Ort', 'Rune: Bron'], name: 'Runeword: Bonewall', bonus: { def: 14, hp: 70, goldFind: 0.15 } },
+      'Dread Quill': { runes: ['Rune: Sol', 'Rune: Lyr'], name: 'Runeword: Loremaster', bonus: { atk: 8, mp: 70, xpFind: 0.20 } }
     };
     const RUNEWORD_EVOLUTION_THRESHOLDS = [0, 220, 560, 1040, 1720];
     const RUNEWORD_EVOLUTION_MULT_PER_TIER = 0.2;
-    const RUNE_TRANSMUTE_CHAIN = ['Rune: El', 'Rune: Tir', 'Rune: Tal', 'Rune: Ort', 'Rune: Sol', 'Rune: Dol'];
+    const RUNE_TRANSMUTE_CHAIN = ['Rune: El', 'Rune: Tir', 'Rune: Tal', 'Rune: Ort', 'Rune: Sol', 'Rune: Dol', 'Rune: Kor', 'Rune: Bron', 'Rune: Lyr', 'Rune: Vald', 'Rune: Zhar', 'Rune: Morr'];
     const SHOP_BASE_PRICES = {
       hpMinor: 50,
       mpMinor: 50,
@@ -5483,6 +5671,41 @@
       };
     }
 
+    // Special (non-stat) effects granted by equipped runewords. These scale
+    // with runeword evolution tier just like the stat bonuses do. Returns
+    // additive bonuses: crit chance, lifesteal %, and gold/XP find multipliers.
+    function getEquippedRunewordEffects(targetChar = char) {
+      const fx = { crit: 0, lifesteal: 0, goldFind: 0, xpFind: 0 };
+      if (!targetChar || !targetChar.equipment) return fx;
+      ['weapon', 'chest', 'legs', 'feet', 'offhand', 'charm'].forEach(slot => {
+        const it = targetChar.equipment[slot];
+        if (!it || typeof it !== 'object' || !it.runeword || typeof it.runeword !== 'object') return;
+        const bonus = it.runeword.bonus || {};
+        const tier = getRunewordTierByXp(Number(it.runeword.xp || 0));
+        const mult = 1 + (tier - 1) * RUNEWORD_EVOLUTION_MULT_PER_TIER;
+        ['crit', 'lifesteal', 'goldFind', 'xpFind'].forEach(k => {
+          const v = Number(bonus[k] || 0);
+          if (Number.isFinite(v) && v > 0) fx[k] += v * mult;
+        });
+      });
+      return fx;
+    }
+
+    // Human-readable summary of a runeword's bonus block (stats + effects).
+    function describeRunewordBonus(bonus) {
+      if (!bonus || typeof bonus !== 'object') return '';
+      const parts = [];
+      if (bonus.atk) parts.push('+' + bonus.atk + ' ATK');
+      if (bonus.def) parts.push('+' + bonus.def + ' DEF');
+      if (bonus.hp) parts.push('+' + bonus.hp + ' HP');
+      if (bonus.mp) parts.push('+' + bonus.mp + ' MP');
+      if (bonus.crit) parts.push('+' + Math.round(bonus.crit * 100) + '% Crit');
+      if (bonus.lifesteal) parts.push('+' + Math.round(bonus.lifesteal * 100) + '% Lifesteal');
+      if (bonus.goldFind) parts.push('+' + Math.round(bonus.goldFind * 100) + '% Gold');
+      if (bonus.xpFind) parts.push('+' + Math.round(bonus.xpFind * 100) + '% XP');
+      return parts.join(', ');
+    }
+
     function getItemQuality(entry) {
       if (!entry || typeof entry !== 'object') return 'Normal';
       if (entry.quality === 'Magic' || entry.quality === 'Rare' || entry.quality === 'Unique' || entry.quality === 'Runeword' || entry.quality === 'Legendary') return entry.quality;
@@ -5718,15 +5941,25 @@
       const chance = named ? Math.max(baseChance, 0.28) : baseChance;
       if (Math.random() > chance) return null;
 
-      const pools = [
-        ['Rune: El', 'Rune: Tir'],
-        ['Rune: El', 'Rune: Tir', 'Rune: Tal'],
-        ['Rune: Tir', 'Rune: Tal', 'Rune: Ort'],
-        ['Rune: Tal', 'Rune: Ort', 'Rune: Sol'],
-        ['Rune: Ort', 'Rune: Sol', 'Rune: Dol']
-      ];
+      // Pick the rune pool from the zone's level, not its index (the zone list
+      // isn't strictly level-ordered). Higher zones drop higher-tier runes so
+      // the new runes are actually obtainable from late content, not just by
+      // transmuting up the long chain.
+      const zone = ZONES[Math.max(0, Math.min(ZONES.length - 1, zoneIdx))];
+      const lvl = Number(zone && zone.minLvl) || 1;
 
-      const pool = pools[Math.max(0, Math.min(pools.length - 1, zoneIdx))];
+      let pool;
+      if (lvl < 5) pool = ['Rune: El', 'Rune: Tir'];
+      else if (lvl < 13) pool = ['Rune: El', 'Rune: Tir', 'Rune: Tal'];
+      else if (lvl < 22) pool = ['Rune: Tir', 'Rune: Tal', 'Rune: Ort'];
+      else if (lvl < 30) pool = ['Rune: Tal', 'Rune: Ort', 'Rune: Sol'];
+      else if (lvl < 38) pool = ['Rune: Ort', 'Rune: Sol', 'Rune: Dol'];
+      else if (lvl < 46) pool = ['Rune: Sol', 'Rune: Dol', 'Rune: Kor', 'Rune: Bron'];
+      else if (lvl < 54) pool = ['Rune: Dol', 'Rune: Kor', 'Rune: Bron', 'Rune: Lyr'];
+      else if (lvl < 66) pool = ['Rune: Kor', 'Rune: Bron', 'Rune: Lyr', 'Rune: Vald'];
+      else if (lvl < 78) pool = ['Rune: Lyr', 'Rune: Vald', 'Rune: Zhar'];
+      else pool = ['Rune: Vald', 'Rune: Zhar', 'Rune: Morr'];
+
       return pool[Math.floor(Math.random() * pool.length)];
     }
 
@@ -5836,6 +6069,11 @@
 
       const cleanRolls = {};
       ['atk', 'def', 'hp', 'mp'].forEach(stat => {
+        const raw = Number(entry.rolls && entry.rolls[stat]);
+        if (Number.isFinite(raw) && raw > 0) cleanRolls[stat] = Math.floor(raw);
+      });
+      // Preserve D&D ability-score rolls on gear (new drops going forward).
+      ABILITIES.forEach(stat => {
         const raw = Number(entry.rolls && entry.rolls[stat]);
         if (Number.isFinite(raw) && raw > 0) cleanRolls[stat] = Math.floor(raw);
       });
@@ -6121,7 +6359,11 @@
     };
     const CONTRACT_CHAIN_TOTAL = 3;
     const AA_UNLOCK_LEVEL = 51;
-    const AA_XP_PER_POINT = 2000;
+    // One AA point costs roughly the experience of leveling from 50 to 52, so
+    // that even at 100% AA diversion points are earned slowly. Tied to the XP
+    // curve via xpToNextLevel() (a hoisted function declaration) so it stays
+    // anchored to that 50->52 reference if the curve is ever retuned.
+    const AA_XP_PER_POINT = xpToNextLevel(50) + xpToNextLevel(51);
     const CRAFTING_REROLL_COST = { common: 10, magic: 6, rare: 2, gold: 120 };
     const LOOT_FILTER_PRESETS = {
       balanced: { label: 'Balanced', autoSellJunk: false, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false },
@@ -6736,6 +6978,17 @@
       if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(targetChar);
       if (typeof ensurePetState === 'function') ensurePetState(targetChar);
       if (typeof ensureAuditState === 'function') ensureAuditState(targetChar);
+      // D&D ability scores: backfill from class+level for saves made before
+      // this system existed, and repair any missing/invalid individual scores.
+      if (!targetChar.abilities || typeof targetChar.abilities !== 'object') {
+        targetChar.abilities = rollClassAbilities(targetChar.cls, targetChar.level || 1);
+      } else {
+        const fallback = rollClassAbilities(targetChar.cls, targetChar.level || 1);
+        ABILITIES.forEach(k => {
+          const v = Number(targetChar.abilities[k]);
+          targetChar.abilities[k] = (Number.isFinite(v) && v > 0) ? Math.floor(v) : fallback[k];
+        });
+      }
       if (!targetChar.bossCooldowns || typeof targetChar.bossCooldowns !== 'object') targetChar.bossCooldowns = {};
       if (typeof targetChar.hardcore !== 'boolean') targetChar.hardcore = false;
       if (!Array.isArray(targetChar.group)) targetChar.group = [];
@@ -8206,7 +8459,9 @@
     function rollPlayerCrit(baseDmg) {
       const aa = getAACombatModifiers(char);
       const spec = (typeof getSpecModifiers === 'function') ? getSpecModifiers(char) : { critBonus: 0, critMultBonus: 0 };
-      const chance = PHASE1.playerCrit + (aa.critChanceBonus || 0) + (spec.critBonus || 0);
+      const runeFx = getEquippedRunewordEffects(char);
+      const abil = getAbilityModifiers(char);
+      const chance = PHASE1.playerCrit + (aa.critChanceBonus || 0) + (spec.critBonus || 0) + (runeFx.crit || 0) + (abil.critBonus || 0);
       const mult = PHASE1.playerCritMult + (aa.critMultBonus || 0) + (spec.critMultBonus || 0);
       if (Math.random() < chance) return { dmg: Math.max(1, Math.floor(baseDmg * mult)), crit: true };
       return { dmg: baseDmg, crit: false };
@@ -8220,7 +8475,8 @@
     function rollPlayerDodge() {
       const aa = getAACombatModifiers(char);
       const spec = (typeof getSpecModifiers === 'function') ? getSpecModifiers(char) : { dodgeBonus: 0 };
-      return Math.random() < (PHASE1.playerDodge + (aa.dodgeChanceBonus || 0) + (spec.dodgeBonus || 0));
+      const abil = getAbilityModifiers(char);
+      return Math.random() < (PHASE1.playerDodge + (aa.dodgeChanceBonus || 0) + (spec.dodgeBonus || 0) + (abil.dodgeBonus || 0));
     }
     function rollMobCrit(baseDmg) {
       let chance = PHASE1.mobCrit;
@@ -9707,6 +9963,7 @@
         if (stats.def) bonus += ` +${stats.def} DEF`;
         if (stats.hp) bonus += ` +${stats.hp} HP`;
         if (stats.mp) bonus += ` +${stats.mp} MP`;
+        bonus += describeItemAbilityRolls(item);
         const quality = getItemQuality(item);
         const qualityTag = quality && quality !== 'Normal' ? (' • ' + quality) : '';
         const isRune = isRuneEntry(item);
@@ -9951,14 +10208,17 @@
     function handleModalKeydown(event) {
       const importModal = document.getElementById('import-preview-modal');
       const transmuteModal = document.getElementById('transmute-confirm-modal');
+      const runeInsertModal = document.getElementById('rune-insert-modal');
       const importOpen = importModal && importModal.classList.contains('open');
       const transmuteOpen = transmuteModal && transmuteModal.classList.contains('open');
-      if (!importOpen && !transmuteOpen) return;
+      const runeInsertOpen = runeInsertModal && runeInsertModal.classList.contains('open');
+      if (!importOpen && !transmuteOpen && !runeInsertOpen) return;
 
       if (event.key === 'Escape') {
         event.preventDefault();
         if (importOpen) closeImportPreview();
         if (transmuteOpen) closeTransmuteConfirm();
+        if (runeInsertOpen) closeRuneInsertModal();
         return;
       }
 
@@ -10724,6 +10984,7 @@
         pets: { active: 'none', owned: [], lastActionAt: 0 },
         prestige: { rank: 0, points: 0, spent: 0, perks: { xp: 0, gold: 0, loot: 0, power: 0, ward: 0 }, lastStarterGrantRank: 0 },
         aa: { points: 0, spent: 0, nodes: {}, xpProgress: 0, xpAllocPct: 0 },
+        abilities: rollClassAbilities(selectedClass, 1),
         afkProfiles: { slot1: null, slot2: null, slot3: null },
         afkRules: { autoBuyPots: true, potMin: 5, autoAdvanceContract: true },
         crafting: { shards: { common: 0, magic: 0, rare: 0, unique: 0 } },
@@ -11182,6 +11443,21 @@
       const aa = getAACombatModifiers(char);
       document.getElementById('atk-disp').textContent = char.atk + aa.atkBonus;
       document.getElementById('def-disp').textContent = char.def + aa.defBonus;
+      const abilitiesDisp = document.getElementById('abilities-disp');
+      if (abilitiesDisp) {
+        const eff = getEffectiveAbilityScores(char);
+        const gearBonus = getEquippedAbilityBonuses(char);
+        abilitiesDisp.innerHTML = ABILITIES.map(k => {
+          const score = eff[k];
+          const mod = abilityMod(score);
+          const modStr = (mod >= 0 ? '+' : '') + mod;
+          const fromGear = (gearBonus[k] || 0) > 0;
+          return '<span title="' + ABILITY_FULL[k] + ' — ' + ABILITY_EFFECT_TEXT[k] + '">'
+            + '<span style="color:var(--text-secondary)">' + ABILITY_LABELS[k] + '</span> '
+            + '<span style="font-weight:600' + (fromGear ? ';color:var(--rarity-magic,#6cf)' : '') + '">' + score + '</span>'
+            + ' <span style="color:var(--text-secondary);font-size:10px">(' + modStr + ')</span></span>';
+        }).join('');
+      }
       const goldValue = Math.max(0, Math.floor(Number(char.gold || 0))).toLocaleString();
       document.getElementById('gold-disp').textContent = goldValue;
       document.getElementById('faction-disp').textContent = getFactionTier(char.faction || 0);
@@ -11633,15 +11909,25 @@
 
       const runeCounts = getRuneCounts();
       const stashCount = (char.runeStash || []).length;
-      runeMeta.textContent = 'Rune stash: ' + stashCount + ' · Includes runes stored outside bag slots.';
+
+      // Active rune-effect summary from equipped runewords.
+      const activeFx = getEquippedRunewordEffects(char);
+      const fxParts = [];
+      if (activeFx.crit) fxParts.push('+' + Math.round(activeFx.crit * 100) + '% Crit');
+      if (activeFx.lifesteal) fxParts.push('+' + Math.round(activeFx.lifesteal * 100) + '% Lifesteal');
+      if (activeFx.goldFind) fxParts.push('+' + Math.round(activeFx.goldFind * 100) + '% Gold');
+      if (activeFx.xpFind) fxParts.push('+' + Math.round(activeFx.xpFind * 100) + '% XP');
+      runeMeta.textContent = 'Rune stash: ' + stashCount + ' · Active runeword effects: ' + (fxParts.length ? fxParts.join(', ') : 'none');
 
       RUNE_TRANSMUTE_CHAIN.forEach(runeName => {
         const count = runeCounts[runeName] || 0;
+        const rune = RUNE_DATA[runeName];
+        const socketVal = (typeof getRuneSocketValue === 'function') ? getRuneSocketValue(rune) : rune.value;
         const card = document.createElement('div');
         card.className = 'eq-item-card';
         card.innerHTML = `
           <div class="eq-item-name rarity-magic">${runeName}</div>
-          <div class="eq-item-type">${RUNE_DATA[runeName].stat.toUpperCase()} +${RUNE_DATA[runeName].value}</div>
+          <div class="eq-item-type">T${rune.tier} · Socketed: +${socketVal} ${rune.stat.toUpperCase()}</div>
           <div class="eq-item-bonus">Owned: ${count}</div>
         `;
         runeList.appendChild(card);
@@ -11649,13 +11935,14 @@
 
       Object.entries(RUNEWORD_RECIPES).forEach(([baseItem, recipe]) => {
         const found = char.discoveredRunewords.includes(recipe.name);
+        const bonusText = describeRunewordBonus(recipe.bonus);
         const card = document.createElement('div');
         card.className = 'eq-item-card';
         card.innerHTML = `
-          <div class="eq-item-name ${found ? 'rarity-runeword' : ''}">${found ? recipe.name : 'Unknown Runeword'}</div>
-          <div class="eq-item-type">Base: ${baseItem}</div>
-          <div class="eq-item-bonus">${found ? ('Runes: ' + recipe.runes.join(' + ')) : 'Discover by socketing runes into the right base item.'}</div>
-          ${found ? `<div class="eq-item-type">Evolution: Tiers 1-${RUNEWORD_EVOLUTION_THRESHOLDS.length} (${RUNEWORD_EVOLUTION_MULT_PER_TIER * 100}% bonus per tier)</div>` : ''}
+          <div class="eq-item-name ${found ? 'rarity-runeword' : ''}">${recipe.name}${found ? ' ✓' : ''}</div>
+          <div class="eq-item-type">${baseItem} · ${recipe.runes.map(r => RUNE_DATA[r] ? RUNE_DATA[r].id : r).join(' + ')}</div>
+          <div class="eq-item-bonus">${bonusText}</div>
+          <div class="eq-item-type" style="opacity:0.8">${found ? ('Evolves to T' + RUNEWORD_EVOLUTION_THRESHOLDS.length + ' (+' + (RUNEWORD_EVOLUTION_MULT_PER_TIER * 100) + '%/tier)') : 'Socket these runes into the base to forge.'}</div>
         `;
         compendium.appendChild(card);
       });
@@ -11705,6 +11992,7 @@
         if (stats.def) bonus += ` +${stats.def} DEF`;
         if (stats.hp) bonus += ` +${stats.hp} HP`;
         if (stats.mp) bonus += ` +${stats.mp} MP`;
+        bonus += describeItemAbilityRolls(item);
 
         const sockets = getSocketSummary(item);
         if (sockets) bonus += ` · [${sockets}]`;
@@ -12399,7 +12687,7 @@
       const allocPct = Math.max(0, Math.min(100, Math.floor(Number((char.aa && char.aa.xpAllocPct) || 0))));
       const aaXpProgress = Math.max(0, Math.floor(Number((char.aa && char.aa.xpProgress) || 0)));
       const aaXpToNext = Math.max(0, AA_XP_PER_POINT - aaXpProgress);
-      let aaHtml = '<div class="quest-name">Ascension Mastery</div>' +
+      let aaHtml = '<div class="quest-name">Alternate Ascension</div>' +
         '<div class="quest-prog">Class: ' + char.cls + ' · ' + (simActive ? 'Simulator Points: ' : 'Unspent Points: ') + aaPoints + ' · Unlocks at level ' + AA_UNLOCK_LEVEL + '+</div>';
 
       // ── Class Specialization (PHASE 3) ──
@@ -12439,7 +12727,7 @@
 
       aaHtml += '<div class="quest-prog" style="margin-top:6px">Prestige and Ascension are now in the Prestige tab.</div>';
 
-      aaHtml += '<div class="quest-prog">AA XP Progress: ' + aaXpProgress + '/' + AA_XP_PER_POINT + ' · Next point in ' + aaXpToNext + ' AA XP</div>' +
+      aaHtml += '<div class="quest-prog">AA XP Progress: ' + aaXpProgress.toLocaleString() + '/' + AA_XP_PER_POINT.toLocaleString() + ' · Next point in ' + aaXpToNext.toLocaleString() + ' AA XP</div>' +
         '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">' +
         '<label style="font-size:11px;color:var(--text-secondary)">XP to AA: ' + allocPct + '%</label>' +
         '<input type="range" min="0" max="100" step="5" value="' + allocPct + '" oninput="setAAXpAllocationFromUI(this.value)" style="width:180px">' +
@@ -12961,9 +13249,10 @@
       const aa = getAACombatModifiers(char);
       const prestige = getPrestigeModifiers(char);
       const dungeonMod = char.dungeon && char.dungeon.active ? getDungeonModifierData(char.dungeon.modifier) : getDungeonModifierData('balanced');
+      const abil = getAbilityModifiers(char);
 
       if (sp.kind === 'damage' || sp.kind === 'damage_weaken' || sp.kind === 'damage_poison') {
-        const dmg = Math.max(1, Math.floor((char.atk * sp.power + Math.random() * sp.variance) * aa.spellPowerMult * (prestige.playerDamageMult || 1) * (event.spellDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
+        const dmg = Math.max(1, Math.floor((char.atk * sp.power + Math.random() * sp.variance + (abil.spellBonus || 0)) * aa.spellPowerMult * (prestige.playerDamageMult || 1) * (event.spellDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
         mob.hp -= dmg;
         addDamageMeterEntry('spell', dmg);
         log([
@@ -13262,7 +13551,8 @@
       const prestige = getPrestigeModifiers(char);
       const dungeonMod = char.dungeon && char.dungeon.active ? getDungeonModifierData(char.dungeon.modifier) : getDungeonModifierData('balanced');
       const setBonus = getActiveSetBonusStats();
-      const playerAtk = char.atk + aa.atkBonus + (setBonus.atk || 0) + (fx.atkBonus || 0);
+      const abil = getAbilityModifiers(char);
+      const playerAtk = char.atk + aa.atkBonus + (setBonus.atk || 0) + (fx.atkBonus || 0) + (abil.atkBonus || 0);
       const playerDef = char.def + aa.defBonus + (setBonus.def || 0) + (fx.defBonus || 0);
 
       let dmg = Math.max(1, playerAtk - mob.def + Math.floor(Math.random() * 6) - 2);
@@ -13313,6 +13603,12 @@
 
         mob.hp -= dmg;
         addDamageMeterEntry('player', dmg);
+        // Runeword lifesteal: heal a portion of melee damage dealt.
+        const lifestealPct = getEquippedRunewordEffects(char).lifesteal || 0;
+        if (lifestealPct > 0 && dmg > 0 && char.hp < char.maxHp) {
+          const healed = Math.max(1, Math.floor(dmg * lifestealPct));
+          char.hp = Math.min(char.maxHp, char.hp + healed);
+        }
         log([
           'You hit ',
           { text: mob.name, cls: 'combat-log-defender' },
@@ -13397,6 +13693,8 @@
         renderAll();
         return false;
       }
+      // Constitution damage reduction (point-of-use; a landed hit still deals ≥1).
+      if (abil.mitigation > 0) md = Math.max(1, md - abil.mitigation);
       char.hp -= md;
       addDamageMeterEntry('taken', md);
       log([
@@ -13452,7 +13750,7 @@
       }
 
       const aa = getAACombatModifiers(char);
-      const gain = Math.floor(char.maxMp * 0.18) + char.mpRegen + (aa.mpRegenBonus || 0);
+      const gain = Math.floor(char.maxMp * 0.18) + char.mpRegen + (aa.mpRegenBonus || 0) + (getAbilityModifiers(char).mpRegenBonus || 0);
       char.mp = Math.min(char.maxMp, char.mp + gain);
       log([
         'You meditate and feel your mana return. (+',
@@ -13514,8 +13812,8 @@
       const dungeonMult = inDungeon ? (1 + floor * 0.08) : 1;
       const lowLevelGoldMult = getLowLevelGoldMultiplier(char.level);
       const zoneProgressGoldMult = getZoneProgressGoldMultiplier(char.zone);
-      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (mob.boss ? PHASE4.bossXpMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreXpBonus) : 1) * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1));
-      const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (mob.boss ? PHASE4.bossGoldMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreGoldBonus) : 1) * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult * zoneProgressGoldMult * (typeof getPetModifiers === 'function' ? (getPetModifiers(char).goldMult || 1) : 1) * GOLD_DROP_MULT);
+      const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (mob.boss ? PHASE4.bossXpMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreXpBonus) : 1) * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1) * (1 + (getEquippedRunewordEffects(char).xpFind || 0)));
+      const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (mob.boss ? PHASE4.bossGoldMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreGoldBonus) : 1) * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult * zoneProgressGoldMult * (typeof getPetModifiers === 'function' ? (getPetModifiers(char).goldMult || 1) : 1) * GOLD_DROP_MULT * (1 + (getEquippedRunewordEffects(char).goldFind || 0)) * (1 + (getAbilityModifiers(char).goldBonus || 0)));
       const killXp = awardExperience(xp, 'combat');
       char.gold += gold;
       bumpStat('goldEarned', gold);
@@ -13669,9 +13967,12 @@
         char.maxMp = Math.floor(char.maxMp * 1.1);
         char.hp = char.maxHp; char.mp = char.maxMp;
         char.atk += 2; char.def += 1;
+        // Recompute class ability scores for the new level (primaries grow
+        // every few levels). Base scores only — gear bonuses apply on top.
+        char.abilities = rollClassAbilities(char.cls, char.level);
         log('*** LEVEL UP! You are now level ' + char.level + '! ***', 'lvl');
         if (char.level === AA_UNLOCK_LEVEL) {
-          log('Ascension Mastery unlocked. Configure XP diversion in the AA tab.', 'lvl');
+          log('Alternate Ascension unlocked. Configure XP diversion in the AA tab.', 'lvl');
         }
         renderZones();
       }
@@ -14387,6 +14688,8 @@
       autoSave();
     }
 
+    let pendingRuneInsertTarget = null;
+
     function insertRuneIntoItem(target) {
       const targetInfo = getGearTarget(target);
       if (!targetInfo) return;
@@ -14407,38 +14710,149 @@
         return;
       }
 
-      let obj = toSocketableItem(entry);
+      const obj = toSocketableItem(entry);
       if (!obj || obj.maxSockets <= 0) {
         log('This item has no sockets.', 'info');
         return;
       }
 
-      const emptyIdx = obj.sockets.findIndex(s => !s);
-      if (emptyIdx < 0) {
+      if (obj.sockets.findIndex(s => !s) < 0) {
         log('No empty sockets available.', 'info');
         return;
       }
 
-      const runeName = takeFirstAvailableRune();
-      if (!runeName) {
+      if (!hasAnyRuneAvailable()) {
         log('You need at least one rune in your stash or inventory.', 'info');
         return;
       }
 
-      obj = toSocketableItem(targetInfo.entry);
-      if (!obj) return;
+      openRuneInsertModal(target);
+    }
 
-      const targetIdx = obj.sockets.findIndex(s => !s);
-      if (targetIdx < 0) {
-        log('No empty sockets available.', 'info');
+    // Let the player pick which owned rune to socket, rather than auto-using
+    // whatever rune happens to be first in the stash.
+    function openRuneInsertModal(target) {
+      pendingRuneInsertTarget = target;
+      const modal = document.getElementById('rune-insert-modal');
+      const list = document.getElementById('rune-insert-list');
+      const subtitle = document.getElementById('rune-insert-subtitle');
+      if (!modal || !list) return;
+
+      const targetInfo = getGearTarget(target);
+      const obj = targetInfo ? toSocketableItem(targetInfo.entry) : null;
+      if (subtitle) {
+        if (obj) {
+          const empties = obj.sockets.filter(s => !s).length;
+          subtitle.textContent = getItemDisplayName(obj) + ' · ' + empties + ' empty socket' + (empties === 1 ? '' : 's')
+            + '. Any rune fits any socket — pick one to insert.';
+        } else {
+          subtitle.textContent = 'Pick a rune to insert.';
+        }
+      }
+
+      list.innerHTML = '';
+      const counts = getRuneCounts();
+      let any = false;
+      RUNE_TRANSMUTE_CHAIN.forEach(runeName => {
+        const count = counts[runeName] || 0;
+        if (count <= 0) return;
+        any = true;
+        const rune = RUNE_DATA[runeName];
+        const socketVal = (typeof getRuneSocketValue === 'function') ? getRuneSocketValue(rune) : rune.value;
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;width:100%';
+        btn.innerHTML = '<span style="font-weight:600">' + runeName + '</span>'
+          + '<span style="font-size:10px;opacity:0.85">+' + socketVal + ' ' + rune.stat.toUpperCase() + ' · T' + rune.tier + ' · ×' + count + '</span>';
+        btn.onclick = () => chooseRuneToInsert(runeName);
+        list.appendChild(btn);
+      });
+
+      if (!any) {
+        list.innerHTML = '<div style="font-size:12px;color:var(--text-secondary)">You have no runes available.</div>';
+      }
+
+      modal.classList.add('open');
+    }
+
+    function closeRuneInsertModal() {
+      pendingRuneInsertTarget = null;
+      const modal = document.getElementById('rune-insert-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function chooseRuneToInsert(runeName) {
+      const target = pendingRuneInsertTarget;
+      if (target === null || target === undefined) { closeRuneInsertModal(); return; }
+
+      const pre = getGearTarget(target);
+      if (!pre) { closeRuneInsertModal(); return; }
+      const originalEntry = pre.entry;
+
+      if (isItemLocked(originalEntry)) {
+        log('Item is locked. Unlock it before socket changes.', 'info');
+        closeRuneInsertModal();
+        return;
+      }
+      const quality = getItemQuality(originalEntry);
+      if (quality === 'Unique' || quality === 'Runeword') {
+        log('That item cannot accept more runes.', 'info');
+        closeRuneInsertModal();
         return;
       }
 
+      const preObj = toSocketableItem(originalEntry);
+      if (!preObj || preObj.maxSockets <= 0 || preObj.sockets.findIndex(s => !s) < 0) {
+        log('No empty sockets available.', 'info');
+        closeRuneInsertModal();
+        return;
+      }
+
+      if (!RUNE_DATA[runeName]) { log('Unknown rune.', 'info'); return; }
+      if ((getRuneCounts()[runeName] || 0) <= 0) {
+        log('You no longer have ' + runeName + '.', 'info');
+        openRuneInsertModal(target);
+        return;
+      }
+      if (!consumeRunesByName(runeName, 1)) {
+        log('Could not consume ' + runeName + '. Try again.', 'info');
+        openRuneInsertModal(target);
+        return;
+      }
+
+      // Consuming a rune may have rebuilt char.inventory, shifting indices, so
+      // re-resolve the write target by object reference (equipment slots are
+      // stable; a socketed item is always an object, so indexOf is reliable).
+      let writeInfo = null;
+      if (typeof target === 'string') {
+        writeInfo = getGearTarget(target);
+      } else {
+        const idx = char.inventory.indexOf(originalEntry);
+        writeInfo = idx >= 0 ? getGearTarget(idx) : null;
+      }
+
+      const failRefund = (msg) => {
+        char.runeStash = Array.isArray(char.runeStash) ? char.runeStash : [];
+        char.runeStash.push(runeName);
+        log(msg + ' Rune returned to your stash.', 'info');
+        closeRuneInsertModal();
+        renderAll();
+        autoSave();
+      };
+
+      if (!writeInfo) { failRefund('Socketing failed.'); return; }
+
+      const obj = toSocketableItem(writeInfo.entry);
+      if (!obj) { failRefund('Socketing failed.'); return; }
+      const targetIdx = obj.sockets.findIndex(s => !s);
+      if (targetIdx < 0) { failRefund('No empty sockets available.'); return; }
+
       obj.sockets[targetIdx] = runeName;
       tryApplyRuneword(obj);
-      replaceGearTarget(targetInfo, obj, true);
+      replaceGearTarget(writeInfo, obj, true);
 
       log('Inserted ' + runeName + ' into ' + getItemDisplayName(obj) + '.', 'loot');
+      closeRuneInsertModal();
       renderAll();
       autoSave();
     }
@@ -14898,7 +15312,7 @@
       applySmartAfkGoal(true);
       runAfkAutomationRules();
 
-      char.mp = Math.min(char.maxMp, char.mp + char.mpRegen);
+      char.mp = Math.min(char.maxMp, char.mp + char.mpRegen + (getAbilityModifiers(char).mpRegenBonus || 0));
 
       const queue = getQueueOrder();
 
@@ -14988,8 +15402,8 @@
         const lvl = Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
         const elite = Math.random() < ((goal === 'contract' && contract && contract.bossStep) ? 0.28 : 0.1);
 
-        const xp = Math.floor((20 + lvl * 15) * zone.xpMult * (elite ? 3 : 1));
-        const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1) * getLowLevelGoldMultiplier(char.level) * GOLD_DROP_MULT);
+        const xp = Math.floor((20 + lvl * 15) * zone.xpMult * (elite ? 3 : 1) * (1 + (getEquippedRunewordEffects(char).xpFind || 0)));
+        const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1) * getLowLevelGoldMultiplier(char.level) * GOLD_DROP_MULT * (1 + (getEquippedRunewordEffects(char).goldFind || 0)) * (1 + (getAbilityModifiers(char).goldBonus || 0)));
         totalXp += xp;
         totalGold += gold;
 
