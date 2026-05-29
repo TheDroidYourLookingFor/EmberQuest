@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.1.18</title>
+    1.1.19</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -1319,26 +1319,26 @@
     }
 
     .rarity-magic {
-      color: #4D7DFF;
+      color: #3B82F6;
     }
 
     .rarity-rare {
-      color: #C28D18;
+      color: #22C55E;
     }
 
     .rarity-unique {
-      color: #A85B00;
-      text-shadow: 0 0 6px rgba(168, 91, 0, 0.25);
+      color: #F97316;
+      text-shadow: 0 0 6px rgba(249, 115, 22, 0.3);
     }
 
     .rarity-runeword {
-      color: #2C9D5A;
-      text-shadow: 0 0 6px rgba(44, 157, 90, 0.2);
+      color: #EAB308;
+      text-shadow: 0 0 6px rgba(234, 179, 8, 0.25);
     }
 
     .rarity-legendary {
-      color: #C72BC1;
-      text-shadow: 0 0 8px rgba(199, 43, 193, 0.35);
+      color: #A855F7;
+      text-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
       font-weight: 600;
     }
 
@@ -2208,6 +2208,7 @@
     #screen-game.ui-layout-mobile #tab-quests,
     #screen-game.ui-layout-mobile #tab-loot,
     #screen-game.ui-layout-mobile #tab-dungeon,
+    #screen-game.ui-layout-mobile #tab-leaderboard,
     #screen-game.ui-layout-mobile #tab-about {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -2567,7 +2568,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.18</span>
+        1.1.19</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3064,6 +3065,11 @@
             class="tab"
             onclick="switchTab('group')">
             Group
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('leaderboard')">
+            Leaderboard
           </div>
           <div
             class="tab"
@@ -3723,11 +3729,20 @@
           <div id="group-roster-list" style="display:flex;flex-direction:column;gap:6px"></div>
         </div>
         <div
+          id="tab-leaderboard"
+          style="display:none">
+          <h3 style="margin-bottom:4px">Leaderboard</h3>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Every character saved on this account, ranked by overall power. See how your heroes stack up against one another.
+          </div>
+          <div id="leaderboard-list"></div>
+        </div>
+        <div
           id="tab-about"
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.1.18 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.1.19 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -11768,7 +11783,7 @@
           const fromGear = (gearBonus[k] || 0) > 0;
           return '<span title="' + ABILITY_FULL[k] + ' — ' + ABILITY_EFFECT_TEXT[k] + '">'
             + '<span style="color:var(--text-secondary)">' + ABILITY_LABELS[k] + '</span> '
-            + '<span style="font-weight:600' + (fromGear ? ';color:var(--rarity-magic,#6cf)' : '') + '">' + score + '</span>'
+            + '<span style="font-weight:600' + (fromGear ? ';color:var(--rarity-magic,#3B82F6)' : '') + '">' + score + '</span>'
             + ' <span style="color:var(--text-secondary);font-size:10px">(' + modStr + ')</span></span>';
         }).join('');
       }
@@ -16364,8 +16379,67 @@
     // ══════════════════════════════════════════════
     //  UI HELPERS
     // ══════════════════════════════════════════════
+    function renderLeaderboardTab() {
+      const el = document.getElementById('leaderboard-list');
+      if (!el) return;
+
+      const entries = [];
+      for (let i = 0; i < slots.length; i++) {
+        let c = slots[i];
+        if (i === activeSlot && char) c = char; // use live stats for the active character
+        if (!c || typeof c !== 'object') continue;
+        const level = Math.max(1, Math.floor(Number(c.level || 1)));
+        const prestigeRank = Math.max(0, Math.floor(Number((c.prestige && c.prestige.rank) || 0)));
+        const atk = Math.max(0, Math.floor(Number(c.atk || 0)));
+        const def = Math.max(0, Math.floor(Number(c.def || 0)));
+        const maxHp = Math.max(0, Math.floor(Number(c.maxHp || 0)));
+        const maxMp = Math.max(0, Math.floor(Number(c.maxMp || 0)));
+        const aaSpent = Math.max(0, Math.floor(Number((c.aa && c.aa.spent) || 0)));
+        const gold = Math.max(0, Math.floor(Number(c.gold || 0)));
+        const power = Math.floor(level * 120 + prestigeRank * 8000 + atk * 3 + def * 3 + maxHp * 0.4 + maxMp * 0.2 + aaSpent * 60);
+        entries.push({
+          isActive: i === activeSlot, name: c.name || 'Unnamed', race: c.race || '', cls: c.cls || '',
+          hardcore: !!c.hardcore, level, prestigeRank, atk, def, maxHp, maxMp, aaSpent, gold, power
+        });
+      }
+
+      if (!entries.length) {
+        el.innerHTML = '<div class="eq-empty-bag">No characters saved yet.</div>';
+        return;
+      }
+
+      entries.sort((a, b) => b.power - a.power || b.level - a.level || b.prestigeRank - a.prestigeRank);
+
+      const medal = ['#f5c542', '#c8d0d8', '#cd7f32'];
+      let html = '<div style="display:flex;flex-direction:column;gap:8px">';
+      entries.forEach((e, idx) => {
+        const rank = idx + 1;
+        const rankColor = idx < 3 ? medal[idx] : 'var(--text-secondary)';
+        const youTag = e.isActive ? ' <span style="font-size:10px;color:#22d3ee">(You)</span>' : '';
+        const hcTag = e.hardcore ? ' <span style="color:#f4a87a;font-size:9px;border:1px solid #f4a87a;border-radius:3px;padding:0 4px;vertical-align:middle">HARDCORE</span>' : '';
+        const pTag = e.prestigeRank > 0 ? ' · <span style="color:#a855f7">Prestige ' + e.prestigeRank + '</span>' : '';
+        const meta = [e.level ? ('Lv ' + e.level) : '', escapeHtml(e.race), escapeHtml(e.cls)].filter(Boolean).join(' ');
+        const border = e.isActive ? '1.5px solid #22d3ee' : '0.5px solid var(--border)';
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:' + border + ';border-radius:var(--radius-md);background:var(--bg-secondary)">'
+          + '<div style="font-size:18px;font-weight:700;min-width:28px;text-align:center;color:' + rankColor + '">' + rank + '</div>'
+          + '<div style="flex:1;min-width:0">'
+            + '<div style="font-weight:600;font-size:13px">' + escapeHtml(e.name) + youTag + hcTag + '</div>'
+            + '<div style="font-size:11px;color:var(--text-secondary)">' + meta + pTag + '</div>'
+            + '<div style="font-size:10px;color:var(--text-secondary);margin-top:2px">ATK ' + e.atk.toLocaleString() + ' · DEF ' + e.def.toLocaleString() + ' · HP ' + e.maxHp.toLocaleString() + ' · MP ' + e.maxMp.toLocaleString() + ' · AA ' + e.aaSpent + ' · ' + e.gold.toLocaleString() + 'g</div>'
+          + '</div>'
+          + '<div style="text-align:right">'
+            + '<div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em">Power</div>'
+            + '<div style="font-weight:700;font-size:15px;color:#22c55e">' + e.power.toLocaleString() + '</div>'
+          + '</div>'
+        + '</div>';
+      });
+      html += '</div>';
+      el.innerHTML = html;
+    }
+
+    // ══════════════════════════════════════════════
     function switchTab(tab) {
-      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'inv', 'loot', 'runes', 'shop', 'spells', 'aa', 'prestige', 'bank', 'group', 'about'];
+      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'inv', 'loot', 'runes', 'shop', 'spells', 'aa', 'prestige', 'bank', 'group', 'leaderboard', 'about'];
       tabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
       });
@@ -16383,6 +16457,7 @@
       if (tab === 'prestige') renderPrestigeTab();
       if (tab === 'bank') renderBank();
       if (tab === 'group') renderGroupTab();
+      if (tab === 'leaderboard') renderLeaderboardTab();
     }
 
     function setupDrag() {
