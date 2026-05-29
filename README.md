@@ -10,7 +10,7 @@ EmberQuest is a love-letter to classic MMOs: 16 races, 16 classes, 19 zones span
 
 ## Features
 
-**Classic character creation.** Pick from 16 races (Human, Barbarian, Erudite, Wood/High/Dark/Half Elf, Dwarf, Troll, Ogre, Halfling, Gnome, Iksar, Vah Shir, Froglok, Drakkin) and 16 classes (Warrior, Cleric, Paladin, Ranger, Shadow Knight, Druid, Monk, Bard, Rogue, Shaman, Necromancer, Wizard, Magician, Enchanter, Beastlord, Berserker). Up to **24 character slots** per save.
+**Classic character creation.** Pick from 16 races (Human, Goliath, Aasimar, Wood/High/Dark/Half Elf, Dwarf, Troll, Ogre, Halfling, Gnome, Lizardfolk, Tabaxi, Bullywug, Dragonborn) and 16 classes (Warrior, Cleric, Paladin, Ranger, Death Knight, Druid, Monk, Bard, Rogue, Shaman, Necromancer, Wizard, Conjurer, Enchanter, Beastmaster, Berserker). Up to 24 character slots per save..
 
 **Combat.** Turn-based combat with HP, MP, attack, defense, weapon procs, item sets, and class-specific signature skills. Damage rolls, criticals, resists, and a colored combat log for damage, heals, loot, and level-ups.
 
