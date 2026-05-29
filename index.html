@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.1.11</title>
+    1.1.12</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2026,48 +2026,54 @@
     }
 
     /* ════════════════════════════════════════════════════════════
-       MOBILE LAYOUT — authoritative overrides (mobile mode only).
-       Scoped to #screen-game.ui-layout-mobile (+ a narrow-viewport
-       guard for page overflow). The desktop UI is left untouched.
+       MOBILE LAYOUT — full rebuild (mobile mode only).
+       Scoped to #screen-game.ui-layout-mobile (plus a narrow-viewport guard
+       for page-level horizontal scroll). The desktop UI is left untouched.
+
+       The desktop layout uses a fixed-height 3-column grid with
+       flex:1 / height:100% / overflow:hidden panels. That model collapses and
+       overlaps in a scrolling phone column, so on mobile we replace it with
+       plain block flow (which cannot overlap): one clean vertical stack of
+       top bar → character → tabs + content → controls.
        ════════════════════════════════════════════════════════════ */
 
-    /* Never let the page scroll sideways on small screens, and drop the
-       body gutter so the game screen can go edge-to-edge under the notch. */
     @media (max-width: 820px) {
       html, body { overflow-x: hidden; max-width: 100%; }
       body { padding: 0; }
     }
 
-    /* Full-bleed dark background; content padded clear of the Dynamic
-       Island and home indicator via the iOS safe-area insets. */
+    /* Full-bleed dark background; content inset clear of the Dynamic Island /
+       home indicator. No overflow set here, so the screen never becomes a
+       nested scroll container and normal page scrolling is preserved. */
     #screen-game.ui-layout-mobile {
       margin: 0;
       max-width: 100%;
-      overflow-x: hidden;
       min-height: 100vh;
       min-height: 100dvh;
       padding:
         calc(env(safe-area-inset-top) + 8px)
         calc(env(safe-area-inset-right) + 8px)
-        calc(env(safe-area-inset-bottom) + 10px)
+        calc(env(safe-area-inset-bottom) + 14px)
         calc(env(safe-area-inset-left) + 8px);
     }
 
-    /* Single-column stack; remove every forced min-width that caused the
-       horizontal overflow / tiny zoomed-out view on phones. */
+    /* Grid → single-column block stack. Column wrappers keep their flex-column
+       (clean vertical stack with a gap) but get full width and spacing. */
     #screen-game.ui-layout-mobile #game-grid {
-      grid-template-columns: 1fr !important;
-      min-width: 0 !important;
-      min-height: 0;
-      gap: 8px;
-    }
-
-    #screen-game.ui-layout-mobile #game-grid>div {
+      display: block;
       min-width: 0;
+      min-height: 0;
     }
 
-    #screen-game.ui-layout-mobile #game-grid>div:last-child {
-      grid-column: auto !important;
+    #screen-game.ui-layout-mobile #game-grid > div {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      margin-bottom: 8px;
+    }
+
+    #screen-game.ui-layout-mobile #game-grid > div:last-child {
+      margin-bottom: 0;
     }
 
     #screen-game.ui-layout-mobile .panel {
@@ -2076,7 +2082,45 @@
       min-width: 0;
     }
 
-    /* Top bar: title gets its own row, buttons become a 2-up touch grid. */
+    /* The center column + combat tab use desktop fixed-height flex mechanics
+       that overlap on mobile. Force plain block flow so every child — mob card,
+       combat log, action buttons — stacks in document order with no overlap. */
+    #screen-game.ui-layout-mobile #center-panel {
+      height: auto;
+      overflow: visible;
+    }
+
+    #screen-game.ui-layout-mobile #tab-combat {
+      display: block;
+      height: auto;
+      overflow: visible;
+    }
+
+    #screen-game.ui-layout-mobile #tab-combat > * {
+      display: block;
+      flex: none;
+      margin-bottom: 8px;
+    }
+
+    /* Combat log: a real, self-contained scroll box with a capped height so it
+       can neither grow without bound nor collapse onto the controls below. */
+    #screen-game.ui-layout-mobile #combat-log,
+    #screen-game.ui-layout-mobile #tab-combat > #combat-log {
+      display: block;
+      flex: none;
+      height: auto;
+      min-height: 180px;
+      max-height: 42vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #screen-game.ui-layout-mobile #mob-area {
+      margin-bottom: 8px;
+    }
+
+    /* Top bar: title on its own row; utility buttons become an even 2-up touch
+       grid; the "Saved" indicator drops to the end so it can't split the row. */
     #screen-game.ui-layout-mobile #game-topbar {
       flex-wrap: wrap;
       gap: 6px;
@@ -2090,6 +2134,8 @@
 
     #screen-game.ui-layout-mobile #game-topbar .save-indicator {
       order: 99;
+      width: 100%;
+      justify-content: flex-end;
     }
 
     #screen-game.ui-layout-mobile #game-topbar .btn {
@@ -2100,64 +2146,64 @@
       padding: 8px 10px !important;
     }
 
-    /* Tabs wrap into large, evenly-sized tap targets. */
+    /* Tab bar: wraps into even, finger-friendly tabs and sticks to the top of
+       the viewport so sections can be switched without scrolling back up. */
     #screen-game.ui-layout-mobile .tab-bar {
       flex-wrap: wrap;
       gap: 4px;
-      padding: 6px 6px 0 6px;
+      padding: 6px;
+      position: sticky;
+      top: env(safe-area-inset-top);
+      z-index: 30;
     }
 
     #screen-game.ui-layout-mobile .tab {
-      flex: 1 0 auto;
-      min-height: 40px;
+      flex: 1 1 auto;
+      min-height: 42px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 8px 12px;
+      padding: 8px 10px;
       font-size: 13px;
     }
 
     #screen-game.ui-layout-mobile .btn {
-      min-height: 40px;
+      min-height: 42px;
     }
 
     #screen-game.ui-layout-mobile .queue-item {
       min-height: 44px;
     }
 
-    /* The center/combat panels are sized for the fixed-height desktop grid
-       (height:100% + overflow:hidden). On the auto-height mobile column that
-       clips content, so let them grow naturally and give the log a real,
-       scrollable height. */
-    #screen-game.ui-layout-mobile #center-panel {
-      height: auto;
-      overflow: visible;
-    }
-
-    #screen-game.ui-layout-mobile #tab-combat {
-      height: auto;
-      overflow: visible;
-    }
-
-    #screen-game.ui-layout-mobile #tab-combat>#combat-log,
-    #screen-game.ui-layout-mobile #combat-log {
-      flex: none;
-      height: 46vh;
-      min-height: 200px;
-      max-height: 60vh;
-    }
-
-    /* Stack inventory / bag grids; comfortable inputs that don't trigger
-       iOS zoom-on-focus (needs >=16px font). */
     #screen-game.ui-layout-mobile .eq-inventory-layout,
     #screen-game.ui-layout-mobile .eq-bag-grid {
       grid-template-columns: 1fr;
     }
 
+    /* >=16px fonts so iOS doesn't zoom the page when an input gains focus. */
     #screen-game.ui-layout-mobile input[type=text],
-    #screen-game.ui-layout-mobile input[type=number] {
+    #screen-game.ui-layout-mobile input[type=number],
+    #screen-game.ui-layout-mobile select {
       font-size: 16px;
-      min-height: 40px;
+      min-height: 42px;
+    }
+
+    /* Wide rows/tables inside a tab scroll within their own panel, not the
+       page, so the overall layout stays put. */
+    #screen-game.ui-layout-mobile #tab-zone,
+    #screen-game.ui-layout-mobile #tab-inv,
+    #screen-game.ui-layout-mobile #tab-runes,
+    #screen-game.ui-layout-mobile #tab-shop,
+    #screen-game.ui-layout-mobile #tab-spells,
+    #screen-game.ui-layout-mobile #tab-aa,
+    #screen-game.ui-layout-mobile #tab-prestige,
+    #screen-game.ui-layout-mobile #tab-bank,
+    #screen-game.ui-layout-mobile #tab-group,
+    #screen-game.ui-layout-mobile #tab-quests,
+    #screen-game.ui-layout-mobile #tab-loot,
+    #screen-game.ui-layout-mobile #tab-dungeon {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
   </style>
 </head>
@@ -2514,7 +2560,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.11</span>
+        1.1.12</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -10968,11 +11014,11 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.11';
-        if (!silent) log('Upgraded save data to v1.1.11.', 'info');
+        oldChar.version = '1.1.12';
+        if (!silent) log('Upgraded save data to v1.1.12.', 'info');
       }
 
-      if (oldChar.version === '1.1.11') {
+      if (oldChar.version === '1.1.12') {
         if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
