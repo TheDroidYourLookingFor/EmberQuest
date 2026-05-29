@@ -2315,90 +2315,54 @@
     <div
       id="new-char-form"
       style="display:none">
-      <h2>Create New
-        Character
-      </h2>
-      <div
-        id="create-step-race">
-        <div
-          style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;font-weight:500">
-          Choose
-          Race
+      <h2 id="create-step-title">Choose Your Race</h2>
+
+      <!-- STEP 1: Race -->
+      <div id="create-step-race">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;font-weight:500">
+          Select a race to begin.
         </div>
-        <div
-          class="class-grid"
-          id="race-grid">
-        </div>
-        <div
-          class="form-btns"
-          style="margin-top:10px">
-          <button
-            class="btn"
-            onclick="cancelCreate()">Cancel</button>
+        <div class="class-grid" id="race-grid"></div>
+        <div class="form-btns" style="margin-top:12px">
+          <button class="btn" onclick="cancelCreate()">Cancel</button>
         </div>
       </div>
 
-      <div
-        id="create-step-class"
-        style="display:none">
-        <div
-          style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
-          <div
-            style="font-size:12px;color:var(--text-secondary);font-weight:500">
-            Choose
-            Class
-          </div>
-          <button
-            class="btn"
-            style="font-size:11px;padding:4px 10px"
-            onclick="goBackToRaceSelection()"><i
-              class="ti ti-arrow-left"></i>
-            Back
-            to
-            Race</button>
+      <!-- STEP 2: Class -->
+      <div id="create-step-class" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <div style="font-size:12px;color:var(--text-secondary);font-weight:500">Choose a class.</div>
+          <button class="btn" style="font-size:11px;padding:4px 10px" onclick="goBackToRaceSelection()"><i class="ti ti-arrow-left"></i> Back</button>
         </div>
-        <div
-          id="create-selected-race"
-          style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
+        <div id="create-selected-race" style="font-size:11px;color:var(--text-secondary);margin-bottom:8px"></div>
+        <div class="class-grid" id="class-grid"></div>
+        <div id="class-filter-note" style="font-size:11px;color:var(--text-secondary);margin-top:6px"></div>
+        <div class="form-btns" style="margin-top:12px">
+          <button class="btn" onclick="cancelCreate()">Cancel</button>
         </div>
-        <div
-          class="class-grid"
-          id="class-grid">
-        </div>
-        <div
-          id="class-filter-note"
-          style="font-size:11px;color:var(--text-secondary);margin-top:6px">
-        </div>
+      </div>
 
-        <div
-          class="name-row">
-          <label
-            style="font-size:13px;white-space:nowrap">Character
-            name:</label>
-          <input
-            id="pname"
-            type="text"
-            placeholder="Enter name"
-            style="flex:1">
+      <!-- STEP 3: Name -->
+      <div id="create-step-name" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <div style="font-size:12px;color:var(--text-secondary);font-weight:500">Name your hero.</div>
+          <button class="btn" style="font-size:11px;padding:4px 10px" onclick="goBackToClassSelection()"><i class="ti ti-arrow-left"></i> Back</button>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px">
+        <div id="create-name-summary" style="font-size:11px;color:var(--text-secondary);margin-bottom:10px"></div>
+        <div class="name-row">
+          <label style="font-size:13px;white-space:nowrap">Character name:</label>
+          <input id="pname" type="text" placeholder="Enter name" maxlength="24" style="flex:1;min-width:0">
+          <button class="btn" type="button" onclick="generateRandomName()" title="Generate a random name"><i class="ti ti-dice-5"></i> Random</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px">
           <input type="checkbox" id="hardcore-toggle" onchange="setHardcoreOnCreate(this.checked)">
           <label for="hardcore-toggle" style="cursor:pointer">
             <b style="color:#ff6b6b">Hardcore Mode</b> — +25% XP and gold. Death deletes this save permanently.
           </label>
         </div>
-        <div
-          class="form-btns">
-          <button
-            class="btn active"
-            onclick="createCharacter()"
-            style="font-size:13px;padding:7px 20px"><i
-              class="ti ti-sword"></i>
-            Enter
-            World</button>
-          <button
-            class="btn"
-            onclick="cancelCreate()">Cancel</button>
+        <div class="form-btns" style="margin-top:12px">
+          <button class="btn active" onclick="createCharacter()" style="font-size:13px;padding:7px 20px"><i class="ti ti-sword"></i> Enter World</button>
+          <button class="btn" onclick="cancelCreate()">Cancel</button>
         </div>
       </div>
     </div>
@@ -7224,11 +7188,18 @@
       if (!targetChar || !Array.isArray(targetChar.groupMercs)) return 'Mercenary';
       const type = targetChar.groupMercs[idx];
       const merc = MERCENARY_TYPES[type];
-      const hasMain = !!(targetChar.mercenary && targetChar.mercenary.type && targetChar.mercenary.type !== 'none' && MERCENARY_TYPES[targetChar.mercenary.type]);
-      const defaultName = '#' + (idx + 1 + (hasMain ? 1 : 0)) + ' ' + (merc ? merc.name : 'Mercenary');
       const names = Array.isArray(targetChar.groupMercNames) ? targetChar.groupMercNames : [];
       const custom = typeof names[idx] === 'string' ? names[idx].trim() : '';
-      return custom || defaultName;
+      // Return just the name. The roster-position number (#2, #3, …) is a UI
+      // label applied only in the Group tab — it must not be baked into the
+      // name, or it leaks into the combat log and other prose.
+      return custom || (merc ? merc.name : 'Mercenary');
+    }
+
+    // Roster position shown in the Group tab (main contracted merc is #1).
+    function getGroupMercRosterNumber(targetChar, idx) {
+      const hasMain = !!(targetChar && targetChar.mercenary && targetChar.mercenary.type && targetChar.mercenary.type !== 'none' && MERCENARY_TYPES[targetChar.mercenary.type]);
+      return idx + 1 + (hasMain ? 1 : 0);
     }
 
     function renameGroupMercPrompt(idx) {
@@ -7477,9 +7448,10 @@
         row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px';
         const info = document.createElement('div');
         const displayName = getGroupMercDisplayName(char, idx);
+        const rosterNum = getGroupMercRosterNumber(char, idx);
         const upkeep = getMercenaryUpkeepCost(type, char);
         info.innerHTML =
-          '<div style="font-weight:600">' + escapeHtml(displayName) + '</div>' +
+          '<div style="font-weight:600">#' + rosterNum + ' ' + escapeHtml(displayName) + '</div>' +
           '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(merc.class || merc.role) + ' · ' + escapeHtml(merc.desc) + '</div>' +
           '<div style="font-size:11px;color:var(--text-secondary)">Upkeep ' + upkeep + 'g / 3m</div>';
         const actions = document.createElement('div');
@@ -9976,9 +9948,25 @@
     function setCreateStep(step) {
       const raceStep = document.getElementById('create-step-race');
       const classStep = document.getElementById('create-step-class');
-      if (!raceStep || !classStep) return;
+      const nameStep = document.getElementById('create-step-name');
+      if (!raceStep || !classStep || !nameStep) return;
       raceStep.style.display = step === 'race' ? 'block' : 'none';
       classStep.style.display = step === 'class' ? 'block' : 'none';
+      nameStep.style.display = step === 'name' ? 'block' : 'none';
+
+      const title = document.getElementById('create-step-title');
+      if (title) {
+        title.textContent = step === 'race' ? 'Choose Your Race'
+          : step === 'class' ? 'Choose Your Class'
+            : 'Name Your Hero';
+      }
+
+      if (step === 'name') {
+        const summary = document.getElementById('create-name-summary');
+        if (summary) summary.textContent = (selectedRace || '?') + ' · ' + (selectedClass || '?');
+        const nameInput = document.getElementById('pname');
+        if (nameInput) setTimeout(() => { try { nameInput.focus(); } catch (e) {} }, 0);
+      }
     }
 
     function renderRaceOptions() {
@@ -10437,6 +10425,9 @@
       pendingSlot = slotIdx;
       selectedRace = null;
       selectedClass = null;
+      pendingHardcore = false;
+      const hc = document.getElementById('hardcore-toggle');
+      if (hc) hc.checked = false;
       document.getElementById('pname').value = '';
       renderRaceOptions();
       renderClassOptions();
@@ -10465,6 +10456,48 @@
       }
       selectedClass = cls;
       renderClassOptions();
+      // Picking a class advances straight to the name step.
+      setCreateStep('name');
+    }
+
+    function goBackToClassSelection() {
+      setCreateStep('class');
+    }
+
+    // Lightweight, race-flavored fantasy name generator.
+    const RANDOM_NAME_STYLES = {
+      elf:   { pre: ['Ael', 'Cael', 'Elar', 'Fae', 'Il', 'Lael', 'Lyr', 'Myr', 'Syl', 'Thal', 'Vael', 'Aer', 'Eira', 'Sael'], suf: ['ael', 'ara', 'iel', 'ian', 'oriel', 'wyn', 'ywen', 'andil', 'aith', 'eth', 'irian'] },
+      stout: { pre: ['Bald', 'Bran', 'Dur', 'Grim', 'Hald', 'Kor', 'Thra', 'Bom', 'Dwal', 'Far', 'Gor', 'Throg'], suf: ['in', 'ar', 'rik', 'und', 'gar', 'din', 'nar', 'grim', 'bek', 'din', 'thor'] },
+      brute: { pre: ['Brak', 'Drog', 'Gar', 'Gro', 'Hrak', 'Mok', 'Rok', 'Tug', 'Ur', 'Vog', 'Zug', 'Karg'], suf: ['nak', 'gor', 'rok', 'zug', 'mash', 'gash', 'dar', 'uk', 'grak', 'thok', 'naz'] },
+      exotic:{ pre: ['Az', 'Drak', 'Kai', 'Nyx', 'Pyr', 'Rax', 'Sar', 'Vex', 'Xan', 'Zar', 'Sere', 'Mor'], suf: ['ax', 'eth', 'ion', 'zar', 'ixis', 'oth', 'aris', 'yx', 'ael', 'una', 'aeon'] },
+      common:{ pre: ['Al', 'Bran', 'Cor', 'Dar', 'Edr', 'Gar', 'Hal', 'Jor', 'Kor', 'Mar', 'Rol', 'Ser', 'Tor', 'Wil'], suf: ['an', 'ric', 'wyn', 'or', 'win', 'ius', 'ard', 'mund', 'is', 'en', 'eth', 'a'] }
+    };
+    const RACE_NAME_STYLE = {
+      'Wood Elf': 'elf', 'High Elf': 'elf', 'Half Elf': 'elf', 'Dark Elf': 'elf', 'Aasimar': 'exotic',
+      'Dwarf': 'stout', 'Halfling': 'stout', 'Gnome': 'stout',
+      'Troll': 'brute', 'Ogre': 'brute', 'Lizardfolk': 'brute', 'Bullywug': 'brute', 'Goliath': 'brute',
+      'Dragonborn': 'exotic', 'Tabaxi': 'exotic',
+      'Human': 'common'
+    };
+
+    function generateRandomName() {
+      const styleKey = RACE_NAME_STYLE[selectedRace] || 'common';
+      const style = RANDOM_NAME_STYLES[styleKey] || RANDOM_NAME_STYLES.common;
+      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      let name = pick(style.pre) + pick(style.suf);
+      // Occasionally add a connecting syllable for variety.
+      if (Math.random() < 0.3) {
+        const mid = ['a', 'e', 'i', 'o', 'al', 'or', 'en', 'ya'];
+        name = pick(style.pre) + pick(mid) + pick(style.suf);
+      }
+      name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+      if (name.length > 24) name = name.slice(0, 24);
+      const input = document.getElementById('pname');
+      if (input) {
+        input.value = name;
+        try { input.focus(); } catch (e) {}
+      }
+      return name;
     }
 
     function createCharacter() {
