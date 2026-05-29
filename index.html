@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.1.12</title>
+    1.1.13</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2092,7 +2092,13 @@
 
     #screen-game.ui-layout-mobile #tab-combat {
       display: block;
+      /* switchTab() sets an inline display:flex on the combat tab, and the
+         base rule gives it flex:1 1 0. As a flex item in an auto-height
+         parent that collapses to ~0 height, so its content spilled over the
+         auto-battle panel below. Force it to size to its content instead. */
+      flex: 0 0 auto !important;
       height: auto;
+      min-height: 0;
       overflow: visible;
     }
 
@@ -2560,7 +2566,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.12</span>
+        1.1.13</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -11014,11 +11020,11 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.12';
-        if (!silent) log('Upgraded save data to v1.1.12.', 'info');
+        oldChar.version = '1.1.9';
+        if (!silent) log('Upgraded save data to v1.1.9.', 'info');
       }
 
-      if (oldChar.version === '1.1.12') {
+      if (oldChar.version === '1.1.9') {
         if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
