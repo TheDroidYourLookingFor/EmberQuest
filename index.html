@@ -12550,11 +12550,13 @@
         const stats = getItemEffectiveStats(item) || {};
         let bonus = '';
 
-        if (stats.atk) bonus += ` +${stats.atk} ATK`;
-        if (stats.def) bonus += ` +${stats.def} DEF`;
-        if (stats.hp) bonus += ` +${stats.hp} HP`;
-        if (stats.mp) bonus += ` +${stats.mp} MP`;
-        bonus += describeItemAbilityRolls(item);
+        if (stats.atk) bonus += ' +' + fmt(stats.atk) + ' ATK';
+        if (stats.def) bonus += ' +' + fmt(stats.def) + ' DEF';
+        if (stats.hp)  bonus += ' +' + fmt(stats.hp)  + ' HP';
+        if (stats.mp)  bonus += ' +' + fmt(stats.mp)  + ' MP';
+        ['str','dex','con','int','wis','cha'].forEach(k => {
+          if (stats[k]) bonus += ' +' + stats[k] + ' ' + ABILITY_LABELS[k];
+        });
 
         const sockets = getSocketSummary(item);
         if (sockets) bonus += ` · [${sockets}]`;
@@ -12641,7 +12643,7 @@
         </div>
       </div>
 
-      <div class="eq-item-bonus">${bonus || 'No stats'}</div>
+      <div class="eq-item-stats-grid">${bonus ? bonus.trim().split(/(?=\+)/).filter(Boolean).map(chip => '<span class="eq-stat-chip">' + chip.trim() + '</span>').join('') : '<span style="color:var(--text-secondary);font-size:11px">No stats</span>'}</div>
 
       <div class="eq-item-actions compact">
         ${isContainer ? `<select id="bag-install-target-${absoluteIndex}" onchange="setPendingBagInstallTarget(${absoluteIndex}, this.value)" style="font-size:11px;padding:3px 7px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">${installTargetOptions}</select><button class="btn" onclick="installContainerFromInventory(${absoluteIndex}, getPendingBagInstallTarget(${absoluteIndex}, ${realBagCount}))">Install</button>` : (isEquip ? `<button class="btn" onclick="equipItem(${absoluteIndex})">Equip</button>` : '')}
