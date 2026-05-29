@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.2.4</title>
+    1.2.6</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -886,6 +886,14 @@
       background: var(--bg-primary);
       color: var(--text-primary);
       border-color: var(--border-md);
+    }
+
+    .tab-sep {
+      width: 1px;
+      background: var(--border-md);
+      margin: 2px 2px;
+      align-self: stretch;
+      flex-shrink: 0;
     }
 
     input[type=text] {
@@ -2738,7 +2746,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.2.4</span>
+        1.2.6</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3169,83 +3177,32 @@
         style="display:flex;flex-direction:column;gap:8px">
         <div
           class="tab-bar">
-          <div
-            class="tab active"
-            onclick="switchTab('combat')">
-            Combat
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('zone')">
-            Zones
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('dungeon')">
-            Dungeon
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('quests')">
-            Quests
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('inv')">
-            Inventory
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('loot')">
-            Loot
-            Filter
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('runes')">
-            Runes
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('shop')">
-            Shop
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('spells')">
-            Spells
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('aa')">
-            <span
-              id="aa-tab-label">AA</span>
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('prestige')">
-            Prestige
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('bank')">
-            Bank
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('group')">
-            Group
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('leaderboard')">
-            Leaderboard
-          </div>
-          <div
-            class="tab"
-            onclick="switchTab('about')">
-            About
-          </div>
+          <!-- ⚔ Combat cluster -->
+          <div class="tab active" onclick="switchTab('combat')">⚔ Combat</div>
+          <div class="tab" onclick="switchTab('zone')">🗺 Zones</div>
+          <div class="tab" onclick="switchTab('dungeon')">🏛 Dungeon</div>
+          <div class="tab-sep"></div>
+          <!-- 📜 Progress cluster -->
+          <div class="tab" onclick="switchTab('quests')">📜 Quests</div>
+          <div class="tab" onclick="switchTab('aa')"><span id="aa-tab-label">✨ AA</span></div>
+          <div class="tab" onclick="switchTab('prestige')">🏆 Prestige</div>
+          <div class="tab-sep"></div>
+          <!-- 🎒 Character cluster -->
+          <div class="tab" onclick="switchTab('inv')">🎒 Inventory</div>
+          <div class="tab" onclick="switchTab('spells')">🔮 Spells</div>
+          <div class="tab" onclick="switchTab('runes')">💎 Runes</div>
+          <div class="tab-sep"></div>
+          <!-- 🏪 Economy cluster -->
+          <div class="tab" onclick="switchTab('shop')">🏪 Shop</div>
+          <div class="tab" onclick="switchTab('loot')">🔍 Loot Filter</div>
+          <div class="tab" onclick="switchTab('bank')">🏦 Bank</div>
+          <div class="tab-sep"></div>
+          <!-- 👥 Social cluster -->
+          <div class="tab" onclick="switchTab('group')">👥 Group</div>
+          <div class="tab" onclick="switchTab('leaderboard')">🏅 Leaderboard</div>
+          <div class="tab-sep"></div>
+          <!-- ℹ Meta -->
+          <div class="tab" onclick="switchTab('about')">ℹ About</div>
         </div>
         <div
           id="tab-combat">
@@ -3904,7 +3861,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.2.4 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.2.6 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -4667,32 +4624,32 @@
     };
 
     const ZONES = [
-      { name: 'Newbie Yard', desc: 'A safe area for new adventurers.', minLvl: 1, mobs: ['Field Rat', 'Rabid Bat', 'Skeleton Pup'], xpMult: 1, goldMult: 1, rare: 'Worn Shortsword' },
-      { name: 'Howlfang Burrow', desc: 'Gnoll warrens filled with danger.', minLvl: 3, mobs: ['Gnoll Pup', 'Gnoll Warrior', 'Gnoll Shaman'], xpMult: 1.5, goldMult: 1.4, rare: 'Gnoll Fang Earring' },
-      { name: 'Hollowmere Manor', desc: 'Haunted estate, undead everywhere.', minLvl: 7, mobs: ['Restless Zombie', 'Decaying Spectre', 'Wraith'], xpMult: 2.2, goldMult: 2, rare: 'Ghoul-Touched Cloak' },
-      { name: 'Temple of Dread', desc: 'Temple of Fear. Extremely deadly.', minLvl: 15, mobs: ['Bullywug Slave', 'Fear Elemental', 'Dread Stalker'], xpMult: 4, goldMult: 3.5, rare: 'Dread Quill' },
-      { name: 'Abyss of Wrath', desc: 'Realm of Asmodeus. Legendary loot.', minLvl: 30, mobs: ['Asmodean Servant', 'Ebon Mace Wielder', 'Demi-Lich'], xpMult: 8, goldMult: 7, rare: 'Hate Infused Plate' },
-      { name: 'Ravenshade Catacombs', desc: 'Vampiric nobles and cursed crypt guards.', minLvl: 34, mobs: ['Ravenshade Thrall', 'Bloodbound Sentry', 'Crypt Warden'], xpMult: 9, goldMult: 7.6, rare: 'Mithril Ingot' },
-      { name: 'Drakemoor Ruins', desc: 'Ancient citadel crawling with scaled undead.', minLvl: 38, mobs: ['Dragonkin Reaver', 'Bone Sentinel', 'Lizardfolk Spiritcaller'], xpMult: 10.1, goldMult: 8.2, rare: 'Spider Silk' },
-      { name: 'Vexgloom Labyrinth', desc: 'Frozen tunnels and predatory ice horrors.', minLvl: 42, mobs: ['Crystal Spider', 'Frost Wisp', 'Glacite Stalker'], xpMult: 11.3, goldMult: 8.9, rare: 'Animal Pelt' },
-      { name: 'Dragon Necropolis', desc: 'Ancient drakes and their eternal dead.', minLvl: 46, mobs: ['Skeletal Wyrm', 'Necrotic Drake', 'Cryptflame Adept'], xpMult: 12.6, goldMult: 9.6, rare: 'Orc Tooth' },
-      { name: 'Sythara Temple', desc: 'Alien halls ruled by serpent fanatics.', minLvl: 50, mobs: ['Sythara Acolyte', 'Serathi Inquisitor', 'Temple Coilguard'], xpMult: 14, goldMult: 10.4, rare: 'Bone Chip' },
-      { name: 'Plaguemarsh', desc: 'Pestilent marshes of rot and suffering.', minLvl: 54, mobs: ['Plaguebearer', 'Blight Horror', 'Poxbound Ritualist'], xpMult: 15.5, goldMult: 11.3, rare: 'Giant Snake Fang' },
-      { name: 'Tempest Reach', desc: 'Thunder peaks where giants wage war.', minLvl: 58, mobs: ['Storm Giant Scout', 'Thunder Zealot', 'Cloudbreaker Adept'], xpMult: 17.1, goldMult: 12.2, rare: 'Steel Longsword' },
-      { name: 'Stormspire Bastion', desc: 'Tempest forges charged with skyfire.', minLvl: 62, mobs: ['Tempest Smith', 'Skyfire Warden', 'Cyclone Champion'], xpMult: 18.8, goldMult: 13.2, rare: 'Knight Chestplate' },
-      { name: 'Festering Crypt', desc: 'Plague crypts guarded by death priests.', minLvl: 66, mobs: ['Rot Priest', 'Moldering Abomination', 'Decay Archivist'], xpMult: 20.6, goldMult: 14.3, rare: 'Ghoul-Touched Cloak' },
-      { name: 'Vanguard Halls', desc: 'Celestial battleground of honor and steel.', minLvl: 70, mobs: ['Valor Knight', 'Aegis Herald', 'Banner Captain'], xpMult: 22.5, goldMult: 15.5, rare: 'Dread Quill' },
-      { name: 'Ember Reach', desc: 'Living flame, ash storms, and infernal hosts.', minLvl: 74, mobs: ['Cinder Fiend', 'Magma Sentinel', 'Ashen Arcanist'], xpMult: 24.5, goldMult: 16.8, rare: 'Hate Infused Plate' },
-      { name: 'Wretchmaw Vestibule', desc: 'A brutal proving ground of anguish and pain.', minLvl: 78, mobs: ['Wretchmaw Torturer', 'Painforged Guard', 'Dread Supplicant'], xpMult: 26.6, goldMult: 18.1, rare: 'Steel Longsword' },
-      { name: 'Cinderhold Depths', desc: 'Molten vaults where elder drakes sleep.', minLvl: 83, mobs: ['Ash Drake', 'Ember Devourer', 'Pyre Channeler'], xpMult: 28.8, goldMult: 19.5, rare: 'Knight Chestplate' },
-      { name: 'Citadel of Eternity', desc: 'Reality-thin stronghold beyond mortal time.', minLvl: 88, mobs: ['Chrono Warden', 'Eternal Myrmidon', 'Void Archivist'], xpMult: 31, goldMult: 21, rare: 'Hate Infused Plate' },
+      { name: 'Newbie Yard', desc: 'A safe area for new adventurers.', minLvl: 1, maxLvl: 4, mobs: ['Field Rat', 'Rabid Bat', 'Skeleton Pup'], xpMult: 1, goldMult: 1, rare: 'Worn Shortsword' },
+      { name: 'Howlfang Burrow', desc: 'Gnoll warrens filled with danger.', minLvl: 3, maxLvl: 6, mobs: ['Gnoll Pup', 'Gnoll Warrior', 'Gnoll Shaman'], xpMult: 1.5, goldMult: 1.4, rare: 'Gnoll Fang Earring' },
+      { name: 'Hollowmere Manor', desc: 'Haunted estate, undead everywhere.', minLvl: 7, maxLvl: 12, mobs: ['Restless Zombie', 'Decaying Spectre', 'Wraith'], xpMult: 2.2, goldMult: 2, rare: 'Ghoul-Touched Cloak' },
+      { name: 'Temple of Dread', desc: 'Temple of Fear. Extremely deadly.', minLvl: 15, maxLvl: 21, mobs: ['Bullywug Slave', 'Fear Elemental', 'Dread Stalker'], xpMult: 4, goldMult: 3.5, rare: 'Dread Quill' },
+      { name: 'Abyss of Wrath', desc: 'Realm of Asmodeus. Legendary loot.', minLvl: 30, maxLvl: 37, mobs: ['Asmodean Servant', 'Ebon Mace Wielder', 'Demi-Lich'], xpMult: 8, goldMult: 7, rare: 'Hate Infused Plate' },
+      { name: 'Ravenshade Catacombs', desc: 'Vampiric nobles and cursed crypt guards.', minLvl: 34, maxLvl: 41, mobs: ['Ravenshade Thrall', 'Bloodbound Sentry', 'Crypt Warden'], xpMult: 9, goldMult: 7.6, rare: 'Mithril Ingot' },
+      { name: 'Drakemoor Ruins', desc: 'Ancient citadel crawling with scaled undead.', minLvl: 38, maxLvl: 45, mobs: ['Dragonkin Reaver', 'Bone Sentinel', 'Lizardfolk Spiritcaller'], xpMult: 10.1, goldMult: 8.2, rare: 'Spider Silk' },
+      { name: 'Vexgloom Labyrinth', desc: 'Frozen tunnels and predatory ice horrors.', minLvl: 42, maxLvl: 49, mobs: ['Crystal Spider', 'Frost Wisp', 'Glacite Stalker'], xpMult: 11.3, goldMult: 8.9, rare: 'Animal Pelt' },
+      { name: 'Dragon Necropolis', desc: 'Ancient drakes and their eternal dead.', minLvl: 46, maxLvl: 53, mobs: ['Skeletal Wyrm', 'Necrotic Drake', 'Cryptflame Adept'], xpMult: 12.6, goldMult: 9.6, rare: 'Orc Tooth' },
+      { name: 'Sythara Temple', desc: 'Alien halls ruled by serpent fanatics.', minLvl: 50, maxLvl: 57, mobs: ['Sythara Acolyte', 'Serathi Inquisitor', 'Temple Coilguard'], xpMult: 14, goldMult: 10.4, rare: 'Bone Chip' },
+      { name: 'Plaguemarsh', desc: 'Pestilent marshes of rot and suffering.', minLvl: 54, maxLvl: 61, mobs: ['Plaguebearer', 'Blight Horror', 'Poxbound Ritualist'], xpMult: 15.5, goldMult: 11.3, rare: 'Giant Snake Fang' },
+      { name: 'Tempest Reach', desc: 'Thunder peaks where giants wage war.', minLvl: 58, maxLvl: 65, mobs: ['Storm Giant Scout', 'Thunder Zealot', 'Cloudbreaker Adept'], xpMult: 17.1, goldMult: 12.2, rare: 'Steel Longsword' },
+      { name: 'Stormspire Bastion', desc: 'Tempest forges charged with skyfire.', minLvl: 62, maxLvl: 69, mobs: ['Tempest Smith', 'Skyfire Warden', 'Cyclone Champion'], xpMult: 18.8, goldMult: 13.2, rare: 'Knight Chestplate' },
+      { name: 'Festering Crypt', desc: 'Plague crypts guarded by death priests.', minLvl: 66, maxLvl: 73, mobs: ['Rot Priest', 'Moldering Abomination', 'Decay Archivist'], xpMult: 20.6, goldMult: 14.3, rare: 'Ghoul-Touched Cloak' },
+      { name: 'Vanguard Halls', desc: 'Celestial battleground of honor and steel.', minLvl: 70, maxLvl: 77, mobs: ['Valor Knight', 'Aegis Herald', 'Banner Captain'], xpMult: 22.5, goldMult: 15.5, rare: 'Dread Quill' },
+      { name: 'Ember Reach', desc: 'Living flame, ash storms, and infernal hosts.', minLvl: 74, maxLvl: 81, mobs: ['Cinder Fiend', 'Magma Sentinel', 'Ashen Arcanist'], xpMult: 24.5, goldMult: 16.8, rare: 'Hate Infused Plate' },
+      { name: 'Wretchmaw Vestibule', desc: 'A brutal proving ground of anguish and pain.', minLvl: 78, maxLvl: 86, mobs: ['Wretchmaw Torturer', 'Painforged Guard', 'Dread Supplicant'], xpMult: 26.6, goldMult: 18.1, rare: 'Steel Longsword' },
+      { name: 'Cinderhold Depths', desc: 'Molten vaults where elder drakes sleep.', minLvl: 83, maxLvl: 91, mobs: ['Ash Drake', 'Ember Devourer', 'Pyre Channeler'], xpMult: 28.8, goldMult: 19.5, rare: 'Knight Chestplate' },
+      { name: 'Citadel of Eternity', desc: 'Reality-thin stronghold beyond mortal time.', minLvl: 88, maxLvl: 96, mobs: ['Chrono Warden', 'Eternal Myrmidon', 'Void Archivist'], xpMult: 31, goldMult: 21, rare: 'Hate Infused Plate' },
       // Smoothing zones (appended to preserve saved zone indices). The Zones UI is sorted by minLvl.
-      { name: 'Mistveil Hollow', desc: 'Foggy halfling woods crawling with wolves and spider broods.', minLvl: 5, mobs: ['Forest Wolf', 'Spider Hatchling', 'Thicket Brigand'], xpMult: 1.8, goldMult: 1.7, rare: 'Spider Silk' },
-      { name: 'Ironskull Keep', desc: 'Orc-held fortress, walls crusted with old blood.', minLvl: 10, mobs: ['Ironskull Legionnaire', 'Orc Centurion', 'Orc Pawn'], xpMult: 2.8, goldMult: 2.4, rare: 'Orc Tooth' },
-      { name: 'Cragpass Hold', desc: 'Mountain pass overrun by bandits and grizzled brigands.', minLvl: 13, mobs: ['Cragpass Bandit', 'Cutthroat Scout', 'Brigand Captain'], xpMult: 3.4, goldMult: 3, rare: 'Bronze Hatchet' },
-      { name: 'Lake of Shadows', desc: 'Dragonkin shoreline patrols and venomous shallows.', minLvl: 18, mobs: ['Dragonkin Scout', 'Bog Frog', 'Drowned Sentry'], xpMult: 4.8, goldMult: 4.1, rare: 'Giant Snake Fang' },
-      { name: 'Forsaken Crypt', desc: 'Sunken crypt of forgotten knights and lich-priests.', minLvl: 22, mobs: ['Forsaken Acolyte', 'Crypt Knight', 'Tomb Lurker'], xpMult: 5.7, goldMult: 4.7, rare: 'Bone Chip' },
-      { name: "Mordana's Lair", desc: 'Volcanic dungeon ruled by a vengeful sorceress.', minLvl: 26, mobs: ['Mordana Cultist', 'Lava Drake Spawn', 'Fume Wraith'], xpMult: 6.8, goldMult: 5.5, rare: 'Mithril Ingot' }
+      { name: 'Mistveil Hollow', desc: 'Foggy halfling woods crawling with wolves and spider broods.', minLvl: 5, maxLvl: 9, mobs: ['Forest Wolf', 'Spider Hatchling', 'Thicket Brigand'], xpMult: 1.8, goldMult: 1.7, rare: 'Spider Silk' },
+      { name: 'Ironskull Keep', desc: 'Orc-held fortress, walls crusted with old blood.', minLvl: 10, maxLvl: 14, mobs: ['Ironskull Legionnaire', 'Orc Centurion', 'Orc Pawn'], xpMult: 2.8, goldMult: 2.4, rare: 'Orc Tooth' },
+      { name: 'Cragpass Hold', desc: 'Mountain pass overrun by bandits and grizzled brigands.', minLvl: 13, maxLvl: 17, mobs: ['Cragpass Bandit', 'Cutthroat Scout', 'Brigand Captain'], xpMult: 3.4, goldMult: 3, rare: 'Bronze Hatchet' },
+      { name: 'Lake of Shadows', desc: 'Dragonkin shoreline patrols and venomous shallows.', minLvl: 18, maxLvl: 25, mobs: ['Dragonkin Scout', 'Bog Frog', 'Drowned Sentry'], xpMult: 4.8, goldMult: 4.1, rare: 'Giant Snake Fang' },
+      { name: 'Forsaken Crypt', desc: 'Sunken crypt of forgotten knights and lich-priests.', minLvl: 22, maxLvl: 29, mobs: ['Forsaken Acolyte', 'Crypt Knight', 'Tomb Lurker'], xpMult: 5.7, goldMult: 4.7, rare: 'Bone Chip' },
+      { name: "Mordana's Lair", desc: 'Volcanic dungeon ruled by a vengeful sorceress.', minLvl: 26, maxLvl: 33, mobs: ['Mordana Cultist', 'Lava Drake Spawn', 'Fume Wraith'], xpMult: 6.8, goldMult: 5.5, rare: 'Mithril Ingot' }
     ];
 
     const ITEM_DATA = {
@@ -7410,6 +7367,7 @@
       if (!targetChar.bossCooldowns || typeof targetChar.bossCooldowns !== 'object') targetChar.bossCooldowns = {};
       if (typeof targetChar.hardcore !== 'boolean') targetChar.hardcore = false;
       if (!Array.isArray(targetChar.group)) targetChar.group = [];
+      if (typeof targetChar.groupSplitGold !== 'boolean') targetChar.groupSplitGold = false;
       if (!Array.isArray(targetChar.groupMercs)) targetChar.groupMercs = [];
       // Drop any unknown merc types from the group merc roster.
       targetChar.groupMercs = targetChar.groupMercs.filter(t => !!MERCENARY_TYPES[t]).slice(0, MAX_GROUP_MERCS);
@@ -8282,6 +8240,15 @@
       return false;
     }
 
+    function toggleGroupGoldSplit() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      char.groupSplitGold = !char.groupSplitGold;
+      log('Group gold split ' + (char.groupSplitGold ? 'enabled' : 'disabled') + '.', 'info');
+      renderGroupTab();
+      autoSave();
+    }
+
     function renderGroupTab() {
       const summary = document.getElementById('group-summary');
       const list = document.getElementById('group-roster-list');
@@ -8308,12 +8275,31 @@
       const bonusNote = xpShareSize >= 4
         ? ' (includes +' + Math.round((bonus - 1) * 100) + '% group bonus)'
         : (xpShareSize > 1 ? ' (no bonus until 4+ characters)' : '');
+      const splitOn = !!char.groupSplitGold;
       summary.innerHTML =
         '<div><strong>Group size:</strong> ' + total + ' / ' + MAX_GROUP_SIZE +
         ' &nbsp;·&nbsp; You (1) + Mercenaries (' + mercCount + ') + Characters (' + groupCount + ')</div>' +
         '<div style="margin-top:4px"><strong>XP per kill (each character):</strong> ' + sharePct + '%' +
         (xpShareSize > 1 ? (' &nbsp;·&nbsp; Total awarded: ' + totalPct + '%' + bonusNote) : ' (solo)') + '</div>' +
-        '<div style="margin-top:4px;color:var(--text-secondary)">XP is split between you and your grouped characters. Mercenaries take up a group slot and reduce XP per kill the same as another character, but receive no XP themselves.</div>';
+        '<div style="margin-top:4px;color:var(--text-secondary)">XP is split between you and your grouped characters. Mercenaries take up a group slot and reduce XP per kill the same as another character, but receive no XP themselves.</div>' +
+        '<div style="margin-top:10px;padding:10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-md)">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">' +
+            '<div>' +
+              '<div style="font-weight:600;font-size:13px">💰 Gold Split' +
+                (splitOn ? ' <span style="font-size:10px;color:#22c55e;font-weight:700;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);border-radius:3px;padding:1px 6px">ON</span>' :
+                           ' <span style="font-size:10px;color:var(--text-secondary);font-weight:700;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:3px;padding:1px 6px">OFF</span>') +
+              '</div>' +
+              '<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">' +
+                (splitOn
+                  ? 'Gold from kills is divided equally between you and all grouped characters.'
+                  : 'You keep all gold from kills. Grouped characters receive none.') +
+              '</div>' +
+            '</div>' +
+            '<button class="btn' + (splitOn ? ' active' : '') + '" onclick="toggleGroupGoldSplit()" style="white-space:nowrap">' +
+              (splitOn ? '🔀 Split Gold: On' : '🎯 Split Gold: Off') +
+            '</button>' +
+          '</div>' +
+        '</div>';
 
       const canAdd = total < MAX_GROUP_SIZE;
 
@@ -10140,9 +10126,10 @@
     }
 
     function getZoneMobLevel(zone, playerLevel) {
-      const floor = (PHASE6.zoneLevelFloor && zone && Number.isFinite(Number(zone.minLvl))) ? Number(zone.minLvl) : 1;
-      const base = Math.max(1, playerLevel + Math.floor(Math.random() * (PHASE6.zoneRangeAbovePlayer + 2)) - 1);
-      return Math.max(floor, base);
+      // Each zone has a fixed level range — mobs scale within it, not to the player.
+      const min = (zone && Number.isFinite(Number(zone.minLvl))) ? Number(zone.minLvl) : 1;
+      const max = (zone && Number.isFinite(Number(zone.maxLvl))) ? Number(zone.maxLvl) : min + 4;
+      return min + Math.floor(Math.random() * (max - min + 1));
     }
     function scaleMobHp(rawHp, level) {
       if (level <= 30) return Math.max(1, Math.floor(rawHp));
@@ -11979,11 +11966,11 @@
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
         if (typeof oldChar.hardcore !== 'boolean') oldChar.hardcore = false;
-        oldChar.version = '1.2.4';
-        if (!silent) log('Upgraded save data to v1.2.4 (bosses, dailies, achievements).', 'info');
+        oldChar.version = '1.2.6';
+        if (!silent) log('Upgraded save data to v1.2.6 (bosses, dailies, achievements).', 'info');
       }
 
-      if (oldChar.version === '1.2.4') {
+      if (oldChar.version === '1.2.6') {
         if (typeof ensurePetState === 'function') ensurePetState(oldChar);
         if (oldChar.mercenary && (!oldChar.mercenary.gear || typeof oldChar.mercenary.gear !== 'object')) {
           oldChar.mercenary.gear = { weapon: null };
@@ -12186,11 +12173,17 @@
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
       document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
       renderMob();
-      if (!isBagInstallSelectorActive()) renderInv();
-      renderShop(); renderLootTab(); renderSpellbook();
-      renderDungeonTab();
-      renderAATab();
-      renderPrestigeTab();
+      // Only re-render tabs that are currently visible — prevents destroying
+      // open selects (e.g. spell gem assignment) during combat ticks.
+      const _visibleTab = (id) => document.getElementById('tab-' + id)?.style.display !== 'none';
+      if (_visibleTab('inv') && !isBagInstallSelectorActive()) renderInv();
+      if (_visibleTab('runes') && !isBagInstallSelectorActive()) renderInv();
+      if (_visibleTab('shop')) renderShop();
+      if (_visibleTab('loot')) renderLootTab();
+      if (_visibleTab('spells')) renderSpellbook();
+      if (_visibleTab('dungeon')) renderDungeonTab();
+      if (_visibleTab('aa')) renderAATab();
+      if (_visibleTab('prestige')) renderPrestigeTab();
       const afkGoalSelect = document.getElementById('afk-goal-select');
       if (afkGoalSelect) {
         if (!afkGoalSelect.options.length) {
@@ -13764,6 +13757,64 @@
       autoSave();
     }
 
+    // ── Spell helpers ────────────────────────────────────────────────────────
+    function getSpellKindMeta(sp) {
+      const k = sp.kind || 'damage';
+      const map = {
+        'damage':        { label: 'Damage',       icon: '⚔',  color: '#ef4444' },
+        'damage_weaken': { label: 'Dmg + Weaken',  icon: '⚔🛡', color: '#f97316' },
+        'damage_poison': { label: 'Dmg + Poison',  icon: '☠',  color: '#a855f7' },
+        'heal':          { label: 'Heal',          icon: '💚', color: '#22c55e' },
+        'mana':          { label: 'Mana Restore',  icon: '🔵', color: '#3b82f6' },
+        'support':       { label: 'Support',       icon: '✨', color: '#eab308' },
+      };
+      return map[k] || { label: k, icon: '✦', color: '#999' };
+    }
+
+    function getSpellStatLine(sp) {
+      const playerAtk = char ? (char.atk || 1) : 1;
+      const playerMaxHp = char ? (char.maxHp || 100) : 100;
+      const playerMaxMp = char ? (char.maxMp || 100) : 100;
+      const lines = [];
+      if (sp.power) {
+        const base = Math.floor(playerAtk * sp.power);
+        const hi   = base + Math.floor(sp.variance || 0);
+        lines.push('~' + fmt(base) + '–' + fmt(hi) + ' dmg');
+      }
+      if (sp.healPct) {
+        const amt = Math.floor(playerMaxHp * sp.healPct);
+        lines.push('~' + fmt(amt) + ' HP (' + Math.round(sp.healPct * 100) + '% max HP)');
+      }
+      if (sp.manaPct) {
+        const amt = Math.floor(playerMaxMp * sp.manaPct);
+        lines.push('~' + fmt(amt) + ' MP (' + Math.round(sp.manaPct * 100) + '% max MP)');
+      }
+      if (sp.weaken) lines.push('−' + sp.weaken + ' enemy ATK');
+      if (sp.poisonMin && sp.poisonMax) lines.push(sp.poisonMin + '–' + sp.poisonMax + ' poison/tick');
+      return lines.join(' · ');
+    }
+
+    function buildSpellKindBadge(sp) {
+      const m = getSpellKindMeta(sp);
+      return '<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;'
+        + 'color:' + m.color + ';background:' + m.color + '18;border:1px solid ' + m.color + '40;'
+        + 'border-radius:3px;padding:1px 6px;white-space:nowrap">'
+        + m.icon + ' ' + m.label + '</span>';
+    }
+
+    function buildCooldownBar(cooldownSec, remainingSec) {
+      const pct = remainingSec > 0 ? Math.round((remainingSec / cooldownSec) * 100) : 0;
+      const ready = remainingSec <= 0;
+      const barColor = ready ? '#22c55e' : '#ef4444';
+      const label = ready ? 'Ready' : remainingSec + 's';
+      return '<div style="margin-top:6px">'
+        + '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-secondary);margin-bottom:2px">'
+        + '<span>' + cooldownSec + 's cooldown</span><span style="color:' + barColor + ';font-weight:700">' + label + '</span></div>'
+        + '<div style="height:4px;background:var(--bg-tertiary);border-radius:2px;overflow:hidden">'
+        + '<div style="height:100%;width:' + (100 - pct) + '%;background:' + barColor + ';border-radius:2px;transition:width .3s"></div>'
+        + '</div></div>';
+    }
+
     function renderSpellbook() {
       const el = document.getElementById('spellbook-list');
       if (!el || !char) return;
@@ -13773,67 +13824,86 @@
 
       const maxSlots = getMaxMemorizedSpellSlots(char);
 
-      // ── Gem Loadout: at-a-glance view of what's ready to cast ──
-      const loadoutTitle = document.createElement('h3');
-      loadoutTitle.textContent = 'Gem Loadout';
-      loadoutTitle.style.marginBottom = '4px';
-      el.appendChild(loadoutTitle);
+      // ── Section header helper ──
+      const section = (title, subtitle) => {
+        const h = document.createElement('div');
+        h.style.cssText = 'margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)';
+        h.innerHTML = '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary)">'
+          + title + '</div>'
+          + (subtitle ? '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px">' + subtitle + '</div>' : '');
+        return h;
+      };
 
-      const loadoutNote = document.createElement('div');
-      loadoutNote.style.cssText = 'font-size:11px;color:var(--text-secondary);margin-bottom:8px';
-      loadoutNote.textContent = maxSlots + ' gem' + (maxSlots === 1 ? '' : 's') + ' unlocked. Memorized spells are the ones you can cast in combat — raise Arcane Capacity in Alternate Ascension for more slots.';
-      el.appendChild(loadoutNote);
+      // ════════════════════════════════════════
+      // GEM LOADOUT
+      // ════════════════════════════════════════
+      el.appendChild(section('Gem Loadout',
+        maxSlots + ' gem' + (maxSlots === 1 ? '' : 's') + ' active · These are cast in combat · Raise Arcane Capacity in AA for more slots'));
 
       const gemGrid = document.createElement('div');
       gemGrid.className = 'eq-bag-grid';
-      gemGrid.style.marginBottom = '14px';
+      gemGrid.style.marginBottom = '18px';
+
       for (let i = 0; i < maxSlots; i++) {
         const sp = getSpellById(char.memorizedSpells[i]);
         const card = document.createElement('div');
         card.className = 'eq-item-card';
         if (sp) {
           const cd = getSpellCooldownRemaining(sp.id);
-          card.innerHTML = `
-            <div class="eq-item-type" style="text-transform:uppercase;letter-spacing:.05em;opacity:.8">Gem ${i + 1}</div>
-            <div class="eq-item-name">${sp.name}</div>
-            <div class="eq-item-type">${sp.mp} MP · ${sp.cooldown}s${cd > 0 ? ' · Ready in ' + cd + 's' : ''}</div>
-            <div class="eq-item-actions compact">
-              <button class="btn" onclick="clearMemorizedSpell(${i})">Clear</button>
-            </div>
-          `;
+          const statLine = getSpellStatLine(sp);
+          card.innerHTML =
+            '<div class="eq-item-inner" style="border-left:3px solid ' + getSpellKindMeta(sp).color + ';padding-left:9px">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px">'
+            + '  <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary)">Gem ' + (i + 1) + '</div>'
+            + '  ' + buildSpellKindBadge(sp)
+            + '</div>'
+            + '<div class="eq-item-name" style="font-size:13px">' + sp.name + '</div>'
+            + '<div class="eq-item-type" style="margin-top:3px">' + sp.desc + '</div>'
+            + (statLine ? '<div style="margin-top:5px;font-size:11px;font-weight:600;color:' + getSpellKindMeta(sp).color + '">' + statLine + '</div>' : '')
+            + '<div style="display:flex;gap:10px;margin-top:5px;font-size:10px;color:var(--text-secondary)">'
+            + '  <span>💧 ' + sp.mp + ' MP</span>'
+            + '</div>'
+            + buildCooldownBar(sp.cooldown, cd)
+            + '</div>'
+            + '<div class="eq-item-actions compact">'
+            + '  <button class="btn" onclick="clearMemorizedSpell(' + i + ')">Remove from Gem</button>'
+            + '</div>';
         } else {
-          card.innerHTML = `
-            <div class="eq-item-type" style="text-transform:uppercase;letter-spacing:.05em;opacity:.8">Gem ${i + 1}</div>
-            <div class="eq-item-name" style="color:var(--text-secondary)">— Empty —</div>
-            <div class="eq-item-bonus">Memorize a spell below.</div>
-          `;
+          card.innerHTML =
+            '<div class="eq-item-inner" style="border-left:3px solid var(--border);padding-left:9px;opacity:.6">'
+            + '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary);margin-bottom:4px">Gem ' + (i + 1) + '</div>'
+            + '<div class="eq-item-name" style="color:var(--text-secondary)">Empty Slot</div>'
+            + '<div class="eq-item-type">Assign a spell from Known Spells below</div>'
+            + '</div>';
         }
         gemGrid.appendChild(card);
       }
       el.appendChild(gemGrid);
 
-      // ── Known spells: memorize into a chosen gem ──
-      const knownTitle = document.createElement('h3');
-      knownTitle.textContent = 'Known Spells';
-      knownTitle.style.marginBottom = '6px';
-      el.appendChild(knownTitle);
+      // ════════════════════════════════════════
+      // KNOWN SPELLS
+      // ════════════════════════════════════════
+      el.appendChild(section('Known Spells', 'Spells you own — assign them to gems to use in combat'));
 
       const knownCards = document.createElement('div');
       knownCards.className = 'eq-bag-grid';
+      knownCards.style.marginBottom = '18px';
 
       if (!char.knownSpells.length) {
-        knownCards.innerHTML = '<div class="eq-empty-bag">No spells learned yet. Visit the Spell Vendor below.</div>';
+        knownCards.innerHTML = '<div class="eq-empty-bag" style="padding:12px">No spells learned yet — buy some from the Spell Vendor below.</div>';
       }
 
       char.knownSpells.forEach(spellId => {
         const sp = getSpellById(spellId);
         if (!sp) return;
         const cd = getSpellCooldownRemaining(sp.id);
+        const statLine = getSpellStatLine(sp);
+        const km = getSpellKindMeta(sp);
 
         const inGems = [];
         for (let i = 0; i < maxSlots; i++) if (char.memorizedSpells[i] === sp.id) inGems.push(i + 1);
-        const badge = inGems.length
-          ? ` · <span style="color:var(--accent,#8bd)">In Gem ${inGems.join(', ')}</span>`
+        const gemBadge = inGems.length
+          ? '<span style="font-size:10px;font-weight:700;color:#3b82f6;background:#3b82f618;border:1px solid #3b82f640;border-radius:3px;padding:1px 6px">Gem ' + inGems.join(', ') + '</span>'
           : '';
 
         const selId = 'mem-sel-' + sp.id;
@@ -13842,26 +13912,33 @@
 
         const card = document.createElement('div');
         card.className = 'eq-item-card';
-        card.innerHTML = `
-          <div class="eq-item-name">${sp.name}</div>
-          <div class="eq-item-type">${sp.mp} MP · ${sp.cooldown}s cooldown${cd > 0 ? ' · Ready in ' + cd + 's' : ''}${badge}</div>
-          <div class="eq-item-bonus">${sp.desc}</div>
-          <div class="eq-item-actions compact" style="flex-wrap:wrap">
-            <select id="${selId}" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">${opts}</select>
-            <button class="btn" onclick="setMemorizedSpell(Number(document.getElementById('${selId}').value), '${sp.id}')">Memorize</button>
-          </div>
-        `;
+        card.innerHTML =
+          '<div class="eq-item-inner" style="border-left:3px solid ' + km.color + ';padding-left:9px">'
+          + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px">'
+          + '  ' + buildSpellKindBadge(sp)
+          + '  ' + gemBadge
+          + '</div>'
+          + '<div class="eq-item-name" style="font-size:13px">' + sp.name + '</div>'
+          + '<div class="eq-item-type" style="margin-top:3px">' + sp.desc + '</div>'
+          + (statLine ? '<div style="margin-top:5px;font-size:11px;font-weight:600;color:' + km.color + '">' + statLine + '</div>' : '')
+          + '<div style="display:flex;gap:10px;margin-top:5px;font-size:10px;color:var(--text-secondary)">'
+          + '  <span>💧 ' + sp.mp + ' MP</span>'
+          + '</div>'
+          + buildCooldownBar(sp.cooldown, cd)
+          + '</div>'
+          + '<div class="eq-item-actions compact">'
+          + '  <select id="' + selId + '" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + opts + '</select>'
+          + '  <button class="btn spell-mem-btn" data-sel="' + selId + '" data-spell="' + sp.id + '">Assign to Gem</button>'
+          + '</div>';
         knownCards.appendChild(card);
       });
 
       el.appendChild(knownCards);
 
-      // ── Spell Vendor ──
-      const vendorTitle = document.createElement('h3');
-      vendorTitle.style.marginTop = '14px';
-      vendorTitle.style.marginBottom = '6px';
-      vendorTitle.textContent = 'Spell Vendor';
-      el.appendChild(vendorTitle);
+      // ════════════════════════════════════════
+      // SPELL VENDOR
+      // ════════════════════════════════════════
+      el.appendChild(section('Spell Vendor', 'Spells available for your class — some require level or faction'));
 
       const vendorCards = document.createElement('div');
       vendorCards.className = 'eq-bag-grid';
@@ -13873,17 +13950,24 @@
       allClassSpells.forEach(sp => {
         if (knownSet.has(sp.id)) return;
 
+        const card = document.createElement('div');
+        card.className = 'eq-item-card';
+
         if (sp.epic) {
-          const card = document.createElement('div');
-          card.className = 'eq-item-card';
-          card.innerHTML = `
-            <div class="eq-item-name rarity-unique">${sp.name}</div>
-            <div class="eq-item-type">Epic class spell</div>
-            <div class="eq-item-bonus">Complete your Class Epic Quest in the Quests tab to unlock this spell.</div>
-            <div class="eq-item-actions">
-              <button class="btn" disabled>Quest Reward</button>
-            </div>
-          `;
+          const km = getSpellKindMeta(sp);
+          const statLine = getSpellStatLine(sp);
+          card.innerHTML =
+            '<div class="eq-item-inner" style="border-left:3px solid #a855f7;padding-left:9px">'
+            + '<div style="margin-bottom:4px">'
+            + '  <span style="font-size:10px;font-weight:700;color:#a855f7;background:#a855f718;border:1px solid #a855f740;border-radius:3px;padding:1px 6px">⭐ Epic Spell</span>'
+            + '  ' + buildSpellKindBadge(sp)
+            + '</div>'
+            + '<div class="eq-item-name rarity-unique" style="font-size:13px">' + sp.name + '</div>'
+            + '<div class="eq-item-type" style="margin-top:3px">' + sp.desc + '</div>'
+            + (statLine ? '<div style="margin-top:5px;font-size:11px;font-weight:600;color:' + km.color + '">' + statLine + '</div>' : '')
+            + '<div style="margin-top:5px;font-size:11px;color:#eab308">🏆 Complete your Class Epic Quest to unlock</div>'
+            + '</div>'
+            + '<div class="eq-item-actions compact"><button class="btn" disabled>Quest Reward</button></div>';
           vendorCards.appendChild(card);
           return;
         }
@@ -13894,22 +13978,39 @@
         const canBuyByFaction = factionScore >= factionReq;
         const price = getMerchantPrice(sp.cost || 0);
         const canBuy = canBuyByLevel && canBuyByFaction && char.gold >= price;
+        const km = getSpellKindMeta(sp);
+        const statLine = getSpellStatLine(sp);
 
-        const card = document.createElement('div');
-        card.className = 'eq-item-card';
-        card.innerHTML = `
-          <div class="eq-item-name">${sp.name}</div>
-          <div class="eq-item-type">Lv ${levelReq} · Faction ${factionReq}+ · ${sp.mp} MP · ${sp.cooldown}s</div>
-          <div class="eq-item-bonus">${sp.desc}</div>
-          <div class="eq-item-actions">
-            <button class="btn${canBuy ? ' active' : ''}" onclick="buySpell('${sp.id}')" ${canBuy ? '' : 'disabled'}>Buy (${price}g)</button>
-          </div>
-        `;
+        const lockReasons = [];
+        if (!canBuyByLevel) lockReasons.push('Requires level ' + levelReq);
+        if (!canBuyByFaction) lockReasons.push('Requires ' + factionReq + ' faction');
+        if (canBuyByLevel && canBuyByFaction && !canBuy) lockReasons.push('Need ' + fmt(price) + 'g');
+
+        card.innerHTML =
+          '<div class="eq-item-inner" style="border-left:3px solid ' + (canBuy ? km.color : 'var(--border)') + ';padding-left:9px;' + (!canBuyByLevel || !canBuyByFaction ? 'opacity:.65' : '') + '">'
+          + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">'
+          + '  ' + buildSpellKindBadge(sp)
+          + (levelReq > 1 ? '<span style="font-size:10px;color:var(--text-secondary);font-weight:600">Lv ' + levelReq + '</span>' : '')
+          + (factionReq > 0 ? '<span style="font-size:10px;color:var(--text-secondary);font-weight:600">Faction ' + factionReq + '+</span>' : '')
+          + '</div>'
+          + '<div class="eq-item-name" style="font-size:13px">' + sp.name + '</div>'
+          + '<div class="eq-item-type" style="margin-top:3px">' + sp.desc + '</div>'
+          + (statLine ? '<div style="margin-top:5px;font-size:11px;font-weight:600;color:' + km.color + '">' + statLine + '</div>' : '')
+          + '<div style="display:flex;gap:10px;margin-top:5px;font-size:10px;color:var(--text-secondary)">'
+          + '  <span>💧 ' + sp.mp + ' MP</span>'
+          + '  <span>⏱ ' + sp.cooldown + 's</span>'
+          + '</div>'
+          + (lockReasons.length ? '<div style="margin-top:5px;font-size:10px;color:#ef4444">🔒 ' + lockReasons.join(' · ') + '</div>' : '')
+          + '</div>'
+          + '<div class="eq-item-actions compact">'
+          + '  <button class="btn spell-buy-btn' + (canBuy ? ' active' : '') + '" data-spell="' + sp.id + '" ' + (canBuy ? '' : 'disabled') + '>'
+          + (canBuy ? '✓ Buy — ' + fmt(price) + 'g' : fmt(price) + 'g') + '</button>'
+          + '</div>';
         vendorCards.appendChild(card);
       });
 
       if (!vendorCards.children.length) {
-        vendorCards.innerHTML = '<div class="eq-empty-bag">Vendor has no new spells for you.</div>';
+        vendorCards.innerHTML = '<div class="eq-empty-bag" style="padding:12px">All spells learned for your class!</div>';
       }
 
       el.appendChild(vendorCards);
@@ -14611,7 +14712,20 @@
       const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (mob.boss ? PHASE4.bossXpMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreXpBonus) : 1) * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1) * (1 + (getEquippedRunewordEffects(char).xpFind || 0)));
       const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (mob.boss ? PHASE4.bossGoldMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreGoldBonus) : 1) * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult * zoneProgressGoldMult * (typeof getPetModifiers === 'function' ? (getPetModifiers(char).goldMult || 1) : 1) * GOLD_DROP_MULT * (1 + (getEquippedRunewordEffects(char).goldFind || 0)) * (1 + (getAbilityModifiers(char).goldBonus || 0)));
       const killXp = awardExperience(xp, 'combat');
-      char.gold += gold;
+      // Gold split: if enabled, divide equally among all grouped characters.
+      const _groupIndices = getGroupMemberSlotIndices ? getGroupMemberSlotIndices() : [];
+      if (char.groupSplitGold && _groupIndices.length > 0) {
+        const _recipients = 1 + _groupIndices.length;
+        const _share = Math.floor(gold / _recipients);
+        const _leaderShare = gold - _share * _groupIndices.length;
+        char.gold += _leaderShare;
+        _groupIndices.forEach(idx => {
+          if (slots[idx]) slots[idx].gold = (Number(slots[idx].gold) || 0) + _share;
+        });
+        if (_share > 0) log('Gold split: you receive ' + fmt(_leaderShare) + 'g · ' + _groupIndices.length + ' member' + (_groupIndices.length === 1 ? '' : 's') + ' each receive ' + fmt(_share) + 'g.', 'loot');
+      } else {
+        char.gold += gold;
+      }
       bumpStat('goldEarned', gold);
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
       if (typeof tickDailyQuestProgress === 'function') tickDailyQuestProgress(mob.baseName);
@@ -16933,11 +17047,16 @@
 
     // ══════════════════════════════════════════════
     function switchTab(tab) {
-      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'inv', 'loot', 'runes', 'shop', 'spells', 'aa', 'prestige', 'bank', 'group', 'leaderboard', 'about'];
+      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'aa', 'prestige', 'inv', 'spells', 'runes', 'shop', 'loot', 'bank', 'group', 'leaderboard', 'about'];
       tabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
       });
-      document.querySelectorAll('.tab').forEach((el, i) => { el.classList.toggle('active', tabs[i] === tab); });
+      // Match by onclick content, not by index — separators in the tab bar break index-based matching
+      document.querySelectorAll('.tab').forEach(el => {
+        const onclick = el.getAttribute('onclick') || '';
+        const match = onclick.match(/switchTab\('([^']+)'\)/);
+        el.classList.toggle('active', match ? match[1] === tab : false);
+      });
       if (tab === 'combat') requestAnimationFrame(syncCombatLogSize);
       if (tab === 'zone') renderZones();
       if (tab === 'dungeon') renderDungeonTab();
@@ -16971,6 +17090,21 @@
     document.addEventListener('keydown', handleModalKeydown);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('resize', () => requestAnimationFrame(syncCombatLogSize));
+
+    // Delegated handlers for spell buttons (avoids inline onclick quote issues)
+    document.getElementById('spellbook-list').addEventListener('click', e => {
+      const memBtn = e.target.closest('.spell-mem-btn');
+      if (memBtn) {
+        const sel = document.getElementById(memBtn.dataset.sel);
+        const gemIdx = sel ? Number(sel.value) : 0;
+        setMemorizedSpell(gemIdx, memBtn.dataset.spell);
+        return;
+      }
+      const buyBtn = e.target.closest('.spell-buy-btn');
+      if (buyBtn && !buyBtn.disabled) {
+        buySpell(buyBtn.dataset.spell);
+      }
+    });
     loadUiLayoutPreference();
     loadSharedBank();
     loadSlots(); // fills local slots from localStorage as a fallback before cloud takes over
