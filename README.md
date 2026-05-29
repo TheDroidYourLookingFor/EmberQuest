@@ -65,7 +65,7 @@ That's it. No npm install, no build, no server.
 - Tabler Icons loaded from CDN for in-game iconography.
 - All state persists in `localStorage` under the key `EmberQuest_slots`.
 - Character avatars on the select screen are procedurally generated SVG keyed off the race config.
-- The in-game UI is restyled to evoke the classic EverQuest stone-panel windows: dark translucent panels with light bevels, gold serif titles, sunken bars, and bright-green stat readouts.
+- The in-game UI is restyled to evoke the classic 1990s MMO style stone-panel windows: dark translucent panels with light bevels, gold serif titles, sunken bars, and bright-green stat readouts.
 
 ## Compatibility
 
@@ -89,7 +89,7 @@ EmberQuest is a labor-of-love side project, so the roadmap is loose:
 
 ## Credits and Inspiration
 
-EmberQuest is a fan tribute to **EverQuest** (1999, Verant Interactive / Sony Online Entertainment / Daybreak), with mechanics, race/class names, zone names, and visual style borrowed from the source material in the spirit of homage. It is not affiliated with or endorsed by the EverQuest IP holders.
+EmberQuest is a fan tribute to **Old School 1990s MMOs**, with mechanics, race/class names, zone names, and visual style borrowed from dungeons and dragons.
 
 UI icons from [Tabler Icons](https://tabler-icons.io/).
 
