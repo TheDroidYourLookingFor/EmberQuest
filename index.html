@@ -66,7 +66,7 @@
     }
 
     /* ══════════════════════════════════════════════
-       CHARACTER SELECT — EverQuest-inspired layout
+       CHARACTER SELECT — Classic-fantasy layout
     ══════════════════════════════════════════════ */
     #screen-charselect.active {
       display: block;
@@ -244,7 +244,7 @@
       border-radius: 3px;
     }
 
-    /* EverQuest-style stone button */
+    /* Classic stone button */
     .eq-btn {
       display: flex;
       align-items: center;
@@ -1419,7 +1419,7 @@
     }
 
     /* ══════════════════════════════════════════════════
-       EVERQUEST-INSPIRED IN-GAME UI OVERRIDES
+       CLASSIC-FANTASY IN-GAME UI OVERRIDES
        All rules scoped to #screen-game so the char-select
        (and other screens) keep their existing look.
     ══════════════════════════════════════════════════ */
@@ -2214,7 +2214,7 @@
       </div>
     </div>
 
-    <!-- LEFT-SIDE EverQuest control panel -->
+    <!-- LEFT-SIDE classic control panel -->
     <div
       id="charselect-panel">
       <div
@@ -3844,7 +3844,7 @@
       Cleric: { hp: 100, mp: 120, atk: 10, def: 8, mpRegen: 8, skill: 'Holy Bolt', skillMp: 20, skillEffect: 'holy' },
       Paladin: { hp: 145, mp: 90, atk: 15, def: 11, mpRegen: 5, skill: 'Holy Strike', skillMp: 18, skillEffect: 'holy' },
       Ranger: { hp: 130, mp: 90, atk: 16, def: 9, mpRegen: 5, skill: 'Hunter Volley', skillMp: 16, skillEffect: 'back' },
-      'Shadow Knight': { hp: 145, mp: 95, atk: 15, def: 10, mpRegen: 5, skill: 'Unholy Blast', skillMp: 20, skillEffect: 'fire' },
+      'Death Knight': { hp: 145, mp: 95, atk: 15, def: 10, mpRegen: 5, skill: 'Unholy Blast', skillMp: 20, skillEffect: 'fire' },
       Druid: { hp: 95, mp: 135, atk: 11, def: 7, mpRegen: 9, skill: 'Nature Wrath', skillMp: 22, skillEffect: 'holy' },
       Monk: { hp: 130, mp: 55, atk: 19, def: 8, mpRegen: 4, skill: 'Flying Kick', skillMp: 14, skillEffect: 'back' },
       Bard: { hp: 120, mp: 100, atk: 13, def: 9, mpRegen: 7, skill: 'Discordant Note', skillMp: 17, skillEffect: 'holy' },
@@ -3852,27 +3852,27 @@
       Shaman: { hp: 110, mp: 125, atk: 11, def: 8, mpRegen: 8, skill: 'Ancestral Bolt', skillMp: 20, skillEffect: 'holy' },
       Necromancer: { hp: 85, mp: 155, atk: 9, def: 5, mpRegen: 10, skill: 'Lifedraw', skillMp: 24, skillEffect: 'fire' },
       Wizard: { hp: 80, mp: 160, atk: 8, def: 4, mpRegen: 10, skill: 'Fireball', skillMp: 30, skillEffect: 'fire' },
-      Magician: { hp: 90, mp: 150, atk: 9, def: 5, mpRegen: 10, skill: 'Arcane Burst', skillMp: 24, skillEffect: 'fire' },
+      Conjurer: { hp: 90, mp: 150, atk: 9, def: 5, mpRegen: 10, skill: 'Arcane Burst', skillMp: 24, skillEffect: 'fire' },
       Enchanter: { hp: 85, mp: 145, atk: 9, def: 5, mpRegen: 11, skill: 'Mind Lance', skillMp: 22, skillEffect: 'holy' },
-      Beastlord: { hp: 125, mp: 95, atk: 17, def: 9, mpRegen: 6, skill: 'Savage Claw', skillMp: 16, skillEffect: 'back' },
+      Beastmaster: { hp: 125, mp: 95, atk: 17, def: 9, mpRegen: 6, skill: 'Savage Claw', skillMp: 16, skillEffect: 'back' },
       Berserker: { hp: 150, mp: 40, atk: 21, def: 8, mpRegen: 2, skill: 'Frenzied Axe', skillMp: 12, skillEffect: 'back' }
     };
     const CLASS_ICONS = {
-      Warrior: 'ti-shield', Cleric: 'ti-heart', Paladin: 'ti-shield-check', Ranger: 'ti-bow', 'Shadow Knight': 'ti-moon-stars',
+      Warrior: 'ti-shield', Cleric: 'ti-heart', Paladin: 'ti-shield-check', Ranger: 'ti-bow', 'Death Knight': 'ti-moon-stars',
       Druid: 'ti-leaf', Monk: 'ti-karate', Bard: 'ti-music', Rogue: 'ti-knife', Shaman: 'ti-bolt', Necromancer: 'ti-skull',
-      Wizard: 'ti-wand', Magician: 'ti-sparkles', Enchanter: 'ti-stars', Beastlord: 'ti-paw', Berserker: 'ti-axe'
+      Wizard: 'ti-wand', Conjurer: 'ti-sparkles', Enchanter: 'ti-stars', Beastmaster: 'ti-paw', Berserker: 'ti-axe'
     };
     const CLASS_COLORS = {
-      Warrior: '#E24B4A', Cleric: '#1D9E75', Paladin: '#3B8AC4', Ranger: '#548A37', 'Shadow Knight': '#5A4A8A', Druid: '#4E9A55',
+      Warrior: '#E24B4A', Cleric: '#1D9E75', Paladin: '#3B8AC4', Ranger: '#548A37', 'Death Knight': '#5A4A8A', Druid: '#4E9A55',
       Monk: '#A66E3A', Bard: '#9A6B35', Rogue: '#BA7517', Shaman: '#2B8B84', Necromancer: '#7A4A9F', Wizard: '#7F77DD',
-      Magician: '#5D73C7', Enchanter: '#C067C0', Beastlord: '#8A7445', Berserker: '#C25050'
+      Conjurer: '#5D73C7', Enchanter: '#C067C0', Beastmaster: '#8A7445', Berserker: '#C25050'
     };
     const CLASS_DESCRIPTIONS = {
       Warrior: 'Frontline tank and weapon master.',
       Cleric: 'Divine healer and protector.',
       Paladin: 'Holy knight with support magic.',
       Ranger: 'Hybrid archer with survival skills.',
-      'Shadow Knight': 'Dark knight using unholy power.',
+      'Death Knight': 'Dark knight using unholy power.',
       Druid: 'Nature caster with healing utility.',
       Monk: 'Fast martial striker and puller.',
       Bard: 'Songs and utility in every fight.',
@@ -3880,44 +3880,44 @@
       Shaman: 'Totemic caster with buffs and debuffs.',
       Necromancer: 'Dark caster using life and decay.',
       Wizard: 'Pure arcane burst damage caster.',
-      Magician: 'Elemental summoner and nuker.',
+      Conjurer: 'Elemental summoner and nuker.',
       Enchanter: 'Control and mana manipulation caster.',
-      Beastlord: 'Savage hybrid fighter and mystic.',
+      Beastmaster: 'Savage hybrid fighter and mystic.',
       Berserker: 'Frenzied melee damage dealer.'
     };
-    const EQ_RACES = ['Human', 'Barbarian', 'Erudite', 'Wood Elf', 'High Elf', 'Dark Elf', 'Half Elf', 'Dwarf', 'Troll', 'Ogre', 'Halfling', 'Gnome', 'Iksar', 'Vah Shir', 'Froglok', 'Drakkin'];
+    const GAME_RACES = ['Human', 'Goliath', 'Aasimar', 'Wood Elf', 'High Elf', 'Dark Elf', 'Half Elf', 'Dwarf', 'Troll', 'Ogre', 'Halfling', 'Gnome', 'Lizardfolk', 'Tabaxi', 'Bullywug', 'Dragonborn'];
     const RACE_ICONS = {
-      Human: 'ti-user', Barbarian: 'ti-helmet', Erudite: 'ti-scroll-text', 'Wood Elf': 'ti-tree', 'High Elf': 'ti-sparkles',
+      Human: 'ti-user', Goliath: 'ti-helmet', Aasimar: 'ti-scroll-text', 'Wood Elf': 'ti-tree', 'High Elf': 'ti-sparkles',
       'Dark Elf': 'ti-moon', 'Half Elf': 'ti-adjustments', Dwarf: 'ti-hammer', Troll: 'ti-skull', Ogre: 'ti-shield-half',
-      Halfling: 'ti-chef-hat', Gnome: 'ti-bulb', Iksar: 'ti-dna-2', 'Vah Shir': 'ti-cat', Froglok: 'ti-droplet', Drakkin: 'ti-flame'
+      Halfling: 'ti-chef-hat', Gnome: 'ti-bulb', Lizardfolk: 'ti-dna-2', 'Tabaxi': 'ti-cat', Bullywug: 'ti-droplet', Dragonborn: 'ti-flame'
     };
     const RACE_CLASS_RULES = {
-      Human: ['Warrior', 'Cleric', 'Paladin', 'Ranger', 'Shadow Knight', 'Druid', 'Monk', 'Bard', 'Rogue', 'Necromancer', 'Wizard', 'Magician', 'Enchanter'],
-      Barbarian: ['Warrior', 'Rogue', 'Shaman', 'Beastlord', 'Berserker'],
-      Erudite: ['Cleric', 'Paladin', 'Shadow Knight', 'Necromancer', 'Wizard', 'Magician', 'Enchanter'],
+      Human: ['Warrior', 'Cleric', 'Paladin', 'Ranger', 'Death Knight', 'Druid', 'Monk', 'Bard', 'Rogue', 'Necromancer', 'Wizard', 'Conjurer', 'Enchanter'],
+      Goliath: ['Warrior', 'Rogue', 'Shaman', 'Beastmaster', 'Berserker'],
+      Aasimar: ['Cleric', 'Paladin', 'Death Knight', 'Necromancer', 'Wizard', 'Conjurer', 'Enchanter'],
       'Wood Elf': ['Warrior', 'Ranger', 'Druid', 'Bard', 'Rogue'],
-      'High Elf': ['Cleric', 'Paladin', 'Wizard', 'Magician', 'Enchanter'],
-      'Dark Elf': ['Warrior', 'Cleric', 'Shadow Knight', 'Rogue', 'Necromancer', 'Wizard', 'Magician', 'Enchanter'],
+      'High Elf': ['Cleric', 'Paladin', 'Wizard', 'Conjurer', 'Enchanter'],
+      'Dark Elf': ['Warrior', 'Cleric', 'Death Knight', 'Rogue', 'Necromancer', 'Wizard', 'Conjurer', 'Enchanter'],
       'Half Elf': ['Warrior', 'Paladin', 'Ranger', 'Druid', 'Bard', 'Rogue'],
       Dwarf: ['Warrior', 'Cleric', 'Paladin', 'Rogue', 'Berserker'],
-      Troll: ['Warrior', 'Shadow Knight', 'Shaman', 'Beastlord', 'Berserker'],
-      Ogre: ['Warrior', 'Shadow Knight', 'Shaman', 'Beastlord', 'Berserker'],
+      Troll: ['Warrior', 'Death Knight', 'Shaman', 'Beastmaster', 'Berserker'],
+      Ogre: ['Warrior', 'Death Knight', 'Shaman', 'Beastmaster', 'Berserker'],
       Halfling: ['Warrior', 'Cleric', 'Druid', 'Rogue'],
-      Gnome: ['Warrior', 'Cleric', 'Rogue', 'Necromancer', 'Wizard', 'Magician', 'Enchanter'],
-      Iksar: ['Warrior', 'Monk', 'Shadow Knight', 'Shaman', 'Necromancer', 'Beastlord', 'Berserker'],
-      'Vah Shir': ['Warrior', 'Monk', 'Bard', 'Rogue', 'Beastlord', 'Berserker'],
-      Froglok: ['Warrior', 'Cleric', 'Paladin', 'Shadow Knight', 'Monk', 'Rogue', 'Wizard', 'Enchanter'],
-      Drakkin: ['Warrior', 'Cleric', 'Paladin', 'Ranger', 'Shadow Knight', 'Druid', 'Monk', 'Bard', 'Rogue', 'Shaman', 'Necromancer', 'Wizard', 'Magician', 'Enchanter', 'Beastlord', 'Berserker']
+      Gnome: ['Warrior', 'Cleric', 'Rogue', 'Necromancer', 'Wizard', 'Conjurer', 'Enchanter'],
+      Lizardfolk: ['Warrior', 'Monk', 'Death Knight', 'Shaman', 'Necromancer', 'Beastmaster', 'Berserker'],
+      'Tabaxi': ['Warrior', 'Monk', 'Bard', 'Rogue', 'Beastmaster', 'Berserker'],
+      Bullywug: ['Warrior', 'Cleric', 'Paladin', 'Death Knight', 'Monk', 'Rogue', 'Wizard', 'Enchanter'],
+      Dragonborn: ['Warrior', 'Cleric', 'Paladin', 'Ranger', 'Death Knight', 'Druid', 'Monk', 'Bard', 'Rogue', 'Shaman', 'Necromancer', 'Wizard', 'Conjurer', 'Enchanter', 'Beastmaster', 'Berserker']
     };
 
     const ZONES = [
       { name: 'Newbie Yard', desc: 'A safe area for new adventurers.', minLvl: 1, mobs: ['Field Rat', 'Rabid Bat', 'Skeleton Pup'], xpMult: 1, goldMult: 1, rare: 'Worn Shortsword' },
-      { name: 'Blackburrow', desc: 'Gnoll warrens filled with danger.', minLvl: 3, mobs: ['Gnoll Pup', 'Gnoll Warrior', 'Gnoll Shaman'], xpMult: 1.5, goldMult: 1.4, rare: 'Gnoll Fang Earring' },
-      { name: 'Unrest Manor', desc: 'Haunted estate, undead everywhere.', minLvl: 7, mobs: ['Restless Zombie', 'Decaying Spectre', 'Wraith'], xpMult: 2.2, goldMult: 2, rare: 'Ghoul-Touched Cloak' },
-      { name: 'Cazic-Thule', desc: 'Temple of Fear. Extremely deadly.', minLvl: 15, mobs: ['Froglok Slave', 'Fear Elemental', 'Amygdalan'], xpMult: 4, goldMult: 3.5, rare: 'Cazic Quill' },
-      { name: 'Plane of Hate', desc: 'Realm of Innoruuk. Legendary loot.', minLvl: 30, mobs: ['Innoruuk Servant', 'Ebon Mace Wielder', 'Demi-Lich'], xpMult: 8, goldMult: 7, rare: 'Hate Infused Plate' },
-      { name: 'Mistmoore Catacombs', desc: 'Vampiric nobles and cursed crypt guards.', minLvl: 34, mobs: ['Mistmoore Thrall', 'Bloodbound Sentry', 'Crypt Warden'], xpMult: 9, goldMult: 7.6, rare: 'Mithril Ingot' },
-      { name: 'Karnor Ruins', desc: 'Ancient citadel crawling with scaled undead.', minLvl: 38, mobs: ['Sarnak Reaver', 'Bone Sentinel', 'Iksar Spiritcaller'], xpMult: 10.1, goldMult: 8.2, rare: 'Spider Silk' },
+      { name: 'Howlfang Burrow', desc: 'Gnoll warrens filled with danger.', minLvl: 3, mobs: ['Gnoll Pup', 'Gnoll Warrior', 'Gnoll Shaman'], xpMult: 1.5, goldMult: 1.4, rare: 'Gnoll Fang Earring' },
+      { name: 'Hollowmere Manor', desc: 'Haunted estate, undead everywhere.', minLvl: 7, mobs: ['Restless Zombie', 'Decaying Spectre', 'Wraith'], xpMult: 2.2, goldMult: 2, rare: 'Ghoul-Touched Cloak' },
+      { name: 'Temple of Dread', desc: 'Temple of Fear. Extremely deadly.', minLvl: 15, mobs: ['Bullywug Slave', 'Fear Elemental', 'Dread Stalker'], xpMult: 4, goldMult: 3.5, rare: 'Dread Quill' },
+      { name: 'Abyss of Wrath', desc: 'Realm of Asmodeus. Legendary loot.', minLvl: 30, mobs: ['Asmodean Servant', 'Ebon Mace Wielder', 'Demi-Lich'], xpMult: 8, goldMult: 7, rare: 'Hate Infused Plate' },
+      { name: 'Ravenshade Catacombs', desc: 'Vampiric nobles and cursed crypt guards.', minLvl: 34, mobs: ['Ravenshade Thrall', 'Bloodbound Sentry', 'Crypt Warden'], xpMult: 9, goldMult: 7.6, rare: 'Mithril Ingot' },
+      { name: 'Drakemoor Ruins', desc: 'Ancient citadel crawling with scaled undead.', minLvl: 38, mobs: ['Dragonkin Reaver', 'Bone Sentinel', 'Lizardfolk Spiritcaller'], xpMult: 10.1, goldMult: 8.2, rare: 'Spider Silk' },
       { name: 'Velketor Labyrinth', desc: 'Frozen tunnels and predatory ice horrors.', minLvl: 42, mobs: ['Crystal Spider', 'Frost Wisp', 'Velium Stalker'], xpMult: 11.3, goldMult: 8.9, rare: 'Animal Pelt' },
       { name: 'Dragon Necropolis', desc: 'Ancient drakes and their eternal dead.', minLvl: 46, mobs: ['Skeletal Wyrm', 'Necrotic Drake', 'Cryptflame Adept'], xpMult: 12.6, goldMult: 9.6, rare: 'Orc Tooth' },
       { name: 'Ssraeshza Temple', desc: 'Alien halls ruled by serpent fanatics.', minLvl: 50, mobs: ['Ssra Acolyte', 'Shissar Inquisitor', 'Temple Coilguard'], xpMult: 14, goldMult: 10.4, rare: 'Bone Chip' },
@@ -3925,17 +3925,17 @@
       { name: 'Plane of Storms', desc: 'Thunder peaks where giants wage war.', minLvl: 58, mobs: ['Storm Giant Scout', 'Thunder Zealot', 'Cloudbreaker Adept'], xpMult: 17.1, goldMult: 12.2, rare: 'Steel Longsword' },
       { name: 'Bastion of Thunder', desc: 'Tempest forges charged with skyfire.', minLvl: 62, mobs: ['Tempest Smith', 'Skyfire Warden', 'Cyclone Champion'], xpMult: 18.8, goldMult: 13.2, rare: 'Knight Chestplate' },
       { name: 'Crypt of Decay', desc: 'Plague crypts guarded by death priests.', minLvl: 66, mobs: ['Rot Priest', 'Moldering Abomination', 'Decay Archivist'], xpMult: 20.6, goldMult: 14.3, rare: 'Ghoul-Touched Cloak' },
-      { name: 'Plane of Valor', desc: 'Celestial battleground of honor and steel.', minLvl: 70, mobs: ['Valor Knight', 'Aegis Herald', 'Banner Captain'], xpMult: 22.5, goldMult: 15.5, rare: 'Cazic Quill' },
+      { name: 'Plane of Valor', desc: 'Celestial battleground of honor and steel.', minLvl: 70, mobs: ['Valor Knight', 'Aegis Herald', 'Banner Captain'], xpMult: 22.5, goldMult: 15.5, rare: 'Dread Quill' },
       { name: 'Plane of Fire', desc: 'Living flame, ash storms, and infernal hosts.', minLvl: 74, mobs: ['Cinder Fiend', 'Magma Sentinel', 'Ashen Arcanist'], xpMult: 24.5, goldMult: 16.8, rare: 'Hate Infused Plate' },
       { name: 'Anguish Vestibule', desc: 'A brutal proving ground of anguish and pain.', minLvl: 78, mobs: ['Anguish Torturer', 'Painforged Guard', 'Dread Supplicant'], xpMult: 26.6, goldMult: 18.1, rare: 'Steel Longsword' },
       { name: 'Ashengate Depths', desc: 'Molten vaults where elder drakes sleep.', minLvl: 83, mobs: ['Ash Drake', 'Ember Devourer', 'Pyre Channeler'], xpMult: 28.8, goldMult: 19.5, rare: 'Knight Chestplate' },
       { name: 'Citadel of Eternity', desc: 'Reality-thin stronghold beyond mortal time.', minLvl: 88, mobs: ['Chrono Warden', 'Eternal Myrmidon', 'Void Archivist'], xpMult: 31, goldMult: 21, rare: 'Hate Infused Plate' },
       // Smoothing zones (appended to preserve saved zone indices). The Zones UI is sorted by minLvl.
       { name: 'Misty Thicket', desc: 'Foggy halfling woods crawling with wolves and spider broods.', minLvl: 5, mobs: ['Forest Wolf', 'Spider Hatchling', 'Thicket Brigand'], xpMult: 1.8, goldMult: 1.7, rare: 'Spider Silk' },
-      { name: 'Crushbone Keep', desc: 'Orc-held fortress, walls crusted with old blood.', minLvl: 10, mobs: ['Crushbone Legionnaire', 'Orc Centurion', 'Orc Pawn'], xpMult: 2.8, goldMult: 2.4, rare: 'Orc Tooth' },
+      { name: 'Ironskull Keep', desc: 'Orc-held fortress, walls crusted with old blood.', minLvl: 10, mobs: ['Ironskull Legionnaire', 'Orc Centurion', 'Orc Pawn'], xpMult: 2.8, goldMult: 2.4, rare: 'Orc Tooth' },
       { name: 'Highpass Hold', desc: 'Mountain pass overrun by bandits and grizzled brigands.', minLvl: 13, mobs: ['Highpass Bandit', 'Cutthroat Scout', 'Brigand Captain'], xpMult: 3.4, goldMult: 3, rare: 'Bronze Hatchet' },
-      { name: 'Lake of Ill Omen', desc: 'Sarnak shoreline patrols and venomous shallows.', minLvl: 18, mobs: ['Sarnak Scout', 'Bog Frog', 'Drowned Sentry'], xpMult: 4.8, goldMult: 4.1, rare: 'Giant Snake Fang' },
-      { name: 'Befallen Crypt', desc: 'Sunken crypt of forgotten knights and lich-priests.', minLvl: 22, mobs: ['Befallen Acolyte', 'Crypt Knight', 'Tomb Lurker'], xpMult: 5.7, goldMult: 4.7, rare: 'Bone Chip' },
+      { name: 'Lake of Shadows', desc: 'Dragonkin shoreline patrols and venomous shallows.', minLvl: 18, mobs: ['Dragonkin Scout', 'Bog Frog', 'Drowned Sentry'], xpMult: 4.8, goldMult: 4.1, rare: 'Giant Snake Fang' },
+      { name: 'Forsaken Crypt', desc: 'Sunken crypt of forgotten knights and lich-priests.', minLvl: 22, mobs: ['Forsaken Acolyte', 'Crypt Knight', 'Tomb Lurker'], xpMult: 5.7, goldMult: 4.7, rare: 'Bone Chip' },
       { name: "Najena's Lair", desc: 'Volcanic dungeon ruled by a vengeful sorceress.', minLvl: 26, mobs: ['Najena Cultist', 'Lava Drake Spawn', 'Fume Wraith'], xpMult: 6.8, goldMult: 5.5, rare: 'Mithril Ingot' }
     ];
 
@@ -3965,7 +3965,7 @@
       'Iron Sabatons': { slot: 'feet', def: 7, hp: 22, type: 'Plate Boots' },
       'Glacier Treads': { slot: 'feet', def: 10, hp: 34, type: 'Frost Boots' },
 
-      'Cazic Quill': { slot: 'offhand', mp: 35, atk: 3, type: 'Focus Item' },
+      'Dread Quill': { slot: 'offhand', mp: 35, atk: 3, type: 'Focus Item' },
       'Bone Ward Totem': { slot: 'offhand', def: 5, hp: 18, type: 'Totem' },
       'Mirror Shield': { slot: 'offhand', def: 9, hp: 26, type: 'Shield' },
       'Storm Orb': { slot: 'offhand', atk: 5, mp: 40, type: 'Orb' },
@@ -3995,11 +3995,11 @@
         bonus2: { atk: 3, def: 1, procChance: 0.02 }
       },
       'Ember Warden': {
-        pieces: ['Steel Longsword', 'Knight Chestplate', 'Cazic Quill'],
+        pieces: ['Steel Longsword', 'Knight Chestplate', 'Dread Quill'],
         bonus2: { atk: 4, def: 2, procChance: 0.03 }
       },
       'Twilight Scholar': {
-        pieces: ['Cracked Staff', 'Tattered Robe', 'Cazic Quill'],
+        pieces: ['Cracked Staff', 'Tattered Robe', 'Dread Quill'],
         bonus2: { atk: 2, def: 2, procChance: 0.02 }
       },
       'Wild Hunter': {
@@ -4023,7 +4023,7 @@
       'Gnoll Fang Earring', 'Ember Sigil', 'Bone Ward Totem',
       'Steel Longsword', 'Knight Chestplate', 'Chain Legguards', 'Iron Sabatons', 'Mirror Shield', 'Warden Idol',
       'Runed Mace', 'Velium Spear', 'Scaled Cuirass', 'Frostwoven Mantle', 'Runed Greaves', 'Glacier Treads', 'Storm Orb', 'Astral Loop',
-      'Ghoul-Touched Cloak', 'Hate Infused Plate', 'Cazic Quill',
+      'Ghoul-Touched Cloak', 'Hate Infused Plate', 'Dread Quill',
       'Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot'
     ];
     const LOOT_TIER_STARTER = [
@@ -4034,7 +4034,7 @@
     const LOOT_TIER_MID = [
       'Ashen Longbow', 'Steel Longsword', 'Runed Mace',
       'Scaled Cuirass', 'Ghoul-Touched Cloak', 'Chain Legguards', 'Iron Sabatons',
-      'Cazic Quill', 'Mirror Shield', 'Warden Idol', 'Astral Loop'
+      'Dread Quill', 'Mirror Shield', 'Warden Idol', 'Astral Loop'
     ];
     const LOOT_TIER_ADVANCED = [
       'Velium Spear', 'Knight Chestplate', 'Hate Infused Plate', 'Frostwoven Mantle',
@@ -4139,7 +4139,7 @@
       'Astral Loop': [
         { id: 'starlit_band', name: 'Starlit Band', rolls: { atk: 4, mp: 40 } }
       ],
-      'Cazic Quill': [
+      'Dread Quill': [
         { id: 'quill_of_fear', name: 'Quill of Fear', rolls: { atk: 7, mp: 50 } }
       ],
       'Bone Ward Totem': [
@@ -4256,9 +4256,9 @@
         supportChance: 0.6,
         supportCooldownMs: 2200
       },
-      shadowknight: {
+      deathknight: {
         name: 'Vael Dross',
-        class: 'Shadow Knight',
+        class: 'Death Knight',
         role: 'Debuff',
         behavior: 'debuff',
         desc: 'A dread knight whose unholy aura drains the strength and resolve from any foe.',
@@ -4360,9 +4360,9 @@
         supportChance: 0.58,
         supportCooldownMs: 2400
       },
-      magician: {
+      conjurer: {
         name: 'Faelis Embercall',
-        class: 'Magician',
+        class: 'Conjurer',
         role: 'Damage',
         behavior: 'damage',
         desc: 'An elemental summoner who binds fire, stone, and ice to hammer your enemies.',
@@ -4373,9 +4373,9 @@
         supportChance: 0.58,
         supportCooldownMs: 2400
       },
-      beastlord: {
+      beastmaster: {
         name: 'Korrad Fangbound',
-        class: 'Beastlord',
+        class: 'Beastmaster',
         role: 'Damage',
         behavior: 'damage',
         desc: 'A savage hybrid warrior whose bonded spirit beast mauls anything you set it on.',
@@ -4404,12 +4404,12 @@
 
     const NAMED_BY_ZONE = {
       0: ['a rabid rat king', 'a bat matriarch'],
-      1: ['an enraged gnoll packlord', 'a blackburrow bloodshaman'],
+      1: ['an enraged gnoll packlord', 'a howlfang bloodshaman'],
       2: ['a restless butler', 'a manor revenant'],
       3: ['a fearbound high priest', 'a thule warbringer'],
-      4: ['a hand of Innoruuk', 'an ebon oathkeeper'],
-      5: ['countess of the crypt', 'an ancient mistmoore duelist'],
-      6: ['the sarnak bone marshal', 'an iksar tombseer'],
+      4: ['a hand of Asmodeus', 'an ebon oathkeeper'],
+      5: ['countess of the crypt', 'an ancient ravenshade duelist'],
+      6: ['the dragonkin bone marshal', 'an lizardfolk tombseer'],
       7: ['velketors broodmother', 'an icebound shadeweaver'],
       8: ['an ossified wyrm-lord', 'the necropolis gravewing'],
       9: ['a ssra high oracle', 'the coiled adjudicator'],
@@ -4425,8 +4425,8 @@
       19: ['a thicket spider matron', 'the wolf-pack alpha'],
       20: ['legionnaire commander krushbone', 'an orc warchanter'],
       21: ['the highpass road-warden', 'a brigand kingpin'],
-      22: ['an iksar tide-marshal', 'the lake serpent prime'],
-      23: ['the befallen lich-knight', 'an unbound tomb-lord'],
+      22: ['an lizardfolk tide-marshal', 'the lake serpent prime'],
+      23: ['the forsaken lich-knight', 'an unbound tomb-lord'],
       24: ['najena, fume sorceress', 'the lair drake-mother']
     };
 
@@ -4484,7 +4484,7 @@
         { id: 'rng_predator_volley', name: 'Predator Volley', mp: 28, cooldown: 9, levelReq: 16, cost: 260, desc: 'A lethal burst of precision shots.', target: 'enemy', kind: 'damage', power: 3.2, variance: 16 },
         { id: 'rng_natures_refuge', name: "Nature's Refuge", mp: 22, cooldown: 14, levelReq: 20, cost: 360, desc: 'Wild growth mends wounds in moments.', target: 'self', kind: 'heal', healPct: 0.43, variance: 11 }
       ],
-      'Shadow Knight': [
+      'Death Knight': [
         { id: 'sk_drain_strike', name: 'Drain Strike', mp: 22, cooldown: 8, levelReq: 1, cost: 0, desc: 'Unholy hit that restores life.', target: 'enemy', kind: 'damage', power: 2.1, variance: 11 },
         { id: 'sk_disease_touch', name: 'Disease Touch', mp: 24, cooldown: 11, levelReq: 5, cost: 65, desc: 'Cursed blade with poison follow-up.', target: 'enemy', kind: 'damage_poison', power: 2.3, variance: 10, poisonMin: 8, poisonMax: 16 },
         { id: 'sk_grim_guard', name: 'Grim Guard', mp: 20, cooldown: 12, levelReq: 9, cost: 125, desc: 'Dark blow that weakens the foe.', target: 'enemy', kind: 'damage_weaken', power: 1.9, variance: 9, weaken: 3 },
@@ -4524,7 +4524,7 @@
         { id: 'wiz_starfire', name: 'Starfire', mp: 42, cooldown: 11, levelReq: 16, cost: 260, desc: 'A star-hot blast engulfs the target.', target: 'enemy', kind: 'damage', power: 4.1, variance: 24 },
         { id: 'wiz_arcane_well', name: 'Arcane Well', mp: 18, cooldown: 15, levelReq: 20, cost: 360, desc: 'Pure arcana rapidly replenishes mana.', target: 'self', kind: 'mana', manaPct: 0.5, variance: 12 }
       ],
-      Magician: [
+      Conjurer: [
         { id: 'mag_flame_orb', name: 'Flame Orb', mp: 24, cooldown: 8, levelReq: 1, cost: 0, desc: 'Summoned orb detonates on impact.', target: 'enemy', kind: 'damage', power: 2.5, variance: 14 },
         { id: 'mag_shock_lance', name: 'Shock Lance', mp: 28, cooldown: 11, levelReq: 5, cost: 75, desc: 'Elemental lance with heavy burst.', target: 'enemy', kind: 'damage', power: 3.1, variance: 18 },
         { id: 'mag_essence_draw', name: 'Essence Draw', mp: 16, cooldown: 12, levelReq: 9, cost: 130, desc: 'Arcane conversion restores mana.', target: 'self', kind: 'mana', manaPct: 0.34, variance: 9 },
@@ -4564,7 +4564,7 @@
         { id: 'rog_eviscerate', name: 'Eviscerate', mp: 28, cooldown: 9, levelReq: 16, cost: 260, desc: 'A vicious finishing strike tears through armor.', target: 'enemy', kind: 'damage', power: 3.7, variance: 18 },
         { id: 'rog_smoke_recovery', name: 'Smoke Recovery', mp: 18, cooldown: 14, levelReq: 20, cost: 360, desc: 'Fade and recover while cloaked in smoke.', target: 'self', kind: 'heal', healPct: 0.42, variance: 10 }
       ],
-      Beastlord: [
+      Beastmaster: [
         { id: 'bst_claw_fury', name: 'Claw Fury', mp: 18, cooldown: 7, levelReq: 1, cost: 0, desc: 'Primal strike from beast training.', target: 'enemy', kind: 'damage', power: 2.3, variance: 12 },
         { id: 'bst_feral_venom', name: 'Feral Venom', mp: 20, cooldown: 10, levelReq: 5, cost: 65, desc: 'Savage attack with poison.', target: 'enemy', kind: 'damage_poison', power: 2.2, variance: 10, poisonMin: 8, poisonMax: 17 },
         { id: 'bst_spirit_howl', name: 'Spirit Howl', mp: 16, cooldown: 12, levelReq: 9, cost: 120, desc: 'Primal call restores vitality.', target: 'self', kind: 'heal', healPct: 0.29, variance: 9 },
@@ -4601,8 +4601,8 @@
 
     const CLASS_EPIC_CONTENT = {
       Warrior: {
-        questName: 'Epic Trial: Steel Oath', target: 'Innoruuk Servant', count: 30,
-        desc: 'Defeat Innoruuk Servants and forge your final oath.',
+        questName: 'Epic Trial: Steel Oath', target: 'Asmodean Servant', count: 30,
+        desc: 'Defeat Asmodean Servants and forge your final oath.',
         spell: { id: 'epic_warrior_oathbreaker', name: 'Epic: Oathbreaker', mp: 40, cooldown: 12, levelReq: 1, cost: 0, epic: true, desc: 'Legendary cleave that crushes enemy guard.', target: 'enemy', kind: 'damage_weaken', power: 4.1, variance: 20, weaken: 6 }
       },
       Cleric: {
@@ -4620,7 +4620,7 @@
         desc: 'Hunt Velium Stalkers and master the apex shot.',
         spell: { id: 'epic_ranger_godshot', name: 'Epic: Godshot', mp: 38, cooldown: 11, levelReq: 1, cost: 0, epic: true, desc: 'An unmatched hunt shot that pierces all defenses.', target: 'enemy', kind: 'damage', power: 4.2, variance: 21 }
       },
-      'Shadow Knight': {
+      'Death Knight': {
         questName: 'Epic Trial: Grave Dominion', target: 'Demi-Lich', count: 26,
         desc: 'Harvest the might of Demi-Liches in dark ritual.',
         spell: { id: 'epic_shadow_knight_voidbrand', name: 'Epic: Voidbrand', mp: 42, cooldown: 12, levelReq: 1, cost: 0, epic: true, desc: 'Corrupting strike with devastating plague.', target: 'enemy', kind: 'damage_poison', power: 3.9, variance: 18, poisonMin: 22, poisonMax: 34 }
@@ -4645,10 +4645,10 @@
         desc: 'Study the cores of Magma Sentinels to finish the codex.',
         spell: { id: 'epic_wizard_supernova', name: 'Epic: Supernova', mp: 52, cooldown: 14, levelReq: 1, cost: 0, epic: true, desc: 'Cataclysmic arcane detonation.', target: 'enemy', kind: 'damage', power: 4.8, variance: 28 }
       },
-      Magician: {
+      Conjurer: {
         questName: 'Epic Trial: Planar Core', target: 'Ash Drake', count: 28,
         desc: 'Harvest planar embers from Ash Drakes.',
-        spell: { id: 'epic_magician_prismatic_collapse', name: 'Epic: Prismatic Collapse', mp: 48, cooldown: 13, levelReq: 1, cost: 0, epic: true, desc: 'Elemental collapse tearing through reality.', target: 'enemy', kind: 'damage', power: 4.5, variance: 24 }
+        spell: { id: 'epic_conjurer_prismatic_collapse', name: 'Epic: Prismatic Collapse', mp: 48, cooldown: 13, levelReq: 1, cost: 0, epic: true, desc: 'Elemental collapse tearing through reality.', target: 'enemy', kind: 'damage', power: 4.5, variance: 24 }
       },
       Enchanter: {
         questName: 'Epic Trial: Mind Dominion', target: 'Void Archivist', count: 26,
@@ -4670,10 +4670,10 @@
         desc: 'Fulfill silent contracts against Painforged Guards.',
         spell: { id: 'epic_rogue_midnight_execution', name: 'Epic: Midnight Execution', mp: 36, cooldown: 9, levelReq: 1, cost: 0, epic: true, desc: 'Execution-level critical assault.', target: 'enemy', kind: 'damage', power: 4.3, variance: 22 }
       },
-      Beastlord: {
+      Beastmaster: {
         questName: 'Epic Trial: Apex Bond', target: 'Ember Devourer', count: 30,
         desc: 'Defeat Ember Devourers to awaken the primal pact.',
-        spell: { id: 'epic_beastlord_pack_alpha', name: 'Epic: Pack Alpha', mp: 38, cooldown: 10, levelReq: 1, cost: 0, epic: true, desc: 'Alpha strike empowered by a spectral pack.', target: 'enemy', kind: 'damage', power: 4.0, variance: 20 }
+        spell: { id: 'epic_beastmaster_pack_alpha', name: 'Epic: Pack Alpha', mp: 38, cooldown: 10, levelReq: 1, cost: 0, epic: true, desc: 'Alpha strike empowered by a spectral pack.', target: 'enemy', kind: 'damage', power: 4.0, variance: 20 }
       },
       Berserker: {
         questName: 'Epic Trial: Crimson End', target: 'Anguish Torturer', count: 30,
@@ -5038,9 +5038,9 @@
 
     function getClassSpellbook(cls) {
       const fallback = {
-        Warrior: 'Warrior', Paladin: 'Cleric', Ranger: 'Rogue', 'Shadow Knight': 'Wizard', Monk: 'Rogue', Bard: 'Cleric',
+        Warrior: 'Warrior', Paladin: 'Cleric', Ranger: 'Rogue', 'Death Knight': 'Wizard', Monk: 'Rogue', Bard: 'Cleric',
         Rogue: 'Rogue', Cleric: 'Cleric', Druid: 'Cleric', Shaman: 'Cleric', Necromancer: 'Wizard', Wizard: 'Wizard',
-        Magician: 'Wizard', Enchanter: 'Wizard', Beastlord: 'Rogue', Berserker: 'Warrior'
+        Conjurer: 'Wizard', Enchanter: 'Wizard', Beastmaster: 'Rogue', Berserker: 'Warrior'
       };
       const base = SPELLBOOK_BY_CLASS[cls] || SPELLBOOK_BY_CLASS[fallback[cls]] || [];
       const epic = getClassEpicContent(cls);
@@ -5797,11 +5797,11 @@
         { name: 'Gnoll Slayer', desc: 'Kill 8 Gnoll Warriors', mob: 'Gnoll Warrior', count: 8, xp: 400, gold: 60, done: false, prog: 0 },
         { name: 'Thicket Pest Control', desc: 'Kill 6 Forest Wolves in Misty Thicket', mob: 'Forest Wolf', count: 6, xp: 700, gold: 95, done: false, prog: 0 },
         { name: 'Manor Cleansing', desc: 'Kill 6 Restless Zombies', mob: 'Restless Zombie', count: 6, xp: 900, gold: 120, done: false, prog: 0 },
-        { name: 'Break the Crushbone Line', desc: 'Kill 8 Orc Centurions in Crushbone Keep', mob: 'Orc Centurion', count: 8, xp: 1500, gold: 190, done: false, prog: 0 },
+        { name: 'Break the Ironskull Line', desc: 'Kill 8 Orc Centurions in Ironskull Keep', mob: 'Orc Centurion', count: 8, xp: 1500, gold: 190, done: false, prog: 0 },
         { name: 'Clear the Pass', desc: 'Kill 8 Highpass Bandits in Highpass Hold', mob: 'Highpass Bandit', count: 8, xp: 2400, gold: 290, done: false, prog: 0 },
-        { name: 'Fear Made Flesh', desc: 'Kill 7 Fear Elementals in Cazic-Thule', mob: 'Fear Elemental', count: 7, xp: 3300, gold: 380, done: false, prog: 0 },
-        { name: 'Shoreline Watch', desc: 'Kill 10 Sarnak Scouts at the Lake of Ill Omen', mob: 'Sarnak Scout', count: 10, xp: 4800, gold: 560, done: false, prog: 0 },
-        { name: 'Crypt Quieted', desc: 'Kill 8 Crypt Knights in Befallen Crypt', mob: 'Crypt Knight', count: 8, xp: 7600, gold: 860, done: false, prog: 0 },
+        { name: 'Fear Made Flesh', desc: 'Kill 7 Fear Elementals in Temple of Dread', mob: 'Fear Elemental', count: 7, xp: 3300, gold: 380, done: false, prog: 0 },
+        { name: 'Shoreline Watch', desc: 'Kill 10 Dragonkin Scouts at the Lake of Shadows', mob: 'Dragonkin Scout', count: 10, xp: 4800, gold: 560, done: false, prog: 0 },
+        { name: 'Crypt Quieted', desc: 'Kill 8 Crypt Knights in Forsaken Crypt', mob: 'Crypt Knight', count: 8, xp: 7600, gold: 860, done: false, prog: 0 },
         { name: "Najena's Brood", desc: "Kill 8 Lava Drake Spawn in Najena's Lair", mob: 'Lava Drake Spawn', count: 8, xp: 12000, gold: 1300, done: false, prog: 0 }
       ];
     }
@@ -5874,15 +5874,15 @@
       Berserker: 'melee',
       Paladin: 'hybrid',
       Ranger: 'hybrid',
-      'Shadow Knight': 'hybrid',
+      'Death Knight': 'hybrid',
       Bard: 'hybrid',
-      Beastlord: 'hybrid',
+      Beastmaster: 'hybrid',
       Cleric: 'priest',
       Druid: 'priest',
       Shaman: 'priest',
       Necromancer: 'caster',
       Wizard: 'caster',
-      Magician: 'caster',
+      Conjurer: 'caster',
       Enchanter: 'caster'
     };
 
@@ -5903,7 +5903,7 @@
         { id: 'predators_mark', name: 'Predator\'s Mark', desc: '+3% melee damage and +2% loot multiplier per rank.', maxRank: 5, playerDamageMultPerRank: 0.03, lootMultPerRank: 0.02 },
         { id: 'fieldcraft', name: 'Fieldcraft', desc: '+1 MP regen and +3% mana recovery per rank.', maxRank: 5, mpRegenPerRank: 1, manaMultPerRank: 0.03 }
       ],
-      'Shadow Knight': [
+      'Death Knight': [
         { id: 'grim_harvest', name: 'Grim Harvest', desc: '+2 ATK and +3% spell power per rank.', maxRank: 5, atkBonusPerRank: 2, spellPowerMultPerRank: 0.03 },
         { id: 'dread_plate', name: 'Dread Plate', desc: '+2 DEF and -2% incoming damage per rank.', maxRank: 5, defBonusPerRank: 2, mobDamageMultPerRank: -0.02 }
       ],
@@ -5935,7 +5935,7 @@
         { id: 'arcane_overload', name: 'Arcane Overload', desc: '+6% spell power per rank.', maxRank: 5, spellPowerMultPerRank: 0.06 },
         { id: 'mana_forge', name: 'Mana Forge', desc: '+1 MP regen and +5% mana recovery per rank.', maxRank: 5, mpRegenPerRank: 1, manaMultPerRank: 0.05 }
       ],
-      Magician: [
+      Conjurer: [
         { id: 'elemental_attunement', name: 'Elemental Attunement', desc: '+5% spell power and +2% melee damage per rank.', maxRank: 5, spellPowerMultPerRank: 0.05, playerDamageMultPerRank: 0.02 },
         { id: 'sigil_weaving', name: 'Sigil Weaving', desc: '+1 MP regen and +3% loot multiplier per rank.', maxRank: 5, mpRegenPerRank: 1, lootMultPerRank: 0.03 }
       ],
@@ -5943,7 +5943,7 @@
         { id: 'mind_lattice', name: 'Mind Lattice', desc: '+4% spell power and +5% mana recovery per rank.', maxRank: 5, spellPowerMultPerRank: 0.04, manaMultPerRank: 0.05 },
         { id: 'veil_of_will', name: 'Veil of Will', desc: '+1 DEF and -2% incoming damage per rank.', maxRank: 5, defBonusPerRank: 1, mobDamageMultPerRank: -0.02 }
       ],
-      Beastlord: [
+      Beastmaster: [
         { id: 'savage_bond', name: 'Savage Bond', desc: '+2 ATK, +2% melee damage, and +2% healing per rank.', maxRank: 5, atkBonusPerRank: 2, playerDamageMultPerRank: 0.02, healMultPerRank: 0.02 },
         { id: 'primal_endurance', name: 'Primal Endurance', desc: '+1 DEF and -2% incoming damage per rank.', maxRank: 5, defBonusPerRank: 1, mobDamageMultPerRank: -0.02 }
       ],
@@ -5958,7 +5958,7 @@
       Cleric: { id: 'cap_divine_apotheosis', name: 'Capstone: Divine Apotheosis', desc: 'Ultimate cleric grace. +12% healing and +10% mana recovery.', maxRank: 1, healMultPerRank: 0.12, manaMultPerRank: 0.1 },
       Paladin: { id: 'cap_oath_eternal', name: 'Capstone: Oath Eternal', desc: 'Ultimate paladin oath. +4 ATK, +4 DEF, +8% healing.', maxRank: 1, atkBonusPerRank: 4, defBonusPerRank: 4, healMultPerRank: 0.08 },
       Ranger: { id: 'cap_king_of_trails', name: 'Capstone: King of Trails', desc: 'Ultimate ranger mastery. +8% melee damage and +8% loot multiplier.', maxRank: 1, playerDamageMultPerRank: 0.08, lootMultPerRank: 0.08 },
-      'Shadow Knight': { id: 'cap_dread_lord', name: 'Capstone: Dread Lord', desc: 'Ultimate shadowknight doom. +4 ATK, +4 DEF, +8% spell power.', maxRank: 1, atkBonusPerRank: 4, defBonusPerRank: 4, spellPowerMultPerRank: 0.08 },
+      'Death Knight': { id: 'cap_dread_lord', name: 'Capstone: Dread Lord', desc: 'Ultimate deathknight doom. +4 ATK, +4 DEF, +8% spell power.', maxRank: 1, atkBonusPerRank: 4, defBonusPerRank: 4, spellPowerMultPerRank: 0.08 },
       Druid: { id: 'cap_primal_equilibrium', name: 'Capstone: Primal Equilibrium', desc: 'Ultimate druid balance. +8% spell power, +8% healing, +8% mana recovery.', maxRank: 1, spellPowerMultPerRank: 0.08, healMultPerRank: 0.08, manaMultPerRank: 0.08 },
       Monk: { id: 'cap_perfect_form', name: 'Capstone: Perfect Form', desc: 'Ultimate monk discipline. +5 ATK, +5 DEF, -6% incoming damage.', maxRank: 1, atkBonusPerRank: 5, defBonusPerRank: 5, mobDamageMultPerRank: -0.06 },
       Bard: { id: 'cap_grand_symphony', name: 'Capstone: Grand Symphony', desc: 'Ultimate bard cadence. +5% melee damage, +5% spell power, +5% healing.', maxRank: 1, playerDamageMultPerRank: 0.05, spellPowerMultPerRank: 0.05, healMultPerRank: 0.05 },
@@ -5966,9 +5966,9 @@
       Shaman: { id: 'cap_spirit_convergence', name: 'Capstone: Spirit Convergence', desc: 'Ultimate shaman bond. +8% spell power, +8% healing, -4% incoming damage.', maxRank: 1, spellPowerMultPerRank: 0.08, healMultPerRank: 0.08, mobDamageMultPerRank: -0.04 },
       Necromancer: { id: 'cap_lord_of_ashes', name: 'Capstone: Lord of Ashes', desc: 'Ultimate necromancy. +10% spell power and +8% loot multiplier.', maxRank: 1, spellPowerMultPerRank: 0.1, lootMultPerRank: 0.08 },
       Wizard: { id: 'cap_master_of_storms', name: 'Capstone: Master of Storms', desc: 'Ultimate wizard focus. +12% spell power and +8% mana recovery.', maxRank: 1, spellPowerMultPerRank: 0.12, manaMultPerRank: 0.08 },
-      Magician: { id: 'cap_planar_engine', name: 'Capstone: Planar Engine', desc: 'Ultimate summoner control. +10% spell power and +6% melee damage.', maxRank: 1, spellPowerMultPerRank: 0.1, playerDamageMultPerRank: 0.06 },
+      Conjurer: { id: 'cap_planar_engine', name: 'Capstone: Planar Engine', desc: 'Ultimate summoner control. +10% spell power and +6% melee damage.', maxRank: 1, spellPowerMultPerRank: 0.1, playerDamageMultPerRank: 0.06 },
       Enchanter: { id: 'cap_mirror_mind', name: 'Capstone: Mirror Mind', desc: 'Ultimate enchanter weave. +8% spell power, +10% mana recovery, -4% incoming damage.', maxRank: 1, spellPowerMultPerRank: 0.08, manaMultPerRank: 0.1, mobDamageMultPerRank: -0.04 },
-      Beastlord: { id: 'cap_apex_hunt', name: 'Capstone: Apex Hunt', desc: 'Ultimate beastlord fury. +5 ATK, +6% melee damage, +6% healing.', maxRank: 1, atkBonusPerRank: 5, playerDamageMultPerRank: 0.06, healMultPerRank: 0.06 },
+      Beastmaster: { id: 'cap_apex_hunt', name: 'Capstone: Apex Hunt', desc: 'Ultimate beastmaster fury. +5 ATK, +6% melee damage, +6% healing.', maxRank: 1, atkBonusPerRank: 5, playerDamageMultPerRank: 0.06, healMultPerRank: 0.06 },
       Berserker: { id: 'cap_endless_rage', name: 'Capstone: Endless Rage', desc: 'Ultimate berserker frenzy. +7 ATK and +10% melee damage.', maxRank: 1, atkBonusPerRank: 7, playerDamageMultPerRank: 0.1 }
     };
 
@@ -6818,7 +6818,7 @@
       const rawTotal = Math.max(0, Math.floor(Number(rawXp || 0) * (prestige.xpMult || 1)));
       if (rawTotal <= 0) return { totalXp: 0, regularXp: 0, aaXp: 0, aaPoints: 0 };
 
-      // EverQuest-style group split: divide evenly among XP-eligible members
+      // classic fantasy-style group split: divide evenly among XP-eligible members
       // (player + grouped alt characters; mercenaries don't share). Groups of
       // 4+ get a per-member bonus on top of the split.
       const xpShareSize = getXpShareSize();
@@ -6858,7 +6858,7 @@
     const MAX_GROUP_SIZE = 6;
     // Mercenaries can fill the whole group (every slot except the player).
     const MAX_GROUP_MERCS = MAX_GROUP_SIZE - 1;
-    // EverQuest-style group XP bonus per member, applied once the group has
+    // classic fantasy-style group XP bonus per member, applied once the group has
     // more than 3 XP-sharing members. Index = group size.
     const GROUP_XP_BONUS_BY_SIZE = { 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.2, 5: 1.4, 6: 1.6 };
 
@@ -8140,7 +8140,7 @@
         { id: 'marksman', name: 'Marksman', desc: 'Precision archer. +18 ATK, +6% crit, +1.7x crit multiplier.', flat: { atk: 18, def: 0, hp: 20, mp: 10 }, mods: { critBonus: 0.06, critMultBonus: 0.10 } },
         { id: 'pathfinder', name: 'Pathfinder', desc: 'Wilderness scout. +10 ATK, +10 DEF, +5% loot.', flat: { atk: 10, def: 10, hp: 30, mp: 10 }, mods: { lootMultBonus: 0.05 } }
       ],
-      'Shadow Knight': [
+      'Death Knight': [
         { id: 'plaguebearer', name: 'Plaguebearer', desc: 'DoT specialist. +15 ATK, +20 MP, +8% spell power.', flat: { atk: 15, def: 5, hp: 30, mp: 20 }, mods: { spellPowerMultBonus: 0.08 } },
         { id: 'reaver', name: 'Reaver', desc: 'Life-stealing brute. +15 ATK, +15 DEF, +40 HP.', flat: { atk: 15, def: 15, hp: 40, mp: 5 }, mods: { lifestealBonus: 0.03 } }
       ],
@@ -8172,7 +8172,7 @@
         { id: 'archmage', name: 'Archmage', desc: 'Burst nuker. +30 MP, +15% spell power, +5% crit.', flat: { atk: 0, def: 0, hp: 10, mp: 30 }, mods: { spellPowerMultBonus: 0.15, critBonus: 0.05 } },
         { id: 'magus', name: 'Magus', desc: 'Sustained caster. +40 MP, +10% mana recovery.', flat: { atk: 0, def: 5, hp: 20, mp: 40 }, mods: { manaMultBonus: 0.10 } }
       ],
-      Magician: [
+      Conjurer: [
         { id: 'elementalist', name: 'Elementalist', desc: 'Pet & nuke. +25 MP, +10% spell power, +5% crit.', flat: { atk: 0, def: 0, hp: 20, mp: 25 }, mods: { spellPowerMultBonus: 0.10, critBonus: 0.05 } },
         { id: 'conjurer', name: 'Conjurer', desc: 'Endurance caster. +35 MP, +30 HP, +8% mana recovery.', flat: { atk: 0, def: 5, hp: 30, mp: 35 }, mods: { manaMultBonus: 0.08 } }
       ],
@@ -8180,7 +8180,7 @@
         { id: 'illusionist', name: 'Illusionist', desc: 'Mind weaver. +25 MP, +8% spell power, +3% dodge.', flat: { atk: 0, def: 5, hp: 20, mp: 25 }, mods: { spellPowerMultBonus: 0.08, dodgeBonus: 0.03 } },
         { id: 'beguiler', name: 'Beguiler', desc: 'Resource controller. +35 MP, +10% mana recovery.', flat: { atk: 0, def: 5, hp: 20, mp: 35 }, mods: { manaMultBonus: 0.10 } }
       ],
-      Beastlord: [
+      Beastmaster: [
         { id: 'warden', name: 'Warden', desc: 'Pet master. +12 ATK, +12 DEF, +30 HP.', flat: { atk: 12, def: 12, hp: 30, mp: 10 }, mods: {} },
         { id: 'feralist', name: 'Feralist', desc: 'Savage hunter. +20 ATK, +6% crit, +5% loot.', flat: { atk: 20, def: 0, hp: 20, mp: 5 }, mods: { critBonus: 0.06, lootMultBonus: 0.05 } }
       ],
@@ -9780,7 +9780,7 @@
     }
 
     function getAllowedClassesForRace(race) {
-      if (!race || !EQ_RACES.includes(race)) return [];
+      if (!race || !GAME_RACES.includes(race)) return [];
       return Object.keys(CLASSES);
     }
 
@@ -9801,7 +9801,7 @@
       if (!raceGrid) return;
 
       raceGrid.innerHTML = '';
-      EQ_RACES.forEach(race => {
+      GAME_RACES.forEach(race => {
         const card = document.createElement('div');
         card.className = 'class-card' + (selectedRace === race ? ' selected' : '');
         card.onclick = () => selectRace(race);
@@ -9838,7 +9838,7 @@
         const color = CLASS_COLORS[cls] || '#6b6b67';
         card.innerHTML = '<i class="ti ' + icon + '" style="font-size:20px;color:' + color + '"></i>' +
           '<div class="class-name">' + cls + '</div>' +
-          '<div class="class-desc">' + (CLASS_DESCRIPTIONS[cls] || 'EverQuest class.') + '</div>';
+          '<div class="class-desc">' + (CLASS_DESCRIPTIONS[cls] || 'classic fantasy class.') + '</div>';
         classGrid.appendChild(card);
       });
     }
@@ -9876,7 +9876,7 @@
         csSelectedSlot = firstOccupied; // -1 if none
       }
 
-      // EverQuest-style vertical slot list — show all 24 slots.
+      // classic fantasy-style vertical slot list — show all 24 slots.
       const DISPLAY_ROWS = MAX_SLOTS;
       for (let i = 0; i < DISPLAY_ROWS; i++) {
         const s = slots[i];
@@ -9912,8 +9912,8 @@
     // features on a shared SVG body. viewBox is fixed at 200×460.
     const RACE_AVATAR_CONFIG = {
       'Human': { skin: ['#e9c39b', '#b8895f'], hair: '#5a3a1c', hairStyle: 'short', ear: 'round', build: 'medium', tunic: ['#4a5d4a', '#2d3a2d'], pants: ['#3a2f25', '#1f1812'] },
-      'Barbarian': { skin: ['#eecda0', '#c08856'], hair: '#c89a55', hairStyle: 'braids', ear: 'round', build: 'huge', tunic: ['#704a2a', '#3e2814'], pants: ['#3a2418', '#1c100a'], beard: true },
-      'Erudite': { skin: ['#d7b189', '#8d6543'], hair: '#1a1a1a', hairStyle: 'bald', ear: 'round', build: 'lean', tunic: ['#4a3a78', '#241948'], pants: ['#241948', '#0e0820'], hood: true },
+      'Goliath': { skin: ['#eecda0', '#c08856'], hair: '#c89a55', hairStyle: 'braids', ear: 'round', build: 'huge', tunic: ['#704a2a', '#3e2814'], pants: ['#3a2418', '#1c100a'], beard: true },
+      'Aasimar': { skin: ['#d7b189', '#8d6543'], hair: '#1a1a1a', hairStyle: 'bald', ear: 'round', build: 'lean', tunic: ['#4a3a78', '#241948'], pants: ['#241948', '#0e0820'], hood: true },
       'Wood Elf': { skin: ['#f0d4ad', '#bd9466'], hair: '#7a4d18', hairStyle: 'long', ear: 'pointed', build: 'lean', tunic: ['#3a5a2a', '#1c2e14'], pants: ['#3a2f1a', '#1a1208'] },
       'High Elf': { skin: ['#f7e3c8', '#cca983'], hair: '#e8d27a', hairStyle: 'long', ear: 'long-pointed', build: 'lean', tunic: ['#c9a13a', '#6f5414'], pants: ['#e8d8a8', '#9d8550'] },
       'Dark Elf': { skin: ['#7a6da8', '#3a3060'], hair: '#e8e8f4', hairStyle: 'long', ear: 'long-pointed', build: 'lean', tunic: ['#2a1a4a', '#0e0820'], pants: ['#1a1230', '#080414'] },
@@ -9923,10 +9923,10 @@
       'Ogre': { skin: ['#a89a5a', '#6a5e28'], hair: '#1a1a1a', hairStyle: 'none', ear: 'round', build: 'huge', tunic: ['#5a4a28', '#2c2412'], pants: ['#3a2c14', '#1c1408'], tusks: true },
       'Halfling': { skin: ['#f0d0a0', '#b89060'], hair: '#7a4818', hairStyle: 'short', ear: 'round', build: 'short', tunic: ['#3a5a2a', '#1c2e14'], pants: ['#5a3a1a', '#2c1c0a'] },
       'Gnome': { skin: ['#f4d4ac', '#bd9466'], hair: '#c83020', hairStyle: 'mohawk', ear: 'pointed', build: 'short', tunic: ['#5a3a78', '#2c1c40'], pants: ['#3a2f25', '#1f1812'] },
-      'Iksar': { skin: ['#5a8a3a', '#2c4a18'], hair: null, hairStyle: 'none', ear: 'none', build: 'medium', tunic: ['#5a4a2a', '#2c2412'], pants: ['#3a2c14', '#1c1408'], snout: true, tail: true, scales: true },
-      'Vah Shir': { skin: ['#c89a5a', '#7a5424'], hair: '#3a2814', hairStyle: 'mane', ear: 'cat', build: 'medium', tunic: ['#5a3a78', '#2c1c40'], pants: ['#3a2818', '#1c0e08'], snout: true, tail: true, whiskers: true },
-      'Froglok': { skin: ['#6aa848', '#2c5a1c'], hair: null, hairStyle: 'none', ear: 'none', build: 'short', tunic: ['#3a5a2a', '#1c2e14'], pants: ['#2a3a1a', '#10180a'], frogHead: true },
-      'Drakkin': { skin: ['#e8c8a8', '#b8896c'], hair: '#5a1818', hairStyle: 'long', ear: 'pointed', build: 'medium', tunic: ['#7a2a3a', '#3a1018'], pants: ['#3a1818', '#1c0810'], hornsSmall: true, scales: 'cheek' }
+      'Lizardfolk': { skin: ['#5a8a3a', '#2c4a18'], hair: null, hairStyle: 'none', ear: 'none', build: 'medium', tunic: ['#5a4a2a', '#2c2412'], pants: ['#3a2c14', '#1c1408'], snout: true, tail: true, scales: true },
+      'Tabaxi': { skin: ['#c89a5a', '#7a5424'], hair: '#3a2814', hairStyle: 'mane', ear: 'cat', build: 'medium', tunic: ['#5a3a78', '#2c1c40'], pants: ['#3a2818', '#1c0e08'], snout: true, tail: true, whiskers: true },
+      'Bullywug': { skin: ['#6aa848', '#2c5a1c'], hair: null, hairStyle: 'none', ear: 'none', build: 'short', tunic: ['#3a5a2a', '#1c2e14'], pants: ['#2a3a1a', '#10180a'], frogHead: true },
+      'Dragonborn': { skin: ['#e8c8a8', '#b8896c'], hair: '#5a1818', hairStyle: 'long', ear: 'pointed', build: 'medium', tunic: ['#7a2a3a', '#3a1018'], pants: ['#3a1818', '#1c0810'], hornsSmall: true, scales: 'cheek' }
     };
 
     function getRaceAvatarConfig(race) {
@@ -10001,16 +10001,16 @@
         head += `<ellipse cx="${cx}" cy="${ys.headCy}" rx="${b.headR}" ry="${b.headRy}" fill="url(#av-skin)" stroke="#3d2916" stroke-width="1"/>`;
         // Eyes
         const eyeY = ys.headCy - 2;
-        const eyeColor = (race === 'Dark Elf') ? '#e84848' : (race === 'High Elf' ? '#3aa8d8' : (race === 'Iksar' ? '#e8c828' : '#2a1f12'));
+        const eyeColor = (race === 'Dark Elf') ? '#e84848' : (race === 'High Elf' ? '#3aa8d8' : (race === 'Lizardfolk' ? '#e8c828' : '#2a1f12'));
         head += `<circle cx="${cx - 9}" cy="${eyeY}" r="2" fill="${eyeColor}"/>`;
         head += `<circle cx="${cx + 9}" cy="${eyeY}" r="2" fill="${eyeColor}"/>`;
 
-        // Snouts (Iksar, Vah Shir)
+        // Snouts (Lizardfolk, Tabaxi)
         if (cfg.snout) {
           head += `<ellipse cx="${cx}" cy="${ys.headCy + 10}" rx="14" ry="10" fill="url(#av-skin)" stroke="#3d2916" stroke-width="0.8"/>`;
           head += `<ellipse cx="${cx - 4}" cy="${ys.headCy + 8}" rx="1.4" ry="2" fill="#1a1208"/>`;
           head += `<ellipse cx="${cx + 4}" cy="${ys.headCy + 8}" rx="1.4" ry="2" fill="#1a1208"/>`;
-          if (race === 'Iksar') {
+          if (race === 'Lizardfolk') {
             // small fangs
             head += `<path d="M ${cx - 5} ${ys.headCy + 15} L ${cx - 3} ${ys.headCy + 19} L ${cx - 1} ${ys.headCy + 15} Z" fill="#fff8d0"/>`;
             head += `<path d="M ${cx + 5} ${ys.headCy + 15} L ${cx + 3} ${ys.headCy + 19} L ${cx + 1} ${ys.headCy + 15} Z" fill="#fff8d0"/>`;
@@ -10020,7 +10020,7 @@
           head += `<path d="M ${cx - 5} ${ys.headCy + 12} Q ${cx} ${ys.headCy + 15} ${cx + 5} ${ys.headCy + 12}" fill="none" stroke="#3d2916" stroke-width="1"/>`;
         }
 
-        // Whiskers (Vah Shir)
+        // Whiskers (Tabaxi)
         if (cfg.whiskers) {
           head += `<line x1="${cx - 14}" y1="${ys.headCy + 10}" x2="${cx - 28}" y2="${ys.headCy + 8}" stroke="#fff" stroke-width="0.6"/>`;
           head += `<line x1="${cx - 14}" y1="${ys.headCy + 12}" x2="${cx - 28}" y2="${ys.headCy + 14}" stroke="#fff" stroke-width="0.6"/>`;
@@ -10034,7 +10034,7 @@
           head += `<path d="M ${cx + 10} ${ys.headCy + 12} L ${cx + 12} ${ys.headCy + 22} L ${cx + 7} ${ys.headCy + 18} Z" fill="#fff8d0" stroke="#7a6a30" stroke-width="0.6"/>`;
         }
 
-        // Scale texture on cheeks (Drakkin)
+        // Scale texture on cheeks (Dragonborn)
         if (cfg.scales === 'cheek') {
           head += `<circle cx="${cx - 18}" cy="${ys.headCy + 6}" r="1.4" fill="#a04848" opacity="0.7"/>`;
           head += `<circle cx="${cx - 14}" cy="${ys.headCy + 10}" r="1.4" fill="#a04848" opacity="0.7"/>`;
@@ -10042,7 +10042,7 @@
           head += `<circle cx="${cx + 14}" cy="${ys.headCy + 10}" r="1.4" fill="#a04848" opacity="0.7"/>`;
         }
 
-        // Full-face scale texture (Iksar)
+        // Full-face scale texture (Lizardfolk)
         if (cfg.scales === true) {
           for (let i = 0; i < 6; i++) {
             const sx = cx - 18 + (i * 7);
@@ -10078,7 +10078,7 @@
       let hairFront = '';
       const topY = ys.headCy - b.headRy;
       if (cfg.hood) {
-        // Dark robed hood for Erudites — fully wraps around head, painted on top
+        // Dark robed hood for Aasimar — fully wraps around head, painted on top
         hairFront += `<path d="M ${cx - b.headR - 6} ${ys.headCy} Q ${cx - b.headR - 6} ${topY - 18} ${cx} ${topY - 22} Q ${cx + b.headR + 6} ${topY - 18} ${cx + b.headR + 6} ${ys.headCy} L ${cx + b.headR + 6} ${ys.headCy + 14} Q ${cx} ${ys.headCy + 10} ${cx - b.headR - 6} ${ys.headCy + 14} Z" fill="url(#av-tunic)" stroke="#0e0820" stroke-width="1"/>`;
       } else if (cfg.hairStyle === 'short' && cfg.hair) {
         // Short hair sits as a cap on top of the head
@@ -10099,17 +10099,17 @@
         hairBack += `<rect x="${cx + b.headR - 4}" y="${ys.headCy}" width="6" height="40" rx="3" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
         hairFront += `<path d="M ${cx - b.headR + 2} ${topY + 10} Q ${cx} ${topY - 4} ${cx + b.headR - 2} ${topY + 10} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6"/>`;
       } else if (cfg.hairStyle === 'mane' && cfg.hair) {
-        // Vah Shir lion mane — render behind the head as a halo of fur
+        // Tabaxi lion mane — render behind the head as a halo of fur
         hairBack += `<path d="M ${cx - b.headR - 6} ${ys.headCy + 4} Q ${cx - b.headR - 14} ${topY - 4} ${cx} ${topY - 10} Q ${cx + b.headR + 14} ${topY - 4} ${cx + b.headR + 6} ${ys.headCy + 4} Q ${cx + b.headR + 10} ${ys.headCy + 20} ${cx} ${ys.headCy + 18} Q ${cx - b.headR - 10} ${ys.headCy + 20} ${cx - b.headR - 6} ${ys.headCy + 4} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6" opacity="0.85"/>`;
       }
 
-      // Beard (dwarf, barbarian) — front, hanging from the face
+      // Beard (dwarf, goliath) — front, hanging from the face
       if (cfg.beard) {
         const beardColor = cfg.hair || '#7a4d18';
         hairFront += `<path d="M ${cx - 16} ${ys.headCy + 16} Q ${cx - 22} ${ys.headCy + 48} ${cx} ${ys.headCy + 52} Q ${cx + 22} ${ys.headCy + 48} ${cx + 16} ${ys.headCy + 16} Q ${cx} ${ys.headCy + 22} ${cx - 16} ${ys.headCy + 16} Z" fill="${beardColor}" stroke="#1a0e08" stroke-width="0.6"/>`;
       }
 
-      // Horns (Drakkin) — sit on top of head, render in front
+      // Horns (Dragonborn) — sit on top of head, render in front
       if (cfg.hornsSmall) {
         hairFront += `<path d="M ${cx - 12} ${topY + 4} L ${cx - 16} ${topY - 14} L ${cx - 8} ${topY + 2} Z" fill="#5a3018" stroke="#1a0a04" stroke-width="0.6"/>`;
         hairFront += `<path d="M ${cx + 12} ${topY + 4} L ${cx + 16} ${topY - 14} L ${cx + 8} ${topY + 2} Z" fill="#5a3018" stroke="#1a0a04" stroke-width="0.6"/>`;
@@ -10153,10 +10153,10 @@
       let boots = `<path d="M ${hipL + 4} ${ys.footTop} L ${cx - 4} ${ys.footTop} L ${cx - 4} ${ys.footBot - 4} Q ${cx - 18} ${ys.footBot + 4} ${hipL - 4} ${ys.footBot - 4} Z" fill="#3a2515" stroke="#0f0a08" stroke-width="1"/>`;
       boots += `<path d="M ${cx + 4} ${ys.footTop} L ${hipR - 4} ${ys.footTop} L ${hipR + 4} ${ys.footBot - 4} Q ${cx + 18} ${ys.footBot + 4} ${cx + 4} ${ys.footBot - 4} Z" fill="#3a2515" stroke="#0f0a08" stroke-width="1"/>`;
 
-      // Tail (Iksar, Vah Shir)
+      // Tail (Lizardfolk, Tabaxi)
       let tail = '';
       if (cfg.tail) {
-        const tailColor = (race === 'Vah Shir') ? cfg.skin[1] : '#3c5a1c';
+        const tailColor = (race === 'Tabaxi') ? cfg.skin[1] : '#3c5a1c';
         tail += `<path d="M ${hipR - 2} ${ys.legTop + 10} Q ${hipR + 30} ${ys.legTop + 40} ${hipR + 18} ${ys.legBot - 20}" fill="none" stroke="${tailColor}" stroke-width="10" stroke-linecap="round"/>`;
         tail += `<path d="M ${hipR - 2} ${ys.legTop + 10} Q ${hipR + 30} ${ys.legTop + 40} ${hipR + 18} ${ys.legBot - 20}" fill="none" stroke="#1a0e08" stroke-width="1" opacity="0.4"/>`;
       }
@@ -14924,7 +14924,7 @@
         log('You need ' + cost.toLocaleString() + ' gold for a Race Change Token.', 'info');
         return;
       }
-      const validRaces = EQ_RACES.filter(r => (RACE_CLASS_RULES[r] || []).includes(char.cls) && r !== char.race);
+      const validRaces = GAME_RACES.filter(r => (RACE_CLASS_RULES[r] || []).includes(char.cls) && r !== char.race);
       if (!validRaces.length) {
         log('No other race can be a ' + char.cls + '. The token cannot be used.', 'info');
         return;
@@ -14934,7 +14934,7 @@
         validRaces[0]
       );
       if (input === null) return;
-      const choice = EQ_RACES.find(r => r.toLowerCase() === String(input).trim().toLowerCase());
+      const choice = GAME_RACES.find(r => r.toLowerCase() === String(input).trim().toLowerCase());
       if (!choice) {
         log('Unknown race "' + input + '". The token was not consumed.', 'info');
         return;
