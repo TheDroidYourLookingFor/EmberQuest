@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.1.6</title>
+    1.1.7</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2370,7 +2370,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.6</span>
+        1.1.7</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -6856,7 +6856,8 @@
 
     // ── Group system ─────────────────────────────
     const MAX_GROUP_SIZE = 6;
-    const MAX_GROUP_MERCS = 3;
+    // Mercenaries can fill the whole group (every slot except the player).
+    const MAX_GROUP_MERCS = MAX_GROUP_SIZE - 1;
     // EverQuest-style group XP bonus per member, applied once the group has
     // more than 3 XP-sharing members. Index = group size.
     const GROUP_XP_BONUS_BY_SIZE = { 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.2, 5: 1.4, 6: 1.6 };
@@ -7053,7 +7054,8 @@
       if (!targetChar || !Array.isArray(targetChar.groupMercs)) return 'Mercenary';
       const type = targetChar.groupMercs[idx];
       const merc = MERCENARY_TYPES[type];
-      const defaultName = (merc ? merc.name : 'Mercenary') + ' #' + (idx + 1);
+      const hasMain = !!(targetChar.mercenary && targetChar.mercenary.type && targetChar.mercenary.type !== 'none' && MERCENARY_TYPES[targetChar.mercenary.type]);
+      const defaultName = '#' + (idx + 1 + (hasMain ? 1 : 0)) + ' ' + (merc ? merc.name : 'Mercenary');
       const names = Array.isArray(targetChar.groupMercNames) ? targetChar.groupMercNames : [];
       const custom = typeof names[idx] === 'string' ? names[idx].trim() : '';
       return custom || defaultName;
@@ -7064,9 +7066,7 @@
       if (idx < 0 || idx >= char.groupMercs.length) return;
       if (!Array.isArray(char.groupMercNames)) char.groupMercNames = [];
       while (char.groupMercNames.length < char.groupMercs.length) char.groupMercNames.push('');
-      const type = char.groupMercs[idx];
-      const merc = MERCENARY_TYPES[type];
-      const defaultName = (merc ? merc.name : 'Mercenary') + ' #' + (idx + 1);
+      const defaultName = getGroupMercDisplayName({ ...char, groupMercNames: [] }, idx);
       const current = getGroupMercDisplayName(char, idx);
       const proposed = window.prompt('Rename mercenary (1-24 chars). Leave blank to reset to default.', current);
       if (proposed === null) return;
@@ -7084,21 +7084,34 @@
 
     function addGroupMerc(type) {
       if (!char || !MERCENARY_TYPES[type]) return;
+      ensureExtendedSystems(char);
       if (!Array.isArray(char.groupMercs)) char.groupMercs = [];
-      if (char.groupMercs.length >= MAX_GROUP_MERCS) {
-        log('Group merc roster is full (max ' + MAX_GROUP_MERCS + ').', 'info');
-        return;
-      }
       if (getGroupSize() >= MAX_GROUP_SIZE) {
         log('Group is full (max ' + MAX_GROUP_SIZE + ').', 'info');
         return;
       }
+      const cost = getMercenaryHireCost(type);
+      if ((char.gold || 0) < cost) {
+        log(['Not enough gold to hire ', { text: MERCENARY_TYPES[type].name, cls: 'combat-log-merc' }, ' (' + cost + 'g).'], 'info');
+        return;
+      }
+      const mainType = char.mercenary && char.mercenary.type ? char.mercenary.type : 'none';
+      // Fill the contracted (main) merc slot first; overflow goes to the group roster.
+      if (mainType === 'none' || !MERCENARY_TYPES[mainType]) {
+        hireMercenary(type);
+        return;
+      }
+      if (char.groupMercs.length >= MAX_GROUP_MERCS) {
+        log('Group merc roster is full (max ' + MAX_GROUP_MERCS + ').', 'info');
+        return;
+      }
+      char.gold -= cost;
       char.groupMercs.push(type);
       if (!Array.isArray(char.groupMercNames)) char.groupMercNames = [];
       char.groupMercNames.push('');
-      log('Added ' + MERCENARY_TYPES[type].name + ' to your group mercenaries.', 'info');
+      log(['Hired ', { text: MERCENARY_TYPES[type].name, cls: 'combat-log-merc' }, ' for ' + cost + ' gold.'], 'loot');
       saveSlots();
-      renderGroupTab();
+      renderAll();
     }
 
     function removeGroupMerc(idx) {
@@ -7265,7 +7278,7 @@
         row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px';
         const info = document.createElement('div');
         info.innerHTML =
-          '<div style="font-weight:600">' + escapeHtml(getMercenaryDisplayName(char)) + ' &nbsp;<span style="font-size:10px;color:var(--text-secondary)">contracted</span></div>' +
+          '<div style="font-weight:600">#1 ' + escapeHtml(getMercenaryDisplayName(char)) + '</div>' +
           '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(merc.class || merc.role) + ' · ' + escapeHtml(merc.desc) + '</div>' +
           '<div style="font-size:11px;color:var(--text-secondary)">Upkeep ' + upkeep + 'g / 3m</div>';
         const actions = document.createElement('div');
@@ -7316,21 +7329,25 @@
       });
 
       // Add merc controls
-      const canAddMerc = groupMercTypes.length < MAX_GROUP_MERCS && total < MAX_GROUP_SIZE;
+      const canAddMerc = total < MAX_GROUP_SIZE;
       const addRow = document.createElement('div');
       addRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
       Object.entries(MERCENARY_TYPES).forEach(([type, merc]) => {
         const b = document.createElement('button');
         b.className = 'btn';
         b.textContent = '+ ' + merc.name + ' (' + (merc.class || merc.role) + ')';
+        const hireCost = getMercenaryHireCost(type, char);
+        const upkeepCost = getMercenaryUpkeepCost(type, char);
+        b.title = (merc.class || merc.role) + ' · ' + merc.desc
+          + '\nHire: ' + hireCost + 'g  ·  Upkeep: ' + upkeepCost + 'g / 3m';
         b.disabled = !canAddMerc;
         b.onclick = () => addGroupMerc(type);
         addRow.appendChild(b);
       });
-      if (!canAddMerc && groupMercTypes.length >= MAX_GROUP_MERCS) {
+      if (!canAddMerc) {
         const note = document.createElement('div');
         note.style.cssText = 'font-size:11px;color:var(--text-secondary);margin-left:8px;align-self:center';
-        note.textContent = 'Group mercenary roster is full.';
+        note.textContent = 'Group is full.';
         addRow.appendChild(note);
       }
       mercSection.appendChild(addRow);
@@ -10498,11 +10515,11 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.6';
-        if (!silent) log('Upgraded save data to v1.1.6.', 'info');
+        oldChar.version = '1.1.7';
+        if (!silent) log('Upgraded save data to v1.1.7.', 'info');
       }
 
-      if (oldChar.version === '1.1.6') {
+      if (oldChar.version === '1.1.7') {
         if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
@@ -11399,23 +11416,6 @@
       }
 
       const activeMercType = char.mercenary?.type || 'none';
-      Object.entries(MERCENARY_TYPES).forEach(([mercType, mercData]) => {
-        const hireCost = getMercenaryHireCost(mercType);
-        const upkeepCost = getMercenaryUpkeepCost(mercType);
-        const isActive = activeMercType === mercType;
-        shopHtml += `
-          <div class="eq-item-card">
-            <div class="eq-item-name">${mercData.name}</div>
-            <div class="eq-item-type">Mercenary · ${mercData.class || mercData.role}</div>
-            <div class="eq-item-bonus">${mercData.desc}</div>
-            <div class="eq-item-type">Hire: ${hireCost} Gold · Upkeep: ${upkeepCost} Gold / 3m${isActive ? ' · Active' : ''}</div>
-            <div class="eq-item-actions compact">
-              <button class="btn${isActive ? ' active' : ''}" onclick="hireMercenary('${mercType}')" ${isActive ? 'disabled' : ''}>${isActive ? 'Active' : 'Hire'}</button>
-              ${isActive ? '<button class="btn" onclick="renameMercenaryPrompt()">Rename</button><button class="btn danger" onclick="dismissMercenary()">Dismiss</button>' : ''}
-            </div>
-          </div>
-        `;
-      });
 
       shopHtml += `
         <div class="eq-item-card">
