@@ -175,7 +175,7 @@
       position: absolute;
       top: 16px;
       left: 16px;
-      bottom: 16px;
+      max-height: calc(100% - 32px);
       width: 280px;
       z-index: 10;
       display: flex;
@@ -228,8 +228,10 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      flex: 1;
+      flex: 0 1 auto;
+      max-height: calc(34px * 8 + 6px * 7);
       overflow-y: auto;
+      overscroll-behavior: contain;
       padding-right: 2px;
     }
 
@@ -311,7 +313,6 @@
       display: grid;
       grid-template-columns: 1fr 1.4fr;
       gap: 8px;
-      margin-top: auto;
     }
 
     .eq-btn.eq-primary {
@@ -624,6 +625,21 @@
     .combat-log-tag-elite  { color: #C28D18; }
     .combat-log-tag-named  { color: #A85B00; text-shadow: 0 0 6px rgba(168, 91, 0, 0.25); }
     .combat-log-tag-boss   { color: #C72BC1; text-shadow: 0 0 8px rgba(199, 43, 193, 0.35); }
+
+    /* Plain-log mode: strip all combat-log color spans and category colors. */
+    #combat-log.plain p,
+    #combat-log.plain p > span,
+    #combat-log.plain [class^="combat-log-"],
+    #combat-log.plain [class*=" combat-log-"] {
+      color: var(--text-primary) !important;
+      font-weight: normal !important;
+      text-shadow: none !important;
+    }
+
+    /* Hide timestamps when requested. */
+    #combat-log.no-timestamps .log-timestamp {
+      display: none;
+    }
 
     .combat-log-damage {
       color: #ff8c5a;
@@ -2901,6 +2917,20 @@
               id="log-filter-preset-all-btn"
               style="font-size:10px;padding:2px 8px"
               onclick="applyCombatLogFilterPreset('all')">All</button>
+            <button
+              class="btn"
+              id="log-plain-toggle-btn"
+              style="font-size:10px;padding:2px 8px"
+              title="Toggle a less colorful combat log"
+              onclick="toggleCombatLogPlain()">Colors
+              On</button>
+            <button
+              class="btn"
+              id="log-timestamp-toggle-btn"
+              style="font-size:10px;padding:2px 8px"
+              title="Show or hide combat log timestamps"
+              onclick="toggleCombatLogTimestamps()">Timestamps
+              On</button>
           </div>
           <div
             id="afk-goal-status"
@@ -6302,6 +6332,8 @@
       targetChar.logFilters.dmg = targetChar.logFilters.dmg !== false;
       targetChar.logFilters.loot = targetChar.logFilters.loot !== false;
       targetChar.logFilters.info = targetChar.logFilters.info !== false;
+      targetChar.logPlain = !!targetChar.logPlain;
+      targetChar.logHideTimestamps = targetChar.logHideTimestamps !== false;
 
       if (!targetChar.huntStreak || typeof targetChar.huntStreak !== 'object') {
         targetChar.huntStreak = { zone: null, target: '', count: 0 };
@@ -11533,6 +11565,23 @@
       if (presetCombatBtn) presetCombatBtn.classList.toggle('active', isCombatOnly);
       if (presetLootBtn) presetLootBtn.classList.toggle('active', isLootOnly);
       if (presetAllBtn) presetAllBtn.classList.toggle('active', isAll);
+
+      const plainBtn = document.getElementById('log-plain-toggle-btn');
+      const logDiv = document.getElementById('combat-log');
+      const plain = !!char.logPlain;
+      if (plainBtn) {
+        plainBtn.classList.toggle('active', !plain);
+        plainBtn.textContent = 'Colors ' + (plain ? 'Off' : 'On');
+      }
+      if (logDiv) logDiv.classList.toggle('plain', plain);
+
+      const tsBtn = document.getElementById('log-timestamp-toggle-btn');
+      const hideTs = !!char.logHideTimestamps;
+      if (tsBtn) {
+        tsBtn.classList.toggle('active', !hideTs);
+        tsBtn.textContent = 'Timestamps ' + (hideTs ? 'Off' : 'On');
+      }
+      if (logDiv) logDiv.classList.toggle('no-timestamps', hideTs);
     }
 
     function applyCombatLogFilterPreset(preset) {
@@ -11563,6 +11612,22 @@
       char.logFilters[category] = !char.logFilters[category];
       renderCombatLogFilterUI();
       applyCombatLogFilterVisibility();
+      autoSave();
+    }
+
+    function toggleCombatLogPlain() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      char.logPlain = !char.logPlain;
+      renderCombatLogFilterUI();
+      autoSave();
+    }
+
+    function toggleCombatLogTimestamps() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      char.logHideTimestamps = !char.logHideTimestamps;
+      renderCombatLogFilterUI();
       autoSave();
     }
 
