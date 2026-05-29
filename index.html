@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.1.3</title>
+    1.1.4</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2370,7 +2370,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.3</span>
+        1.1.4</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -2813,6 +2813,16 @@
             class="tab"
             onclick="switchTab('prestige')">
             Prestige
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('bank')">
+            Bank
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('group')">
+            Group
           </div>
         </div>
         <div
@@ -3435,6 +3445,37 @@
             id="prestige-list">
           </div>
         </div>
+        <div
+          id="tab-bank"
+          style="display:none">
+          <h3 style="margin-bottom:6px">Shared Bank</h3>
+          <div id="bank-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Items here are shared across all your characters in this save.
+          </div>
+          <div class="eq-inventory-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <div style="font-weight:600;margin-bottom:6px">Character Inventory</div>
+              <div id="bank-inv-meta" class="bag-meta" style="margin-bottom:6px"></div>
+              <div id="bank-inv-list" class="eq-bag-grid"></div>
+            </div>
+            <div>
+              <div style="font-weight:600;margin-bottom:6px">Shared Bank</div>
+              <div id="bank-list-meta" class="bag-meta" style="margin-bottom:6px"></div>
+              <div id="bank-list" class="eq-bag-grid"></div>
+            </div>
+          </div>
+        </div>
+        <div
+          id="tab-group"
+          style="display:none">
+          <h3 style="margin-bottom:6px">Group</h3>
+          <div id="group-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Group your other characters to share experience. Each member reduces XP per kill. Max 6 total (you + mercenaries + grouped characters).
+          </div>
+          <div id="group-summary" style="margin-bottom:10px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px"></div>
+          <div style="font-weight:600;margin-bottom:6px">Available Characters</div>
+          <div id="group-roster-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
       </div>
 
       <!-- Right: Auto-Battle + Zone info -->
@@ -3888,7 +3929,14 @@
       { name: 'Plane of Fire', desc: 'Living flame, ash storms, and infernal hosts.', minLvl: 74, mobs: ['Cinder Fiend', 'Magma Sentinel', 'Ashen Arcanist'], xpMult: 24.5, goldMult: 16.8, rare: 'Hate Infused Plate' },
       { name: 'Anguish Vestibule', desc: 'A brutal proving ground of anguish and pain.', minLvl: 78, mobs: ['Anguish Torturer', 'Painforged Guard', 'Dread Supplicant'], xpMult: 26.6, goldMult: 18.1, rare: 'Steel Longsword' },
       { name: 'Ashengate Depths', desc: 'Molten vaults where elder drakes sleep.', minLvl: 83, mobs: ['Ash Drake', 'Ember Devourer', 'Pyre Channeler'], xpMult: 28.8, goldMult: 19.5, rare: 'Knight Chestplate' },
-      { name: 'Citadel of Eternity', desc: 'Reality-thin stronghold beyond mortal time.', minLvl: 88, mobs: ['Chrono Warden', 'Eternal Myrmidon', 'Void Archivist'], xpMult: 31, goldMult: 21, rare: 'Hate Infused Plate' }
+      { name: 'Citadel of Eternity', desc: 'Reality-thin stronghold beyond mortal time.', minLvl: 88, mobs: ['Chrono Warden', 'Eternal Myrmidon', 'Void Archivist'], xpMult: 31, goldMult: 21, rare: 'Hate Infused Plate' },
+      // Smoothing zones (appended to preserve saved zone indices). The Zones UI is sorted by minLvl.
+      { name: 'Misty Thicket', desc: 'Foggy halfling woods crawling with wolves and spider broods.', minLvl: 5, mobs: ['Forest Wolf', 'Spider Hatchling', 'Thicket Brigand'], xpMult: 1.8, goldMult: 1.7, rare: 'Spider Silk' },
+      { name: 'Crushbone Keep', desc: 'Orc-held fortress, walls crusted with old blood.', minLvl: 10, mobs: ['Crushbone Legionnaire', 'Orc Centurion', 'Orc Pawn'], xpMult: 2.8, goldMult: 2.4, rare: 'Orc Tooth' },
+      { name: 'Highpass Hold', desc: 'Mountain pass overrun by bandits and grizzled brigands.', minLvl: 13, mobs: ['Highpass Bandit', 'Cutthroat Scout', 'Brigand Captain'], xpMult: 3.4, goldMult: 3, rare: 'Bronze Hatchet' },
+      { name: 'Lake of Ill Omen', desc: 'Sarnak shoreline patrols and venomous shallows.', minLvl: 18, mobs: ['Sarnak Scout', 'Bog Frog', 'Drowned Sentry'], xpMult: 4.8, goldMult: 4.1, rare: 'Giant Snake Fang' },
+      { name: 'Befallen Crypt', desc: 'Sunken crypt of forgotten knights and lich-priests.', minLvl: 22, mobs: ['Befallen Acolyte', 'Crypt Knight', 'Tomb Lurker'], xpMult: 5.7, goldMult: 4.7, rare: 'Bone Chip' },
+      { name: "Najena's Lair", desc: 'Volcanic dungeon ruled by a vengeful sorceress.', minLvl: 26, mobs: ['Najena Cultist', 'Lava Drake Spawn', 'Fume Wraith'], xpMult: 6.8, goldMult: 5.5, rare: 'Mithril Ingot' }
     ];
 
     const ITEM_DATA = {
@@ -4198,7 +4246,13 @@
       15: ['the pyre regent', 'an inferno herald'],
       16: ['the chainbreaker inquisitor', 'an apostle of anguish'],
       17: ['the ashen brood patriarch', 'a molten worldeater'],
-      18: ['the timeless adjudicator', 'a herald of the final hour']
+      18: ['the timeless adjudicator', 'a herald of the final hour'],
+      19: ['a thicket spider matron', 'the wolf-pack alpha'],
+      20: ['legionnaire commander krushbone', 'an orc warchanter'],
+      21: ['the highpass road-warden', 'a brigand kingpin'],
+      22: ['an iksar tide-marshal', 'the lake serpent prime'],
+      23: ['the befallen lich-knight', 'an unbound tomb-lord'],
+      24: ['najena, fume sorceress', 'the lair drake-mother']
     };
 
     const NAMED_MECHANICS = [
@@ -6124,6 +6178,7 @@
       if (typeof ensureAuditState === 'function') ensureAuditState(targetChar);
       if (!targetChar.bossCooldowns || typeof targetChar.bossCooldowns !== 'object') targetChar.bossCooldowns = {};
       if (typeof targetChar.hardcore !== 'boolean') targetChar.hardcore = false;
+      if (!Array.isArray(targetChar.group)) targetChar.group = [];
       if (!targetChar.classQuest || typeof targetChar.classQuest !== 'object') {
         targetChar.classQuest = createClassQuestState(targetChar.cls);
       }
@@ -6490,8 +6545,18 @@
       ensureExtendedSystems(char);
       const prestige = getPrestigeModifiers(char);
 
-      const totalXp = Math.max(0, Math.floor(Number(rawXp || 0) * (prestige.xpMult || 1)));
+      const rawTotal = Math.max(0, Math.floor(Number(rawXp || 0) * (prestige.xpMult || 1)));
+      if (rawTotal <= 0) return { totalXp: 0, regularXp: 0, aaXp: 0, aaPoints: 0 };
+
+      // EverQuest-style group split: divide evenly among XP-eligible members
+      // (player + grouped alt characters; mercenaries don't share). Groups of
+      // 4+ get a per-member bonus on top of the split.
+      const xpShareSize = getXpShareSize();
+      const groupBonus = getGroupXpBonus(xpShareSize);
+      const totalXp = Math.max(0, Math.floor(rawTotal * groupBonus / xpShareSize));
       if (totalXp <= 0) return { totalXp: 0, regularXp: 0, aaXp: 0, aaPoints: 0 };
+
+      distributeGroupXp(totalXp, source);
 
       let aaXp = 0;
       let regularXp = totalXp;
@@ -6517,6 +6582,258 @@
       }
 
       return { totalXp, regularXp, aaXp, aaPoints };
+    }
+
+    // ── Group system ─────────────────────────────
+    const MAX_GROUP_SIZE = 6;
+    // EverQuest-style group XP bonus per member, applied once the group has
+    // more than 3 XP-sharing members. Index = group size.
+    const GROUP_XP_BONUS_BY_SIZE = { 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.2, 5: 1.4, 6: 1.6 };
+
+    function getActiveMercenaryCount(targetChar = char) {
+      if (!targetChar || !targetChar.mercenary) return 0;
+      const t = targetChar.mercenary.type;
+      return (t && t !== 'none') ? 1 : 0;
+    }
+
+    function getGroupMemberSlotIndices() {
+      if (!char || !Array.isArray(char.group)) return [];
+      return char.group.filter(idx =>
+        Number.isInteger(idx) && idx >= 0 && idx < slots.length &&
+        idx !== activeSlot && slots[idx] && typeof slots[idx] === 'object'
+      );
+    }
+
+    function getGroupSize() {
+      if (!char) return 0;
+      return 1 + getActiveMercenaryCount(char) + getGroupMemberSlotIndices().length;
+    }
+
+    // Members that actually divide and receive XP (player + grouped alts).
+    function getXpShareSize() {
+      if (!char) return 1;
+      return 1 + getGroupMemberSlotIndices().length;
+    }
+
+    function getGroupXpBonus(size) {
+      const s = Math.max(1, Math.min(MAX_GROUP_SIZE, Math.floor(Number(size || 1))));
+      return GROUP_XP_BONUS_BY_SIZE[s] || 1;
+    }
+
+    function getXpScaleForLevel(level) {
+      return level < 30 ? 1.48 : (level < 60 ? 1.54 : (level < 85 ? 1.58 : 1.6));
+    }
+
+    function applyXpToSlotChar(slotChar, xpAmount) {
+      if (!slotChar || xpAmount <= 0) return 0;
+      slotChar.xp = Math.max(0, Math.floor(Number(slotChar.xp || 0))) + xpAmount;
+      let levels = 0;
+      while (Number(slotChar.xp) >= Number(slotChar.xpNext || 100)) {
+        slotChar.xp -= slotChar.xpNext;
+        slotChar.level = Math.max(1, Math.floor(Number(slotChar.level || 1))) + 1;
+        slotChar.xpNext = Math.floor(Number(slotChar.xpNext || 100) * getXpScaleForLevel(slotChar.level));
+        slotChar.maxHp = Math.floor(Number(slotChar.maxHp || 1) * 1.12);
+        slotChar.maxMp = Math.floor(Number(slotChar.maxMp || 1) * 1.1);
+        slotChar.hp = slotChar.maxHp;
+        slotChar.mp = slotChar.maxMp;
+        slotChar.atk = Math.floor(Number(slotChar.atk || 0)) + 2;
+        slotChar.def = Math.floor(Number(slotChar.def || 0)) + 1;
+        levels++;
+        if (levels > 200) break;
+      }
+      return levels;
+    }
+
+    function distributeGroupXp(totalXp, source) {
+      const members = getGroupMemberSlotIndices();
+      if (!members.length || totalXp <= 0) return;
+      const names = [];
+      members.forEach(idx => {
+        const sc = slots[idx];
+        if (!sc) return;
+        const lvls = applyXpToSlotChar(sc, totalXp);
+        names.push(sc.name + (lvls > 0 ? ' (+' + lvls + ' lvl)' : ''));
+      });
+      if (names.length) {
+        log('Group XP shared (' + totalXp + ' from ' + source + '): ' + names.join(', '), 'info');
+      }
+    }
+
+    function getKnownSpellsForSlotChar(slotChar) {
+      if (!slotChar) return [];
+      const book = (typeof SPELLBOOK_BY_CLASS !== 'undefined' && SPELLBOOK_BY_CLASS[slotChar.cls]) || [];
+      const known = new Set(Array.isArray(slotChar.knownSpells) ? slotChar.knownSpells : []);
+      const result = book.filter(sp => known.has(sp.id) && (sp.levelReq || 1) <= (slotChar.level || 1));
+      if (!result.length && book.length) {
+        // Fall back to any class spell they meet the level requirement for
+        return book.filter(sp => (sp.levelReq || 1) <= (slotChar.level || 1));
+      }
+      return result;
+    }
+
+    function triggerGroupAttacks(source = 'attack') {
+      if (!char || !mob) return false;
+      const members = getGroupMemberSlotIndices();
+      if (!members.length) return false;
+
+      for (let m = 0; m < members.length; m++) {
+        if (!mob || mob.hp <= 0) break;
+        const slotChar = slots[members[m]];
+        if (!slotChar) continue;
+        if (Math.random() > 0.7) continue; // 70% chance to act this swing
+
+        const memberName = slotChar.name || (slotChar.cls || 'Ally');
+        const level = Math.max(1, Number(slotChar.level || 1));
+        const atk = Math.max(0, Number(slotChar.atk || 0));
+        const maxMp = Math.max(0, Number(slotChar.maxMp || 0));
+
+        const known = getKnownSpellsForSlotChar(slotChar);
+        const damageSpells = known.filter(sp => sp.kind === 'damage' || sp.kind === 'damage_weaken');
+        const healSpells = known.filter(sp => sp.kind === 'heal');
+
+        // Healer behavior: top off the player when low.
+        if (healSpells.length && char.hp < Math.floor(char.maxHp * 0.55)) {
+          const sp = healSpells[Math.floor(Math.random() * healSpells.length)];
+          const pct = Number(sp.healPct || 0.25);
+          const healAmt = Math.min(char.maxHp - char.hp, Math.max(4, Math.floor(char.maxHp * pct * 0.8 + level)));
+          if (healAmt > 0) {
+            char.hp = Math.min(char.maxHp, char.hp + healAmt);
+            log([
+              { text: memberName, cls: 'combat-log-merc' },
+              ' casts ' + sp.name + ' and heals you for ',
+              { text: String(healAmt), cls: 'combat-log-heal-amt' },
+              ' hit points.'
+            ], 'heal');
+            continue;
+          }
+        }
+
+        // Damaging action: prefer a known damage spell, otherwise basic swing.
+        let dmg, label;
+        if (damageSpells.length) {
+          const sp = damageSpells[Math.floor(Math.random() * damageSpells.length)];
+          const power = Number(sp.power || 1);
+          const variance = Number(sp.variance || 4);
+          dmg = Math.max(2, Math.floor((level * 1.05 + atk * 0.18 + Math.random() * variance) * power));
+          label = ' casts ' + sp.name + ' on ';
+          if (sp.kind === 'damage_weaken' && sp.weaken) {
+            mob.atk = Math.max(1, (mob.atk || 0) - Math.max(1, Math.floor(Number(sp.weaken) / 2)));
+          }
+        } else {
+          dmg = Math.max(2, Math.floor(level * 1.2 + atk * 0.22 + Math.random() * 5));
+          label = ' attacks ';
+        }
+
+        mob.hp -= dmg;
+        addDamageMeterEntry('merc', dmg);
+        log([
+          { text: memberName, cls: 'combat-log-merc' },
+          label,
+          { text: mob.name, cls: 'combat-log-defender' },
+          ' for ',
+          { text: String(dmg), cls: 'combat-log-damage' },
+          ' points of damage.'
+        ], 'dmg');
+
+        if (mob.hp <= 0) {
+          killMob();
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function addGroupMember(slotIdx) {
+      if (!char) return;
+      if (!Array.isArray(char.group)) char.group = [];
+      if (slotIdx === activeSlot) { log('You are already in your own group.', 'info'); return; }
+      if (!slots[slotIdx]) { log('That slot is empty.', 'info'); return; }
+      if (char.group.includes(slotIdx)) return;
+      if (getGroupSize() >= MAX_GROUP_SIZE) { log('Group is full (max ' + MAX_GROUP_SIZE + ').', 'info'); return; }
+      char.group.push(slotIdx);
+      log('Added ' + slots[slotIdx].name + ' to your group.', 'info');
+      saveSlots();
+      renderGroupTab();
+    }
+
+    function removeGroupMember(slotIdx) {
+      if (!char || !Array.isArray(char.group)) return;
+      const i = char.group.indexOf(slotIdx);
+      if (i < 0) return;
+      char.group.splice(i, 1);
+      const name = slots[slotIdx] ? slots[slotIdx].name : 'Member';
+      log('Removed ' + name + ' from your group.', 'info');
+      saveSlots();
+      renderGroupTab();
+    }
+
+    function renderGroupTab() {
+      const summary = document.getElementById('group-summary');
+      const list = document.getElementById('group-roster-list');
+      if (!summary || !list) return;
+      list.innerHTML = '';
+
+      if (!char) {
+        summary.textContent = 'No character loaded.';
+        return;
+      }
+
+      if (!Array.isArray(char.group)) char.group = [];
+      // prune stale slot indices
+      char.group = char.group.filter(idx => slots[idx] && idx !== activeSlot);
+
+      const mercCount = getActiveMercenaryCount(char);
+      const groupCount = getGroupMemberSlotIndices().length;
+      const total = 1 + mercCount + groupCount;
+      const xpShareSize = getXpShareSize();
+      const bonus = getGroupXpBonus(xpShareSize);
+      const sharePct = Math.round((bonus / xpShareSize) * 100);
+      const totalPct = Math.round(bonus * 100);
+      const bonusNote = xpShareSize >= 4
+        ? ' (includes +' + Math.round((bonus - 1) * 100) + '% group bonus)'
+        : (xpShareSize > 1 ? ' (no bonus until 4+ characters)' : '');
+      summary.innerHTML =
+        '<div><strong>Group size:</strong> ' + total + ' / ' + MAX_GROUP_SIZE +
+        ' &nbsp;·&nbsp; You (1) + Mercenaries (' + mercCount + ') + Characters (' + groupCount + ')</div>' +
+        '<div style="margin-top:4px"><strong>XP per kill (each member):</strong> ' + sharePct + '%' +
+        (xpShareSize > 1 ? (' &nbsp;·&nbsp; Total awarded: ' + totalPct + '%' + bonusNote) : ' (solo)') + '</div>' +
+        '<div style="margin-top:4px;color:var(--text-secondary)">XP is split evenly between you and your grouped characters. Mercenaries do not share XP.</div>';
+
+      const canAdd = total < MAX_GROUP_SIZE;
+
+      slots.forEach((slot, idx) => {
+        if (!slot) return;
+        if (idx === activeSlot) return;
+        const inGroup = char.group.includes(idx);
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary)';
+        const info = document.createElement('div');
+        info.innerHTML =
+          '<div style="font-weight:600">' + escapeHtml(slot.name) + '</div>' +
+          '<div style="font-size:11px;color:var(--text-secondary)">' +
+          escapeHtml(slot.cls || '') + ' · Level ' + (slot.level || 1) +
+          ' · XP ' + (slot.xp || 0) + ' / ' + (slot.xpNext || 100) + '</div>';
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        if (inGroup) {
+          btn.textContent = 'Remove';
+          btn.onclick = () => removeGroupMember(idx);
+        } else {
+          btn.textContent = canAdd ? 'Add to Group' : 'Group Full';
+          btn.disabled = !canAdd;
+          btn.onclick = () => addGroupMember(idx);
+        }
+        row.appendChild(info);
+        row.appendChild(btn);
+        list.appendChild(row);
+      });
+
+      if (!slots.some((s, idx) => s && idx !== activeSlot)) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'color:var(--text-secondary);font-size:12px;padding:8px';
+        empty.textContent = 'No other characters available. Create more characters from the character select screen.';
+        list.appendChild(empty);
+      }
     }
 
     function getAACombatModifiersForNodes(targetChar, nodeRanks) {
@@ -8339,6 +8656,9 @@
     let slots = [];          // array of 4 (null or char object)
     let activeSlot = -1;     // which slot is loaded
     let char = null;
+    let sharedBank = [];     // items shared across all characters in this save
+    const BANK_KEY = 'EmberQuest_sharedBank';
+    const BANK_SLOTS = 200;
     let mob = null;
     let afkInterval = null;
     let afkOn = false;
@@ -8409,6 +8729,127 @@
 
     function manualSave() {
       saveSlots();
+    }
+
+    // ── Shared Bank ─────────────────────────────
+    function loadSharedBank() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(BANK_KEY));
+        sharedBank = Array.isArray(raw) ? raw.filter(x => x && (typeof x === 'object' || typeof x === 'string')) : [];
+      } catch (e) {
+        sharedBank = [];
+      }
+    }
+
+    function saveSharedBank() {
+      try { localStorage.setItem(BANK_KEY, JSON.stringify(sharedBank)); } catch (e) { }
+    }
+
+    function depositToBank(invIndex) {
+      if (!char || invIndex < 0 || invIndex >= char.inventory.length) return;
+      const item = char.inventory[invIndex];
+      if (isItemLocked(item)) { log('That item is locked. Unlock it first.', 'info'); return; }
+      if (sharedBank.length >= BANK_SLOTS) { log('Shared bank is full.', 'info'); return; }
+      char.inventory.splice(invIndex, 1);
+      sharedBank.push(item);
+      saveSharedBank();
+      saveSlots();
+      renderBank();
+    }
+
+    function withdrawFromBank(bankIndex) {
+      if (!char) { log('Load a character first.', 'info'); return; }
+      if (bankIndex < 0 || bankIndex >= sharedBank.length) return;
+      const item = sharedBank[bankIndex];
+      sharedBank.splice(bankIndex, 1);
+      char.inventory.push(item);
+      saveSharedBank();
+      saveSlots();
+      renderBank();
+    }
+
+    function renderBank() {
+      const invList = document.getElementById('bank-inv-list');
+      const bankList = document.getElementById('bank-list');
+      const invMeta = document.getElementById('bank-inv-meta');
+      const bankMeta = document.getElementById('bank-list-meta');
+      if (!invList || !bankList) return;
+
+      invList.innerHTML = '';
+      bankList.innerHTML = '';
+
+      if (!char) {
+        invMeta.textContent = 'No character loaded.';
+        bankMeta.textContent = 'Shared bank: ' + sharedBank.length + ' / ' + BANK_SLOTS;
+        return;
+      }
+
+      invMeta.textContent = 'Inventory items: ' + char.inventory.length;
+      bankMeta.textContent = 'Shared bank: ' + sharedBank.length + ' / ' + BANK_SLOTS;
+
+      const renderItemCard = (item, label, onClick, disabled) => {
+        const rarityClass = getItemRarityClass(item);
+        const name = getItemDisplayName(item);
+        const data = getItemData(item) || {};
+        const stats = getItemEffectiveStats(item) || {};
+        let bonus = '';
+        if (stats.atk) bonus += ` +${stats.atk} ATK`;
+        if (stats.def) bonus += ` +${stats.def} DEF`;
+        if (stats.hp) bonus += ` +${stats.hp} HP`;
+        if (stats.mp) bonus += ` +${stats.mp} MP`;
+        const quality = getItemQuality(item);
+        const qualityTag = quality && quality !== 'Normal' ? (' • ' + quality) : '';
+        const isRune = isRuneEntry(item);
+        let itemType = data.type || (isRune ? 'Rune' : 'Misc Item');
+        const locked = isItemLocked(item);
+        const favorite = isItemFavorite(item);
+        if (locked || favorite) {
+          const tag = [];
+          if (favorite) tag.push('Favorite');
+          if (locked) tag.push('Locked');
+          itemType += ' · ' + tag.join(' · ');
+        }
+        const card = document.createElement('div');
+        card.className = 'eq-item-card';
+        card.innerHTML = `
+          <div class="eq-item-top">
+            <div>
+              <div class="eq-item-name ${rarityClass}">${name}</div>
+              <div class="eq-item-type">${itemType}${qualityTag}</div>
+            </div>
+          </div>
+          <div class="eq-item-bonus">${bonus || 'No stats'}</div>
+          <div class="eq-item-actions compact">
+            <button class="btn" ${disabled ? 'disabled' : ''}>${label}</button>
+          </div>
+        `;
+        const btn = card.querySelector('button');
+        if (btn && !disabled) btn.addEventListener('click', onClick);
+        return card;
+      };
+
+      char.inventory.forEach((item, idx) => {
+        const locked = isItemLocked(item);
+        const full = sharedBank.length >= BANK_SLOTS;
+        const disabled = locked || full;
+        invList.appendChild(renderItemCard(item, locked ? 'Locked' : (full ? 'Bank Full' : 'Deposit'), () => depositToBank(idx), disabled));
+      });
+      if (char.inventory.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'eq-empty-slot';
+        empty.textContent = 'Inventory empty';
+        invList.appendChild(empty);
+      }
+
+      sharedBank.forEach((item, idx) => {
+        bankList.appendChild(renderItemCard(item, 'Withdraw', () => withdrawFromBank(idx), false));
+      });
+      if (sharedBank.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'eq-empty-slot';
+        empty.textContent = 'Bank empty';
+        bankList.appendChild(empty);
+      }
     }
 
     function exportSlotsToFile(options = {}) {
@@ -9498,11 +9939,11 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.3';
-        if (!silent) log('Upgraded save data to v1.1.3.', 'info');
+        oldChar.version = '1.1.4';
+        if (!silent) log('Upgraded save data to v1.1.4.', 'info');
       }
 
-      if (oldChar.version === '1.1.3') {
+      if (oldChar.version === '1.1.4') {
         if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
@@ -9781,7 +10222,10 @@
       const huntNote = document.getElementById('zone-hunt-note');
       const contractTracker = document.getElementById('zone-contract-tracker');
       ensureExtendedSystems(char);
-      ZONES.forEach((z, i) => {
+      const zoneOrder = ZONES
+        .map((z, i) => ({ z, i }))
+        .sort((a, b) => (a.z.minLvl - b.z.minLvl) || (a.i - b.i));
+      zoneOrder.forEach(({ z, i }) => {
         const btn = document.createElement('button');
         btn.className = 'btn zone-btn' + (i === char.zone ? ' current' : '');
         btn.innerHTML = (char.level < z.minLvl ? '<i class="ti ti-lock" style="font-size:12px"></i> ' : '') + z.name + ' <span style="font-size:10px;opacity:.6">(Lv ' + z.minLvl + '+)</span>';
@@ -11821,6 +12265,10 @@
       }
 
       if (mob.hp > 0 && triggerMercenarySupport('attack')) {
+        return true;
+      }
+
+      if (mob.hp > 0 && triggerGroupAttacks('attack')) {
         return true;
       }
 
@@ -14006,7 +14454,7 @@
     //  UI HELPERS
     // ══════════════════════════════════════════════
     function switchTab(tab) {
-      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'inv', 'loot', 'runes', 'shop', 'spells', 'aa', 'prestige'];
+      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'inv', 'loot', 'runes', 'shop', 'spells', 'aa', 'prestige', 'bank', 'group'];
       tabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
       });
@@ -14022,6 +14470,8 @@
       if (tab === 'spells') renderSpellbook();
       if (tab === 'aa') renderAATab();
       if (tab === 'prestige') renderPrestigeTab();
+      if (tab === 'bank') renderBank();
+      if (tab === 'group') renderGroupTab();
     }
 
     function setupDrag() {
@@ -14042,6 +14492,7 @@
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('resize', () => requestAnimationFrame(syncCombatLogSize));
     loadUiLayoutPreference();
+    loadSharedBank();
     loadSlots();
     renderSlots();
   </script>
