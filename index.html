@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.1.7</title>
+    1.1.8</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2370,7 +2370,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.7</span>
+        1.1.8</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -10515,11 +10515,11 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.7';
-        if (!silent) log('Upgraded save data to v1.1.7.', 'info');
+        oldChar.version = '1.1.8';
+        if (!silent) log('Upgraded save data to v1.1.8.', 'info');
       }
 
-      if (oldChar.version === '1.1.7') {
+      if (oldChar.version === '1.1.8') {
         if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
