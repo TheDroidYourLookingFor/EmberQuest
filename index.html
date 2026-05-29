@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.1.19</title>
+    1.1.20</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -1318,29 +1318,44 @@
       font-weight: 500;
     }
 
-    .rarity-magic {
-      color: #3B82F6;
+    .rarity-common {
+      color: #E8EAED;
     }
 
-    .rarity-rare {
+    .rarity-uncommon {
       color: #22C55E;
     }
 
-    .rarity-unique {
-      color: #F97316;
-      text-shadow: 0 0 6px rgba(249, 115, 22, 0.3);
+    .rarity-rare {
+      color: #3B82F6;
     }
 
+    .rarity-epic {
+      color: #A855F7;
+      text-shadow: 0 0 6px rgba(168, 85, 247, 0.35);
+    }
+
+    .rarity-legendary {
+      color: #F97316;
+      text-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
+      font-weight: 600;
+    }
+
+    .rarity-mythic {
+      color: #EF4444;
+      text-shadow: 0 0 8px rgba(239, 68, 68, 0.45);
+      font-weight: 600;
+    }
+
+    /* Runeword: crafted special tier, kept visually distinct (gold) */
     .rarity-runeword {
       color: #EAB308;
       text-shadow: 0 0 6px rgba(234, 179, 8, 0.25);
     }
 
-    .rarity-legendary {
-      color: #A855F7;
-      text-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
-      font-weight: 600;
-    }
+    /* Legacy aliases (older markup / runtime references) */
+    .rarity-magic { color: #22C55E; }
+    .rarity-unique { color: #A855F7; text-shadow: 0 0 6px rgba(168, 85, 247, 0.35); }
 
     /* Item tooltip */
     #item-tooltip {
@@ -2568,7 +2583,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.19</span>
+        1.1.20</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3742,7 +3757,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.1.19 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.1.20 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -3755,7 +3770,7 @@
             <li><strong>Six ability scores.</strong> A D&amp;D-style STR/DEX/CON/INT/WIS/CHA layer drives attack, crit, dodge, mitigation, spell power, mana regen, and gold find. Scores grow with level, gear, and Ascension.</li>
             <li><strong>Turn-based combat.</strong> HP/MP, attack/defense, criticals, dodges, weapon procs, item sets, and a colour-coded combat log.</li>
             <li><strong>Zones from level 1 to 88.</strong> Each hunting ground has its own monsters, XP/gold multipliers, and a rare chase item.</li>
-            <li><strong>Loot, affixes, and sets.</strong> Random drops roll prefix/suffix affixes (now including ability-score rolls), set bonuses, and rarity tiers up to Legendary.</li>
+            <li><strong>Loot, affixes, and sets.</strong> Random drops roll prefix/suffix affixes (now including ability-score rolls), set bonuses, and six rarity tiers from Common to Mythic.</li>
             <li><strong>Runes &amp; runewords.</strong> Collect runes, choose which to socket, and forge runewords that grant stats and special effects (crit, lifesteal, gold/XP find) and evolve through tiers with use.</li>
             <li><strong>Spellbook &amp; gems.</strong> Casters memorise spells into gem slots and meditate to recover mana.</li>
             <li><strong>Quests &amp; elite contracts.</strong> Kill quests, a class epic quest with a legendary reward, and a rotating elite-contract chain with AFK pinning.</li>
@@ -5801,18 +5816,36 @@
 
     function getItemQuality(entry) {
       if (!entry || typeof entry !== 'object') return 'Normal';
-      if (entry.quality === 'Magic' || entry.quality === 'Rare' || entry.quality === 'Unique' || entry.quality === 'Runeword' || entry.quality === 'Legendary') return entry.quality;
+      if (entry.quality === 'Magic' || entry.quality === 'Rare' || entry.quality === 'Unique' || entry.quality === 'Runeword' || entry.quality === 'Legendary' || entry.quality === 'Mythic') return entry.quality;
       return 'Normal';
+    }
+
+    // Player-facing rarity tiers (internal value -> displayed tier name).
+    // Internal plumbing keeps its original keys; only the label/colour change.
+    const QUALITY_LABELS = {
+      Normal: 'Common',
+      Magic: 'Uncommon',
+      Rare: 'Rare',
+      Unique: 'Epic',
+      Legendary: 'Legendary',
+      Mythic: 'Mythic',
+      Runeword: 'Runeword'
+    };
+
+    function getItemQualityLabel(entry) {
+      const q = getItemQuality(entry);
+      return QUALITY_LABELS[q] || 'Common';
     }
 
     function getItemRarityClass(entry) {
       const quality = getItemQuality(entry);
-      if (quality === 'Magic') return 'rarity-magic';
+      if (quality === 'Magic') return 'rarity-uncommon';
       if (quality === 'Rare') return 'rarity-rare';
-      if (quality === 'Unique') return 'rarity-unique';
-      if (quality === 'Runeword') return 'rarity-runeword';
+      if (quality === 'Unique') return 'rarity-epic';
       if (quality === 'Legendary') return 'rarity-legendary';
-      return '';
+      if (quality === 'Mythic') return 'rarity-mythic';
+      if (quality === 'Runeword') return 'rarity-runeword';
+      return 'rarity-common';
     }
 
     function getItemData(entry) {
@@ -6088,7 +6121,7 @@
       if (!base) return null;
 
       const quality = getItemQuality(entry);
-      const uniqueRollMult = quality === 'Unique' ? 1.75 : (quality === 'Legendary' ? 1.4 : 1);
+      const uniqueRollMult = quality === 'Unique' ? 1.75 : (quality === 'Mythic' ? 1.6 : (quality === 'Legendary' ? 1.4 : 1));
 
       const stats = {
         atk: base.atk || 0,
@@ -6114,6 +6147,11 @@
         stats.def += PHASE2.legendaryStatBoost.def;
         stats.hp += PHASE2.legendaryStatBoost.hp;
         stats.mp += PHASE2.legendaryStatBoost.mp;
+      } else if (quality === 'Mythic') {
+        stats.atk += PHASE2.mythicStatBoost.atk;
+        stats.def += PHASE2.mythicStatBoost.def;
+        stats.hp += PHASE2.mythicStatBoost.hp;
+        stats.mp += PHASE2.mythicStatBoost.mp;
       }
 
       if (entry && typeof entry === 'object' && Array.isArray(entry.sockets)) {
@@ -6173,7 +6211,7 @@
 
       const cleanName = (typeof entry.name === 'string' && entry.name.trim()) ? entry.name.trim() : baseName;
       const rawQuality = entry.quality;
-      const cleanQuality = (rawQuality === 'Magic' || rawQuality === 'Rare' || rawQuality === 'Unique' || rawQuality === 'Runeword' || rawQuality === 'Legendary') ? rawQuality : (Object.keys(cleanRolls).length ? 'Magic' : 'Normal');
+      const cleanQuality = (rawQuality === 'Magic' || rawQuality === 'Rare' || rawQuality === 'Unique' || rawQuality === 'Runeword' || rawQuality === 'Legendary' || rawQuality === 'Mythic') ? rawQuality : (Object.keys(cleanRolls).length ? 'Magic' : 'Normal');
       const normalized = { base: baseName, name: cleanName, rolls: cleanRolls, quality: cleanQuality };
       if (cleanQuality === 'Unique' && typeof entry.uniqueId === 'string') normalized.uniqueId = entry.uniqueId;
       const ilvl = Number(entry.ilvl);
@@ -6284,6 +6322,15 @@
       else if (source === 'loot') uniqueChance = 0.0035;
       else if (source === 'afk') uniqueChance = 0.0015;
 
+      // Mythic chance — the rarest tier, checked first
+      const mythicChance = source === 'loot_named' ? PHASE2.mythicChanceNamed : (source === 'loot' ? PHASE2.mythicChanceRegular : 0);
+      if (mythicChance > 0 && Math.random() < mythicChance) {
+        const mythic = rollMythicVariant(baseName, data);
+        mythic.ilvl = ilvl;
+        mythic.levelReq = levelReq;
+        return mythic;
+      }
+
       // Legendary chance — much rarer than unique
       const legendaryChance = source === 'loot_named' ? PHASE2.legendaryChanceNamed : (source === 'loot' ? PHASE2.legendaryChanceRegular : 0);
       if (legendaryChance > 0 && Math.random() < legendaryChance) {
@@ -6295,10 +6342,12 @@
 
       if (uniquePool.length && uniqueChance > 0 && Math.random() < uniqueChance) {
         const chosen = uniquePool[Math.floor(Math.random() * uniquePool.length)];
+        const uniqueRolls = Object.assign({}, chosen.rolls);
+        addAbilityRollBonuses(uniqueRolls, 1, 2, 4); // Epic drops carry an ability bonus
         return {
           base: baseName,
           name: chosen.name,
-          rolls: Object.assign({}, chosen.rolls),
+          rolls: uniqueRolls,
           quality: 'Unique',
           uniqueId: chosen.id,
           ilvl,
@@ -6369,6 +6418,7 @@
       else if (entry && typeof entry === 'object' && entry.quality === 'Unique') value += 30;
       else if (entry && typeof entry === 'object' && entry.quality === 'Runeword') value += 40;
       else if (entry && typeof entry === 'object' && entry.quality === 'Legendary') value += 75;
+      else if (entry && typeof entry === 'object' && entry.quality === 'Mythic') value += 130;
       else if (entry && typeof entry === 'object') value += 6;
 
       value += Math.floor(Math.random() * 4);
@@ -6796,6 +6846,7 @@
 
     function getQualityRank(item) {
       const quality = getItemQuality(item);
+      if (quality === 'Mythic') return 7;
       if (quality === 'Legendary') return 6;
       if (quality === 'Runeword') return 5;
       if (quality === 'Unique') return 4;
@@ -8830,6 +8881,10 @@
       legendaryChanceRegular: 0.0015,
       legendaryAffixCount: 3,
       legendaryStatBoost: { atk: 3, def: 3, hp: 16, mp: 16 },
+      mythicChanceNamed: 0.006,
+      mythicChanceRegular: 0.0003,
+      mythicAffixCount: 4,
+      mythicStatBoost: { atk: 6, def: 6, hp: 30, mp: 30 },
       levelReqOffset: 2,
       overflowSoftCap: 20
     };
@@ -8845,6 +8900,23 @@
     }
     function isLegendary(entry) {
       return entry && typeof entry === 'object' && entry.quality === 'Legendary';
+    }
+
+    // Add `count` distinct random ability-score bonuses (str/dex/con/int/wis/cha)
+    // to a rolls object. Used so higher-tier drops carry the six stats.
+    function addAbilityRollBonuses(rolls, count, min, max) {
+      const pool = ABILITIES.slice();
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      const n = Math.max(0, Math.min(count, pool.length));
+      for (let i = 0; i < n; i++) {
+        const stat = pool[i];
+        const val = min + Math.floor(Math.random() * Math.max(1, max - min + 1));
+        rolls[stat] = (rolls[stat] || 0) + val;
+      }
+      return rolls;
     }
 
     function rollLegendaryVariant(baseName, data) {
@@ -8866,13 +8938,44 @@
         const value = mid + Math.floor(Math.random() * Math.max(1, affix.max - mid + 1));
         rolls[affix.stat] = (rolls[affix.stat] || 0) + Math.floor(value * 1.3);
       });
-      const prefix = picks[0]?.prefix || 'Mythic';
+      // Legendaries always carry a couple of ability-score bonuses
+      addAbilityRollBonuses(rolls, 2, 2, 4);
+      const prefix = picks[0]?.prefix || 'Exalted';
       const suffix = picks[1]?.suffix || 'Legends';
       return {
         base: baseName,
         name: prefix + ' ' + baseName + ' of ' + suffix,
         rolls,
         quality: 'Legendary'
+      };
+    }
+
+    function rollMythicVariant(baseName, data) {
+      const pool = ITEM_AFFIX_POOL[data.slot] || [];
+      const picks = [];
+      const used = new Set();
+      const want = Math.min(PHASE2.mythicAffixCount, pool.length);
+      while (picks.length < want && used.size < pool.length) {
+        const idx = Math.floor(Math.random() * pool.length);
+        if (used.has(idx)) continue;
+        used.add(idx);
+        picks.push(pool[idx]);
+      }
+      const rolls = {};
+      picks.forEach(affix => {
+        // Mythic rolls take the top of the range, +60% bonus
+        const value = affix.max;
+        rolls[affix.stat] = (rolls[affix.stat] || 0) + Math.floor(value * 1.6);
+      });
+      // Mythics carry a generous spread of ability-score bonuses
+      addAbilityRollBonuses(rolls, 3, 3, 6);
+      const prefix = picks[0]?.prefix || 'Mythic';
+      const suffix = picks[1]?.suffix || 'the Ancients';
+      return {
+        base: baseName,
+        name: prefix + ' ' + baseName + ' of ' + suffix,
+        rolls,
+        quality: 'Mythic'
       };
     }
 
@@ -8924,7 +9027,7 @@
         data.type || (isRuneEntry(item) ? 'Rune' : 'Misc'),
         slot ? ('Slot: ' + slot) : '',
         ilvl ? ('iLvl ' + ilvl) : '',
-        quality !== 'Normal' ? quality : ''
+        quality !== 'Normal' ? getItemQualityLabel(item) : ''
       ].filter(Boolean).join(' · ');
 
       let html = '<div class="tt-name ' + rarityClass + '">' + name + '</div>';
@@ -9853,7 +9956,7 @@
         if (invView.filter === 'misc') return !data && !isRuneEntry(item);
         if (invView.filter === 'magicplus') {
           const q = getItemQuality(item);
-          return q === 'Magic' || q === 'Rare' || q === 'Unique' || q === 'Runeword' || q === 'Legendary';
+          return q === 'Magic' || q === 'Rare' || q === 'Unique' || q === 'Runeword' || q === 'Legendary' || q === 'Mythic';
         }
         return true;
       });
@@ -10289,7 +10392,7 @@
         if (stats.mp) bonus += ` +${stats.mp} MP`;
         bonus += describeItemAbilityRolls(item);
         const quality = getItemQuality(item);
-        const qualityTag = quality && quality !== 'Normal' ? (' • ' + quality) : '';
+        const qualityTag = quality && quality !== 'Normal' ? (' • ' + getItemQualityLabel(item)) : '';
         const isRune = isRuneEntry(item);
         let itemType = data.type || (isRune ? 'Rune' : 'Misc Item');
         const locked = isItemLocked(item);
@@ -12327,7 +12430,7 @@
         if (sockets) bonus += ` · [${sockets}]`;
 
         const quality = getItemQuality(item);
-        const qualityTag = quality !== 'Normal' ? (' • ' + quality) : '';
+        const qualityTag = quality !== 'Normal' ? (' • ' + getItemQualityLabel(item)) : '';
         const rarityClass = getItemRarityClass(item);
         const itemName = getItemDisplayName(item);
         const isContainer = isContainerEntry(item);
@@ -12343,7 +12446,7 @@
         const socketCost = socketable ? getSocketCost(item) : 0;
         const rerollCost = isEquip ? getRerollCost(item) : 0;
         const rerollBtn = isEquip
-          ? `<button class="btn" onclick="rerollInventoryItem(${absoluteIndex})" ${(quality === 'Unique' || quality === 'Runeword' || locked) ? 'disabled' : ''}>${(quality === 'Unique' || quality === 'Runeword') ? 'Locked' : ('Reroll (' + rerollCost + 'g)')}</button>`
+          ? `<button class="btn" onclick="rerollInventoryItem(${absoluteIndex})" ${(quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic' || locked) ? 'disabled' : ''}>${(quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic') ? 'Locked' : ('Reroll (' + rerollCost + 'g)')}</button>`
           : '';
         const socketBtn = socketable && hasSocketRoom
           ? `<button class="btn" onclick="addSocketToItem(${absoluteIndex})">Add Socket (${socketCost}g)</button>`
@@ -12505,10 +12608,10 @@
       if (lootFilterControls) {
         lootFilterControls.innerHTML =
           '<button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Magic: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Common: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Uncommon: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoSellRareGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellRareGear\')">Auto-Sell Rare: ' + (lf.autoSellRareGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Legendary: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Epic+: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
@@ -12742,10 +12845,10 @@
         '    <div style="font-size:11px;font-weight:600;">Auto-Sell Settings</div>' +
         '    <div style="display:flex;flex-wrap:wrap;gap:6px;">' +
         '      <button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" title="Sell all junk items automatically when looting." onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
-        '      <button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" title="Sell normal-quality gear automatically." onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
-        '      <button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" title="Sell magic gear automatically." onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Magic: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" title="Sell common-quality gear automatically." onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Common: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" title="Sell uncommon gear automatically." onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Uncommon: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
         '      <button class="btn' + (lf.autoSellRareGear ? ' active' : '') + '" title="Sell rare gear automatically unless protected by Rare+ settings." onclick="toggleLootFilter(\'autoSellRareGear\')">Auto-Sell Rare: ' + (lf.autoSellRareGear ? 'On' : 'Off') + '</button>' +
-        '      <button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" title="Sell legendary gear automatically unless protected by Rare+ settings." onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Legendary: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" title="Sell epic and higher gear automatically unless protected by Rare+ settings." onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Epic+: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
         '    </div>' +
         '  </div>' +
         '  <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-primary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:10px;">' +
@@ -14438,7 +14541,7 @@
         'You receive ',
         { text: String(value), cls: 'combat-log-gold' },
         ' gold for the ',
-        { text: getItemDisplayName(item), cls: 'combat-log-loot-item' },
+        { text: getItemDisplayName(item), cls: 'combat-log-loot-item ' + getItemRarityClass(item) },
         '.'
       ], 'loot');
 
@@ -14533,7 +14636,7 @@
       if (lf.autoSellLegendaryGear && isEquipment && (quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary')) {
         return true;
       }
-      if (lf.protectRarePlus && (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary')) {
+      if (lf.protectRarePlus && (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic')) {
         return false;
       }
       if (lf.autoSellJunk && !isEquipment && !isContainer) {
@@ -14558,7 +14661,7 @@
           char.gold += value;
           log([
             sourceLabel + ': ',
-            { text: getItemDisplayName(item), cls: 'combat-log-loot-item' },
+            { text: getItemDisplayName(item), cls: 'combat-log-loot-item ' + getItemRarityClass(item) },
             ' auto-sold by rule for ',
             { text: String(value), cls: 'combat-log-gold' },
             ' gold.'
@@ -14580,7 +14683,7 @@
         char.gold += value;
         log([
           sourceLabel + ': ',
-          { text: getItemDisplayName(item), cls: 'combat-log-loot-item' },
+          { text: getItemDisplayName(item), cls: 'combat-log-loot-item ' + getItemRarityClass(item) },
           ' auto-sold for ',
           { text: String(value), cls: 'combat-log-gold' },
           ' gold.'
@@ -14593,7 +14696,7 @@
         char.inventory.push(item);
         log([
           '--You have looted a ',
-          { text: getItemDisplayName(item), cls: 'combat-log-loot-item' },
+          { text: getItemDisplayName(item), cls: 'combat-log-loot-item ' + getItemRarityClass(item) },
           '.--'
         ], 'loot');
         maybeWarnOverflow();
@@ -14609,7 +14712,7 @@
       if (char.inventory.length < capacity) return false;
       const quality = getItemQuality(item);
       // Never auto-vendor Rare+ via overflow even if toggle is on
-      if (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary') return false;
+      if (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic') return false;
       const value = getItemSellValue(item);
       char.gold += value;
       log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-vendored (bags full) for ' + value + 'g.', 'loot');
