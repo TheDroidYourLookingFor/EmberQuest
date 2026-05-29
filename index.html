@@ -5569,7 +5569,14 @@
       return [
         { name: 'Rat Problem', desc: 'Kill 5 Field Rats', mob: 'Field Rat', count: 5, xp: 150, gold: 20, done: false, prog: 0 },
         { name: 'Gnoll Slayer', desc: 'Kill 8 Gnoll Warriors', mob: 'Gnoll Warrior', count: 8, xp: 400, gold: 60, done: false, prog: 0 },
-        { name: 'Manor Cleansing', desc: 'Kill 6 Restless Zombies', mob: 'Restless Zombie', count: 6, xp: 900, gold: 120, done: false, prog: 0 }
+        { name: 'Thicket Pest Control', desc: 'Kill 6 Forest Wolves in Misty Thicket', mob: 'Forest Wolf', count: 6, xp: 700, gold: 95, done: false, prog: 0 },
+        { name: 'Manor Cleansing', desc: 'Kill 6 Restless Zombies', mob: 'Restless Zombie', count: 6, xp: 900, gold: 120, done: false, prog: 0 },
+        { name: 'Break the Crushbone Line', desc: 'Kill 8 Orc Centurions in Crushbone Keep', mob: 'Orc Centurion', count: 8, xp: 1500, gold: 190, done: false, prog: 0 },
+        { name: 'Clear the Pass', desc: 'Kill 8 Highpass Bandits in Highpass Hold', mob: 'Highpass Bandit', count: 8, xp: 2400, gold: 290, done: false, prog: 0 },
+        { name: 'Fear Made Flesh', desc: 'Kill 7 Fear Elementals in Cazic-Thule', mob: 'Fear Elemental', count: 7, xp: 3300, gold: 380, done: false, prog: 0 },
+        { name: 'Shoreline Watch', desc: 'Kill 10 Sarnak Scouts at the Lake of Ill Omen', mob: 'Sarnak Scout', count: 10, xp: 4800, gold: 560, done: false, prog: 0 },
+        { name: 'Crypt Quieted', desc: 'Kill 8 Crypt Knights in Befallen Crypt', mob: 'Crypt Knight', count: 8, xp: 7600, gold: 860, done: false, prog: 0 },
+        { name: "Najena's Brood", desc: "Kill 8 Lava Drake Spawn in Najena's Lair", mob: 'Lava Drake Spawn', count: 8, xp: 12000, gold: 1300, done: false, prog: 0 }
       ];
     }
 
@@ -6179,6 +6186,9 @@
       if (!targetChar.bossCooldowns || typeof targetChar.bossCooldowns !== 'object') targetChar.bossCooldowns = {};
       if (typeof targetChar.hardcore !== 'boolean') targetChar.hardcore = false;
       if (!Array.isArray(targetChar.group)) targetChar.group = [];
+      if (!Array.isArray(targetChar.groupMercs)) targetChar.groupMercs = [];
+      // Drop any unknown merc types from the group merc roster.
+      targetChar.groupMercs = targetChar.groupMercs.filter(t => !!MERCENARY_TYPES[t]).slice(0, MAX_GROUP_MERCS);
       if (!targetChar.classQuest || typeof targetChar.classQuest !== 'object') {
         targetChar.classQuest = createClassQuestState(targetChar.cls);
       }
@@ -6586,14 +6596,24 @@
 
     // ── Group system ─────────────────────────────
     const MAX_GROUP_SIZE = 6;
+    const MAX_GROUP_MERCS = 3;
     // EverQuest-style group XP bonus per member, applied once the group has
     // more than 3 XP-sharing members. Index = group size.
     const GROUP_XP_BONUS_BY_SIZE = { 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.2, 5: 1.4, 6: 1.6 };
 
-    function getActiveMercenaryCount(targetChar = char) {
+    function getMainMercenaryCount(targetChar = char) {
       if (!targetChar || !targetChar.mercenary) return 0;
       const t = targetChar.mercenary.type;
       return (t && t !== 'none') ? 1 : 0;
+    }
+
+    function getGroupMercTypes(targetChar = char) {
+      if (!targetChar || !Array.isArray(targetChar.groupMercs)) return [];
+      return targetChar.groupMercs.filter(t => !!MERCENARY_TYPES[t]);
+    }
+
+    function getActiveMercenaryCount(targetChar = char) {
+      return getMainMercenaryCount(targetChar) + getGroupMercTypes(targetChar).length;
     }
 
     function getGroupMemberSlotIndices() {
@@ -6609,10 +6629,12 @@
       return 1 + getActiveMercenaryCount(char) + getGroupMemberSlotIndices().length;
     }
 
-    // Members that actually divide and receive XP (player + grouped alts).
+    // Members that count for the XP divisor. Mercenaries occupy a body in
+    // the group and reduce XP per kill the same as another character, but
+    // they do not receive any XP themselves.
     function getXpShareSize() {
       if (!char) return 1;
-      return 1 + getGroupMemberSlotIndices().length;
+      return 1 + getActiveMercenaryCount(char) + getGroupMemberSlotIndices().length;
     }
 
     function getGroupXpBonus(size) {
@@ -6767,6 +6789,110 @@
       renderGroupTab();
     }
 
+    function addGroupMerc(type) {
+      if (!char || !MERCENARY_TYPES[type]) return;
+      if (!Array.isArray(char.groupMercs)) char.groupMercs = [];
+      if (char.groupMercs.length >= MAX_GROUP_MERCS) {
+        log('Group merc roster is full (max ' + MAX_GROUP_MERCS + ').', 'info');
+        return;
+      }
+      if (getGroupSize() >= MAX_GROUP_SIZE) {
+        log('Group is full (max ' + MAX_GROUP_SIZE + ').', 'info');
+        return;
+      }
+      char.groupMercs.push(type);
+      log('Added ' + MERCENARY_TYPES[type].name + ' to your group mercenaries.', 'info');
+      saveSlots();
+      renderGroupTab();
+    }
+
+    function removeGroupMerc(idx) {
+      if (!char || !Array.isArray(char.groupMercs)) return;
+      if (idx < 0 || idx >= char.groupMercs.length) return;
+      const type = char.groupMercs[idx];
+      char.groupMercs.splice(idx, 1);
+      const name = (MERCENARY_TYPES[type] && MERCENARY_TYPES[type].name) || 'Mercenary';
+      log('Dismissed group mercenary: ' + name + '.', 'info');
+      saveSlots();
+      renderGroupTab();
+    }
+
+    function triggerGroupMercSupport(source = 'attack') {
+      if (!char || !mob) return false;
+      const types = getGroupMercTypes(char);
+      if (!types.length) return false;
+
+      const level = Math.max(1, Number(char.level || 1));
+      for (let i = 0; i < types.length; i++) {
+        if (!mob || mob.hp <= 0) break;
+        const type = types[i];
+        if (Math.random() > 0.55) continue;
+        const merc = MERCENARY_TYPES[type];
+        if (!merc) continue;
+        const label = merc.name + ' #' + (i + 1);
+
+        if (type === 'sellsword') {
+          const dmg = Math.max(3, Math.floor(level * 1.2 + char.atk * 0.14 + Math.random() * 5));
+          mob.hp -= dmg;
+          addDamageMeterEntry('merc', dmg);
+          log([
+            { text: label, cls: 'combat-log-merc' },
+            ' hits ',
+            { text: mob.name, cls: 'combat-log-defender' },
+            ' for ',
+            { text: String(dmg), cls: 'combat-log-damage' },
+            ' points of damage.'
+          ], 'dmg');
+        } else if (type === 'hexer') {
+          const dmg = Math.max(2, Math.floor(level * 0.95 + char.atk * 0.08 + Math.random() * 4));
+          const atkDebuff = Math.max(1, Math.floor(level / 28) + 1);
+          const defDebuff = Math.max(1, Math.floor(level / 32) + 1);
+          mob.hp -= dmg;
+          mob.atk = Math.max(1, (mob.atk || 0) - atkDebuff);
+          mob.def = Math.max(0, (mob.def || 0) - defDebuff);
+          addDamageMeterEntry('merc', dmg);
+          log([
+            { text: label, cls: 'combat-log-merc' },
+            ' hexes ',
+            { text: mob.name, cls: 'combat-log-defender' },
+            ' for ',
+            { text: String(dmg), cls: 'combat-log-damage' },
+            ' points of damage and weakens it.'
+          ], 'dmg');
+        } else if (type === 'templar') {
+          const hurt = char.maxHp - char.hp;
+          if (hurt > Math.floor(char.maxHp * 0.1)) {
+            const healAmt = Math.min(hurt, Math.max(5, Math.floor(char.maxHp * 0.06 + level * 0.9 + Math.random() * 6)));
+            char.hp = Math.min(char.maxHp, char.hp + healAmt);
+            log([
+              { text: label, cls: 'combat-log-merc' },
+              ' heals you for ',
+              { text: String(healAmt), cls: 'combat-log-heal-amt' },
+              ' hit points.'
+            ], 'heal');
+          } else {
+            const dmg = Math.max(2, Math.floor(level * 0.8 + (char.mpRegen || 0) * 1.0 + Math.random() * 3));
+            mob.hp -= dmg;
+            addDamageMeterEntry('merc', dmg);
+            log([
+              { text: label, cls: 'combat-log-merc' },
+              ' smites ',
+              { text: mob.name, cls: 'combat-log-defender' },
+              ' for ',
+              { text: String(dmg), cls: 'combat-log-damage' },
+              ' points of damage.'
+            ], 'dmg');
+          }
+        }
+
+        if (mob && mob.hp <= 0) {
+          killMob();
+          return true;
+        }
+      }
+      return false;
+    }
+
     function renderGroupTab() {
       const summary = document.getElementById('group-summary');
       const list = document.getElementById('group-roster-list');
@@ -6795,11 +6921,81 @@
       summary.innerHTML =
         '<div><strong>Group size:</strong> ' + total + ' / ' + MAX_GROUP_SIZE +
         ' &nbsp;·&nbsp; You (1) + Mercenaries (' + mercCount + ') + Characters (' + groupCount + ')</div>' +
-        '<div style="margin-top:4px"><strong>XP per kill (each member):</strong> ' + sharePct + '%' +
+        '<div style="margin-top:4px"><strong>XP per kill (each character):</strong> ' + sharePct + '%' +
         (xpShareSize > 1 ? (' &nbsp;·&nbsp; Total awarded: ' + totalPct + '%' + bonusNote) : ' (solo)') + '</div>' +
-        '<div style="margin-top:4px;color:var(--text-secondary)">XP is split evenly between you and your grouped characters. Mercenaries do not share XP.</div>';
+        '<div style="margin-top:4px;color:var(--text-secondary)">XP is split between you and your grouped characters. Mercenaries take up a group slot and reduce XP per kill the same as another character, but receive no XP themselves.</div>';
 
       const canAdd = total < MAX_GROUP_SIZE;
+
+      // ── Mercenary roster ──
+      const mercSection = document.createElement('div');
+      mercSection.style.cssText = 'margin-bottom:14px';
+      const mercHeader = document.createElement('div');
+      mercHeader.style.cssText = 'font-weight:600;margin-bottom:6px';
+      mercHeader.textContent = 'Mercenaries (' + mercCount + ' / ' + MAX_GROUP_MERCS + ' group + ' + getMainMercenaryCount(char) + ' contract)';
+      mercSection.appendChild(mercHeader);
+
+      // Show the main (contracted) mercenary if one is hired.
+      const mainMercType = char.mercenary && char.mercenary.type && char.mercenary.type !== 'none' ? char.mercenary.type : null;
+      if (mainMercType && MERCENARY_TYPES[mainMercType]) {
+        const merc = MERCENARY_TYPES[mainMercType];
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px';
+        row.innerHTML =
+          '<div>' +
+          '<div style="font-weight:600">' + escapeHtml(getMercenaryDisplayName(char)) + ' &nbsp;<span style="font-size:10px;color:var(--text-secondary)">contracted</span></div>' +
+          '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(merc.role) + ' · ' + escapeHtml(merc.desc) + '</div>' +
+          '</div>' +
+          '<div style="font-size:11px;color:var(--text-secondary)">Managed in main UI</div>';
+        mercSection.appendChild(row);
+      }
+
+      // Group merc roster
+      const groupMercTypes = getGroupMercTypes(char);
+      groupMercTypes.forEach((type, idx) => {
+        const merc = MERCENARY_TYPES[type];
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px';
+        const info = document.createElement('div');
+        info.innerHTML =
+          '<div style="font-weight:600">' + escapeHtml(merc.name) + ' #' + (idx + 1) + '</div>' +
+          '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(merc.role) + ' · ' + escapeHtml(merc.desc) + '</div>';
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = 'Dismiss';
+        btn.onclick = () => removeGroupMerc(idx);
+        row.appendChild(info);
+        row.appendChild(btn);
+        mercSection.appendChild(row);
+      });
+
+      // Add merc controls
+      const canAddMerc = groupMercTypes.length < MAX_GROUP_MERCS && total < MAX_GROUP_SIZE;
+      const addRow = document.createElement('div');
+      addRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
+      Object.entries(MERCENARY_TYPES).forEach(([type, merc]) => {
+        const b = document.createElement('button');
+        b.className = 'btn';
+        b.textContent = '+ ' + merc.name + ' (' + merc.role + ')';
+        b.disabled = !canAddMerc;
+        b.onclick = () => addGroupMerc(type);
+        addRow.appendChild(b);
+      });
+      if (!canAddMerc && groupMercTypes.length >= MAX_GROUP_MERCS) {
+        const note = document.createElement('div');
+        note.style.cssText = 'font-size:11px;color:var(--text-secondary);margin-left:8px;align-self:center';
+        note.textContent = 'Group mercenary roster is full.';
+        addRow.appendChild(note);
+      }
+      mercSection.appendChild(addRow);
+
+      list.appendChild(mercSection);
+
+      // ── Characters header ──
+      const charsHeader = document.createElement('div');
+      charsHeader.style.cssText = 'font-weight:600;margin:8px 0 6px 0';
+      charsHeader.textContent = 'Other Characters';
+      list.appendChild(charsHeader);
 
       slots.forEach((slot, idx) => {
         if (!slot) return;
@@ -9907,6 +10103,15 @@
       if (!Array.isArray(oldChar.quests)) {
         oldChar.quests = freshQuests();
         repaired = true;
+      } else {
+        // Backfill any newly-added zone quests so existing saves can see them.
+        const haveNames = new Set(oldChar.quests.map(q => q && q.name));
+        freshQuests().forEach(q => {
+          if (!haveNames.has(q.name)) {
+            oldChar.quests.push(JSON.parse(JSON.stringify(q)));
+            repaired = true;
+          }
+        });
       }
 
       ensureSpellState(oldChar);
@@ -12269,6 +12474,10 @@
       }
 
       if (mob.hp > 0 && triggerGroupAttacks('attack')) {
+        return true;
+      }
+
+      if (mob.hp > 0 && triggerGroupMercSupport('attack')) {
         return true;
       }
 
