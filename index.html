@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.2.0</title>
+    1.2.1</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2583,7 +2583,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.2.0</span>
+        1.2.1</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -4651,40 +4651,67 @@
       weapon: [
         { stat: 'atk', min: 1, max: 5, prefix: 'Jagged', suffix: 'Slaying' },
         { stat: 'atk', min: 2, max: 7, prefix: 'Brutal', suffix: 'Carnage' },
-        { stat: 'mp', min: 6, max: 24, prefix: 'Mystic', suffix: 'Focus' },
-        { stat: 'str', min: 1, max: 3, prefix: 'Mighty', suffix: 'the Bull' },
-        { stat: 'dex', min: 1, max: 3, prefix: 'Agile', suffix: 'the Fox' }
+        { stat: 'mp',  min: 6, max: 24, prefix: 'Mystic', suffix: 'Focus' },
+        { stat: 'str', min: 1, max: 3, prefix: 'Mighty',  suffix: 'the Bull' },
+        { stat: 'dex', min: 1, max: 3, prefix: 'Agile',   suffix: 'the Fox' },
+        { stat: 'con', min: 1, max: 3, prefix: 'Ironhide', suffix: 'Endurance' },
+        { stat: 'int', min: 1, max: 3, prefix: 'Runic',   suffix: 'the Scholar' },
+        { stat: 'wis', min: 1, max: 3, prefix: 'Tempered', suffix: 'the Sage' },
+        { stat: 'cha', min: 1, max: 3, prefix: 'Radiant', suffix: 'Allure' }
       ],
       chest: [
-        { stat: 'def', min: 1, max: 5, prefix: 'Sturdy', suffix: 'the Bear' },
-        { stat: 'hp', min: 10, max: 38, prefix: 'Vigorous', suffix: 'Vitality' },
-        { stat: 'mp', min: 8, max: 28, prefix: 'Runed', suffix: 'the Sage' },
-        { stat: 'con', min: 1, max: 3, prefix: 'Stalwart', suffix: 'the Ox' }
+        { stat: 'def', min: 1, max: 5, prefix: 'Sturdy',    suffix: 'the Bear' },
+        { stat: 'hp',  min: 10, max: 38, prefix: 'Vigorous', suffix: 'Vitality' },
+        { stat: 'mp',  min: 8, max: 28, prefix: 'Runed',    suffix: 'the Sage' },
+        { stat: 'con', min: 1, max: 3, prefix: 'Stalwart',  suffix: 'the Ox' },
+        { stat: 'str', min: 1, max: 3, prefix: 'Ironclad',  suffix: 'the Titan' },
+        { stat: 'dex', min: 1, max: 2, prefix: 'Lithe',     suffix: 'the Viper' },
+        { stat: 'int', min: 1, max: 2, prefix: 'Glyphed',   suffix: 'Sorcery' },
+        { stat: 'wis', min: 1, max: 2, prefix: 'Blessed',   suffix: 'the Monk' },
+        { stat: 'cha', min: 1, max: 2, prefix: 'Gilded',    suffix: 'Nobility' }
       ],
       legs: [
-        { stat: 'def', min: 1, max: 4, prefix: 'Guarded', suffix: 'Warding' },
-        { stat: 'hp', min: 8, max: 30, prefix: 'Hardened', suffix: 'Fortitude' },
-        { stat: 'con', min: 1, max: 2, prefix: 'Tough', suffix: 'the Boar' }
+        { stat: 'def', min: 1, max: 4, prefix: 'Guarded',   suffix: 'Warding' },
+        { stat: 'hp',  min: 8, max: 30, prefix: 'Hardened', suffix: 'Fortitude' },
+        { stat: 'con', min: 1, max: 2, prefix: 'Tough',     suffix: 'the Boar' },
+        { stat: 'str', min: 1, max: 2, prefix: 'Striding',  suffix: 'the Colossus' },
+        { stat: 'dex', min: 1, max: 2, prefix: 'Fleet',     suffix: 'the Wind' },
+        { stat: 'int', min: 1, max: 2, prefix: 'Mystweave', suffix: 'Wisdom' },
+        { stat: 'wis', min: 1, max: 2, prefix: 'Meditative', suffix: 'the Hermit' },
+        { stat: 'cha', min: 1, max: 2, prefix: 'Regal',     suffix: 'Prestige' }
       ],
       feet: [
         { stat: 'def', min: 1, max: 3, prefix: 'Surefooted', suffix: 'Balance' },
-        { stat: 'hp', min: 6, max: 20, prefix: 'Stout', suffix: 'Endurance' },
-        { stat: 'dex', min: 1, max: 2, prefix: 'Swift', suffix: 'the Hare' }
+        { stat: 'hp',  min: 6, max: 20, prefix: 'Stout',     suffix: 'Endurance' },
+        { stat: 'dex', min: 1, max: 2, prefix: 'Swift',      suffix: 'the Hare' },
+        { stat: 'str', min: 1, max: 2, prefix: 'Stomping',   suffix: 'the Giant' },
+        { stat: 'con', min: 1, max: 2, prefix: 'Grounded',   suffix: 'the Rock' },
+        { stat: 'int', min: 1, max: 2, prefix: 'Arcane',     suffix: 'Wayfaring' },
+        { stat: 'wis', min: 1, max: 2, prefix: "Wanderer's", suffix: 'Insight' },
+        { stat: 'cha', min: 1, max: 2, prefix: 'Graceful',   suffix: 'the Noble' }
       ],
       offhand: [
-        { stat: 'atk', min: 1, max: 3, prefix: 'Keen', suffix: 'Precision' },
-        { stat: 'mp', min: 8, max: 26, prefix: 'Arcane', suffix: 'Insight' },
-        { stat: 'def', min: 1, max: 3, prefix: 'Warded', suffix: 'Protection' },
-        { stat: 'int', min: 1, max: 3, prefix: 'Clever', suffix: 'the Owl' },
-        { stat: 'wis', min: 1, max: 3, prefix: 'Wise', suffix: 'the Oracle' }
+        { stat: 'atk', min: 1, max: 3, prefix: 'Keen',       suffix: 'Precision' },
+        { stat: 'mp',  min: 8, max: 26, prefix: 'Arcane',    suffix: 'Insight' },
+        { stat: 'def', min: 1, max: 3, prefix: 'Warded',     suffix: 'Protection' },
+        { stat: 'int', min: 1, max: 3, prefix: 'Clever',     suffix: 'the Owl' },
+        { stat: 'wis', min: 1, max: 3, prefix: 'Wise',       suffix: 'the Oracle' },
+        { stat: 'str', min: 1, max: 2, prefix: 'Bolstering', suffix: 'the Strong' },
+        { stat: 'dex', min: 1, max: 2, prefix: 'Nimble',     suffix: 'the Quick' },
+        { stat: 'con', min: 1, max: 2, prefix: 'Fortifying', suffix: 'the Steadfast' },
+        { stat: 'cha', min: 1, max: 2, prefix: 'Inspiring',  suffix: 'the Leader' }
       ],
       charm: [
-        { stat: 'atk', min: 1, max: 2, prefix: 'Savage', suffix: 'Striking' },
-        { stat: 'def', min: 1, max: 2, prefix: 'Blessed', suffix: 'Guarding' },
-        { stat: 'hp', min: 6, max: 20, prefix: 'Hearty', suffix: 'Life' },
-        { stat: 'mp', min: 6, max: 20, prefix: 'Sage', suffix: 'Mana' },
-        { stat: 'cha', min: 1, max: 3, prefix: 'Charming', suffix: 'Allure' },
-        { stat: 'wis', min: 1, max: 2, prefix: 'Insightful', suffix: 'the Mind' }
+        { stat: 'atk', min: 1, max: 2, prefix: 'Savage',      suffix: 'Striking' },
+        { stat: 'def', min: 1, max: 2, prefix: 'Blessed',     suffix: 'Guarding' },
+        { stat: 'hp',  min: 6, max: 20, prefix: 'Hearty',     suffix: 'Life' },
+        { stat: 'mp',  min: 6, max: 20, prefix: 'Sage',       suffix: 'Mana' },
+        { stat: 'cha', min: 1, max: 3, prefix: 'Charming',    suffix: 'Allure' },
+        { stat: 'wis', min: 1, max: 2, prefix: 'Insightful',  suffix: 'the Mind' },
+        { stat: 'str', min: 1, max: 2, prefix: 'Emboldening', suffix: 'Might' },
+        { stat: 'dex', min: 1, max: 2, prefix: 'Flickering',  suffix: 'Swiftness' },
+        { stat: 'con', min: 1, max: 2, prefix: 'Enduring',    suffix: 'Resilience' },
+        { stat: 'int', min: 1, max: 2, prefix: 'Brilliant',   suffix: 'the Arcane' }
       ]
     };
     const UNIQUE_ITEM_BY_BASE = {
@@ -5159,7 +5186,7 @@
       ],
       Bard: [
         { id: 'brd_sonic_slash', name: 'Sonic Slash', mp: 18, cooldown: 7, levelReq: 1, cost: 0, desc: 'Blade strike driven by song.', target: 'enemy', kind: 'damage', power: 1.9, variance: 10 },
-        { id: 'brd_harmony', name: 'Harmony Verse', mp: 16, cooldown: 11, levelReq: 4, cost: 55, desc: 'Restorative tune for HP.', target: 'self', kind: 'heal', healPct: 0.25, variance: 8 },
+        { id: 'brd_harmony', name: 'Harmony Verse', mp: 16, cooldown: 11, levelReq: 4, cost: 55, desc: 'Restorative tune for HP.', target: 'self', kind: 'heal', healPct: 0.08, variance: 8 },
         { id: 'brd_mana_ballad', name: 'Mana Ballad', mp: 16, cooldown: 13, levelReq: 8, cost: 105, desc: 'Song that replenishes mana.', target: 'self', kind: 'mana', manaPct: 0.3, variance: 8 },
         { id: 'brd_dirge_breaker', name: 'Dirge Breaker', mp: 24, cooldown: 11, levelReq: 12, cost: 185, desc: 'A war chant that damages and rattles the foe.', target: 'enemy', kind: 'damage_weaken', power: 2.4, variance: 12, weaken: 3 },
         { id: 'brd_resonant_crescendo', name: 'Resonant Crescendo', mp: 28, cooldown: 10, levelReq: 16, cost: 260, desc: 'A rising chorus batters enemy defenses.', target: 'enemy', kind: 'damage_weaken', power: 2.9, variance: 14, weaken: 4 },
@@ -6174,11 +6201,17 @@
         atk: base.atk || 0,
         def: base.def || 0,
         hp: base.hp || 0,
-        mp: base.mp || 0
+        mp: base.mp || 0,
+        str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0
       };
 
       if (entry && typeof entry === 'object' && entry.rolls && typeof entry.rolls === 'object') {
         ['atk', 'def', 'hp', 'mp'].forEach(stat => {
+          const rolled = Number(entry.rolls[stat] || 0);
+          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * uniqueRollMult);
+        });
+        // Apply ability-score rolls (str/dex/con/int/wis/cha)
+        ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
           const rolled = Number(entry.rolls[stat] || 0);
           if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * uniqueRollMult);
         });
@@ -9084,6 +9117,16 @@
         if (!v && !(curStats && curStats[stat])) return;
         const diff = curStats ? (v - (curStats[stat] || 0)) : 0;
         html += formatStatLine(stat.toUpperCase(), v, current ? diff : 0);
+      });
+      // Ability-score rolls (str/dex/con/int/wis/cha)
+      const ABILITY_EFFECT_LABELS = { str: 'ATK power', dex: 'Crit & dodge', con: 'Dmg reduction', int: 'Spell power', wis: 'Mana regen', cha: 'Gold find' };
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+        const v = stats[stat] || 0;
+        const cv = curStats ? (curStats[stat] || 0) : 0;
+        if (!v && !cv) return;
+        const diff = curStats ? (v - cv) : 0;
+        const label = stat.toUpperCase() + ' <span style="font-size:9px;color:var(--text-secondary)">(' + ABILITY_EFFECT_LABELS[stat] + ')</span>';
+        html += '<div class="tt-stat"><span>' + label + '</span><span>+' + (v || 0) + (diff > 0 ? ' <span class="tt-up">▲ +' + diff + '</span>' : diff < 0 ? ' <span class="tt-down">▼ ' + diff + '</span>' : '') + '</span></div>';
       });
       if (current) {
         html += '<div class="tt-section" style="font-size:10px;color:var(--text-secondary)">vs equipped: ' + getItemDisplayName(current) + '</div>';
@@ -14013,16 +14056,23 @@
         ? Math.max(1, char.level + Math.floor(floor / 2))
         : (typeof getZoneMobLevel === 'function' ? getZoneMobLevel(zone, char.level) : Math.max(1, char.level + Math.floor(Math.random() * 3) - 1));
       const elite = inDungeon ? (dungeonBoss || Math.random() < (0.2 + (dungeonMod.eliteChanceBonus || 0))) : (Math.random() < 0.1);
-      const namedMult = named ? 1.8 : 1;
+      const namedMult = named ? 2.8 : 1;
       const rawHp = (30 + lvl * 18) * (elite ? 2.5 : 1) * namedMult;
       const hp = (typeof scaleMobHp === 'function') ? scaleMobHp(rawHp, lvl) : Math.max(1, Math.floor(rawHp));
       const namedMechanic = named ? NAMED_MECHANICS[Math.floor(Math.random() * NAMED_MECHANICS.length)] : null;
+      // Mob ATK is anchored to a % of the player's actual max HP so it stays
+      // relevant as HP compounds with level. Base targets ~6% of player HP per
+      // hit for regular mobs; elites ~9%; named ~14%. The lvl² term provides
+      // a secondary curve so low-level mobs still sting early game.
+      const playerMaxHp = char.maxHp || 100;
+      const hpAnchorAtk = Math.floor(playerMaxHp * (named ? 0.14 : (elite ? 0.09 : 0.06)));
+      const levelCurveAtk = Math.floor(5 + lvl * 2 + Math.floor(lvl * lvl * 0.06) + (elite ? Math.floor(lvl * 1.5) : 0));
       mob = {
         name: (named ? '[Named] ' : (elite ? '[Elite] ' : '')) + mobName,
         level: lvl,
         hp,
         maxHp: hp,
-        atk: Math.floor((5 + lvl * 2 + (elite ? 8 : 0)) * namedMult),
+        atk: Math.max(levelCurveAtk, hpAnchorAtk),
         def: Math.floor((2 + lvl) * (named ? 1.4 : 1)),
         baseName: mobName,
         elite,
@@ -14180,8 +14230,16 @@
         return false;
       }
 
-      let md = Math.max(1, mob.atk - playerDef + Math.floor(Math.random() * 4) - 1);
-      md = Math.max(1, Math.floor(md * aa.mobDamageMult * prestige.mobDamageMult * (event.mobDamageMult || 1) * (fx.mobDamageMult || 1) * (dungeonMod.mobDamageMult || 1)));
+      // DEF gives diminishing returns: each point of DEF reduces damage by less as DEF grows.
+      // Formula: damage = mobAtk * (mobAtk / (mobAtk + playerDef)), with a variance roll on top.
+      // This guarantees a hit always lands for a meaningful fraction of mob ATK regardless of DEF.
+      const defMitFraction = mob.atk / (mob.atk + playerDef);
+      const baseVariance = Math.floor(Math.random() * 4) - 1;
+      let md = Math.max(1, Math.round(mob.atk * defMitFraction) + baseVariance);
+      // Cap stacked incoming-damage reduction at 65% (floor multiplier at 0.35)
+      const rawMobDamageMult = aa.mobDamageMult * prestige.mobDamageMult * (event.mobDamageMult || 1) * (fx.mobDamageMult || 1) * (dungeonMod.mobDamageMult || 1);
+      const clampedMobDamageMult = Math.max(0.35, rawMobDamageMult);
+      md = Math.max(1, Math.floor(md * clampedMobDamageMult));
       // Mob crit roll
       const mobCritRoll = rollMobCrit(md);
       md = mobCritRoll.dmg;
