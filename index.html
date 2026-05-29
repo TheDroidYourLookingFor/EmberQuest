@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.1.20</title>
+    1.2.0</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2583,7 +2583,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.20</span>
+        1.2.0</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3748,7 +3748,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">Leaderboard</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Every character saved on this account, ranked by overall power. See how your heroes stack up against one another.
+            Characters ranked by overall power. When you're signed in, this shows players across the whole cloud; offline, it shows the characters on this device.
           </div>
           <div id="leaderboard-list"></div>
         </div>
@@ -3757,7 +3757,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.1.20 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.2.0 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -4239,6 +4239,7 @@
           slots = cloudSlots;
         }
         try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
+        this.publishLeaderboard(); // seed public leaderboard with this account's characters
         const badge = document.getElementById('cs-user-email');
         if (badge && currentUser) badge.textContent = currentUser.email || '';
         showScreen('screen-charselect');
@@ -4273,7 +4274,53 @@
           if (deletes.length) {
             await sb.from('saves').delete().eq('user_id', currentUser.id).in('slot', deletes);
           }
+          this.publishLeaderboard(); // keep public leaderboard summaries in sync (fire-and-forget)
         } catch (e) { console.warn('cloud sync error', e); }
+      },
+      // Read the global leaderboard (everyone's published character summaries).
+      // Returns an array of rows, or null if unavailable (table missing / offline).
+      async fetchLeaderboard(limit = 200) {
+        if (!sb) return null;
+        try {
+          const { data, error } = await sb.from('leaderboard')
+            .select('user_id,name,race,class,level,prestige,power,hardcore,atk,def,hp,mp,aa,gold')
+            .order('power', { ascending: false })
+            .limit(limit);
+          if (error) { console.warn('leaderboard fetch failed', error); return null; }
+          return data || [];
+        } catch (e) { console.warn('leaderboard fetch error', e); return null; }
+      },
+      // Publish this account's character summaries (safe, derived fields only —
+      // never the full save blob) so other players can see them on the leaderboard.
+      async publishLeaderboard() {
+        if (!sb || !currentUser || typeof computeLeaderboardStats !== 'function') return;
+        const rows = [];
+        const empties = [];
+        for (let i = 0; i < MAX_SLOTS; i++) {
+          let c = slots[i];
+          if (i === activeSlot && char && typeof char === 'object') c = char;
+          if (c && typeof c === 'object') {
+            const s = computeLeaderboardStats(c);
+            rows.push({
+              user_id: currentUser.id, char_key: i,
+              name: s.name, race: s.race, class: s.cls, level: s.level,
+              prestige: s.prestigeRank, power: s.power, hardcore: s.hardcore,
+              atk: s.atk, def: s.def, hp: s.maxHp, mp: s.maxMp, aa: s.aaSpent, gold: s.gold,
+              updated_at: new Date().toISOString()
+            });
+          } else {
+            empties.push(i);
+          }
+        }
+        try {
+          if (rows.length) {
+            const { error } = await sb.from('leaderboard').upsert(rows, { onConflict: 'user_id,char_key' });
+            if (error) { console.warn('leaderboard publish failed', error); return; }
+          }
+          if (empties.length) {
+            await sb.from('leaderboard').delete().eq('user_id', currentUser.id).in('char_key', empties);
+          }
+        } catch (e) { console.warn('leaderboard publish error', e); }
       }
     };
 
@@ -16482,47 +16529,39 @@
     // ══════════════════════════════════════════════
     //  UI HELPERS
     // ══════════════════════════════════════════════
-    function renderLeaderboardTab() {
-      const el = document.getElementById('leaderboard-list');
-      if (!el) return;
+    // Derived, leaderboard-safe metrics for a character object.
+    function computeLeaderboardStats(c) {
+      const level = Math.max(1, Math.floor(Number(c.level || 1)));
+      const prestigeRank = Math.max(0, Math.floor(Number((c.prestige && c.prestige.rank) || 0)));
+      const atk = Math.max(0, Math.floor(Number(c.atk || 0)));
+      const def = Math.max(0, Math.floor(Number(c.def || 0)));
+      const maxHp = Math.max(0, Math.floor(Number(c.maxHp || 0)));
+      const maxMp = Math.max(0, Math.floor(Number(c.maxMp || 0)));
+      const aaSpent = Math.max(0, Math.floor(Number((c.aa && c.aa.spent) || 0)));
+      const gold = Math.max(0, Math.floor(Number(c.gold || 0)));
+      const power = Math.floor(level * 120 + prestigeRank * 8000 + atk * 3 + def * 3 + maxHp * 0.4 + maxMp * 0.2 + aaSpent * 60);
+      return { name: c.name || 'Unnamed', race: c.race || '', cls: c.cls || '', hardcore: !!c.hardcore, level, prestigeRank, atk, def, maxHp, maxMp, aaSpent, gold, power };
+    }
 
-      const entries = [];
-      for (let i = 0; i < slots.length; i++) {
-        let c = slots[i];
-        if (i === activeSlot && char) c = char; // use live stats for the active character
-        if (!c || typeof c !== 'object') continue;
-        const level = Math.max(1, Math.floor(Number(c.level || 1)));
-        const prestigeRank = Math.max(0, Math.floor(Number((c.prestige && c.prestige.rank) || 0)));
-        const atk = Math.max(0, Math.floor(Number(c.atk || 0)));
-        const def = Math.max(0, Math.floor(Number(c.def || 0)));
-        const maxHp = Math.max(0, Math.floor(Number(c.maxHp || 0)));
-        const maxMp = Math.max(0, Math.floor(Number(c.maxMp || 0)));
-        const aaSpent = Math.max(0, Math.floor(Number((c.aa && c.aa.spent) || 0)));
-        const gold = Math.max(0, Math.floor(Number(c.gold || 0)));
-        const power = Math.floor(level * 120 + prestigeRank * 8000 + atk * 3 + def * 3 + maxHp * 0.4 + maxMp * 0.2 + aaSpent * 60);
-        entries.push({
-          isActive: i === activeSlot, name: c.name || 'Unnamed', race: c.race || '', cls: c.cls || '',
-          hardcore: !!c.hardcore, level, prestigeRank, atk, def, maxHp, maxMp, aaSpent, gold, power
-        });
-      }
+    let leaderboardFetchToken = 0;
 
+    function renderLeaderboardRows(el, entries, scopeNote) {
       if (!entries.length) {
-        el.innerHTML = '<div class="eq-empty-bag">No characters saved yet.</div>';
+        el.innerHTML = (scopeNote ? '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">' + scopeNote + '</div>' : '') + '<div class="eq-empty-bag">No characters to show yet.</div>';
         return;
       }
-
       entries.sort((a, b) => b.power - a.power || b.level - a.level || b.prestigeRank - a.prestigeRank);
-
       const medal = ['#f5c542', '#c8d0d8', '#cd7f32'];
-      let html = '<div style="display:flex;flex-direction:column;gap:8px">';
+      let html = scopeNote ? ('<div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">' + scopeNote + '</div>') : '';
+      html += '<div style="display:flex;flex-direction:column;gap:8px">';
       entries.forEach((e, idx) => {
         const rank = idx + 1;
         const rankColor = idx < 3 ? medal[idx] : 'var(--text-secondary)';
-        const youTag = e.isActive ? ' <span style="font-size:10px;color:#22d3ee">(You)</span>' : '';
+        const youTag = e.isYou ? ' <span style="font-size:10px;color:#22d3ee">(You)</span>' : '';
         const hcTag = e.hardcore ? ' <span style="color:#f4a87a;font-size:9px;border:1px solid #f4a87a;border-radius:3px;padding:0 4px;vertical-align:middle">HARDCORE</span>' : '';
         const pTag = e.prestigeRank > 0 ? ' · <span style="color:#a855f7">Prestige ' + e.prestigeRank + '</span>' : '';
         const meta = [e.level ? ('Lv ' + e.level) : '', escapeHtml(e.race), escapeHtml(e.cls)].filter(Boolean).join(' ');
-        const border = e.isActive ? '1.5px solid #22d3ee' : '0.5px solid var(--border)';
+        const border = e.isYou ? '1.5px solid #22d3ee' : '0.5px solid var(--border)';
         html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:' + border + ';border-radius:var(--radius-md);background:var(--bg-secondary)">'
           + '<div style="font-size:18px;font-weight:700;min-width:28px;text-align:center;color:' + rankColor + '">' + rank + '</div>'
           + '<div style="flex:1;min-width:0">'
@@ -16538,6 +16577,66 @@
       });
       html += '</div>';
       el.innerHTML = html;
+    }
+
+    function renderLeaderboardTab() {
+      const el = document.getElementById('leaderboard-list');
+      if (!el) return;
+
+      // 1) Instant local render (your own characters)
+      const local = [];
+      for (let i = 0; i < slots.length; i++) {
+        let c = slots[i];
+        if (i === activeSlot && char) c = char; // live stats for the active character
+        if (!c || typeof c !== 'object') continue;
+        const s = computeLeaderboardStats(c);
+        s.isYou = true;
+        local.push(s);
+      }
+
+      const canGlobal = !!(typeof Cloud === 'object' && Cloud.ready && currentUser && sb);
+      renderLeaderboardRows(
+        el,
+        local.slice(),
+        canGlobal
+          ? 'Loading global rankings…'
+          : 'Showing your local characters. Sign in (and enable the cloud leaderboard) to compare with other players.'
+      );
+
+      // 2) Global render (everyone in the cloud), if signed in
+      if (!canGlobal) return;
+      const token = ++leaderboardFetchToken;
+      (async () => {
+        try {
+          await Cloud.publishLeaderboard();           // push our latest summaries first
+          const rows = await Cloud.fetchLeaderboard(200);
+          if (token !== leaderboardFetchToken) return; // a newer open superseded this one
+          const panel = document.getElementById('tab-leaderboard');
+          if (panel && panel.style.display === 'none') return; // navigated away
+          if (!rows) {
+            renderLeaderboardRows(el, local.slice(), 'Global leaderboard unavailable — showing your local characters. (Has the cloud leaderboard table been set up?)');
+            return;
+          }
+          const entries = rows.map(r => ({
+            name: r.name || 'Unnamed', race: r.race || '', cls: r.class || '',
+            hardcore: !!r.hardcore,
+            level: Math.max(1, Math.floor(Number(r.level || 1))),
+            prestigeRank: Math.max(0, Math.floor(Number(r.prestige || 0))),
+            atk: Math.max(0, Math.floor(Number(r.atk || 0))),
+            def: Math.max(0, Math.floor(Number(r.def || 0))),
+            maxHp: Math.max(0, Math.floor(Number(r.hp || 0))),
+            maxMp: Math.max(0, Math.floor(Number(r.mp || 0))),
+            aaSpent: Math.max(0, Math.floor(Number(r.aa || 0))),
+            gold: Math.max(0, Math.floor(Number(r.gold || 0))),
+            power: Math.max(0, Math.floor(Number(r.power || 0))),
+            isYou: r.user_id === currentUser.id
+          }));
+          renderLeaderboardRows(el, entries, 'Global rankings — ' + entries.length + ' character' + (entries.length === 1 ? '' : 's') + ' across all players.');
+        } catch (e) {
+          if (token !== leaderboardFetchToken) return;
+          renderLeaderboardRows(el, local.slice(), 'Global leaderboard unavailable — showing your local characters.');
+        }
+      })();
     }
 
     // ══════════════════════════════════════════════
