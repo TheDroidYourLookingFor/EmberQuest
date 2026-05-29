@@ -1,8 +1,8 @@
 ![EmberQuest](banner.svg)
 
-# 🎮 EmberQuest | EverQuest-inspired idle RPG
+# 🎮 EmberQuest | Old School MMO-inspired idle RPG
 
-An EverQuest-inspired idle/incremental RPG that runs in a single HTML file. No build step, no install, no server — open `index.html` in any modern browser and start adventuring.
+An Old School MMO-inspired idle/incremental RPG that runs in a single HTML file. No build step, no install, no server — open `index.html` in any modern browser and start adventuring.
 
 **▶ Play it now: [thedroidyourlookingfor.github.io/EmberQuest](https://thedroidyourlookingfor.github.io/EmberQuest/)**
 
