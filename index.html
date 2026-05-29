@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.2.1</title>
+    1.2.2</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -1413,6 +1413,31 @@
       margin-top: 5px;
     }
 
+    .eq-item-stats-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .eq-stat-chip {
+      font-size: 11px;
+      font-weight: 600;
+      color: #1D9E75;
+      background: rgba(29, 158, 117, 0.1);
+      border: 1px solid rgba(29, 158, 117, 0.3);
+      border-radius: 4px;
+      padding: 1px 6px;
+      white-space: nowrap;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .eq-stat-chip {
+        background: rgba(29, 158, 117, 0.15);
+        border-color: rgba(29, 158, 117, 0.4);
+      }
+    }
+
     .eq-item-owned {
       font-size: 15px;
       color: #ffffff;
@@ -2583,7 +2608,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.2.1</span>
+        1.2.2</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3757,7 +3782,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.2.0 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.2.2 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -4394,6 +4419,9 @@
       }
       return out;
     }
+    // Utility: format an integer with thousands separators for display.
+    function fmt(n) { return Math.floor(Number(n) || 0).toLocaleString(); }
+
     function abilityMod(score) {
       return Math.floor((Math.max(1, Number(score) || 10) - 10) / 2);
     }
@@ -5562,7 +5590,7 @@
 
       const cost = getMercenaryHireCost(mercType);
       if (char.gold < cost) {
-        log(['Not enough gold to hire ', { text: merc.name, cls: 'combat-log-merc' }, ' (' + cost + 'g).'], 'info');
+        log(['Not enough gold to hire ', { text: merc.name, cls: 'combat-log-merc' }, ' (' + fmt(cost) + 'g).'], 'info');
         return;
       }
 
@@ -5578,7 +5606,7 @@
       log([
         currentType !== 'none' ? 'Contract switched. ' : '',
         { text: getMercenaryDisplayName(), cls: 'combat-log-merc' },
-        ' joins your group for ' + cost + ' gold.'
+        ' joins your group for ' + fmt(cost) + ' gold.'
       ], 'loot');
       renderAll();
       autoSave();
@@ -5630,7 +5658,7 @@
           ' hits ',
           { text: mob.name, cls: 'combat-log-defender' },
           ' for ',
-          { text: String(dmg), cls: 'combat-log-damage' },
+          { text: fmt(dmg), cls: 'combat-log-damage' },
           ' points of damage.'
         ], 'dmg');
       } else if (behavior === 'debuff') {
@@ -5646,7 +5674,7 @@
           ' hexes ',
           { text: mob.name, cls: 'combat-log-defender' },
           ' for ',
-          { text: String(dmg), cls: 'combat-log-damage' },
+          { text: fmt(dmg), cls: 'combat-log-damage' },
           ' points of damage and weakens it.'
         ], 'dmg');
       } else if (behavior === 'heal') {
@@ -5657,7 +5685,7 @@
           log([
             { text: mercName, cls: 'combat-log-merc' },
             ' heals you for ',
-            { text: String(healAmt), cls: 'combat-log-heal-amt' },
+            { text: fmt(healAmt), cls: 'combat-log-heal-amt' },
             ' hit points.'
           ], 'heal');
         } else {
@@ -5669,7 +5697,7 @@
             ' smites ',
             { text: mob.name, cls: 'combat-log-defender' },
             ' for ',
-            { text: String(dmg), cls: 'combat-log-damage' },
+            { text: fmt(dmg), cls: 'combat-log-damage' },
             ' points of damage.'
           ], 'dmg');
         }
@@ -5693,7 +5721,7 @@
             ' strikes ',
             { text: mob.name, cls: 'combat-log-defender' },
             ' for ',
-            { text: String(dmg), cls: 'combat-log-damage' },
+            { text: fmt(dmg), cls: 'combat-log-damage' },
             ' points of damage.'
           ], 'dmg');
         }
@@ -5980,7 +6008,7 @@
       log([
         proc.name,
         ' procs for ',
-        { text: String(dmg), cls: 'combat-log-damage' },
+        { text: fmt(dmg), cls: 'combat-log-damage' },
         ' points of bonus damage!'
       ], 'dmg');
 
@@ -7858,7 +7886,7 @@
             log([
               { text: memberName, cls: 'combat-log-merc' },
               ' casts ' + sp.name + ' and heals you for ',
-              { text: String(healAmt), cls: 'combat-log-heal-amt' },
+              { text: fmt(healAmt), cls: 'combat-log-heal-amt' },
               ' hit points.'
             ], 'heal');
             continue;
@@ -7888,7 +7916,7 @@
           label,
           { text: mob.name, cls: 'combat-log-defender' },
           ' for ',
-          { text: String(dmg), cls: 'combat-log-damage' },
+          { text: fmt(dmg), cls: 'combat-log-damage' },
           ' points of damage.'
         ], 'dmg');
 
@@ -7979,7 +8007,7 @@
       }
       const cost = getMercenaryHireCost(type);
       if ((char.gold || 0) < cost) {
-        log(['Not enough gold to hire ', { text: MERCENARY_TYPES[type].name, cls: 'combat-log-merc' }, ' (' + cost + 'g).'], 'info');
+        log(['Not enough gold to hire ', { text: MERCENARY_TYPES[type].name, cls: 'combat-log-merc' }, ' (' + fmt(cost) + 'g).'], 'info');
         return;
       }
       const mainType = char.mercenary && char.mercenary.type ? char.mercenary.type : 'none';
@@ -7998,7 +8026,7 @@
       char.groupMercNames.push('');
       if (!Array.isArray(char.groupMercGear)) char.groupMercGear = [];
       char.groupMercGear.push({ weapon: null });
-      log(['Hired ', { text: MERCENARY_TYPES[type].name, cls: 'combat-log-merc' }, ' for ' + cost + ' gold.'], 'loot');
+      log(['Hired ', { text: MERCENARY_TYPES[type].name, cls: 'combat-log-merc' }, ' for ' + fmt(cost) + ' gold.'], 'loot');
       saveSlots();
       renderAll();
     }
@@ -8045,7 +8073,7 @@
             ' hits ',
             { text: mob.name, cls: 'combat-log-defender' },
             ' for ',
-            { text: String(dmg), cls: 'combat-log-damage' },
+            { text: fmt(dmg), cls: 'combat-log-damage' },
             ' points of damage.'
           ], 'dmg');
         } else if (behavior === 'debuff') {
@@ -8061,7 +8089,7 @@
             ' hexes ',
             { text: mob.name, cls: 'combat-log-defender' },
             ' for ',
-            { text: String(dmg), cls: 'combat-log-damage' },
+            { text: fmt(dmg), cls: 'combat-log-damage' },
             ' points of damage and weakens it.'
           ], 'dmg');
         } else if (behavior === 'heal') {
@@ -8072,7 +8100,7 @@
             log([
               { text: label, cls: 'combat-log-merc' },
               ' heals you for ',
-              { text: String(healAmt), cls: 'combat-log-heal-amt' },
+              { text: fmt(healAmt), cls: 'combat-log-heal-amt' },
               ' hit points.'
             ], 'heal');
           } else {
@@ -8084,7 +8112,7 @@
               ' smites ',
               { text: mob.name, cls: 'combat-log-defender' },
               ' for ',
-              { text: String(dmg), cls: 'combat-log-damage' },
+              { text: fmt(dmg), cls: 'combat-log-damage' },
               ' points of damage.'
             ], 'dmg');
           }
@@ -8108,7 +8136,7 @@
               ' strikes ',
               { text: mob.name, cls: 'combat-log-defender' },
               ' for ',
-              { text: String(dmg), cls: 'combat-log-damage' },
+              { text: fmt(dmg), cls: 'combat-log-damage' },
               ' points of damage.'
             ], 'dmg');
           }
@@ -8692,7 +8720,7 @@
       }
       const cost = getAARespecCost(char);
       if ((char.gold || 0) < cost) {
-        log('Need ' + cost + 'g to respec AA.', 'info');
+        log('Need ' + fmt(cost) + 'g to respec AA.', 'info');
         return;
       }
       char.gold -= cost;
@@ -8703,7 +8731,7 @@
       char.aa.spent = 0;
       char.aa.points = Math.max(0, Number(char.aa.points || 0)) + refunded;
       reconcileAAVitals(char);
-      log('AA respecced for ' + cost + 'g. Refunded ' + refunded + ' points.', 'loot');
+      log('AA respecced for ' + fmt(cost) + 'g. Refunded ' + fmt(refunded) + ' points.', 'loot');
       renderAll();
       renderAATab();
       autoSave();
@@ -8841,7 +8869,7 @@
             ' on ',
             { text: mob.name, cls: 'combat-log-mob' },
             ' ticks for ',
-            { text: String(dmg), cls: 'combat-log-damage' },
+            { text: fmt(dmg), cls: 'combat-log-damage' },
             ' points of damage.'
           ], 'dmg');
           addDamageMeterEntry('dot', dmg);
@@ -9337,14 +9365,14 @@
       }
       const cost = getClassSpecRespecCost(char);
       if ((char.gold || 0) < cost) {
-        log('Need ' + cost + 'g to respec your specialization.', 'info');
+        log('Need ' + fmt(cost) + 'g to respec your specialization.', 'info');
         return;
       }
       char.gold -= cost;
       removeSpecFlatBonuses(char, char.specAppliedFlat || { atk: 0, def: 0, hp: 0, mp: 0 });
       char.specAppliedFlat = null;
       char.spec = null;
-      log('Specialization cleared for ' + cost + 'g. Pick a new one.', 'lvl');
+      log('Specialization cleared for ' + fmt(cost) + 'g. Pick a new one.', 'lvl');
       renderAll();
       if (typeof renderAATab === 'function') renderAATab();
       autoSave();
@@ -9383,14 +9411,14 @@
       }
       const cost = getPrestigeRespecCost(char);
       if ((char.gold || 0) < cost) {
-        log('Need ' + cost + 'g to respec prestige perks.', 'info');
+        log('Need ' + fmt(cost) + 'g to respec prestige perks.', 'info');
         return;
       }
       char.gold -= cost;
       p.perks = {};
       p.spent = 0;
       p.points = Math.max(0, Number(p.points || 0)) + investedRanks;
-      log('Prestige respecced for ' + cost + 'g. Refunded ' + investedRanks + ' points.', 'loot');
+      log('Prestige respecced for ' + fmt(cost) + 'g. Refunded ' + fmt(investedRanks) + ' points.', 'loot');
       renderAll();
       if (typeof renderPrestigeTab === 'function') renderPrestigeTab();
       autoSave();
@@ -9727,11 +9755,11 @@
       if (!pet) return;
       if (char.pets.owned.includes(id)) { log('You already own a ' + pet.name + '.', 'info'); return; }
       const cost = PHASE5.petTameGoldCost[id] || 1000;
-      if ((char.gold || 0) < cost) { log('Need ' + cost + 'g to tame ' + pet.name + '.', 'info'); return; }
+      if ((char.gold || 0) < cost) { log('Need ' + fmt(cost) + 'g to tame ' + pet.name + '.', 'info'); return; }
       char.gold -= cost;
       char.pets.owned.push(id);
       if (char.pets.active === 'none') char.pets.active = id;
-      log('Tamed ' + pet.name + ' for ' + cost + 'g.', 'loot');
+      log('Tamed ' + pet.name + ' for ' + fmt(cost) + 'g.', 'loot');
       if (typeof renderAll === 'function') renderAll();
       autoSave();
     }
@@ -9774,7 +9802,7 @@
         ' hits ',
         { text: mob.name, cls: 'combat-log-defender' },
         ' for ',
-        { text: String(dmg), cls: 'combat-log-damage' },
+        { text: fmt(dmg), cls: 'combat-log-damage' },
         ' points of damage.'
       ], 'dmg');
       if (typeof addDamageMeterEntry === 'function') addDamageMeterEntry('pet', dmg);
@@ -9897,7 +9925,7 @@
         return;
       }
       const cost = (typeof getMerchantPrice === 'function') ? getMerchantPrice(PHASE5.recipeScrollPrice) : PHASE5.recipeScrollPrice;
-      if ((char.gold || 0) < cost) { log('Need ' + cost + 'g for a Recipe Scroll.', 'info'); return; }
+      if ((char.gold || 0) < cost) { log('Need ' + fmt(cost) + 'g for a Recipe Scroll.', 'info'); return; }
       const known = new Set((char.discoveredRunewords || []));
       const unknownRecipes = Object.values(RUNEWORD_RECIPES).filter(r => !known.has(r.name));
       if (!unknownRecipes.length) {
@@ -10020,7 +10048,7 @@
         return;
       }
       const cost = getTributeCost();
-      if ((char.gold || 0) < cost) { log('Need ' + cost + 'g to make a tribute.', 'info'); return; }
+      if ((char.gold || 0) < cost) { log('Need ' + fmt(cost) + 'g to make a tribute.', 'info'); return; }
       char.gold -= cost;
       char.tribute.given += PHASE6.tributeFactionPerDonation;
       if (typeof adjustFaction === 'function') {
@@ -10028,7 +10056,7 @@
       } else {
         char.faction = (Number(char.faction) || 0) + PHASE6.tributeFactionPerDonation;
       }
-      log('Tribute accepted (-' + cost + 'g, +' + PHASE6.tributeFactionPerDonation + ' faction).', 'loot');
+      log('Tribute accepted (-' + fmt(cost) + 'g, +' + PHASE6.tributeFactionPerDonation + ' faction).', 'loot');
       if (typeof renderAll === 'function') renderAll();
       autoSave();
     }
@@ -10115,8 +10143,8 @@
       const btn = document.getElementById('invoke-shrine-btn');
       if (!btn || !char) return;
       const cost = getShrineInvokeCost();
-      btn.textContent = 'Invoke Random Shrine (' + cost + 'g)';
-      btn.title = 'Spend ' + cost + ' gold for a random shrine effect';
+      btn.textContent = 'Invoke Random Shrine (' + fmt(cost) + 'g)';
+      btn.title = 'Spend ' + fmt(cost) + ' gold for a random shrine effect';
     }
 
     function invokeShrine() {
@@ -10128,7 +10156,7 @@
 
       const cost = getShrineInvokeCost();
       if (char.gold < cost) {
-        log('Not enough gold to invoke a shrine (' + cost + 'g).', 'info');
+        log('Not enough gold to invoke a shrine (' + fmt(cost) + 'g).', 'info');
         return;
       }
 
@@ -10144,9 +10172,9 @@
         expiresAt: Date.now() + duration
       });
 
-      log('You spend ' + cost + 'g and invoke ' + chosen.name + '.', chosen.type === 'debuff' ? 'dmg' : 'info');
+      log('You spend ' + fmt(cost) + 'g and invoke ' + chosen.name + '.', chosen.type === 'debuff' ? 'dmg' : 'info');
       if (typeof showToast === 'function') {
-        showToast('Shrine invoked: ' + chosen.name + ' (-' + cost + 'g)', chosen.type === 'debuff' ? 'error' : 'success');
+        showToast('Shrine invoked: ' + chosen.name + ' (-' + fmt(cost) + 'g)', chosen.type === 'debuff' ? 'error' : 'success');
       }
       renderAll();
       autoSave();
@@ -10476,11 +10504,15 @@
         const data = getItemData(item) || {};
         const stats = getItemEffectiveStats(item) || {};
         let bonus = '';
-        if (stats.atk) bonus += ` +${stats.atk} ATK`;
-        if (stats.def) bonus += ` +${stats.def} DEF`;
-        if (stats.hp) bonus += ` +${stats.hp} HP`;
-        if (stats.mp) bonus += ` +${stats.mp} MP`;
-        bonus += describeItemAbilityRolls(item);
+        // Core stats
+        if (stats.atk) bonus += ' +' + fmt(stats.atk) + ' ATK';
+        if (stats.def) bonus += ' +' + fmt(stats.def) + ' DEF';
+        if (stats.hp)  bonus += ' +' + fmt(stats.hp)  + ' HP';
+        if (stats.mp)  bonus += ' +' + fmt(stats.mp)  + ' MP';
+        // Ability scores
+        ['str','dex','con','int','wis','cha'].forEach(k => {
+          if (stats[k]) bonus += ' +' + stats[k] + ' ' + ABILITY_LABELS[k];
+        });
         const quality = getItemQuality(item);
         const qualityTag = quality && quality !== 'Normal' ? (' • ' + getItemQualityLabel(item)) : '';
         const isRune = isRuneEntry(item);
@@ -10502,7 +10534,11 @@
               <div class="eq-item-type">${itemType}${qualityTag}</div>
             </div>
           </div>
-          <div class="eq-item-bonus">${bonus || 'No stats'}</div>
+          <div class="eq-item-stats-grid">${bonus ? bonus.trim().split(' ').reduce((acc, tok) => {
+        // Rebuild into individual stat chips: each "+N STAT" becomes a pill
+        if (tok.startsWith('+')) { acc.push(tok); } else if (acc.length) { acc[acc.length-1] += ' ' + tok; }
+        return acc;
+      }, []).map(chip => '<span class="eq-stat-chip">' + chip + '</span>').join('') : '<span style="color:var(--text-secondary);font-size:11px">No stats</span>'}</div>
           <div class="eq-item-actions compact">
             <button class="btn" ${disabled ? 'disabled' : ''}>${label}</button>
           </div>
@@ -10661,7 +10697,7 @@
       pendingTransmuteSourceRune = sourceRune;
 
       const subtitle = document.getElementById('transmute-confirm-subtitle');
-      subtitle.textContent = 'Forge 3x ' + sourceRune + ' into 1x ' + resultRune + ' for ' + cost + 'g? You own ' + owned + '.';
+      subtitle.textContent = 'Forge 3x ' + sourceRune + ' into 1x ' + resultRune + ' for ' + fmt(cost) + 'g? You own ' + owned + '.';
 
       document.getElementById('transmute-confirm-modal').classList.add('open');
       const confirmBtn = document.getElementById('transmute-confirm-btn');
@@ -11811,11 +11847,11 @@
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
         if (typeof oldChar.hardcore !== 'boolean') oldChar.hardcore = false;
-        oldChar.version = '1.2.0';
-        if (!silent) log('Upgraded save data to v1.2.0 (bosses, dailies, achievements).', 'info');
+        oldChar.version = '1.2.2';
+        if (!silent) log('Upgraded save data to v1.2.2 (bosses, dailies, achievements).', 'info');
       }
 
-      if (oldChar.version === '1.2.0') {
+      if (oldChar.version === '1.2.2') {
         if (typeof ensurePetState === 'function') ensurePetState(oldChar);
         if (oldChar.mercenary && (!oldChar.mercenary.gear || typeof oldChar.mercenary.gear !== 'object')) {
           oldChar.mercenary.gear = { weapon: null };
@@ -11960,11 +11996,11 @@
         const unspent = (char.aa && Number.isFinite(Number(char.aa.points))) ? Math.max(0, Math.floor(Number(char.aa.points))) : 0;
         aaTabLabel.textContent = unspent > 0 ? ('AA (' + unspent + ')') : 'AA';
       }
-      document.getElementById('hp-disp').textContent = char.hp + '/' + char.maxHp;
-      document.getElementById('mp-disp').textContent = char.mp + '/' + char.maxMp;
+      document.getElementById('hp-disp').textContent = fmt(char.hp) + '/' + fmt(char.maxHp);
+      document.getElementById('mp-disp').textContent = fmt(char.mp) + '/' + fmt(char.maxMp);
       const aa = getAACombatModifiers(char);
-      document.getElementById('atk-disp').textContent = char.atk + aa.atkBonus;
-      document.getElementById('def-disp').textContent = char.def + aa.defBonus;
+      document.getElementById('atk-disp').textContent = fmt(char.atk + aa.atkBonus);
+      document.getElementById('def-disp').textContent = fmt(char.def + aa.defBonus);
       const abilitiesDisp = document.getElementById('abilities-disp');
       if (abilitiesDisp) {
         const eff = getEffectiveAbilityScores(char);
@@ -11989,12 +12025,12 @@
       const mercUpkeepDisp = document.getElementById('merc-upkeep-disp');
       const mercRoleDisp = document.getElementById('merc-role-disp');
       const totalUpkeep = getTotalMercenaryUpkeep(char);
-      if (mercUpkeepDisp) mercUpkeepDisp.textContent = totalUpkeep + 'g';
+      if (mercUpkeepDisp) mercUpkeepDisp.textContent = fmt(totalUpkeep) + 'g';
       if (mercRoleDisp) {
         if (totalMercs > 0) {
           const dueAt = Number(char.mercenary && char.mercenary.nextUpkeepAt || 0);
           const untilDue = dueAt > 0 ? Math.max(0, dueAt - Date.now()) : MERCENARY_UPKEEP_INTERVAL_MS;
-          mercRoleDisp.textContent = totalMercs + ' merc' + (totalMercs === 1 ? '' : 's') + ' · ' + totalUpkeep + 'g / 3m · Due in ' + formatMercenaryCountdown(untilDue);
+          mercRoleDisp.textContent = totalMercs + ' merc' + (totalMercs === 1 ? '' : 's') + ' · ' + fmt(totalUpkeep) + 'g / 3m · Due in ' + formatMercenaryCountdown(untilDue);
         } else {
           mercRoleDisp.textContent = 'No mercenaries hired.';
         }
@@ -12075,7 +12111,7 @@
       document.getElementById('mob-name').textContent = mob.name;
       document.getElementById('mob-level').textContent = 'Level ' + mob.level;
       document.getElementById('mob-hp-bar').style.width = Math.max(0, mob.hp / mob.maxHp * 100) + '%';
-      document.getElementById('mob-hp-disp').textContent = mob.hp + '/' + mob.maxHp + ' HP';
+      document.getElementById('mob-hp-disp').textContent = fmt(mob.hp) + '/' + fmt(mob.maxHp) + ' HP';
       const badge = document.getElementById('mob-badge');
       if (mob.named) {
         badge.textContent = 'Named' + (mob.namedMechanic ? (' · ' + mob.namedMechanic.name) : '');
@@ -12178,7 +12214,7 @@
       document.getElementById('bind-zone-disp').textContent = 'Bind Point: ' + ZONES[char.bindZone || 0].name;
       if (char.corpse) {
         const zoneName = ZONES[char.corpse.zone] ? ZONES[char.corpse.zone].name : 'Unknown';
-        document.getElementById('corpse-disp').textContent = 'Corpse: ' + zoneName + ' (' + (char.corpse.gold || 0) + 'g)';
+        document.getElementById('corpse-disp').textContent = 'Corpse: ' + zoneName + ' (' + fmt(char.corpse.gold || 0) + 'g)';
       } else {
         document.getElementById('corpse-disp').textContent = 'Corpse: None';
       }
@@ -12363,10 +12399,13 @@
         const data = getItemEffectiveStats(item) || {};
         let stats = [];
 
-        if (data.atk) stats.push('+' + data.atk + ' ATK');
-        if (data.def) stats.push('+' + data.def + ' DEF');
-        if (data.hp) stats.push('+' + data.hp + ' HP');
-        if (data.mp) stats.push('+' + data.mp + ' MP');
+        if (data.atk) stats.push('+' + fmt(data.atk) + ' ATK');
+        if (data.def) stats.push('+' + fmt(data.def) + ' DEF');
+        if (data.hp)  stats.push('+' + fmt(data.hp)  + ' HP');
+        if (data.mp)  stats.push('+' + fmt(data.mp)  + ' MP');
+        ['str','dex','con','int','wis','cha'].forEach(k => {
+          if (data[k]) stats.push('+' + data[k] + ' ' + ABILITY_LABELS[k]);
+        });
 
         const label = getItemDisplayName(item);
         const rarityClass = getItemRarityClass(item);
@@ -12387,7 +12426,8 @@
           ? `<button class="btn" onclick="insertRuneIntoItem('${slot}')" ${(locked || !hasRuneInBag) ? 'disabled' : ''}>Insert Rune</button>`
           : '';
 
-        el.innerHTML = `<div class="eq-item-name ${rarityClass}">${label}</div><div class="eq-slot-stats">${stats.join(' · ')}</div>${setLine}<div class="eq-slot-actions"><button class="btn" onclick="unequipItem('${slot}')">Unequip</button>${socketBtn}${insertRuneBtn}</div>`;
+        const statChips = stats.map(s => `<span class="eq-stat-chip">${s}</span>`).join('');
+        el.innerHTML = `<div class="eq-item-name ${rarityClass}">${label}</div><div class="eq-item-stats-grid">${statChips || '<span style="color:var(--text-secondary);font-size:11px">No stats</span>'}</div>${setLine}<div class="eq-slot-actions"><button class="btn" onclick="unequipItem('${slot}')">Unequip</button>${socketBtn}${insertRuneBtn}</div>`;
         el.onmouseenter = (e) => showItemTooltipForEquippedSlot(slot, e);
         el.onmousemove = positionItemTooltip;
         el.onmouseleave = hideItemTooltip;
@@ -13163,7 +13203,7 @@
       const aaXpProgress = Math.max(0, Math.floor(Number((char.aa && char.aa.xpProgress) || 0)));
       const aaXpToNext = Math.max(0, AA_XP_PER_POINT - aaXpProgress);
       let aaHtml = '<div class="quest-name">Alternate Ascension</div>' +
-        '<div class="quest-prog">Class: ' + char.cls + ' · ' + (simActive ? 'Simulator Points: ' : 'Unspent Points: ') + aaPoints + ' · Unlocks at level ' + AA_UNLOCK_LEVEL + '+</div>';
+        '<div class="quest-prog">Class: ' + char.cls + ' · ' + (simActive ? 'Simulator Points: ' : 'Unspent Points: ') + fmt(aaPoints) + ' · Unlocks at level ' + AA_UNLOCK_LEVEL + '+</div>';
 
       // ── Class Specialization (PHASE 3) ──
       const specChoices = getClassSpecChoices(char.cls);
@@ -13179,7 +13219,7 @@
           aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">Choose one specialization to permanently boost your build (paid respec).</div>';
         } else {
           aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">' + cur.desc + '</div>' +
-            '<div style="margin-top:6px"><button class="btn" onclick="respecClassSpec()" ' + ((char.gold || 0) >= respecCost ? '' : 'disabled') + '>Respec Specialization (' + respecCost + 'g)</button></div>';
+            '<div style="margin-top:6px"><button class="btn" onclick="respecClassSpec()" ' + ((char.gold || 0) >= respecCost ? '' : 'disabled') + '>Respec Specialization (' + fmt(respecCost) + 'g)</button></div>';
         }
         if (!cur && specUnlocked) {
           specChoices.forEach(s => {
@@ -13217,7 +13257,7 @@
       }
 
       aaHtml += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
-        '<button class="btn" onclick="respecAA()">Respec (' + aaRespecCost + 'g)</button>' +
+        '<button class="btn" onclick="respecAA()">Respec (' + fmt(aaRespecCost) + 'g)</button>' +
         '<button class="btn" onclick="saveAAPreset(\'slot1\')">Save Preset 1</button>' +
         '<button class="btn" onclick="loadAAPreset(\'slot1\')">Load Preset 1</button>' +
         '<button class="btn" onclick="saveAAPreset(\'slot2\')">Save Preset 2</button>' +
@@ -13240,7 +13280,7 @@
         '<button class="btn" onclick="saveAASimPreset(\'B\')">Save Sim B</button>' +
         '<button class="btn" onclick="loadAASimPreset(\'B\')" ' + (simB ? '' : 'disabled') + '>Load Sim B</button>' +
         '</div>';
-      aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary);margin-top:4px">Snapshots: A ' + spentA + ' pts · B ' + spentB + ' pts</div>';
+      aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary);margin-top:4px">Snapshots: A ' + fmt(spentA) + ' pts · B ' + fmt(spentB) + ' pts</div>';
 
       const liveSummary = getAABuildCompareSummary(char, char.aa.nodes || {});
       const simASummary = simA ? getAABuildCompareSummary(char, simA.nodes || {}) : null;
@@ -13326,7 +13366,7 @@
       const prestigeMods = getPrestigeModifiers(char);
 
       let html = '<div class="quest-name">Prestige / Ascension</div>' +
-        '<div class="quest-prog">Prestige Rank: ' + prestige.rank + ' · Unspent Prestige Points: ' + prestige.points + '</div>' +
+        '<div class="quest-prog">Prestige Rank: ' + fmt(prestige.rank) + ' · Unspent Prestige Points: ' + fmt(prestige.points) + '</div>' +
         '<div class="quest-prog">Ascension requirement: Level ' + PRESTIGE_LEVEL_REQ + '+</div>' +
         '<div class="quest-prog">Current bonuses: +' + Math.round((prestigeMods.xpMult - 1) * 100) + '% XP · +' + Math.round((prestigeMods.goldMult - 1) * 100) + '% Gold · +' + Math.round((prestigeMods.lootMult - 1) * 100) + '% Loot · +' + Math.round((prestigeMods.playerDamageMult - 1) * 100) + '% Damage · ' + Math.round((prestigeMods.mobDamageMult - 1) * 100) + '% Incoming</div>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
@@ -13740,7 +13780,7 @@
         }
       }
 
-      log('You have learned the spell: ' + sp.name + '. (' + cost + 'g)', 'loot');
+      log('You have learned the spell: ' + sp.name + '. (' + fmt(cost) + 'g)', 'loot');
       renderAll();
       autoSave();
     }
@@ -13806,7 +13846,7 @@
           ' spell hits ',
           { text: mob.name, cls: 'combat-log-defender' },
           ' for ',
-          { text: String(dmg), cls: 'combat-log-damage' },
+          { text: fmt(dmg), cls: 'combat-log-damage' },
           ' points of magic damage.'
         ], 'dmg');
 
@@ -13853,7 +13893,7 @@
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log([
           'You have been healed for ',
-          { text: String(healAmt), cls: 'combat-log-heal-amt' },
+          { text: fmt(healAmt), cls: 'combat-log-heal-amt' },
           ' hit points.'
         ], 'heal');
       } else if (sp.kind === 'mana') {
@@ -14165,7 +14205,7 @@
           'You hit ',
           { text: mob.name, cls: 'combat-log-defender' },
           ' for ',
-          { text: String(dmg), cls: 'combat-log-damage' },
+          { text: fmt(dmg), cls: 'combat-log-damage' },
           ' points of damage.' + (critRoll.crit ? ' (Critical Hit)' : '')
         ], 'dmg');
       }
@@ -14260,7 +14300,7 @@
       log([
         { text: mob.name, cls: 'combat-log-attacker' },
         ' hits YOU for ',
-        { text: String(md), cls: 'combat-log-damage' },
+        { text: fmt(md), cls: 'combat-log-damage' },
         ' points of damage.' + (mobCritRoll.crit ? ' (Critical Hit)' : '')
       ], 'dmg');
 
@@ -14269,7 +14309,7 @@
         char.hp -= venomDmg;
         log([
           { text: mob.name, cls: 'combat-log-mob' },
-          ' venom burns for ' + venomDmg + ' extra damage.'
+          ' venom burns for ' + fmt(venomDmg) + ' extra damage.'
         ], 'dmg');
       }
 
@@ -14328,11 +14368,11 @@
       let eff = '';
       if (cls.skillEffect === 'fire' || cls.skillEffect === 'holy') {
         const dmg = Math.floor(char.atk * 2.5 + Math.random() * 15);
-        if (mob) { mob.hp -= dmg; addDamageMeterEntry('spell', dmg); eff = 'hits ' + mob.name + ' for ' + dmg + ' magic damage'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
+        if (mob) { mob.hp -= dmg; addDamageMeterEntry('spell', dmg); eff = 'hits ' + mob.name + ' for ' + fmt(dmg) + ' magic damage'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
         else eff = 'fizzles (no target)';
       } else if (cls.skillEffect === 'back') {
         const dmg = Math.floor(char.atk * 3 + Math.random() * 20);
-        if (mob) { mob.hp -= dmg; addDamageMeterEntry('player', dmg); eff = 'Backstabs ' + mob.name + ' for ' + dmg + '!'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
+        if (mob) { mob.hp -= dmg; addDamageMeterEntry('player', dmg); eff = 'Backstabs ' + mob.name + ' for ' + fmt(dmg) + '!'; if (mob.hp <= 0) { killMob(); renderAll(); return; } }
         else eff = 'no target';
       } else { eff = 'taunts the enemy!'; if (mob) mob.atk = Math.max(1, mob.atk - 3); }
       if (mob && triggerMercenarySupport('skill')) return;
@@ -14578,7 +14618,7 @@
       char.corpse = { zone: char.zone, gold: lostGold, ts: Date.now() };
 
       log('You have been slain! Your corpse remains in ' + ZONES[char.zone].name + '.', 'dmg');
-      log('You lose ' + lostGold + ' gold until your corpse is recovered.', 'dmg');
+      log('You lose ' + fmt(lostGold) + ' gold until your corpse is recovered.', 'dmg');
       log('You feel yourself drawn back to your bind point in ' + ZONES[bindZone].name + '...', 'info');
 
       char.hp = char.maxHp;
@@ -14820,7 +14860,7 @@
       if (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic') return false;
       const value = getItemSellValue(item);
       char.gold += value;
-      log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-vendored (bags full) for ' + value + 'g.', 'loot');
+      log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-vendored (bags full) for ' + fmt(value) + 'g.', 'loot');
       return true;
     }
 
@@ -14981,7 +15021,7 @@
 
       const cost = getTargetTransmuteCost(sourceRune);
       if (char.gold < cost) {
-        log('Not enough gold for focused transmute (' + cost + 'g).', 'info');
+        log('Not enough gold for focused transmute (' + fmt(cost) + 'g).', 'info');
         return;
       }
 
@@ -14994,7 +15034,7 @@
       char.gold -= cost;
       char.runeStash.push(resultRune);
 
-      log('Occultist forged 3x ' + sourceRune + ' into 1x ' + resultRune + ' for ' + cost + 'g.', 'loot');
+      log('Occultist forged 3x ' + sourceRune + ' into 1x ' + resultRune + ' for ' + fmt(cost) + 'g.', 'loot');
       showToast('Focused transmute: ' + resultRune, 'success');
       renderAll();
       autoSave();
@@ -15026,7 +15066,7 @@
 
       const cost = getRerollCost(entry);
       if (char.gold < cost) {
-        log('Not enough gold for reroll (' + cost + 'g).', 'info');
+        log('Not enough gold for reroll (' + fmt(cost) + 'g).', 'info');
         return;
       }
 
@@ -15035,7 +15075,7 @@
       const rerolled = rollItemVariant(getItemBaseName(entry), 'reroll');
       char.inventory[index] = rerolled;
 
-      log('Occultist rerolled ' + oldName + ' into ' + getItemDisplayName(rerolled) + ' for ' + cost + 'g.', 'loot');
+      log('Occultist rerolled ' + oldName + ' into ' + getItemDisplayName(rerolled) + ' for ' + fmt(cost) + 'g.', 'loot');
       renderAll();
       autoSave();
     }
@@ -15057,7 +15097,7 @@
 
       const cost = getMerchantPrice(SHOP_BASE_PRICES.occultistReforge + Math.floor(char.level * 6));
       if (char.gold < cost) {
-        log('Not enough gold for occultist reforge (' + cost + 'g).', 'info');
+        log('Not enough gold for occultist reforge (' + fmt(cost) + 'g).', 'info');
         return;
       }
 
@@ -15069,7 +15109,7 @@
       const rerolled = rollItemVariant(getItemBaseName(oldEntry), 'reroll');
       char.inventory[chosenIndex] = rerolled;
 
-      log('Occultist reforged ' + oldName + ' into ' + getItemDisplayName(rerolled) + ' for ' + cost + 'g.', 'loot');
+      log('Occultist reforged ' + oldName + ' into ' + getItemDisplayName(rerolled) + ' for ' + fmt(cost) + 'g.', 'loot');
       showToast('Occultist reforge complete.', 'success');
       renderAll();
       autoSave();
@@ -15238,7 +15278,7 @@
 
       const cost = getSocketCost(entry);
       if (char.gold < cost) {
-        log('Not enough gold to add a socket (' + cost + 'g).', 'info');
+        log('Not enough gold to add a socket (' + fmt(cost) + 'g).', 'info');
         return;
       }
 
@@ -15248,7 +15288,7 @@
       while (obj.sockets.length < obj.maxSockets) obj.sockets.push(null);
       replaceGearTarget(targetInfo, obj, false);
 
-      log('Occultist added a socket to ' + getItemDisplayName(obj) + ' for ' + cost + 'g.', 'loot');
+      log('Occultist added a socket to ' + getItemDisplayName(obj) + ' for ' + fmt(cost) + 'g.', 'loot');
       renderAll();
       autoSave();
     }
@@ -15728,53 +15768,45 @@
 
       if (rules.autoBuyPots) {
         const target = Math.max(0, Math.floor(Number(rules.potMin || 0)));
-        const hpTotal = Math.max(0, Number(char.healpotions || 0) + Number(char.healpotions_lhp || 0));
-        const mpTotal = Math.max(0, Number(char.manapotions || 0) + Number(char.manapotions_lmp || 0));
-        const hpNeed = Math.max(0, target - hpTotal);
-        const mpNeed = Math.max(0, target - mpTotal);
-        const hpCostMinor = getMerchantPrice(SHOP_BASE_PRICES.hpMinor);
-        const mpCostMinor = getMerchantPrice(SHOP_BASE_PRICES.mpMinor);
-        const hpCostLesser = getMerchantPrice(SHOP_BASE_PRICES.hpLesser);
-        const mpCostLesser = getMerchantPrice(SHOP_BASE_PRICES.mpLesser);
-        let hpPotionCost = hpCostMinor;
-        let mpPotionCost = mpCostMinor;
-        let potionType = 'Minor';
-        if (char.level >= 10) {
-          if (char.gold >= hpCostLesser) {
-            hpPotionCost = hpCostLesser;
-            potionType = 'Lesser';
-          }
-          if (char.gold >= mpCostLesser) {
-            mpPotionCost = mpCostLesser;
-            potionType = 'Lesser';
-          }
-        }
 
-        if (hpNeed > 0 && char.gold >= hpPotionCost) {
-          const buyCount = Math.min(hpNeed, Math.floor(char.gold / hpPotionCost));
-          if (buyCount > 0) {
-            char.gold -= buyCount * hpPotionCost;
-            if (potionType === 'Lesser') {
-              char.healpotions_lhp = Number(char.healpotions_lhp || 0) + buyCount;
-            } else {
-              char.healpotions = Number(char.healpotions || 0) + buyCount;
-            }
-            setAfkGoalAction('Auto-bought ' + buyCount + ' ' + potionType + ' HP potion' + (buyCount === 1 ? '' : 's'));
-          }
-        }
+        // All potion tiers in descending quality order. The auto-buyer picks the
+        // best tier that is (a) unlocked by level and (b) affordable.
+        const HP_TIERS = [
+          { name: 'Superior HP', levelReq: 45, priceKey: 'hpSuperior', ownedKey: 'healpotions_shp' },
+          { name: 'Greater HP',  levelReq: 25, priceKey: 'hpGreater',  ownedKey: 'healpotions_ghp' },
+          { name: 'Light HP',    levelReq: 10, priceKey: 'hpLight',    ownedKey: 'healpotions_lhp' },
+          { name: 'Minor HP',    levelReq: 1,  priceKey: 'hpMinor',    ownedKey: 'healpotions'     },
+        ];
+        const MP_TIERS = [
+          { name: 'Superior MP', levelReq: 45, priceKey: 'mpSuperior', ownedKey: 'manapotions_smp' },
+          { name: 'Greater MP',  levelReq: 25, priceKey: 'mpGreater',  ownedKey: 'manapotions_gmp' },
+          { name: 'Light MP',    levelReq: 10, priceKey: 'mpLight',    ownedKey: 'manapotions_lmp' },
+          { name: 'Minor MP',    levelReq: 1,  priceKey: 'mpMinor',    ownedKey: 'manapotions'     },
+        ];
 
-        if (mpNeed > 0 && char.gold >= mpPotionCost) {
-          const buyCount = Math.min(mpNeed, Math.floor(char.gold / mpPotionCost));
-          if (buyCount > 0) {
-            char.gold -= buyCount * mpPotionCost;
-            if (potionType === 'Lesser') {
-              char.manapotions_lmp = Number(char.manapotions_lmp || 0) + buyCount;
-            } else {
-              char.manapotions = Number(char.manapotions || 0) + buyCount;
-            }
-            setAfkGoalAction('Auto-bought ' + buyCount + ' ' + potionType + ' MP potion' + (buyCount === 1 ? '' : 's'));
-          }
-        }
+        const autoBuyTier = (tiers, totalFn) => {
+          const total = totalFn();
+          const need = Math.max(0, target - total);
+          if (need <= 0) return;
+          // Pick best affordable unlocked tier
+          const tier = tiers.find(t => char.level >= t.levelReq && char.gold >= getMerchantPrice(SHOP_BASE_PRICES[t.priceKey]));
+          if (!tier) return;
+          const cost = getMerchantPrice(SHOP_BASE_PRICES[tier.priceKey]);
+          const buyCount = Math.min(need, Math.floor(char.gold / cost));
+          if (buyCount <= 0) return;
+          char.gold -= buyCount * cost;
+          char[tier.ownedKey] = Number(char[tier.ownedKey] || 0) + buyCount;
+          setAfkGoalAction('Auto-bought ' + buyCount + ' ' + tier.name + ' potion' + (buyCount === 1 ? '' : 's'));
+        };
+
+        autoBuyTier(HP_TIERS, () =>
+          Number(char.healpotions || 0) + Number(char.healpotions_lhp || 0) +
+          Number(char.healpotions_ghp || 0) + Number(char.healpotions_shp || 0)
+        );
+        autoBuyTier(MP_TIERS, () =>
+          Number(char.manapotions || 0) + Number(char.manapotions_lmp || 0) +
+          Number(char.manapotions_gmp || 0) + Number(char.manapotions_smp || 0)
+        );
       }
 
       if (rules.autoAdvanceContract) {
@@ -16159,26 +16191,26 @@
         char.healpotions_shp -= 1;
         const healAmt = potionHealAmount_shp_Health;
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a superior healing potion for ' + healAmt + ' HP.', 'heal');
+        log('Used a superior healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_ghp && char.healpotions_ghp > 0) {
         char.healpotions_ghp -= 1;
         const healAmt = potionHealAmount_ghp_Health;
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a greater healing potion for ' + healAmt + ' HP.', 'heal');
+        log('Used a greater healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_lhp && char.healpotions_lhp > 0) {
         char.healpotions_lhp -= 1;
         const healAmt = potionHealAmount_lhp_Health;
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a light healing potion for ' + healAmt + ' HP.', 'heal');
+        log('Used a light healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       // Fallback to Minor Healing Potion
       else if (char.healpotions && char.healpotions > 0) {
         char.healpotions -= 1;
         const healAmt = potionHealAmount_Health;
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a healing potion for ' + healAmt + ' HP.', 'heal');
+        log('Used a healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       // Out of all potions
       else {
@@ -16202,26 +16234,26 @@
         char.manapotions_smp -= 1;
         const healAmt = potionHealAmount_smp_Mana;
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a superior mana potion for ' + healAmt + ' MP.', 'heal');
+        log('Used a superior mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_gmp && char.manapotions_gmp > 0) {
         char.manapotions_gmp -= 1;
         const healAmt = potionHealAmount_gmp_Mana;
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a greater mana potion for ' + healAmt + ' MP.', 'heal');
+        log('Used a greater mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_lmp && char.manapotions_lmp > 0) {
         char.manapotions_lmp -= 1;
         const healAmt = potionHealAmount_lmp_Mana;
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a light mana potion for ' + healAmt + ' MP.', 'heal');
+        log('Used a light mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       // Fallback to Minor Mana Potion
       else if (char.manapotions && char.manapotions > 0) {
         char.manapotions -= 1;
         const healAmt = potionHealAmount_Mana;
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a mana potion for ' + healAmt + ' MP.', 'heal');
+        log('Used a mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       // Out of all potions
       else {
@@ -16343,7 +16375,7 @@
 
       char.hp = Math.min(char.maxHp, char.hp + healAmt);
 
-      log('Used a light healing potion for ' + healAmt + ' HP.', 'heal');
+      log('Used a light healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
 
       renderAll();
       autoSave();
@@ -16365,7 +16397,7 @@
 
       char.mp = Math.min(char.maxMp, char.mp + healAmt);
 
-      log('Used a light mana potion for ' + healAmt + ' MP.', 'heal');
+      log('Used a light mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
 
       renderAll();
       autoSave();
