@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.1.5</title>
+    1.1.6</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2370,7 +2370,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.5</span>
+        1.1.6</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -2617,13 +2617,13 @@
           <div
             class="stat-row">
             <span
-              class="stat-label">Mercenary</span><span
+              class="stat-label">Merc Upkeep</span><span
               class="stat-val"
-              id="merc-name-disp">None</span>
+              id="merc-upkeep-disp">0g</span>
           </div>
           <div
             style="font-size:10px;color:var(--text-secondary);margin:2px 0 6px"
-            id="merc-role-disp">No contract active.</div>
+            id="merc-role-disp">No mercenaries hired.</div>
           <div
             class="stat-row">
             <span
@@ -4192,9 +4192,11 @@
 
     const MERCENARY_TYPES = {
       sellsword: {
-        name: 'Sellsword',
+        name: 'Caeryn',
+        class: 'Warrior',
         role: 'Damage',
-        desc: 'A hardened blade who adds steady weapon damage every combat round.',
+        behavior: 'damage',
+        desc: 'A frontline weapon master who shields your flank and trades steady, brutal blows.',
         baseCost: 180,
         levelScale: 18,
         upkeepBase: 36,
@@ -4203,9 +4205,11 @@
         supportCooldownMs: 2200
       },
       hexer: {
-        name: 'Hexer',
+        name: 'Methril',
+        class: 'Enchanter',
         role: 'Debuff',
-        desc: 'A curse-caster who weakens enemy offense and defense while chipping in damage.',
+        behavior: 'debuff',
+        desc: 'A subtle mind-mage who unravels your foe with charms that sap its strength and guard.',
         baseCost: 210,
         levelScale: 20,
         upkeepBase: 42,
@@ -4214,15 +4218,186 @@
         supportCooldownMs: 2300
       },
       templar: {
-        name: 'Templar',
+        name: 'Daxas',
+        class: 'Cleric',
         role: 'Healing',
-        desc: 'A battlefield healer who restores health and can strike when you are already stable.',
+        behavior: 'heal',
+        desc: 'A devout cleric whose prayers mend your wounds and call holy judgment when you stand firm.',
         baseCost: 240,
         levelScale: 22,
         upkeepBase: 48,
         upkeepScale: 4,
         supportChance: 0.58,
         supportCooldownMs: 2300
+      },
+      paladin: {
+        name: 'Sir Vorn',
+        class: 'Paladin',
+        role: 'Healing',
+        behavior: 'heal',
+        desc: 'A sworn holy knight blending lay-on-hands healing with sanctified steel.',
+        baseCost: 230,
+        levelScale: 21,
+        upkeepBase: 46,
+        upkeepScale: 4,
+        supportChance: 0.58,
+        supportCooldownMs: 2300
+      },
+      ranger: {
+        name: 'Wyn Talyra',
+        class: 'Ranger',
+        role: 'Damage',
+        behavior: 'damage',
+        desc: 'A wilderness-bred archer who paints your target with precise, punishing volleys.',
+        baseCost: 195,
+        levelScale: 19,
+        upkeepBase: 38,
+        upkeepScale: 3,
+        supportChance: 0.6,
+        supportCooldownMs: 2200
+      },
+      shadowknight: {
+        name: 'Vael Dross',
+        class: 'Shadow Knight',
+        role: 'Debuff',
+        behavior: 'debuff',
+        desc: 'A dread knight whose unholy aura drains the strength and resolve from any foe.',
+        baseCost: 215,
+        levelScale: 20,
+        upkeepBase: 44,
+        upkeepScale: 3,
+        supportChance: 0.56,
+        supportCooldownMs: 2300
+      },
+      druid: {
+        name: 'Brynna Oakroot',
+        class: 'Druid',
+        role: 'Healing',
+        behavior: 'heal',
+        desc: 'A nature priestess whose living rootcraft and verdant blessings knit your wounds.',
+        baseCost: 235,
+        levelScale: 21,
+        upkeepBase: 46,
+        upkeepScale: 4,
+        supportChance: 0.58,
+        supportCooldownMs: 2300
+      },
+      monk: {
+        name: 'Kazu',
+        class: 'Monk',
+        role: 'Damage',
+        behavior: 'damage',
+        desc: 'A disciplined martial artist who closes fast and unloads flurries of pinpoint strikes.',
+        baseCost: 190,
+        levelScale: 19,
+        upkeepBase: 38,
+        upkeepScale: 3,
+        supportChance: 0.62,
+        supportCooldownMs: 2100
+      },
+      bard: {
+        name: 'Lyriel',
+        class: 'Bard',
+        role: 'Mana',
+        behavior: 'mana',
+        desc: 'A wandering minstrel whose songs of inspiration channel raw mana back into your reserves.',
+        baseCost: 220,
+        levelScale: 20,
+        upkeepBase: 44,
+        upkeepScale: 4,
+        supportChance: 0.56,
+        supportCooldownMs: 2400
+      },
+      rogue: {
+        name: 'Sable',
+        class: 'Rogue',
+        role: 'Damage',
+        behavior: 'damage',
+        desc: 'A shadow-stepping assassin who slips behind your foe to bury daggers in vital points.',
+        baseCost: 200,
+        levelScale: 19,
+        upkeepBase: 40,
+        upkeepScale: 3,
+        supportChance: 0.6,
+        supportCooldownMs: 2200
+      },
+      shaman: {
+        name: 'Otka Spiritcaller',
+        class: 'Shaman',
+        role: 'Debuff',
+        behavior: 'debuff',
+        desc: 'A tribal spiritcaller whose totems hex your enemy with creeping curses and weakness.',
+        baseCost: 215,
+        levelScale: 20,
+        upkeepBase: 42,
+        upkeepScale: 3,
+        supportChance: 0.56,
+        supportCooldownMs: 2300
+      },
+      necromancer: {
+        name: 'Mortys Vey',
+        class: 'Necromancer',
+        role: 'Debuff',
+        behavior: 'debuff',
+        desc: 'A grave-magus who siphons life and chokes the foe in unraveling decay.',
+        baseCost: 225,
+        levelScale: 21,
+        upkeepBase: 44,
+        upkeepScale: 4,
+        supportChance: 0.56,
+        supportCooldownMs: 2300
+      },
+      wizard: {
+        name: 'Arzin the Cold',
+        class: 'Wizard',
+        role: 'Damage',
+        behavior: 'damage',
+        desc: 'A pure arcane savant who detonates raw spellfire on whatever you point at.',
+        baseCost: 250,
+        levelScale: 22,
+        upkeepBase: 48,
+        upkeepScale: 4,
+        supportChance: 0.58,
+        supportCooldownMs: 2400
+      },
+      magician: {
+        name: 'Faelis Embercall',
+        class: 'Magician',
+        role: 'Damage',
+        behavior: 'damage',
+        desc: 'An elemental summoner who binds fire, stone, and ice to hammer your enemies.',
+        baseCost: 240,
+        levelScale: 22,
+        upkeepBase: 46,
+        upkeepScale: 4,
+        supportChance: 0.58,
+        supportCooldownMs: 2400
+      },
+      beastlord: {
+        name: 'Korrad Fangbound',
+        class: 'Beastlord',
+        role: 'Damage',
+        behavior: 'damage',
+        desc: 'A savage hybrid warrior whose bonded spirit beast mauls anything you set it on.',
+        baseCost: 200,
+        levelScale: 19,
+        upkeepBase: 40,
+        upkeepScale: 3,
+        supportChance: 0.6,
+        supportCooldownMs: 2200
+      },
+      berserker: {
+        name: 'Grok the Mad',
+        class: 'Berserker',
+        role: 'Damage',
+        behavior: 'damage',
+        desc: 'A frenzied axe-wielder who throws himself at the enemy with reckless, cleaving fury.',
+        baseCost: 195,
+        levelScale: 19,
+        upkeepBase: 38,
+        upkeepScale: 3,
+        supportChance: 0.62,
+        supportCooldownMs: 2100
       }
     };
     const MERCENARY_UPKEEP_INTERVAL_MS = 180000;
@@ -4582,6 +4757,21 @@
       return getMerchantPrice(merc.upkeepBase + Math.floor(level * merc.upkeepScale));
     }
 
+    function getTotalMercenaryUpkeep(targetChar = char) {
+      if (!targetChar) return 0;
+      let total = 0;
+      const mainType = targetChar.mercenary && targetChar.mercenary.type;
+      if (mainType && MERCENARY_TYPES[mainType]) {
+        total += getMercenaryUpkeepCost(mainType, targetChar);
+      }
+      if (Array.isArray(targetChar.groupMercs)) {
+        targetChar.groupMercs.forEach(t => {
+          if (MERCENARY_TYPES[t]) total += getMercenaryUpkeepCost(t, targetChar);
+        });
+      }
+      return total;
+    }
+
     function formatMercenaryCountdown(ms) {
       const totalSec = Math.max(0, Math.ceil(ms / 1000));
       const mins = Math.floor(totalSec / 60);
@@ -4631,9 +4821,14 @@
     function processMercenaryUpkeep(targetChar = char) {
       if (!targetChar || !targetChar.mercenary) return;
 
-      const mercType = targetChar.mercenary.type || 'none';
-      const mercData = MERCENARY_TYPES[mercType];
-      if (!mercData) {
+      const mainType = targetChar.mercenary.type || 'none';
+      const hasMain = !!MERCENARY_TYPES[mainType];
+      const groupMercs = Array.isArray(targetChar.groupMercs)
+        ? targetChar.groupMercs.filter(t => !!MERCENARY_TYPES[t])
+        : [];
+      const hasAnyMerc = hasMain || groupMercs.length > 0;
+
+      if (!hasAnyMerc) {
         targetChar.mercenary.nextUpkeepAt = 0;
         return;
       }
@@ -4648,8 +4843,8 @@
       if (now < nextDueAt) return;
 
       const cyclesDue = Math.floor((now - nextDueAt) / MERCENARY_UPKEEP_INTERVAL_MS) + 1;
-      const upkeepPerCycle = getMercenaryUpkeepCost(mercType, targetChar);
-      const affordableCycles = Math.floor(Math.max(0, Number(targetChar.gold || 0)) / Math.max(1, upkeepPerCycle));
+      const upkeepPerCycle = Math.max(1, getTotalMercenaryUpkeep(targetChar));
+      const affordableCycles = Math.floor(Math.max(0, Number(targetChar.gold || 0)) / upkeepPerCycle);
       const paidCycles = Math.min(cyclesDue, affordableCycles);
 
       if (paidCycles > 0) {
@@ -4663,12 +4858,18 @@
       }
 
       if (paidCycles < cyclesDue) {
-        const failedMercName = getMercenaryDisplayName(targetChar);
-        targetChar.mercenary.type = 'none';
-        targetChar.mercenary.customName = '';
+        if (hasMain) {
+          const failedMercName = getMercenaryDisplayName(targetChar);
+          targetChar.mercenary.type = 'none';
+          targetChar.mercenary.customName = '';
+          targetChar.mercenary.actionReadyAt = 0;
+          log([{ text: failedMercName, cls: 'combat-log-merc' }, ' contract ended due to unpaid wages.'], 'info');
+        }
+        if (groupMercs.length) {
+          targetChar.groupMercs = [];
+          log('Group mercenaries dismissed due to unpaid wages.', 'info');
+        }
         targetChar.mercenary.nextUpkeepAt = 0;
-        targetChar.mercenary.actionReadyAt = 0;
-        log([{ text: failedMercName, cls: 'combat-log-merc' }, ' contract ended due to unpaid wages.'], 'info');
       }
     }
 
@@ -4742,8 +4943,9 @@
       if (Math.random() > Number(merc.supportChance || 0.6)) return false;
 
       const gearMult = (typeof getMercDamageBonusMult === 'function') ? getMercDamageBonusMult(char) : 1;
+      const behavior = merc.behavior || 'damage';
 
-      if (mercType === 'sellsword') {
+      if (behavior === 'damage') {
         const dmg = Math.max(3, Math.floor((level * 1.35 + char.atk * 0.18 + Math.random() * 5) * gearMult));
         mob.hp -= dmg;
         addDamageMeterEntry('merc', dmg);
@@ -4755,7 +4957,7 @@
           { text: String(dmg), cls: 'combat-log-damage' },
           ' points of damage.'
         ], 'dmg');
-      } else if (mercType === 'hexer') {
+      } else if (behavior === 'debuff') {
         const dmg = Math.max(2, Math.floor((level * 1.05 + char.atk * 0.1 + Math.random() * 4) * gearMult));
         const atkDebuff = Math.max(1, Math.floor(level / 26) + 1);
         const defDebuff = Math.max(1, Math.floor(level / 30) + 1);
@@ -4771,7 +4973,7 @@
           { text: String(dmg), cls: 'combat-log-damage' },
           ' points of damage and weakens it.'
         ], 'dmg');
-      } else if (mercType === 'templar') {
+      } else if (behavior === 'heal') {
         const hurt = char.maxHp - char.hp;
         if (hurt > Math.floor(char.maxHp * 0.08)) {
           const healAmt = Math.min(hurt, Math.max(6, Math.floor(char.maxHp * 0.07 + level * 1.1 + Math.random() * 7)));
@@ -4789,6 +4991,30 @@
           log([
             { text: mercName, cls: 'combat-log-merc' },
             ' smites ',
+            { text: mob.name, cls: 'combat-log-defender' },
+            ' for ',
+            { text: String(dmg), cls: 'combat-log-damage' },
+            ' points of damage.'
+          ], 'dmg');
+        }
+      } else if (behavior === 'mana') {
+        const need = (char.maxMp || 0) - (char.mp || 0);
+        if (need > Math.floor((char.maxMp || 0) * 0.1)) {
+          const restore = Math.min(need, Math.max(5, Math.floor((char.maxMp || 0) * 0.07 + level * 1.0 + Math.random() * 6)));
+          char.mp = Math.min(char.maxMp, (char.mp || 0) + restore);
+          log([
+            { text: mercName, cls: 'combat-log-merc' },
+            ' restores ',
+            { text: String(restore), cls: 'combat-log-heal-amt' },
+            ' mana.'
+          ], 'heal');
+        } else {
+          const dmg = Math.max(2, Math.floor((level * 0.85 + (char.mpRegen || 0) * 1.1 + Math.random() * 3) * gearMult));
+          mob.hp -= dmg;
+          addDamageMeterEntry('merc', dmg);
+          log([
+            { text: mercName, cls: 'combat-log-merc' },
+            ' strikes ',
             { text: mob.name, cls: 'combat-log-defender' },
             ' for ',
             { text: String(dmg), cls: 'combat-log-damage' },
@@ -6210,6 +6436,13 @@
       if (!Array.isArray(targetChar.groupMercs)) targetChar.groupMercs = [];
       // Drop any unknown merc types from the group merc roster.
       targetChar.groupMercs = targetChar.groupMercs.filter(t => !!MERCENARY_TYPES[t]).slice(0, MAX_GROUP_MERCS);
+      if (!Array.isArray(targetChar.groupMercNames)) targetChar.groupMercNames = [];
+      targetChar.groupMercNames = targetChar.groupMercNames
+        .slice(0, targetChar.groupMercs.length)
+        .map(n => (typeof n === 'string' ? n.slice(0, 24) : ''));
+      while (targetChar.groupMercNames.length < targetChar.groupMercs.length) {
+        targetChar.groupMercNames.push('');
+      }
       if (!targetChar.classQuest || typeof targetChar.classQuest !== 'object') {
         targetChar.classQuest = createClassQuestState(targetChar.cls);
       }
@@ -6816,6 +7049,39 @@
       renderGroupTab();
     }
 
+    function getGroupMercDisplayName(targetChar, idx) {
+      if (!targetChar || !Array.isArray(targetChar.groupMercs)) return 'Mercenary';
+      const type = targetChar.groupMercs[idx];
+      const merc = MERCENARY_TYPES[type];
+      const defaultName = (merc ? merc.name : 'Mercenary') + ' #' + (idx + 1);
+      const names = Array.isArray(targetChar.groupMercNames) ? targetChar.groupMercNames : [];
+      const custom = typeof names[idx] === 'string' ? names[idx].trim() : '';
+      return custom || defaultName;
+    }
+
+    function renameGroupMercPrompt(idx) {
+      if (!char || !Array.isArray(char.groupMercs)) return;
+      if (idx < 0 || idx >= char.groupMercs.length) return;
+      if (!Array.isArray(char.groupMercNames)) char.groupMercNames = [];
+      while (char.groupMercNames.length < char.groupMercs.length) char.groupMercNames.push('');
+      const type = char.groupMercs[idx];
+      const merc = MERCENARY_TYPES[type];
+      const defaultName = (merc ? merc.name : 'Mercenary') + ' #' + (idx + 1);
+      const current = getGroupMercDisplayName(char, idx);
+      const proposed = window.prompt('Rename mercenary (1-24 chars). Leave blank to reset to default.', current);
+      if (proposed === null) return;
+      const trimmed = String(proposed).trim().slice(0, 24);
+      if (!trimmed || trimmed.toLowerCase() === defaultName.toLowerCase()) {
+        char.groupMercNames[idx] = '';
+        log(['Mercenary name reset to ', { text: defaultName, cls: 'combat-log-merc' }, '.'], 'info');
+      } else {
+        char.groupMercNames[idx] = trimmed;
+        log(['Mercenary renamed to ', { text: trimmed, cls: 'combat-log-merc' }, '.'], 'info');
+      }
+      saveSlots();
+      renderGroupTab();
+    }
+
     function addGroupMerc(type) {
       if (!char || !MERCENARY_TYPES[type]) return;
       if (!Array.isArray(char.groupMercs)) char.groupMercs = [];
@@ -6828,6 +7094,8 @@
         return;
       }
       char.groupMercs.push(type);
+      if (!Array.isArray(char.groupMercNames)) char.groupMercNames = [];
+      char.groupMercNames.push('');
       log('Added ' + MERCENARY_TYPES[type].name + ' to your group mercenaries.', 'info');
       saveSlots();
       renderGroupTab();
@@ -6838,6 +7106,7 @@
       if (idx < 0 || idx >= char.groupMercs.length) return;
       const type = char.groupMercs[idx];
       char.groupMercs.splice(idx, 1);
+      if (Array.isArray(char.groupMercNames)) char.groupMercNames.splice(idx, 1);
       const name = (MERCENARY_TYPES[type] && MERCENARY_TYPES[type].name) || 'Mercenary';
       log('Dismissed group mercenary: ' + name + '.', 'info');
       saveSlots();
@@ -6856,9 +7125,10 @@
         if (Math.random() > 0.55) continue;
         const merc = MERCENARY_TYPES[type];
         if (!merc) continue;
-        const label = merc.name + ' #' + (i + 1);
+        const label = getGroupMercDisplayName(char, i);
+        const behavior = merc.behavior || 'damage';
 
-        if (type === 'sellsword') {
+        if (behavior === 'damage') {
           const dmg = Math.max(3, Math.floor(level * 1.2 + char.atk * 0.14 + Math.random() * 5));
           mob.hp -= dmg;
           addDamageMeterEntry('merc', dmg);
@@ -6870,7 +7140,7 @@
             { text: String(dmg), cls: 'combat-log-damage' },
             ' points of damage.'
           ], 'dmg');
-        } else if (type === 'hexer') {
+        } else if (behavior === 'debuff') {
           const dmg = Math.max(2, Math.floor(level * 0.95 + char.atk * 0.08 + Math.random() * 4));
           const atkDebuff = Math.max(1, Math.floor(level / 28) + 1);
           const defDebuff = Math.max(1, Math.floor(level / 32) + 1);
@@ -6886,7 +7156,7 @@
             { text: String(dmg), cls: 'combat-log-damage' },
             ' points of damage and weakens it.'
           ], 'dmg');
-        } else if (type === 'templar') {
+        } else if (behavior === 'heal') {
           const hurt = char.maxHp - char.hp;
           if (hurt > Math.floor(char.maxHp * 0.1)) {
             const healAmt = Math.min(hurt, Math.max(5, Math.floor(char.maxHp * 0.06 + level * 0.9 + Math.random() * 6)));
@@ -6904,6 +7174,30 @@
             log([
               { text: label, cls: 'combat-log-merc' },
               ' smites ',
+              { text: mob.name, cls: 'combat-log-defender' },
+              ' for ',
+              { text: String(dmg), cls: 'combat-log-damage' },
+              ' points of damage.'
+            ], 'dmg');
+          }
+        } else if (behavior === 'mana') {
+          const need = (char.maxMp || 0) - (char.mp || 0);
+          if (need > Math.floor((char.maxMp || 0) * 0.12)) {
+            const restore = Math.min(need, Math.max(4, Math.floor((char.maxMp || 0) * 0.06 + level * 0.85 + Math.random() * 5)));
+            char.mp = Math.min(char.maxMp, (char.mp || 0) + restore);
+            log([
+              { text: label, cls: 'combat-log-merc' },
+              ' restores ',
+              { text: String(restore), cls: 'combat-log-heal-amt' },
+              ' mana.'
+            ], 'heal');
+          } else {
+            const dmg = Math.max(2, Math.floor(level * 0.75 + (char.mpRegen || 0) * 0.9 + Math.random() * 3));
+            mob.hp -= dmg;
+            addDamageMeterEntry('merc', dmg);
+            log([
+              { text: label, cls: 'combat-log-merc' },
+              ' strikes ',
               { text: mob.name, cls: 'combat-log-defender' },
               ' for ',
               { text: String(dmg), cls: 'combat-log-damage' },
@@ -6966,14 +7260,28 @@
       const mainMercType = char.mercenary && char.mercenary.type && char.mercenary.type !== 'none' ? char.mercenary.type : null;
       if (mainMercType && MERCENARY_TYPES[mainMercType]) {
         const merc = MERCENARY_TYPES[mainMercType];
+        const upkeep = getMercenaryUpkeepCost(mainMercType, char);
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px';
-        row.innerHTML =
-          '<div>' +
+        const info = document.createElement('div');
+        info.innerHTML =
           '<div style="font-weight:600">' + escapeHtml(getMercenaryDisplayName(char)) + ' &nbsp;<span style="font-size:10px;color:var(--text-secondary)">contracted</span></div>' +
-          '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(merc.role) + ' · ' + escapeHtml(merc.desc) + '</div>' +
-          '</div>' +
-          '<div style="font-size:11px;color:var(--text-secondary)">Managed in main UI</div>';
+          '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(merc.class || merc.role) + ' · ' + escapeHtml(merc.desc) + '</div>' +
+          '<div style="font-size:11px;color:var(--text-secondary)">Upkeep ' + upkeep + 'g / 3m</div>';
+        const actions = document.createElement('div');
+        actions.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end';
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'btn';
+        renameBtn.textContent = 'Rename';
+        renameBtn.onclick = () => { renameMercenaryPrompt(); renderGroupTab(); };
+        const dismissBtn = document.createElement('button');
+        dismissBtn.className = 'btn danger';
+        dismissBtn.textContent = 'Dismiss';
+        dismissBtn.onclick = () => { dismissMercenary(); renderGroupTab(); };
+        actions.appendChild(renameBtn);
+        actions.appendChild(dismissBtn);
+        row.appendChild(info);
+        row.appendChild(actions);
         mercSection.appendChild(row);
       }
 
@@ -6984,15 +7292,26 @@
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px';
         const info = document.createElement('div');
+        const displayName = getGroupMercDisplayName(char, idx);
+        const upkeep = getMercenaryUpkeepCost(type, char);
         info.innerHTML =
-          '<div style="font-weight:600">' + escapeHtml(merc.name) + ' #' + (idx + 1) + '</div>' +
-          '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(merc.role) + ' · ' + escapeHtml(merc.desc) + '</div>';
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        btn.textContent = 'Dismiss';
-        btn.onclick = () => removeGroupMerc(idx);
+          '<div style="font-weight:600">' + escapeHtml(displayName) + '</div>' +
+          '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(merc.class || merc.role) + ' · ' + escapeHtml(merc.desc) + '</div>' +
+          '<div style="font-size:11px;color:var(--text-secondary)">Upkeep ' + upkeep + 'g / 3m</div>';
+        const actions = document.createElement('div');
+        actions.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end';
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'btn';
+        renameBtn.textContent = 'Rename';
+        renameBtn.onclick = () => renameGroupMercPrompt(idx);
+        const dismissBtn = document.createElement('button');
+        dismissBtn.className = 'btn danger';
+        dismissBtn.textContent = 'Dismiss';
+        dismissBtn.onclick = () => removeGroupMerc(idx);
+        actions.appendChild(renameBtn);
+        actions.appendChild(dismissBtn);
         row.appendChild(info);
-        row.appendChild(btn);
+        row.appendChild(actions);
         mercSection.appendChild(row);
       });
 
@@ -7003,7 +7322,7 @@
       Object.entries(MERCENARY_TYPES).forEach(([type, merc]) => {
         const b = document.createElement('button');
         b.className = 'btn';
-        b.textContent = '+ ' + merc.name + ' (' + merc.role + ')';
+        b.textContent = '+ ' + merc.name + ' (' + (merc.class || merc.role) + ')';
         b.disabled = !canAddMerc;
         b.onclick = () => addGroupMerc(type);
         addRow.appendChild(b);
@@ -10179,11 +10498,11 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.5';
-        if (!silent) log('Upgraded save data to v1.1.5.', 'info');
+        oldChar.version = '1.1.6';
+        if (!silent) log('Upgraded save data to v1.1.6.', 'info');
       }
 
-      if (oldChar.version === '1.1.5') {
+      if (oldChar.version === '1.1.6') {
         if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
@@ -10334,17 +10653,19 @@
       document.getElementById('gold-disp').textContent = goldValue;
       document.getElementById('faction-disp').textContent = getFactionTier(char.faction || 0);
       const activeMerc = getActiveMercenary();
-      const mercNameDisp = document.getElementById('merc-name-disp');
+      const groupMercTypesForDisplay = (typeof getGroupMercTypes === 'function') ? getGroupMercTypes(char) : [];
+      const totalMercs = (activeMerc ? 1 : 0) + groupMercTypesForDisplay.length;
+      const mercUpkeepDisp = document.getElementById('merc-upkeep-disp');
       const mercRoleDisp = document.getElementById('merc-role-disp');
-      if (mercNameDisp) mercNameDisp.textContent = activeMerc ? getMercenaryDisplayName() : 'None';
+      const totalUpkeep = getTotalMercenaryUpkeep(char);
+      if (mercUpkeepDisp) mercUpkeepDisp.textContent = totalUpkeep + 'g';
       if (mercRoleDisp) {
-        if (activeMerc) {
-          const upkeep = getMercenaryUpkeepCost(char.mercenary.type || 'none');
-          const dueAt = Number(char.mercenary.nextUpkeepAt || 0);
+        if (totalMercs > 0) {
+          const dueAt = Number(char.mercenary && char.mercenary.nextUpkeepAt || 0);
           const untilDue = dueAt > 0 ? Math.max(0, dueAt - Date.now()) : MERCENARY_UPKEEP_INTERVAL_MS;
-          mercRoleDisp.textContent = activeMerc.role + ' · Upkeep ' + upkeep + 'g / 3m · Due in ' + formatMercenaryCountdown(untilDue);
+          mercRoleDisp.textContent = totalMercs + ' merc' + (totalMercs === 1 ? '' : 's') + ' · ' + totalUpkeep + 'g / 3m · Due in ' + formatMercenaryCountdown(untilDue);
         } else {
-          mercRoleDisp.textContent = 'No contract active.';
+          mercRoleDisp.textContent = 'No mercenaries hired.';
         }
       }
       const hpPotionsTotal = (char.healpotions || 0) + (char.healpotions_lhp || 0);
@@ -11085,7 +11406,7 @@
         shopHtml += `
           <div class="eq-item-card">
             <div class="eq-item-name">${mercData.name}</div>
-            <div class="eq-item-type">Mercenary · ${mercData.role}</div>
+            <div class="eq-item-type">Mercenary · ${mercData.class || mercData.role}</div>
             <div class="eq-item-bonus">${mercData.desc}</div>
             <div class="eq-item-type">Hire: ${hireCost} Gold · Upkeep: ${upkeepCost} Gold / 3m${isActive ? ' · Active' : ''}</div>
             <div class="eq-item-actions compact">
