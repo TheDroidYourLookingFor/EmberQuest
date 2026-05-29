@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.1.15</title>
+    1.1.17</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2207,7 +2207,8 @@
     #screen-game.ui-layout-mobile #tab-group,
     #screen-game.ui-layout-mobile #tab-quests,
     #screen-game.ui-layout-mobile #tab-loot,
-    #screen-game.ui-layout-mobile #tab-dungeon {
+    #screen-game.ui-layout-mobile #tab-dungeon,
+    #screen-game.ui-layout-mobile #tab-about {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -2566,7 +2567,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.15</span>
+        1.1.17</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3063,6 +3064,11 @@
             class="tab"
             onclick="switchTab('group')">
             Group
+          </div>
+          <div
+            class="tab"
+            onclick="switchTab('about')">
+            About
           </div>
         </div>
         <div
@@ -3667,7 +3673,7 @@
           style="display:none">
           <h3>
             Alternate
-            Advancement
+            Ascension
           </h3>
           <div
             id="aa-list">
@@ -3715,6 +3721,58 @@
           <div id="group-summary" style="margin-bottom:10px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px"></div>
           <div style="font-weight:600;margin-bottom:6px">Available Characters</div>
           <div id="group-roster-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+        <div
+          id="tab-about"
+          style="display:none">
+          <h3 style="margin-bottom:4px">About EmberQuest</h3>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Version 1.1.17 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+          </div>
+
+          <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
+            EmberQuest is a love-letter to the late-90s era of online roleplaying games. Roll a character, pick a hunting ground, and grind your way from the newbie fields to the endgame — by hand or on full auto-battle. Everything (markup, styles, and game logic) lives in one self-contained page, and your progress is saved locally in your browser.
+          </div>
+
+          <h4 style="margin:12px 0 6px">Features</h4>
+          <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0;padding-left:18px">
+            <li><strong>Deep character creation.</strong> 16 races and 16 classes, with up to 24 character slots per account.</li>
+            <li><strong>Six ability scores.</strong> A D&amp;D-style STR/DEX/CON/INT/WIS/CHA layer drives attack, crit, dodge, mitigation, spell power, mana regen, and gold find. Scores grow with level, gear, and Ascension.</li>
+            <li><strong>Turn-based combat.</strong> HP/MP, attack/defense, criticals, dodges, weapon procs, item sets, and a colour-coded combat log.</li>
+            <li><strong>Zones from level 1 to 88.</strong> Each hunting ground has its own monsters, XP/gold multipliers, and a rare chase item.</li>
+            <li><strong>Loot, affixes, and sets.</strong> Random drops roll prefix/suffix affixes (now including ability-score rolls), set bonuses, and rarity tiers up to Legendary.</li>
+            <li><strong>Runes &amp; runewords.</strong> Collect runes, choose which to socket, and forge runewords that grant stats and special effects (crit, lifesteal, gold/XP find) and evolve through tiers with use.</li>
+            <li><strong>Spellbook &amp; gems.</strong> Casters memorise spells into gem slots and meditate to recover mana.</li>
+            <li><strong>Quests &amp; elite contracts.</strong> Kill quests, a class epic quest with a legendary reward, and a rotating elite-contract chain with AFK pinning.</li>
+            <li><strong>Auto-Battle (AFK).</strong> Auto-fight, loot, rest, pot, and restock toward a chosen goal; long offline sessions are simulated on return.</li>
+            <li><strong>Alternate Ascension.</strong> Unlocks at level 51 — spend points on archetype trees, unique class nodes, a capstone, and attribute nodes that raise your six ability scores.</li>
+            <li><strong>Prestige.</strong> At the level cap, reset for permanent perks.</li>
+            <li><strong>Companions in the Group tab.</strong> Pets and per-mercenary weapons, plus grouping your own alts to share experience.</li>
+            <li><strong>Shop &amp; crafting.</strong> Tiered potions that scale as you level, a crafting bench, targeted rerolls, occultist reforge, and rune transmutation.</li>
+          </ul>
+
+          <h4 style="margin:14px 0 6px">Tips</h4>
+          <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0;padding-left:18px">
+            <li>The <strong>Combat</strong> tab is your main view; the <strong>Zones</strong> tab is where you travel to tougher hunting grounds.</li>
+            <li><strong>AA</strong> and <strong>Prestige</strong> unlock at levels 51 and the cap respectively.</li>
+            <li>Configure the <strong>Auto-Battle</strong> panel on the right, and pin an elite contract from the Quests tab so AFK chases the target you want.</li>
+          </ul>
+
+          <h4 style="margin:14px 0 6px">Saving &amp; Backups</h4>
+          <div style="font-size:12px;line-height:1.55;color:var(--text-secondary);margin-bottom:10px">
+            Progress autosaves to your browser's local storage and syncs to the cloud when you're signed in. Clearing your browser data can erase local characters, so use <strong>Export</strong> on the topbar to download a JSON backup; <strong>Import</strong> restores it (and offers to back up your current save first).
+          </div>
+
+          <h4 style="margin:14px 0 6px">Credits &amp; License</h4>
+          <div style="font-size:12px;line-height:1.55;color:var(--text-secondary)">
+            A fan tribute to the classic massively-multiplayer RPGs of the late 1990s, made in the spirit of homage and not affiliated with or endorsed by any rights holder. UI icons from <a href="https://tabler-icons.io/" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Tabler Icons</a>. Released under the <strong>GNU General Public License v3.0</strong> — free to use, modify, and redistribute, with derivatives shipping their source under the same license.
+          </div>
+
+          <div style="font-size:12px;line-height:1.55;margin-top:12px">
+            <a href="https://github.com/TheDroidYourLookingFor/EmberQuest" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Source on GitHub</a>
+            &nbsp;·&nbsp;
+            <a href="https://thedroidyourlookingfor.github.io/EmberQuest/" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Play in your browser</a>
+          </div>
         </div>
       </div>
 
@@ -4278,9 +4336,25 @@
     function getEffectiveAbilityScores(targetChar) {
       const baseScores = (targetChar && targetChar.abilities) ? targetChar.abilities : {};
       const gear = getEquippedAbilityBonuses(targetChar);
+      const aaBonus = getAAAbilityBonuses(targetChar);
       const out = {};
       ABILITIES.forEach(k => {
-        out[k] = Math.max(1, Math.floor(Number(baseScores[k] || 10))) + (gear[k] || 0);
+        out[k] = Math.max(1, Math.floor(Number(baseScores[k] || 10))) + (gear[k] || 0) + (aaBonus[k] || 0);
+      });
+      return out;
+    }
+    // Ability-score bonuses granted by allocated Alternate Ascension nodes.
+    function getAAAbilityBonuses(targetChar) {
+      const out = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+      if (!targetChar || !targetChar.aa || !targetChar.aa.nodes || typeof getAANodesForClass !== 'function') return out;
+      const nodes = getAANodesForClass(targetChar.cls);
+      nodes.forEach(node => {
+        const rank = Math.max(0, Math.floor(Number(targetChar.aa.nodes[node.key] || 0)));
+        if (rank <= 0) return;
+        ABILITIES.forEach(k => {
+          const per = Number(node[k + 'PerRank'] || 0);
+          if (per) out[k] += per * rank;
+        });
       });
       return out;
     }
@@ -4675,6 +4749,10 @@
       mpLesser: 250,
       hpLight: 500,
       mpLight: 500,
+      hpGreater: 1400,
+      mpGreater: 1400,
+      hpSuperior: 3500,
+      mpSuperior: 3500,
       steelLongsword: 40,
       knightChestplate: 55,
       occultistReforge: 80,
@@ -6388,6 +6466,15 @@
     // Max floors to auto-descend by default to prevent runaway loops
     const DUNGEON_AUTO_DESCEND_MAX = 50;
 
+    // Shared Alternate Ascension nodes that raise D&D ability scores. Available
+    // to every class so the 6-stat system has an endgame growth path. Their
+    // ability bonuses are applied via getAAAbilityBonuses() / effective scores.
+    const AA_ATTRIBUTE_NODES = [
+      { id: 'attr_might', name: 'Ascendant Might', desc: '+1 STR and +1 DEX per rank.', maxRank: 5, strPerRank: 1, dexPerRank: 1 },
+      { id: 'attr_vigor', name: 'Ascendant Vigor', desc: '+1 CON and +1 INT per rank.', maxRank: 5, conPerRank: 1, intPerRank: 1 },
+      { id: 'attr_spirit', name: 'Ascendant Spirit', desc: '+1 WIS and +1 CHA per rank.', maxRank: 5, wisPerRank: 1, chaPerRank: 1 }
+    ];
+
     const AA_ARCHETYPE_NODES = {
       melee: [
         { id: 'discipline', name: 'Discipline', desc: '+2 ATK per rank.', maxRank: 5, atkBonusPerRank: 2 },
@@ -6551,7 +6638,12 @@
         key: aaClassKey(cls) + '_' + n.id,
         title: n.name + ' (' + cls + ')'
       }));
-      return baseNodes.concat(classNodes);
+      const attrNodes = AA_ATTRIBUTE_NODES.map(n => ({
+        ...n,
+        key: archetype + '_' + n.id,
+        title: n.name + ' (' + cls + ')'
+      }));
+      return baseNodes.concat(attrNodes).concat(classNodes);
     }
 
     function getAANodeRequirementState(targetChar, node, allNodes, nodeRanksOverride = null) {
@@ -6995,6 +7087,7 @@
       if (!Array.isArray(targetChar.groupMercs)) targetChar.groupMercs = [];
       // Drop any unknown merc types from the group merc roster.
       targetChar.groupMercs = targetChar.groupMercs.filter(t => !!MERCENARY_TYPES[t]).slice(0, MAX_GROUP_MERCS);
+      if (typeof ensureGroupMercGear === 'function') ensureGroupMercGear(targetChar);
       if (!Array.isArray(targetChar.groupMercNames)) targetChar.groupMercNames = [];
       targetChar.groupMercNames = targetChar.groupMercNames
         .slice(0, targetChar.groupMercs.length)
@@ -7690,6 +7783,8 @@
       char.groupMercs.push(type);
       if (!Array.isArray(char.groupMercNames)) char.groupMercNames = [];
       char.groupMercNames.push('');
+      if (!Array.isArray(char.groupMercGear)) char.groupMercGear = [];
+      char.groupMercGear.push({ weapon: null });
       log(['Hired ', { text: MERCENARY_TYPES[type].name, cls: 'combat-log-merc' }, ' for ' + cost + ' gold.'], 'loot');
       saveSlots();
       renderAll();
@@ -7701,6 +7796,11 @@
       const type = char.groupMercs[idx];
       char.groupMercs.splice(idx, 1);
       if (Array.isArray(char.groupMercNames)) char.groupMercNames.splice(idx, 1);
+      if (Array.isArray(char.groupMercGear)) {
+        const gear = char.groupMercGear[idx];
+        if (gear && gear.weapon) char.inventory.push(gear.weapon);
+        char.groupMercGear.splice(idx, 1);
+      }
       const name = (MERCENARY_TYPES[type] && MERCENARY_TYPES[type].name) || 'Mercenary';
       log('Dismissed group mercenary: ' + name + '.', 'info');
       saveSlots();
@@ -7721,9 +7821,10 @@
         if (!merc) continue;
         const label = getGroupMercDisplayName(char, i);
         const behavior = merc.behavior || 'damage';
+        const gearMult = getGroupMercDamageBonusMult(char, i);
 
         if (behavior === 'damage') {
-          const dmg = Math.max(3, Math.floor(level * 1.2 + char.atk * 0.14 + Math.random() * 5));
+          const dmg = Math.max(3, Math.floor((level * 1.2 + char.atk * 0.14 + Math.random() * 5) * gearMult));
           mob.hp -= dmg;
           addDamageMeterEntry('merc', dmg);
           log([
@@ -7735,7 +7836,7 @@
             ' points of damage.'
           ], 'dmg');
         } else if (behavior === 'debuff') {
-          const dmg = Math.max(2, Math.floor(level * 0.95 + char.atk * 0.08 + Math.random() * 4));
+          const dmg = Math.max(2, Math.floor((level * 0.95 + char.atk * 0.08 + Math.random() * 4) * gearMult));
           const atkDebuff = Math.max(1, Math.floor(level / 28) + 1);
           const defDebuff = Math.max(1, Math.floor(level / 32) + 1);
           mob.hp -= dmg;
@@ -7983,6 +8084,88 @@
         empty.style.cssText = 'color:var(--text-secondary);font-size:12px;padding:8px';
         empty.textContent = 'No other characters available. Create more characters from the character select screen.';
         list.appendChild(empty);
+      }
+
+      // ── Pet Stable (moved here from the Shop) ──
+      ensurePetState(char);
+      const activePetId = char.pets.active;
+      const petSection = document.createElement('div');
+      petSection.style.cssText = 'margin-top:16px';
+      let petHtml = '<div style="font-weight:600;margin-bottom:6px">Pet Stable</div>'
+        + '<div class="eq-bag-grid">'
+        + `<div class="eq-item-card">
+            <div class="eq-item-name">Active Pet</div>
+            <div class="eq-item-type">Your active companion aids you in combat or grants passive bonuses.</div>
+            <div class="eq-item-actions compact" style="margin-top:6px">
+              <select onchange="setActivePet(this.value)" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+                <option value="none"${activePetId === 'none' ? ' selected' : ''}>None</option>
+                ${char.pets.owned.map(id => `<option value="${id}"${activePetId === id ? ' selected' : ''}>${PETS[id].name}</option>`).join('')}
+              </select>
+            </div>
+          </div>`;
+      Object.values(PETS).forEach(p => {
+        const owned = char.pets.owned.includes(p.id);
+        const cost = PHASE5.petTameGoldCost[p.id] || 1000;
+        petHtml += `
+          <div class="eq-item-card">
+            <div class="eq-item-name"><i class="ti ${p.icon}"></i> ${p.name}${owned ? ' ✓' : ''}</div>
+            <div class="eq-item-type">${p.kind === 'damage' ? 'Combat Companion' : (p.kind === 'support' ? 'Support Companion' : 'Utility Companion')}</div>
+            <div class="eq-item-bonus">${p.desc}</div>
+            <div class="eq-item-bonus">${owned ? 'Owned' : (cost + ' Gold to tame')}</div>
+            <div class="eq-item-actions">
+              ${owned
+                ? (activePetId === p.id
+                  ? '<button class="btn active" disabled>Active</button>'
+                  : `<button class="btn" onclick="setActivePet('${p.id}')">Set Active</button>`)
+                : `<button class="btn" onclick="tamePet('${p.id}')" ${(char.gold || 0) >= cost ? '' : 'disabled'}>Tame</button>`}
+            </div>
+          </div>`;
+      });
+      petHtml += '</div>';
+      petSection.innerHTML = petHtml;
+      list.appendChild(petSection);
+
+      // ── Mercenary Weapons (moved here from the Shop; now for every mercenary) ──
+      ensureMercGearState(char);
+      ensureGroupMercGear(char);
+      const mwInvWeapons = (char.inventory || []).map((it, i) => ({ it, i })).filter(({ it }) => {
+        const d = getItemData(it); return d && d.slot === 'weapon';
+      });
+      const mwWeaponOpts = mwInvWeapons.map(({ it, i }) => `<option value="${i}">${escapeHtml(it.name || (getItemData(it) || {}).name || 'Weapon')}</option>`).join('');
+      const mwTargets = [];
+      if (char.mercenary && char.mercenary.type !== 'none') {
+        mwTargets.push({ key: 'main', name: getMercenaryDisplayName(char), weapon: char.mercenary.gear.weapon });
+      }
+      getGroupMercTypes(char).forEach((t, idx) => {
+        mwTargets.push({ key: String(idx), name: getGroupMercDisplayName(char, idx), weapon: (char.groupMercGear[idx] || {}).weapon });
+      });
+      if (mwTargets.length) {
+        const mwSection = document.createElement('div');
+        mwSection.style.cssText = 'margin-top:16px';
+        let mwHtml = '<div style="font-weight:600;margin-bottom:6px">Mercenary Weapons</div>'
+          + '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">Each ATK on an issued weapon adds '
+          + (PHASE5.mercGearAtkDamageBonusPerPoint * 100).toFixed(1) + '% to that mercenary\'s damage.</div>'
+          + '<div class="eq-bag-grid">';
+        mwTargets.forEach(tg => {
+          const w = tg.weapon;
+          const stats = w && typeof getItemEffectiveStats === 'function' ? getItemEffectiveStats(w) : null;
+          const atk = stats && stats.atk ? stats.atk : 0;
+          const selId = 'merc-weap-sel-' + tg.key;
+          mwHtml += `
+            <div class="eq-item-card">
+              <div class="eq-item-name">${escapeHtml(tg.name)}'s Weapon</div>
+              <div class="eq-item-bonus">${w ? (escapeHtml(w.name || 'Weapon') + ' (+' + atk + ' ATK, +' + Math.round(atk * PHASE5.mercGearAtkDamageBonusPerPoint * 100) + '% dmg)') : 'No weapon issued.'}</div>
+              <div class="eq-item-actions compact" style="margin-top:6px;flex-wrap:wrap">
+                ${mwInvWeapons.length
+                  ? `<select id="${selId}" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">${mwWeaponOpts}</select><button class="btn" onclick="issueMercWeapon('${tg.key}', Number(document.getElementById('${selId}').value))">Issue</button>`
+                  : '<span class="eq-item-type" style="font-size:10px">No weapons in inventory.</span>'}
+                ${w ? `<button class="btn" onclick="recoverMercWeapon('${tg.key}')">Recover</button>` : ''}
+              </div>
+            </div>`;
+        });
+        mwHtml += '</div>';
+        mwSection.innerHTML = mwHtml;
+        list.appendChild(mwSection);
       }
     }
 
@@ -9322,38 +9505,82 @@
         targetChar.mercenary.gear = { weapon: null };
       }
     }
-    function getMercDamageBonusMult(targetChar = char) {
-      if (!targetChar || !targetChar.mercenary) return 1;
-      const gear = targetChar.mercenary.gear;
-      if (!gear || !gear.weapon) return 1;
-      const stats = (typeof getItemEffectiveStats === 'function') ? getItemEffectiveStats(gear.weapon) : null;
+    // Keep a per-group-mercenary weapon array sized to the group merc roster.
+    function ensureGroupMercGear(targetChar) {
+      if (!targetChar) return;
+      if (!Array.isArray(targetChar.groupMercGear)) targetChar.groupMercGear = [];
+      const n = Array.isArray(targetChar.groupMercs) ? targetChar.groupMercs.length : 0;
+      while (targetChar.groupMercGear.length < n) targetChar.groupMercGear.push({ weapon: null });
+      targetChar.groupMercGear.length = n;
+      targetChar.groupMercGear = targetChar.groupMercGear.map(g => (g && typeof g === 'object') ? g : { weapon: null });
+    }
+    // Damage multiplier contributed by a single weapon item.
+    function getWeaponDamageBonusMult(weapon) {
+      if (!weapon) return 1;
+      const stats = (typeof getItemEffectiveStats === 'function') ? getItemEffectiveStats(weapon) : null;
       const atk = stats && stats.atk ? stats.atk : 0;
       return 1 + atk * PHASE5.mercGearAtkDamageBonusPerPoint;
     }
-    function equipMercWeaponFromInv(invIdx) {
+    function getMercDamageBonusMult(targetChar = char) {
+      if (!targetChar || !targetChar.mercenary || !targetChar.mercenary.gear) return 1;
+      return getWeaponDamageBonusMult(targetChar.mercenary.gear.weapon);
+    }
+    // Per-group-merc weapon damage multiplier (by roster index).
+    function getGroupMercDamageBonusMult(targetChar, idx) {
+      if (!targetChar || !Array.isArray(targetChar.groupMercGear)) return 1;
+      const g = targetChar.groupMercGear[idx];
+      return getWeaponDamageBonusMult(g && g.weapon);
+    }
+    // Resolve a weapon "slot" reference: 'main' or a group-merc index number.
+    function getMercWeaponSlot(target) {
+      if (target === 'main') {
+        if (!char.mercenary || char.mercenary.type === 'none') return null;
+        ensureMercGearState(char);
+        return {
+          get: () => char.mercenary.gear.weapon,
+          set: (w) => { char.mercenary.gear.weapon = w; },
+          name: getMercenaryDisplayName(char)
+        };
+      }
+      const idx = Number(target);
+      if (!Number.isFinite(idx)) return null;
+      ensureGroupMercGear(char);
+      if (idx < 0 || idx >= char.groupMercGear.length) return null;
+      return {
+        get: () => char.groupMercGear[idx].weapon,
+        set: (w) => { char.groupMercGear[idx].weapon = w; },
+        name: getGroupMercDisplayName(char, idx)
+      };
+    }
+    function issueMercWeapon(target, invIdx) {
       if (!char) return;
-      ensureMercGearState(char);
-      if (!char.mercenary || char.mercenary.type === 'none') { log('Hire a mercenary first.', 'info'); return; }
+      const slot = getMercWeaponSlot(target);
+      if (!slot) { log('That mercenary is not available.', 'info'); return; }
       const item = char.inventory[invIdx];
       if (!item) return;
       const data = (typeof getItemData === 'function') ? getItemData(item) : null;
       if (!data || data.slot !== 'weapon') { log('Only weapons can be issued to a mercenary.', 'info'); return; }
-      const prev = char.mercenary.gear.weapon;
-      char.mercenary.gear.weapon = item;
+      const prev = slot.get();
+      slot.set(item);
       char.inventory.splice(invIdx, 1);
       if (prev) char.inventory.push(prev);
-      log('Issued ' + (item.name || data.name || 'weapon') + ' to your mercenary.', 'info');
+      log('Issued ' + (item.name || data.name || 'weapon') + ' to ' + slot.name + '.', 'info');
       if (typeof renderAll === 'function') renderAll();
       autoSave();
     }
-    function unequipMercWeapon() {
-      if (!char || !char.mercenary || !char.mercenary.gear || !char.mercenary.gear.weapon) return;
-      char.inventory.push(char.mercenary.gear.weapon);
-      char.mercenary.gear.weapon = null;
-      log('Recovered the mercenary weapon.', 'info');
+    function recoverMercWeapon(target) {
+      if (!char) return;
+      const slot = getMercWeaponSlot(target);
+      if (!slot || !slot.get()) return;
+      char.inventory.push(slot.get());
+      slot.set(null);
+      log('Recovered the weapon from ' + slot.name + '.', 'info');
       if (typeof renderAll === 'function') renderAll();
       autoSave();
     }
+    // Legacy entry points (kept for compatibility).
+    function equipMercWeaponFromInv(invIdx) { issueMercWeapon('main', invIdx); }
+    function unequipMercWeapon() { recoverMercWeapon('main'); }
 
     // ── Faction-gated shop items ──
     // Tiers map to numeric thresholds matching getFactionTier breaks.
@@ -9842,6 +10069,10 @@
     let potionHealAmount_Mana = 50;
     let potionHealAmount_lhp_Health = 125;
     let potionHealAmount_lmp_Mana = 125;
+    let potionHealAmount_ghp_Health = 350;
+    let potionHealAmount_gmp_Mana = 350;
+    let potionHealAmount_shp_Health = 900;
+    let potionHealAmount_smp_Mana = 900;
     let pendingImportedSlots = null;
     let pendingImportFileName = '';
     let pendingTransmuteSourceRune = null;
@@ -10969,7 +11200,7 @@
         name, race: selectedRace, cls: selectedClass, level: 1, xp: 0, xpNext: 100,
         hp: base.hp, maxHp: base.hp, mp: base.mp, maxMp: base.mp,
         atk: base.atk, def: base.def, mpRegen: base.mpRegen,
-        gold: 0, faction: 0, healpotions: 3, manapotions: 3, healpotions_lhp: 0, manapotions_lmp: 0, zone: 0, inventory: [],
+        gold: 0, faction: 0, healpotions: 3, manapotions: 3, healpotions_lhp: 0, manapotions_lmp: 0, healpotions_ghp: 0, manapotions_gmp: 0, healpotions_shp: 0, manapotions_smp: 0, zone: 0, inventory: [],
         bindZone: 0, corpse: null,
         runeStash: [], discoveredRunewords: [],
         bags: ['Worn Pouch', 'Worn Pouch', 'Worn Pouch', 'Worn Pouch'],
@@ -11153,6 +11384,10 @@
       oldChar.faction = Math.max(-500, Math.min(500, toInt(oldChar.faction, 0)));
       oldChar.healpotions = nonNegativeInt(oldChar.healpotions, 0);
       oldChar.manapotions = nonNegativeInt(oldChar.manapotions, 0);
+      oldChar.healpotions_ghp = nonNegativeInt(oldChar.healpotions_ghp, 0);
+      oldChar.manapotions_gmp = nonNegativeInt(oldChar.manapotions_gmp, 0);
+      oldChar.healpotions_shp = nonNegativeInt(oldChar.healpotions_shp, 0);
+      oldChar.manapotions_smp = nonNegativeInt(oldChar.manapotions_smp, 0);
       oldChar.afkEnabled = !!oldChar.afkEnabled;
       if (oldChar.lastAfkAt === undefined || oldChar.lastAfkAt === null) {
         oldChar.lastAfkAt = null;
@@ -11477,8 +11712,8 @@
           mercRoleDisp.textContent = 'No mercenaries hired.';
         }
       }
-      const hpPotionsTotal = (char.healpotions || 0) + (char.healpotions_lhp || 0);
-      const mpPotionsTotal = (char.manapotions || 0) + (char.manapotions_lmp || 0);
+      const hpPotionsTotal = totalHpPotions(char);
+      const mpPotionsTotal = totalMpPotions(char);
       document.getElementById('hp-potion').textContent = hpPotionsTotal + ' pots';
       document.getElementById('mp-potion').textContent = mpPotionsTotal + ' pots';
 
@@ -12219,6 +12454,20 @@
           renderPotionCard('Light Mana Potion', 'Restores 125 MP', 'mpLight', 'manapotions_lmp', 'buyMpPotion_LMP', 'buyMpPotion_LMP_10');
       }
 
+      // Greater potions unlock at level 25.
+      if (char.level >= 25) {
+        shopHtml +=
+          renderPotionCard('Greater Healing Potion', 'Restores 350 HP', 'hpGreater', 'healpotions_ghp', 'buyHpPotion_GHP', 'buyHpPotion_GHP_10') +
+          renderPotionCard('Greater Mana Potion', 'Restores 350 MP', 'mpGreater', 'manapotions_gmp', 'buyMpPotion_GMP', 'buyMpPotion_GMP_10');
+      }
+
+      // Superior potions unlock at level 45.
+      if (char.level >= 45) {
+        shopHtml +=
+          renderPotionCard('Superior Healing Potion', 'Restores 900 HP', 'hpSuperior', 'healpotions_shp', 'buyHpPotion_SHP', 'buyHpPotion_SHP_10') +
+          renderPotionCard('Superior Mana Potion', 'Restores 900 MP', 'mpSuperior', 'manapotions_smp', 'buyMpPotion_SMP', 'buyMpPotion_SMP_10');
+      }
+
       const activeMercType = char.mercenary?.type || 'none';
 
       shopHtml += `
@@ -12274,67 +12523,6 @@
           </div>
         </div>
       `;
-
-      // ── Pet Stable (PHASE 5) ──
-      ensurePetState(char);
-      const activePetId = char.pets.active;
-      shopHtml += `
-        <div class="eq-item-card">
-          <div class="eq-item-name">Pet Stable</div>
-          <div class="eq-item-type">Tame a companion. Active pet aids you in combat or grants passive bonuses.</div>
-          <div class="eq-item-actions compact" style="margin-top:6px">
-            <select onchange="setActivePet(this.value)" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
-              <option value="none"${activePetId === 'none' ? ' selected' : ''}>None</option>
-              ${char.pets.owned.map(id => `<option value="${id}"${activePetId === id ? ' selected' : ''}>${PETS[id].name}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-      `;
-      Object.values(PETS).forEach(p => {
-        const owned = char.pets.owned.includes(p.id);
-        const cost = PHASE5.petTameGoldCost[p.id] || 1000;
-        shopHtml += `
-        <div class="eq-item-card">
-          <div class="eq-item-name"><i class="ti ${p.icon}"></i> ${p.name}${owned ? ' ✓' : ''}</div>
-          <div class="eq-item-type">${p.kind === 'damage' ? 'Combat Companion' : (p.kind === 'support' ? 'Support Companion' : 'Utility Companion')}</div>
-          <div class="eq-item-bonus">${p.desc}</div>
-          <div class="eq-item-bonus">${owned ? 'Owned' : (cost + ' Gold to tame')}</div>
-          <div class="eq-item-actions">
-            ${owned
-              ? (activePetId === p.id
-                ? '<button class="btn active" disabled>Active</button>'
-                : `<button class="btn" onclick="setActivePet('${p.id}')">Set Active</button>`)
-              : `<button class="btn" onclick="tamePet('${p.id}')" ${(char.gold || 0) >= cost ? '' : 'disabled'}>Tame</button>`}
-          </div>
-        </div>
-        `;
-      });
-
-      // ── Merc Gear (PHASE 5) ──
-      if (char.mercenary && char.mercenary.type !== 'none') {
-        const gearW = char.mercenary.gear && char.mercenary.gear.weapon;
-        const mercName = getMercenaryDisplayName();
-        const stats = gearW && typeof getItemEffectiveStats === 'function' ? getItemEffectiveStats(gearW) : null;
-        const atk = stats && stats.atk ? stats.atk : 0;
-        const invWeapons = (char.inventory || []).map((it, i) => ({ it, i })).filter(({ it }) => {
-          const d = getItemData(it); return d && d.slot === 'weapon';
-        });
-        const weaponOpts = invWeapons.map(({ it, i }) => `<option value="${i}">${(it.name || (getItemData(it) || {}).name || 'Weapon')}</option>`).join('');
-        shopHtml += `
-        <div class="eq-item-card">
-          <div class="eq-item-name">${mercName}'s Weapon</div>
-          <div class="eq-item-type">Mercenary Gear · Each ATK on this weapon adds ${(PHASE5.mercGearAtkDamageBonusPerPoint * 100).toFixed(1)}% to merc damage.</div>
-          <div class="eq-item-bonus">${gearW ? ((gearW.name || 'Weapon') + ' (+' + atk + ' ATK, +' + Math.round(atk * PHASE5.mercGearAtkDamageBonusPerPoint * 100) + '% merc dmg)') : 'No weapon issued.'}</div>
-          <div class="eq-item-actions compact" style="margin-top:6px;flex-wrap:wrap">
-            ${invWeapons.length
-              ? `<select id="merc-gear-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">${weaponOpts}</select>
-                 <button class="btn" onclick="equipMercWeaponFromInv(Number(document.getElementById('merc-gear-select').value))">Issue Weapon</button>`
-              : '<span class="eq-item-type" style="font-size:10px">No weapons in inventory.</span>'}
-            ${gearW ? '<button class="btn" onclick="unequipMercWeapon()">Recover Weapon</button>' : ''}
-          </div>
-        </div>
-        `;
-      }
 
       const bagItems = Object.entries(CONTAINER_ITEMS).filter(([_, data]) => !data.starter);
       bagItems.forEach(([name, data]) => {
@@ -13054,38 +13242,84 @@
       ensureSpellState(char);
       el.innerHTML = '';
 
+      const maxSlots = getMaxMemorizedSpellSlots(char);
+
+      // ── Gem Loadout: at-a-glance view of what's ready to cast ──
+      const loadoutTitle = document.createElement('h3');
+      loadoutTitle.textContent = 'Gem Loadout';
+      loadoutTitle.style.marginBottom = '4px';
+      el.appendChild(loadoutTitle);
+
+      const loadoutNote = document.createElement('div');
+      loadoutNote.style.cssText = 'font-size:11px;color:var(--text-secondary);margin-bottom:8px';
+      loadoutNote.textContent = maxSlots + ' gem' + (maxSlots === 1 ? '' : 's') + ' unlocked. Memorized spells are the ones you can cast in combat — raise Arcane Capacity in Alternate Ascension for more slots.';
+      el.appendChild(loadoutNote);
+
+      const gemGrid = document.createElement('div');
+      gemGrid.className = 'eq-bag-grid';
+      gemGrid.style.marginBottom = '14px';
+      for (let i = 0; i < maxSlots; i++) {
+        const sp = getSpellById(char.memorizedSpells[i]);
+        const card = document.createElement('div');
+        card.className = 'eq-item-card';
+        if (sp) {
+          const cd = getSpellCooldownRemaining(sp.id);
+          card.innerHTML = `
+            <div class="eq-item-type" style="text-transform:uppercase;letter-spacing:.05em;opacity:.8">Gem ${i + 1}</div>
+            <div class="eq-item-name">${sp.name}</div>
+            <div class="eq-item-type">${sp.mp} MP · ${sp.cooldown}s${cd > 0 ? ' · Ready in ' + cd + 's' : ''}</div>
+            <div class="eq-item-actions compact">
+              <button class="btn" onclick="clearMemorizedSpell(${i})">Clear</button>
+            </div>
+          `;
+        } else {
+          card.innerHTML = `
+            <div class="eq-item-type" style="text-transform:uppercase;letter-spacing:.05em;opacity:.8">Gem ${i + 1}</div>
+            <div class="eq-item-name" style="color:var(--text-secondary)">— Empty —</div>
+            <div class="eq-item-bonus">Memorize a spell below.</div>
+          `;
+        }
+        gemGrid.appendChild(card);
+      }
+      el.appendChild(gemGrid);
+
+      // ── Known spells: memorize into a chosen gem ──
+      const knownTitle = document.createElement('h3');
+      knownTitle.textContent = 'Known Spells';
+      knownTitle.style.marginBottom = '6px';
+      el.appendChild(knownTitle);
+
       const knownCards = document.createElement('div');
       knownCards.className = 'eq-bag-grid';
 
-      const vendorCards = document.createElement('div');
-      vendorCards.className = 'eq-bag-grid';
-
-      const knownTitle = document.createElement('h3');
-      knownTitle.textContent = 'Memorized Arts';
-      el.appendChild(knownTitle);
-
       if (!char.knownSpells.length) {
-        knownCards.innerHTML = '<div class="eq-empty-bag">No spells learned yet.</div>';
+        knownCards.innerHTML = '<div class="eq-empty-bag">No spells learned yet. Visit the Spell Vendor below.</div>';
       }
 
       char.knownSpells.forEach(spellId => {
         const sp = getSpellById(spellId);
         if (!sp) return;
         const cd = getSpellCooldownRemaining(sp.id);
-        const maxSlots = getMaxMemorizedSpellSlots(char);
+
+        const inGems = [];
+        for (let i = 0; i < maxSlots; i++) if (char.memorizedSpells[i] === sp.id) inGems.push(i + 1);
+        const badge = inGems.length
+          ? ` · <span style="color:var(--accent,#8bd)">In Gem ${inGems.join(', ')}</span>`
+          : '';
+
+        const selId = 'mem-sel-' + sp.id;
+        let opts = '';
+        for (let i = 0; i < maxSlots; i++) opts += '<option value="' + i + '">Gem ' + (i + 1) + '</option>';
 
         const card = document.createElement('div');
         card.className = 'eq-item-card';
-        const memBtns = [];
-        for (let i = 0; i < maxSlots; i++) {
-          memBtns.push('<button class="btn" onclick="setMemorizedSpell(' + i + ', \'' + sp.id + '\')">Mem Gem ' + (i + 1) + '</button>');
-        }
         card.innerHTML = `
           <div class="eq-item-name">${sp.name}</div>
-          <div class="eq-item-type">${sp.mp} MP · ${sp.cooldown}s cooldown${cd > 0 ? ' · Ready in ' + cd + 's' : ''}</div>
+          <div class="eq-item-type">${sp.mp} MP · ${sp.cooldown}s cooldown${cd > 0 ? ' · Ready in ' + cd + 's' : ''}${badge}</div>
           <div class="eq-item-bonus">${sp.desc}</div>
-          <div class="eq-item-actions compact">
-            ${memBtns.join('')}
+          <div class="eq-item-actions compact" style="flex-wrap:wrap">
+            <select id="${selId}" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">${opts}</select>
+            <button class="btn" onclick="setMemorizedSpell(Number(document.getElementById('${selId}').value), '${sp.id}')">Memorize</button>
           </div>
         `;
         knownCards.appendChild(card);
@@ -13093,10 +13327,15 @@
 
       el.appendChild(knownCards);
 
+      // ── Spell Vendor ──
       const vendorTitle = document.createElement('h3');
-      vendorTitle.style.marginTop = '12px';
+      vendorTitle.style.marginTop = '14px';
+      vendorTitle.style.marginBottom = '6px';
       vendorTitle.textContent = 'Spell Vendor';
       el.appendChild(vendorTitle);
+
+      const vendorCards = document.createElement('div');
+      vendorCards.className = 'eq-bag-grid';
 
       const allClassSpells = getClassSpellbook(char.cls);
       const knownSet = new Set(char.knownSpells);
@@ -13131,7 +13370,7 @@
         card.className = 'eq-item-card';
         card.innerHTML = `
           <div class="eq-item-name">${sp.name}</div>
-          <div class="eq-item-type">Requires Lv ${levelReq} · Faction ${factionReq}+ · ${sp.mp} MP · ${sp.cooldown}s cooldown</div>
+          <div class="eq-item-type">Lv ${levelReq} · Faction ${factionReq}+ · ${sp.mp} MP · ${sp.cooldown}s</div>
           <div class="eq-item-bonus">${sp.desc}</div>
           <div class="eq-item-actions">
             <button class="btn${canBuy ? ' active' : ''}" onclick="buySpell('${sp.id}')" ${canBuy ? '' : 'disabled'}>Buy (${price}g)</button>
@@ -13145,6 +13384,19 @@
       }
 
       el.appendChild(vendorCards);
+    }
+
+    function clearMemorizedSpell(slotIdx) {
+      if (!char) return;
+      ensureSpellState(char);
+      const maxSlots = getMaxMemorizedSpellSlots(char);
+      if (slotIdx < 0 || slotIdx >= maxSlots) return;
+      if (!char.memorizedSpells[slotIdx]) return;
+      const name = getSpellById(char.memorizedSpells[slotIdx])?.name || 'spell';
+      char.memorizedSpells[slotIdx] = null;
+      log('Cleared ' + name + ' from gem ' + (slotIdx + 1) + '.', 'info');
+      renderAll();
+      autoSave();
     }
 
     function buySpell(spellId) {
@@ -13955,7 +14207,12 @@
     function xpToNextLevel(level) {
       const L = Math.max(1, Math.floor(level));
       if (L < 15) return Math.floor(100 * Math.pow(1.48, L - 1));
-      return Math.floor(100 * Math.pow(L, 2.1));
+      let xp = 100 * Math.pow(L, 2.1);
+      // Endgame slowdown: from level 50 up, each level costs progressively
+      // more (+5% compounding per level past 50). Starts at x1.0 at L50 so
+      // there is no jarring jump at the boundary.
+      if (L >= 50) xp *= 1 + (L - 50) * 0.05;
+      return Math.floor(xp);
     }
 
     function checkLevelUp() {
@@ -15337,12 +15594,12 @@
 
         if (action === 'attack' && mob) {
           // Check Health First
-          if (autoUseHpPotions && char.hp < char.maxHp * (autoHpPotionPercent / 100) && (char.healpotions > 0 || char.healpotions_lhp > 0)) {
+          if (autoUseHpPotions && char.hp < char.maxHp * (autoHpPotionPercent / 100) && totalHpPotions(char) > 0) {
             useHpPotion();
             return;
           }
 
-          if (autoUseMpPotions && char.mp < char.maxMp * (autoMpPotionPercent / 100) && (char.manapotions > 0 || char.manapotions_lmp > 0)) {
+          if (autoUseMpPotions && char.mp < char.maxMp * (autoMpPotionPercent / 100) && totalMpPotions(char) > 0) {
             useMpPotion();
             return;
           }
@@ -15590,7 +15847,19 @@
       }
 
       // Check and use Light Healing Potion first
-      if (char.healpotions_lhp && char.healpotions_lhp > 0) {
+      if (char.healpotions_shp && char.healpotions_shp > 0) {
+        char.healpotions_shp -= 1;
+        const healAmt = potionHealAmount_shp_Health;
+        char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        log('Used a superior healing potion for ' + healAmt + ' HP.', 'heal');
+      }
+      else if (char.healpotions_ghp && char.healpotions_ghp > 0) {
+        char.healpotions_ghp -= 1;
+        const healAmt = potionHealAmount_ghp_Health;
+        char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        log('Used a greater healing potion for ' + healAmt + ' HP.', 'heal');
+      }
+      else if (char.healpotions_lhp && char.healpotions_lhp > 0) {
         char.healpotions_lhp -= 1;
         const healAmt = potionHealAmount_lhp_Health;
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
@@ -15621,7 +15890,19 @@
       }
 
       // Check and use Light Mana Potion first
-      if (char.manapotions_lmp && char.manapotions_lmp > 0) {
+      if (char.manapotions_smp && char.manapotions_smp > 0) {
+        char.manapotions_smp -= 1;
+        const healAmt = potionHealAmount_smp_Mana;
+        char.mp = Math.min(char.maxMp, char.mp + healAmt);
+        log('Used a superior mana potion for ' + healAmt + ' MP.', 'heal');
+      }
+      else if (char.manapotions_gmp && char.manapotions_gmp > 0) {
+        char.manapotions_gmp -= 1;
+        const healAmt = potionHealAmount_gmp_Mana;
+        char.mp = Math.min(char.maxMp, char.mp + healAmt);
+        log('Used a greater mana potion for ' + healAmt + ' MP.', 'heal');
+      }
+      else if (char.manapotions_lmp && char.manapotions_lmp > 0) {
         char.manapotions_lmp -= 1;
         const healAmt = potionHealAmount_lmp_Mana;
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
@@ -15707,6 +15988,35 @@
 
       renderAll();
       autoSave();
+    }
+
+    // ── Greater / Superior potions (higher-level tiers) ──
+    function buyPotionStock(ownedKey, priceKey, qty) {
+      if (!char) return;
+      const cost = getMerchantPrice(SHOP_BASE_PRICES[priceKey]) * qty;
+      if (char.gold < cost) { log('Not enough gold.', 'info'); return; }
+      char.gold -= cost;
+      char[ownedKey] = Number(char[ownedKey] || 0) + qty;
+      log('Bought ' + qty + ' potion' + (qty === 1 ? '' : 's') + '.', 'loot');
+      renderAll();
+      autoSave();
+    }
+    function buyHpPotion_GHP() { buyPotionStock('healpotions_ghp', 'hpGreater', 1); }
+    function buyHpPotion_GHP_10() { buyPotionStock('healpotions_ghp', 'hpGreater', 10); }
+    function buyMpPotion_GMP() { buyPotionStock('manapotions_gmp', 'mpGreater', 1); }
+    function buyMpPotion_GMP_10() { buyPotionStock('manapotions_gmp', 'mpGreater', 10); }
+    function buyHpPotion_SHP() { buyPotionStock('healpotions_shp', 'hpSuperior', 1); }
+    function buyHpPotion_SHP_10() { buyPotionStock('healpotions_shp', 'hpSuperior', 10); }
+    function buyMpPotion_SMP() { buyPotionStock('manapotions_smp', 'mpSuperior', 1); }
+    function buyMpPotion_SMP_10() { buyPotionStock('manapotions_smp', 'mpSuperior', 10); }
+
+    function totalHpPotions(c) {
+      c = c || char;
+      return Math.max(0, Number(c.healpotions || 0) + Number(c.healpotions_lhp || 0) + Number(c.healpotions_ghp || 0) + Number(c.healpotions_shp || 0));
+    }
+    function totalMpPotions(c) {
+      c = c || char;
+      return Math.max(0, Number(c.manapotions || 0) + Number(c.manapotions_lmp || 0) + Number(c.manapotions_gmp || 0) + Number(c.manapotions_smp || 0));
     }
 
     function useHpPotion_LHP() {
@@ -15970,7 +16280,7 @@
     //  UI HELPERS
     // ══════════════════════════════════════════════
     function switchTab(tab) {
-      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'inv', 'loot', 'runes', 'shop', 'spells', 'aa', 'prestige', 'bank', 'group'];
+      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'inv', 'loot', 'runes', 'shop', 'spells', 'aa', 'prestige', 'bank', 'group', 'about'];
       tabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
       });
