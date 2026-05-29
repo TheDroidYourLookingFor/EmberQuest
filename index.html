@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.1.4</title>
+    1.1.5</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2370,7 +2370,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.4</span>
+        1.1.5</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -6146,6 +6146,27 @@
       autoSave();
     }
 
+    function getEligibleContractZones(targetChar) {
+      const lvl = Math.max(1, Number((targetChar && targetChar.level) || 1));
+      const out = [];
+      for (let i = 0; i < ZONES.length; i++) {
+        const z = ZONES[i];
+        if (!z || !Array.isArray(z.mobs) || !z.mobs.length) continue;
+        if (Number(z.minLvl || 1) <= lvl + 2) out.push(i);
+      }
+      if (!out.length) out.push(0);
+      return out;
+    }
+
+    function pickContractZone(targetChar, exclude = []) {
+      const pool = getEligibleContractZones(targetChar).filter(z => !exclude.includes(z));
+      if (!pool.length) {
+        const full = getEligibleContractZones(targetChar);
+        return full[Math.floor(Math.random() * full.length)];
+      }
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
     function generateEliteContract(targetZone = null, tier = null, chainStep = 1, chainTotal = CONTRACT_CHAIN_TOTAL) {
       const zoneIdx = targetZone === null ? (char ? char.zone : 0) : targetZone;
       const zone = ZONES[zoneIdx] || ZONES[0];
@@ -6274,7 +6295,13 @@
       }
       targetChar.eliteContracts = targetChar.eliteContracts.slice(0, 3).map(c => normalizeContractState(targetChar, c));
       while (targetChar.eliteContracts.length < 3) {
-        targetChar.eliteContracts.push(generateEliteContract(targetChar.zone || 0, targetChar.contractTierPref || 'normal', 1, CONTRACT_CHAIN_TOTAL));
+        // Pick a zone that none of the existing contracts already cover so the
+        // 3 slots span different zones (current + a couple of others the
+        // player has unlocked, including any new smoothing zones).
+        const used = targetChar.eliteContracts.map(c => c && c.zone).filter(z => Number.isInteger(z));
+        const preferCurrent = targetChar.eliteContracts.length === 0;
+        const pickZone = preferCurrent ? (targetChar.zone || 0) : pickContractZone(targetChar, used);
+        targetChar.eliteContracts.push(generateEliteContract(pickZone, targetChar.contractTierPref || 'normal', 1, CONTRACT_CHAIN_TOTAL));
       }
       targetChar.contractPrimaryIdx = Math.max(0, Math.min(targetChar.eliteContracts.length - 1, Math.floor(Number(targetChar.contractPrimaryIdx || 0))));
       targetChar.afkPinnedContractIdx = Math.max(0, Math.min(targetChar.eliteContracts.length - 1, Math.floor(Number(targetChar.afkPinnedContractIdx || targetChar.contractPrimaryIdx || 0))));
@@ -8838,7 +8865,15 @@
         return;
       }
       char.gold -= rerollCost;
-      char.eliteContracts[char.contractPrimaryIdx] = generateEliteContract(char.zone, char.contractTierPref || c.tier || 'normal', c.chainStep || 1, c.chainTotal || CONTRACT_CHAIN_TOTAL);
+      // Reroll picks a fresh eligible zone different from the other contract
+      // slots and from this contract's current zone when possible, so rerolls
+      // surface the new zones rather than always re-rolling for the current one.
+      const otherZones = (char.eliteContracts || [])
+        .map((other, i) => (i === char.contractPrimaryIdx ? null : (other && other.zone)))
+        .filter(z => Number.isInteger(z));
+      const exclude = otherZones.concat(Number.isInteger(c.zone) ? [c.zone] : []);
+      const newZone = pickContractZone(char, exclude);
+      char.eliteContracts[char.contractPrimaryIdx] = generateEliteContract(newZone, char.contractTierPref || c.tier || 'normal', c.chainStep || 1, c.chainTotal || CONTRACT_CHAIN_TOTAL);
       char.eliteContract = char.eliteContracts[char.contractPrimaryIdx];
       log('New elite contract posted for ' + rerollCost + 'g.', 'info');
       renderQuests();
@@ -10144,11 +10179,11 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.4';
-        if (!silent) log('Upgraded save data to v1.1.4.', 'info');
+        oldChar.version = '1.1.5';
+        if (!silent) log('Upgraded save data to v1.1.5.', 'info');
       }
 
-      if (oldChar.version === '1.1.4') {
+      if (oldChar.version === '1.1.5') {
         if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
