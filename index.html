@@ -578,7 +578,7 @@
     }
 
     .log-dmg {
-      color: #E24B4A;
+      color: #d99c4a;
     }
 
     .log-heal {
@@ -591,6 +591,30 @@
 
     .log-loot {
       color: #BA7517;
+    }
+
+    .log-timestamp {
+      color: var(--text-secondary);
+      margin-right: 0.5rem;
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .combat-log-player,
+    .combat-log-attacker {
+      color: #8ec4ff;
+      font-weight: 600;
+    }
+
+    .combat-log-merc {
+      color: #94e78a;
+      font-weight: 600;
+    }
+
+    .combat-log-mob,
+    .combat-log-defender {
+      color: #ffd48a;
+      font-weight: 600;
     }
 
     .log-lvl {
@@ -1619,10 +1643,10 @@
     }
 
     #screen-game .log-dmg {
-      color: #ff7878;
+      color: #f1b05f;
     }
 
-    /* combat damage — bright red */
+    /* combat damage — warm gold */
     #screen-game .log-heal {
       color: #6fdc6f;
     }
@@ -3177,7 +3201,7 @@
           style="display:none">
           <div
             id="loot-rule-panel"
-            style="margin-top:8px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-md);display:flex;flex-direction:column;gap:8px;">
+            style="margin-top:8px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-md);display:grid;gap:8px;">
             <div
               style="font-size:11px;font-weight:600;">
               Loot
@@ -4479,10 +4503,10 @@
       const trimmed = String(proposed).trim().slice(0, 24);
       if (!trimmed || trimmed.toLowerCase() === merc.name.toLowerCase()) {
         char.mercenary.customName = '';
-        log('Mercenary name reset to ' + merc.name + '.', 'info');
+        log(['Mercenary name reset to ', { text: merc.name, cls: 'combat-log-merc' }, '.'], 'info');
       } else {
         char.mercenary.customName = trimmed;
-        log('Mercenary renamed to ' + trimmed + '.', 'info');
+        log(['Mercenary renamed to ', { text: trimmed, cls: 'combat-log-merc' }, '.'], 'info');
       }
 
       renderAll();
@@ -4529,7 +4553,7 @@
         targetChar.mercenary.customName = '';
         targetChar.mercenary.nextUpkeepAt = 0;
         targetChar.mercenary.actionReadyAt = 0;
-        log(failedMercName + ' contract ended due to unpaid wages.', 'info');
+        log([{ text: failedMercName, cls: 'combat-log-merc' }, ' contract ended due to unpaid wages.'], 'info');
       }
     }
 
@@ -4540,13 +4564,13 @@
       const merc = MERCENARY_TYPES[mercType];
       const currentType = char.mercenary.type || 'none';
       if (currentType === mercType) {
-        log(merc.name + ' is already under contract.', 'info');
+        log([{ text: merc.name, cls: 'combat-log-merc' }, ' is already under contract.'], 'info');
         return;
       }
 
       const cost = getMercenaryHireCost(mercType);
       if (char.gold < cost) {
-        log('Not enough gold to hire ' + merc.name + ' (' + cost + 'g).', 'info');
+        log(['Not enough gold to hire ', { text: merc.name, cls: 'combat-log-merc' }, ' (' + cost + 'g).'], 'info');
         return;
       }
 
@@ -4559,7 +4583,11 @@
       char.mercenary.nextUpkeepAt = Date.now() + MERCENARY_UPKEEP_INTERVAL_MS;
       char.mercenary.actionReadyAt = 0;
 
-      log((currentType !== 'none' ? 'Contract switched. ' : '') + getMercenaryDisplayName() + ' joins your group for ' + cost + ' gold.', 'loot');
+      log([
+        currentType !== 'none' ? 'Contract switched. ' : '',
+        { text: getMercenaryDisplayName(), cls: 'combat-log-merc' },
+        ' joins your group for ' + cost + ' gold.'
+      ], 'loot');
       renderAll();
       autoSave();
     }
@@ -4578,7 +4606,7 @@
       char.mercenary.customName = '';
       char.mercenary.nextUpkeepAt = 0;
       char.mercenary.actionReadyAt = 0;
-      log(mercName + ' leaves the group.', 'info');
+      log([{ text: mercName, cls: 'combat-log-merc' }, ' leaves the group.'], 'info');
       renderAll();
       autoSave();
     }
@@ -4604,7 +4632,12 @@
         const dmg = Math.max(3, Math.floor((level * 1.35 + char.atk * 0.18 + Math.random() * 5) * gearMult));
         mob.hp -= dmg;
         addDamageMeterEntry('merc', dmg);
-        log(mercName + ' cuts ' + mob.name + ' for ' + dmg + ' damage.', 'dmg');
+        log([
+          { text: mercName, cls: 'combat-log-attacker' },
+          ' cuts ',
+          { text: mob.name, cls: 'combat-log-defender' },
+          ' for ' + dmg + ' damage.'
+        ], 'dmg');
       } else if (mercType === 'hexer') {
         const dmg = Math.max(2, Math.floor((level * 1.05 + char.atk * 0.1 + Math.random() * 4) * gearMult));
         const atkDebuff = Math.max(1, Math.floor(level / 26) + 1);
@@ -4613,18 +4646,31 @@
         addDamageMeterEntry('merc', dmg);
         mob.atk = Math.max(1, mob.atk - atkDebuff);
         mob.def = Math.max(0, mob.def - defDebuff);
-        log(mercName + ' hexes ' + mob.name + ' for ' + dmg + ' damage and weakens it.', 'dmg');
+        log([
+          { text: mercName, cls: 'combat-log-attacker' },
+          ' hexes ',
+          { text: mob.name, cls: 'combat-log-defender' },
+          ' for ' + dmg + ' damage and weakens it.'
+        ], 'dmg');
       } else if (mercType === 'templar') {
         const hurt = char.maxHp - char.hp;
         if (hurt > Math.floor(char.maxHp * 0.08)) {
           const healAmt = Math.min(hurt, Math.max(6, Math.floor(char.maxHp * 0.07 + level * 1.1 + Math.random() * 7)));
           char.hp = Math.min(char.maxHp, char.hp + healAmt);
-          log(mercName + ' mends you for ' + healAmt + ' HP.', 'heal');
+          log([
+            { text: mercName, cls: 'combat-log-merc' },
+            ' mends you for ' + healAmt + ' HP.'
+          ], 'heal');
         } else {
           const dmg = Math.max(2, Math.floor((level * 0.9 + char.mpRegen * 1.2 + Math.random() * 3) * gearMult));
           mob.hp -= dmg;
           addDamageMeterEntry('merc', dmg);
-          log(mercName + ' smites ' + mob.name + ' for ' + dmg + ' damage.', 'dmg');
+          log([
+            { text: mercName, cls: 'combat-log-attacker' },
+            ' smites ',
+            { text: mob.name, cls: 'combat-log-defender' },
+            ' for ' + dmg + ' damage.'
+          ], 'dmg');
         }
       }
 
@@ -5646,6 +5692,11 @@
           autoSellRareGear: false,
           autoSellLegendaryGear: false,
           protectRarePlus: true,
+          autoEquipEmptySlots: false,
+          autoEquipUpgradedEquipment: false,
+          autoEquipUpgradeMetric: 'score',
+          autoEquipUpgradeThreshold: 1,
+          autoVendorOverflow: false,
           keywordRules: [
             { match: 'bone', action: 'sell' },
             { match: 'tattered', action: 'sell' },
@@ -5677,6 +5728,7 @@
         autoEquipUpgradedEquipment: !!targetChar.lootFilter.autoEquipUpgradedEquipment,
         autoEquipUpgradeMetric: targetChar.lootFilter.autoEquipUpgradeMetric || 'score',
         autoEquipUpgradeThreshold: Number(targetChar.lootFilter.autoEquipUpgradeThreshold ?? 1),
+        autoVendorOverflow: !!targetChar.lootFilter.autoVendorOverflow,
         keywordRules: targetChar.lootFilter.keywordRules
       };
     }
@@ -5721,7 +5773,6 @@
       const lf = getLootFilterState(char);
       const data = getItemData(item);
       if (!data || !data.slot) return false;
-      if (!canPlayerEquip(item)) return false;
       const slot = data.slot;
       const current = char.equipment[slot];
 
@@ -6380,6 +6431,10 @@
 
       char.xp += regularXp;
 
+      if (totalXp > 0) {
+        log('You gain ' + totalXp + ' experience.', 'lvl');
+      }
+
       if (aaPoints > 0) {
         log('AA gain from ' + source + ': +' + aaPoints + ' AA point' + (aaPoints === 1 ? '' : 's') + '.', 'lvl');
       }
@@ -6819,13 +6874,23 @@
       const remaining = [];
       mob.statusEffects.forEach(e => {
         if (Number(e.expiresAt) <= now) {
-          log(mob.name + "'s " + e.name + ' fades.', 'info');
+          log([
+            { text: mob.name, cls: 'combat-log-mob' },
+            "'s ",
+            e.name,
+            ' fades.'
+          ], 'info');
           return;
         }
         if (e.kind === 'dot' && Number(e.dps) > 0) {
           const dmg = Math.max(1, Math.floor(e.dps));
           mob.hp -= dmg;
-          log(e.name + ' on ' + mob.name + ' ticks for ' + dmg + '.', 'dmg');
+          log([
+            e.name,
+            ' on ',
+            { text: mob.name, cls: 'combat-log-mob' },
+            ' ticks for ' + dmg + '.'
+          ], 'dmg');
           addDamageMeterEntry('dot', dmg);
           if (mob.hp <= 0) died = true;
         }
@@ -6881,7 +6946,10 @@
       if (Math.random() >= PHASE1.mercTankAbsorbChance) return incomingDmg;
       const span = PHASE1.mercTankAbsorbMax - PHASE1.mercTankAbsorbMin;
       const absorbed = Math.max(1, Math.floor(incomingDmg * (PHASE1.mercTankAbsorbMin + Math.random() * span)));
-      log(getMercenaryDisplayName() + ' intercepts ' + absorbed + ' damage for you!', 'info');
+      log([
+        { text: getMercenaryDisplayName(), cls: 'combat-log-merc' },
+        ' intercepts ' + absorbed + ' damage for you!'
+      ], 'info');
       return Math.max(0, incomingDmg - absorbed);
     }
 
@@ -6948,18 +7016,6 @@
       }
       return 0;
     }
-    function getItemLevelReq(entry) {
-      if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.levelReq))) {
-        return Math.max(1, Math.floor(Number(entry.levelReq)));
-      }
-      return 0;
-    }
-    function canPlayerEquip(entry) {
-      const req = getItemLevelReq(entry);
-      if (!req) return true;
-      return (char?.level || 1) >= req;
-    }
-
     function isLegendary(entry) {
       return entry && typeof entry === 'object' && entry.quality === 'Legendary';
     }
@@ -7035,14 +7091,12 @@
       const rarityClass = getItemRarityClass(item);
       const slot = data.slot || '';
       const ilvl = getItemLevel(item);
-      const req = getItemLevelReq(item);
       const current = (slot && char.equipment) ? char.equipment[slot] : null;
       const curStats = current ? (getItemEffectiveStats(current) || { atk: 0, def: 0, hp: 0, mp: 0 }) : null;
       const meta = [
         data.type || (isRuneEntry(item) ? 'Rune' : 'Misc'),
         slot ? ('Slot: ' + slot) : '',
         ilvl ? ('iLvl ' + ilvl) : '',
-        req ? ('Requires Lv ' + req) : '',
         quality !== 'Normal' ? quality : ''
       ].filter(Boolean).join(' · ');
 
@@ -7056,9 +7110,6 @@
       });
       if (current) {
         html += '<div class="tt-section" style="font-size:10px;color:var(--text-secondary)">vs equipped: ' + getItemDisplayName(current) + '</div>';
-      }
-      if (req && (char?.level || 1) < req) {
-        html += '<div class="tt-warn">Requires Level ' + req + ' to equip.</div>';
       }
       const sets = getItemSetName(item);
       if (sets) html += '<div class="tt-section" style="font-size:10px;color:#8a7;">Set: ' + sets + '</div>';
@@ -7094,8 +7145,9 @@
     }
     function toggleAutoVendorOverflow(on) {
       if (!char) return;
-      const lf = getLootFilterState(char);
-      lf.autoVendorOverflow = !!on;
+      if (!char.lootFilter || typeof char.lootFilter !== 'object') char.lootFilter = {};
+      char.lootFilter.autoVendorOverflow = !!on;
+      renderInv();
       autoSave();
     }
 
@@ -7422,7 +7474,11 @@
         turnCount: 0,
         statusEffects: []
       };
-      log('A great evil rises: ' + mob.name + ' challenges you!', 'lvl');
+      log([
+        'A great evil rises: ',
+        { text: mob.name, cls: 'combat-log-mob' },
+        ' challenges you!'
+      ], 'lvl');
       if (typeof showToast === 'function') showToast('Boss encounter: ' + boss.name, 'info');
       renderMob();
       if (typeof renderAll === 'function') renderAll();
@@ -7688,7 +7744,12 @@
       if (Math.random() >= PHASE5.petActionChance) return false;
       const dmg = Math.max(1, Math.floor(PHASE5.petBaseDamage + char.level * PHASE5.petDamagePerLevel));
       mob.hp -= dmg;
-      log(pet.name + ' strikes ' + mob.name + ' for ' + dmg + '!', 'dmg');
+      log([
+        { text: pet.name, cls: 'combat-log-attacker' },
+        ' strikes ',
+        { text: mob.name, cls: 'combat-log-defender' },
+        ' for ' + dmg + '!'
+      ], 'dmg');
       if (typeof addDamageMeterEntry === 'function') addDamageMeterEntry('pet', dmg);
       if (mob.hp <= 0) {
         if (typeof killMob === 'function') killMob();
@@ -7842,20 +7903,6 @@
         if (c.bindZone !== undefined && c.bindZone !== null && (!Number.isFinite(Number(c.bindZone)) || c.bindZone < 0 || c.bindZone >= ZONES.length)) {
           c.bindZone = 0; fixes++;
         }
-      }
-      if (c.equipment && typeof c.equipment === 'object' && typeof canPlayerEquip === 'function') {
-        Object.keys(c.equipment).forEach(slot => {
-          const it = c.equipment[slot];
-          if (!it) return;
-          try {
-            if (!canPlayerEquip(it)) {
-              if (typeof unequipStats === 'function') unequipStats(it);
-              c.inventory.push(it);
-              c.equipment[slot] = null;
-              fixes++;
-            }
-          } catch (e) { /* swallow */ }
-        });
       }
       ensureAuditState(c);
       return fixes;
@@ -9441,7 +9488,11 @@
       renderAll(); renderZones(); renderQuests(); setupDrag(); switchTab('combat');
       resetAFKUI();
       document.getElementById('combat-log').innerHTML = '';
-      log('Welcome back, ' + char.name + '! You are in ' + ZONES[char.zone].name + '.', 'info');
+      log([
+        'Welcome back, ',
+        { text: char.name, cls: 'combat-log-player' },
+        '! You are in ' + ZONES[char.zone].name + '.'
+      ], 'info');
 
       if (shouldResumeAfk) {
         toggleAFK();
@@ -9647,7 +9698,7 @@
         btn.className = 'btn zone-btn' + (i === char.zone ? ' current' : '');
         btn.innerHTML = (char.level < z.minLvl ? '<i class="ti ti-lock" style="font-size:12px"></i> ' : '') + z.name + ' <span style="font-size:10px;opacity:.6">(Lv ' + z.minLvl + '+)</span>';
         btn.disabled = char.level < z.minLvl;
-        btn.onclick = () => travelZone(i);
+        btn.onclick = () => travelZone(i, true);
         el.appendChild(btn);
       });
 
@@ -10103,8 +10154,7 @@
         }
 
         const ilvl = getItemLevel(item);
-        const lreq = getItemLevelReq(item);
-        const lvlBadge = (ilvl || lreq) ? `<div class="eq-item-type">${ilvl ? ('iLvl ' + ilvl) : ''}${(ilvl && lreq) ? ' · ' : ''}${lreq ? ('Req Lv ' + lreq) : ''}${(lreq && (char?.level || 1) < lreq) ? ' <span style="color:#c44">(too low)</span>' : ''}</div>` : '';
+        const lvlBadge = ilvl ? `<div class="eq-item-type">iLvl ${ilvl}</div>` : '';
 
         card.innerHTML = `
       <div class="eq-item-top">
@@ -10212,10 +10262,10 @@
       if (lootFilterControls) {
         lootFilterControls.innerHTML =
           '<button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal Gear: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Blue (Magic) Gear: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellRareGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellRareGear\')">Auto-Sell Rare Gear: ' + (lf.autoSellRareGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Legendary Gear: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Magic: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellRareGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellRareGear\')">Auto-Sell Rare: ' + (lf.autoSellRareGear ? 'On' : 'Off') + '</button>' +
+          '<button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Legendary: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
           '<button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
@@ -10484,33 +10534,45 @@
       ).join('');
 
       const optionsPanel =
-        '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
-        '<button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
-        '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal Gear: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
-        '<button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Blue (Magic) Gear: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
-        '<button class="btn' + (lf.autoSellRareGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellRareGear\')">Auto-Sell Rare Gear: ' + (lf.autoSellRareGear ? 'On' : 'Off') + '</button>' +
-        '<button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Legendary Gear: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
-        '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
-        '<button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
-        '<button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
-        '<select id="loot-filter-preset-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + presetOptions + '</select>' +
-        '<button class="btn" onclick="setLootFilterPresetFromUI()">Apply Preset</button>' +
-        '</div>' +
-        '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;">' +
-        '<label style="font-size:11px;display:flex;align-items:center;gap:6px;">Upgrade Metric:' +
-        '<select id="loot-upgrade-metric-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' +
-        '<option value="score"' + (lf.autoEquipUpgradeMetric === 'score' ? ' selected' : '') + '>Score</option>' +
-        '<option value="atk"' + (lf.autoEquipUpgradeMetric === 'atk' ? ' selected' : '') + '>ATK</option>' +
-        '<option value="def"' + (lf.autoEquipUpgradeMetric === 'def' ? ' selected' : '') + '>DEF</option>' +
-        '<option value="hp"' + (lf.autoEquipUpgradeMetric === 'hp' ? ' selected' : '') + '>HP</option>' +
-        '<option value="mp"' + (lf.autoEquipUpgradeMetric === 'mp' ? ' selected' : '') + '>MP</option>' +
-        '<option value="quality"' + (lf.autoEquipUpgradeMetric === 'quality' ? ' selected' : '') + '>Quality</option>' +
-        '</select>' +
-        '</label>' +
-        '<label style="font-size:11px;display:flex;align-items:center;gap:6px;">Min Improvement:' +
-        '<input id="loot-upgrade-threshold" type="number" min="0" step="1" value="' + lf.autoEquipUpgradeThreshold + '" style="width:72px;font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' +
-        '</label>' +
-        '<button class="btn" onclick="setLootUpgradeCriteriaFromUI()">Save Criteria</button>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+        '  <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-primary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:10px;">' +
+        '    <div style="font-size:11px;font-weight:600;">Auto-Sell Settings</div>' +
+        '    <div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+        '      <button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" title="Sell all junk items automatically when looting." onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" title="Sell normal-quality gear automatically." onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Normal: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" title="Sell magic gear automatically." onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Magic: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoSellRareGear ? ' active' : '') + '" title="Sell rare gear automatically unless protected by Rare+ settings." onclick="toggleLootFilter(\'autoSellRareGear\')">Auto-Sell Rare: ' + (lf.autoSellRareGear ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" title="Sell legendary gear automatically unless protected by Rare+ settings." onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Legendary: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
+        '    </div>' +
+        '  </div>' +
+        '  <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-primary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:10px;">' +
+        '    <div style="font-size:11px;font-weight:600;">Auto-Equip / Overflow</div>' +
+        '    <div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+        '      <button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" title="Auto-equip new loot into empty equipment slots." onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" title="Auto-equip gear only when it is better than your current equipment." onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
+        '      <button class="btn' + (lf.autoVendorOverflow ? ' active' : '') + '" title="Sell overflow loot automatically when inventory space is full." onclick="toggleLootFilter(\'autoVendorOverflow\')">Auto-Vendor Overflow: ' + (lf.autoVendorOverflow ? 'On' : 'Off') + '</button>' +
+        '    </div>' +
+        '    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">' +
+        '      <label style="font-size:11px;display:flex;align-items:center;gap:6px;min-width:160px;">Upgrade Metric:' +
+        '        <select id="loot-upgrade-metric-select" title="Choose the primary stat used to compare loot upgrades." style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' +
+        '          <option value="score"' + (lf.autoEquipUpgradeMetric === 'score' ? ' selected' : '') + '>Score</option>' +
+        '          <option value="atk"' + (lf.autoEquipUpgradeMetric === 'atk' ? ' selected' : '') + '>ATK</option>' +
+        '          <option value="def"' + (lf.autoEquipUpgradeMetric === 'def' ? ' selected' : '') + '>DEF</option>' +
+        '          <option value="hp"' + (lf.autoEquipUpgradeMetric === 'hp' ? ' selected' : '') + '>HP</option>' +
+        '          <option value="mp"' + (lf.autoEquipUpgradeMetric === 'mp' ? ' selected' : '') + '>MP</option>' +
+        '          <option value="quality"' + (lf.autoEquipUpgradeMetric === 'quality' ? ' selected' : '') + '>Quality</option>' +
+        '        </select>' +
+        '      </label>' +
+        '      <label style="font-size:11px;display:flex;align-items:center;gap:6px;min-width:160px;" title="Set the minimum improvement required before auto-equipping new gear.">Min Improvement:' +
+        '        <input id="loot-upgrade-threshold" type="number" min="0" step="1" value="' + lf.autoEquipUpgradeThreshold + '" style="width:72px;font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' +
+        '      </label>' +
+        '      <button class="btn" title="Save your upgrade comparison settings for automatic equipment selection." onclick="setLootUpgradeCriteriaFromUI()">Save Criteria</button>' +
+        '    </div>' +
+        '    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">' +
+        '      <select id="loot-filter-preset-select" title="Select a loot filter preset configuration." style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + presetOptions + '</select>' +
+        '      <button class="btn" title="Apply the selected loot filter preset." onclick="setLootFilterPresetFromUI()">Apply Preset</button>' +
+        '    </div>' +
+        '  </div>' +
         '</div>';
 
       lootTab.querySelector('#loot-filter-options').innerHTML = optionsPanel;
@@ -11270,11 +11332,19 @@
         const dmg = Math.max(1, Math.floor((char.atk * sp.power + Math.random() * sp.variance) * aa.spellPowerMult * (prestige.playerDamageMult || 1) * (event.spellDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
         mob.hp -= dmg;
         addDamageMeterEntry('spell', dmg);
-        log(sp.name + ' hits ' + mob.name + ' for ' + dmg + ' damage!', 'dmg');
+        log([
+          { text: sp.name, cls: 'combat-log-attacker' },
+          ' hits ',
+          { text: mob.name, cls: 'combat-log-defender' },
+          ' for ' + dmg + ' damage!'
+        ], 'dmg');
 
         if (sp.kind === 'damage_weaken') {
           mob.atk = Math.max(1, mob.atk - (sp.weaken || 1));
-          log(mob.name + ' looks weakened.', 'info');
+          log([
+          { text: mob.name, cls: 'combat-log-mob' },
+          ' looks weakened.'
+        ], 'info');
         }
 
         if (sp.kind === 'damage_poison' && mob.hp > 0 && Math.random() < 0.55) {
@@ -11399,6 +11469,14 @@
       autoSave();
     }
 
+    function getCombatLogTimestamp() {
+      const d = new Date();
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const pad = value => String(value).padStart(2, '0');
+      return '[' + days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + ' ' + d.getFullYear() + '] ';
+    }
+
     function log(msg, type = 'info') {
       const div = document.getElementById('combat-log');
       if (!div) return;
@@ -11406,7 +11484,25 @@
       const filters = char ? getCombatLogFilterState(char) : { dmg: true, loot: true, info: true };
       if (filters[category] === false) return;
       syncCombatLogSize();
-      const p = document.createElement('p'); p.className = 'log-' + type; p.textContent = msg;
+      const p = document.createElement('p'); p.className = 'log-' + type;
+      const timestamp = document.createElement('span');
+      timestamp.className = 'log-timestamp';
+      timestamp.textContent = getCombatLogTimestamp();
+      p.appendChild(timestamp);
+      if (Array.isArray(msg)) {
+        msg.forEach(part => {
+          if (typeof part === 'string') {
+            p.appendChild(document.createTextNode(part));
+          } else if (part && typeof part === 'object' && part.text) {
+            const span = document.createElement('span');
+            span.textContent = part.text;
+            if (part.cls) span.className = part.cls;
+            p.appendChild(span);
+          }
+        });
+      } else {
+        p.appendChild(document.createTextNode(msg));
+      }
       p.dataset.category = category;
       div.appendChild(p); div.scrollTop = div.scrollHeight;
       while (div.children.length > 80) div.removeChild(div.firstChild);
@@ -11456,7 +11552,11 @@
       if (namedMechanic) {
         log('Named mechanic: ' + namedMechanic.name + ' — ' + namedMechanic.desc, 'info');
       }
-      log('A ' + mob.name + ' appears!', 'info'); renderMob();
+      log([
+        'A ',
+        { text: mob.name, cls: 'combat-log-mob' },
+        ' appears!'
+      ], 'info'); renderMob();
     }
 
     function doAttack() {
@@ -11475,7 +11575,10 @@
 
       // Mob dodge
       if (rollMobDodge()) {
-        log(mob.name + ' dodges your attack!', 'info');
+        log([
+          { text: mob.name, cls: 'combat-log-mob' },
+          ' dodges your attack!'
+        ], 'info');
         addDamageMeterDodge();
         // Skip to enemy counter-attack (still costs the player a turn)
         dmg = 0;
@@ -11493,19 +11596,31 @@
               kind: 'stun',
               expiresAt: Date.now() + PHASE1.stunDurationMs
             });
-            log('Critical strike stuns ' + mob.name + '!', 'dmg');
+            log([
+              'Critical strike stuns ',
+              { text: mob.name, cls: 'combat-log-mob' },
+              '!'
+            ], 'dmg');
           }
         }
 
         if (mob.namedMechanic && mob.namedMechanic.id === 'ward' && mob.wardReady) {
           dmg = Math.max(1, Math.floor(dmg * 0.55));
           mob.wardReady = false;
-          log(mob.name + ' absorbs part of the hit with Arcane Ward.', 'info');
+          log([
+            { text: mob.name, cls: 'combat-log-mob' },
+            ' absorbs part of the hit with Arcane Ward.'
+          ], 'info');
         }
 
         mob.hp -= dmg;
         addDamageMeterEntry('player', dmg);
-        log(char.name + (critRoll.crit ? ' CRITS ' : ' attacks ') + mob.name + ' for ' + dmg + (critRoll.crit ? ' damage!' : ' damage.'), 'dmg');
+        log([
+          { text: char.name, cls: 'combat-log-attacker' },
+          critRoll.crit ? ' CRITS ' : ' attacks ',
+          { text: mob.name, cls: 'combat-log-defender' },
+          ' for ' + dmg + (critRoll.crit ? ' damage!' : ' damage.')
+        ], 'dmg');
       }
 
       // DoT tick on mob (poison/burn applied earlier by spells)
@@ -11517,7 +11632,10 @@
       if (mob.namedMechanic && mob.namedMechanic.id === 'enrage' && !mob.enrageTriggered && mob.hp > 0 && mob.hp <= Math.floor(mob.maxHp * 0.4)) {
         mob.enrageTriggered = true;
         mob.atk = Math.floor(mob.atk * 1.45);
-        log(mob.name + ' becomes enraged!', 'dmg');
+        log([
+          { text: mob.name, cls: 'combat-log-mob' },
+          ' becomes enraged!'
+        ], 'dmg');
       }
 
       if (mob.hp > 0 && tryTriggerWeaponProc(event, setBonus)) {
@@ -11538,14 +11656,21 @@
 
       // Mob counter-attack — skip entirely if stunned
       if (isMobStunned()) {
-        log(mob.name + ' is stunned and cannot retaliate.', 'info');
+        log([
+          { text: mob.name, cls: 'combat-log-mob' },
+          ' is stunned and cannot retaliate.'
+        ], 'info');
         renderAll();
         return false;
       }
 
       // Player dodge
       if (rollPlayerDodge()) {
-        log('You dodge ' + mob.name + "'s attack!", 'info');
+        log([
+          'You dodge ',
+          { text: mob.name, cls: 'combat-log-mob' },
+          "'s attack!"
+        ], 'info');
         addDamageMeterDodge();
         renderAll();
         return false;
@@ -11558,19 +11683,38 @@
       md = mobCritRoll.dmg;
       // Tank-merc damage redirect
       md = applyMercTankRedirect(md);
+      if (md <= 0) {
+        log([
+          { text: mob.name, cls: 'combat-log-mob' },
+          ' misses you!'
+        ], 'info');
+        renderAll();
+        return false;
+      }
       char.hp -= md;
       addDamageMeterEntry('taken', md);
-      log(mob.name + (mobCritRoll.crit ? ' CRITS you for ' : ' hits back for ') + md + (mobCritRoll.crit ? '!' : '!'), 'dmg');
+      log([
+        { text: mob.name, cls: 'combat-log-attacker' },
+        mobCritRoll.crit ? ' CRITS ' : ' hits ',
+        { text: char.name, cls: 'combat-log-defender' },
+        ' for ' + md + (mobCritRoll.crit ? '!' : '!')
+      ], 'dmg');
 
       if (mob.namedMechanic && mob.namedMechanic.id === 'venom' && Math.random() < 0.35 && char.hp > 0) {
         const venomDmg = Math.max(1, Math.floor(mob.level * 0.8 + Math.random() * 6));
         char.hp -= venomDmg;
-        log(mob.name + ' venom burns for ' + venomDmg + ' extra damage.', 'dmg');
+        log([
+          { text: mob.name, cls: 'combat-log-mob' },
+          ' venom burns for ' + venomDmg + ' extra damage.'
+        ], 'dmg');
       }
 
       if (mob.namedMechanic && mob.namedMechanic.id === 'ward' && mob.turnCount % 3 === 0 && mob.hp > 0) {
         mob.wardReady = true;
-        log(mob.name + ' shimmers with Arcane Ward.', 'info');
+        log([
+          { text: mob.name, cls: 'combat-log-mob' },
+          ' shimmers with Arcane Ward.'
+        ], 'info');
       }
 
       if (char.hp <= 0) { die(); return true; }
@@ -11663,7 +11807,10 @@
       bumpStat('goldEarned', gold);
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
       if (typeof tickDailyQuestProgress === 'function') tickDailyQuestProgress(mob.baseName);
-      log(mob.name + ' is slain! +' + killXp.regularXp + ' XP' + (killXp.aaXp > 0 ? (' (+' + killXp.aaXp + ' AA XP)') : '') + ', +' + gold + 'g', 'loot');
+      log([
+        { text: mob.name, cls: 'combat-log-mob' },
+        ' is slain! +' + killXp.regularXp + ' XP' + (killXp.aaXp > 0 ? (' (+' + killXp.aaXp + ' AA XP)') : '') + ', +' + gold + 'g'
+      ], 'loot');
 
       const contract = getPrimaryContract(char);
       const contractMatch = contract && contract.active && !contract.complete && contract.zone === char.zone && (
@@ -11787,7 +11934,11 @@
     function die() {
       bumpStat('deaths', 1);
       if (char.hardcore) {
-        log('HARDCORE DEATH: ' + char.name + ' the ' + char.cls + ' has fallen forever at level ' + char.level + '.', 'dmg');
+        log([
+          'HARDCORE DEATH: ',
+          { text: char.name, cls: 'combat-log-player' },
+          ' the ' + char.cls + ' has fallen forever at level ' + char.level + '.'
+        ], 'dmg');
         if (typeof showToast === 'function') showToast('Hardcore death — save deleted.', 'error');
         try {
           if (activeSlot >= 0) slots[activeSlot] = null;
@@ -11835,7 +11986,7 @@
     function fleeCombat() {
       if (!mob) { log('Nothing to flee from.', 'info'); return; }
       if (Math.random() < 0.6) { log('You flee successfully!', 'info'); mob = null; renderMob(); }
-      else { const d = Math.floor(mob.atk * 0.7); char.hp -= d; log('Flee failed! ' + mob.name + ' hits you for ' + d + '.', 'dmg'); if (char.hp <= 0) die(); renderAll(); }
+      else { const d = Math.floor(mob.atk * 0.7); char.hp -= d; log(['Flee failed! ', { text: mob.name, cls: 'combat-log-mob' }, ' hits you for ' + d + '.'], 'dmg'); if (char.hp <= 0) die(); renderAll(); }
     }
 
 
@@ -11891,6 +12042,11 @@
       char.lootFilter.autoSellRareGear = !!p.autoSellRareGear;
       char.lootFilter.autoSellLegendaryGear = !!p.autoSellLegendaryGear;
       char.lootFilter.protectRarePlus = p.protectRarePlus !== false;
+      char.lootFilter.autoEquipEmptySlots = !!p.autoEquipEmptySlots;
+      char.lootFilter.autoEquipUpgradedEquipment = !!p.autoEquipUpgradedEquipment;
+      char.lootFilter.autoEquipUpgradeMetric = p.autoEquipUpgradeMetric || 'score';
+      char.lootFilter.autoEquipUpgradeThreshold = Number(p.autoEquipUpgradeThreshold ?? 1);
+      char.lootFilter.autoVendorOverflow = !!p.autoVendorOverflow;
       char.lootFilterPreset = id;
       if (!silent) {
         log('Loot filter preset applied: ' + p.label + '.', 'info');
@@ -12538,12 +12694,6 @@
         return;
       }
 
-      if (!canPlayerEquip(item)) {
-        const req = getItemLevelReq(item);
-        log('You must be Level ' + req + ' to equip ' + getItemDisplayName(item) + '.', 'info');
-        if (typeof showToast === 'function') showToast('Requires Level ' + req, 'error');
-        return;
-      }
 
       const slot = data.slot;
       const oldItem = char.equipment[slot];
@@ -12568,7 +12718,7 @@
     }
 
 
-    function travelZone(i) {
+    function travelZone(i, stayOnCurrentTab = false) {
       if (char.level < ZONES[i].minLvl) return;
       ensureExtendedSystems(char);
       if (char.dungeon.active) {
@@ -12580,7 +12730,9 @@
       log('Traveled to ' + ZONES[i].name + '.', 'info');
       const event = getActiveZoneEvent(i);
       log('Zone event: ' + event.name + ' — ' + event.desc, 'info');
-      renderAll(); renderZones(); switchTab('combat'); autoSave();
+      renderAll(); renderZones();
+      if (!stayOnCurrentTab) switchTab('combat');
+      autoSave();
     }
 
     // ══════════════════════════════════════════════
