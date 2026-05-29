@@ -12180,7 +12180,7 @@
       if (_visibleTab('runes') && !isBagInstallSelectorActive()) renderInv();
       if (_visibleTab('shop')) renderShop();
       if (_visibleTab('loot')) renderLootTab();
-      if (_visibleTab('spells')) renderSpellbook();
+      if (_visibleTab('spells') && !isSpellbookInteracting()) renderSpellbook();
       if (_visibleTab('dungeon')) renderDungeonTab();
       if (_visibleTab('aa')) renderAATab();
       if (_visibleTab('prestige')) renderPrestigeTab();
@@ -12590,6 +12590,15 @@
     function isBagInstallSelectorActive() {
       const active = document.activeElement;
       return !!(active && active.id && active.id.startsWith('bag-install-target-'));
+    }
+
+    // Returns true if the user has focus inside the spellbook panel (e.g. a gem-slot select is open).
+    function isSpellbookInteracting() {
+      const active = document.activeElement;
+      if (!active) return false;
+      // Any select/input inside #spellbook-list
+      const panel = document.getElementById('spellbook-list');
+      return !!(panel && panel.contains(active));
     }
 
     function getPendingBagInstallTarget(index, maxBagCount) {
