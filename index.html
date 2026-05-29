@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.1.9</title>
+    1.1.10</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2379,7 +2379,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.9</span>
+        1.1.10</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -10676,6 +10676,10 @@
       oldChar.level = Math.max(1, toInt(oldChar.level, 1));
       oldChar.xp = nonNegativeInt(oldChar.xp, 0);
       oldChar.xpNext = Math.max(100, nonNegativeInt(oldChar.xpNext, 100));
+      // Re-derive the XP-to-next-level from the current curve so existing
+      // characters (whose stored xpNext was computed under the old, far steeper
+      // curve) immediately benefit from the rebalanced progression.
+      if (typeof xpToNextLevel === 'function') oldChar.xpNext = xpToNextLevel(oldChar.level);
 
       oldChar.maxHp = Math.max(1, toInt(oldChar.maxHp, CLASSES[oldChar.cls].hp));
       oldChar.maxMp = Math.max(0, toInt(oldChar.maxMp, CLASSES[oldChar.cls].mp));
@@ -10817,11 +10821,11 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.9';
-        if (!silent) log('Upgraded save data to v1.1.9.', 'info');
+        oldChar.version = '1.1.10';
+        if (!silent) log('Upgraded save data to v1.1.10.', 'info');
       }
 
-      if (oldChar.version === '1.1.9') {
+      if (oldChar.version === '1.1.10') {
         if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
@@ -13312,7 +13316,7 @@
       const lowLevelGoldMult = getLowLevelGoldMultiplier(char.level);
       const zoneProgressGoldMult = getZoneProgressGoldMultiplier(char.zone);
       const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (mob.boss ? PHASE4.bossXpMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreXpBonus) : 1) * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1));
-      const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (mob.boss ? PHASE4.bossGoldMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreGoldBonus) : 1) * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult * zoneProgressGoldMult * (typeof getPetModifiers === 'function' ? (getPetModifiers(char).goldMult || 1) : 1));
+      const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (mob.boss ? PHASE4.bossGoldMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreGoldBonus) : 1) * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult * zoneProgressGoldMult * (typeof getPetModifiers === 'function' ? (getPetModifiers(char).goldMult || 1) : 1) * GOLD_DROP_MULT);
       const killXp = awardExperience(xp, 'combat');
       char.gold += gold;
       bumpStat('goldEarned', gold);
@@ -13439,16 +13443,29 @@
       renderAll(); autoSave();
     }
 
+    // ══════════════════════════════════════════════
+    //  BALANCE TUNABLES
+    // ══════════════════════════════════════════════
+    // Global multiplier on monster gold drops (live + offline AFK).
+    // Lower = less gold. 1.0 = original economy.
+    const GOLD_DROP_MULT = 0.4;
+
+    // XP required to advance FROM `level` TO `level + 1`.
+    // Levels 1–14 keep the original brisk early ramp. From 15 onward we switch
+    // to a polynomial that grows roughly in step with monster XP, so the grind
+    // holds steady around ~30 kills per level instead of exploding the way the
+    // old compounding curve did (it hit thousands of kills per level by the 20s).
+    function xpToNextLevel(level) {
+      const L = Math.max(1, Math.floor(level));
+      if (L < 15) return Math.floor(100 * Math.pow(1.48, L - 1));
+      return Math.floor(100 * Math.pow(L, 2.1));
+    }
+
     function checkLevelUp() {
       while (char.xp >= char.xpNext) {
         ensureExtendedSystems(char);
         char.xp -= char.xpNext; char.level++;
-        const xpScale = char.level < 30
-          ? 1.48
-          : (char.level < 60
-            ? 1.54
-            : (char.level < 85 ? 1.58 : 1.6));
-        char.xpNext = Math.floor(char.xpNext * xpScale);
+        char.xpNext = xpToNextLevel(char.level);
         char.maxHp = Math.floor(char.maxHp * 1.12);
         char.maxMp = Math.floor(char.maxMp * 1.1);
         char.hp = char.maxHp; char.mp = char.maxMp;
@@ -14773,7 +14790,7 @@
         const elite = Math.random() < ((goal === 'contract' && contract && contract.bossStep) ? 0.28 : 0.1);
 
         const xp = Math.floor((20 + lvl * 15) * zone.xpMult * (elite ? 3 : 1));
-        const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1) * getLowLevelGoldMultiplier(char.level));
+        const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1) * getLowLevelGoldMultiplier(char.level) * GOLD_DROP_MULT);
         totalXp += xp;
         totalGold += gold;
 
