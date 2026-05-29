@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.1.17</title>
+    1.1.18</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2567,7 +2567,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.17</span>
+        1.1.18</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3665,7 +3665,7 @@
           </h3>
           <div
             id="spellbook-list"
-            class="eq-bag-grid">
+            style="display:flex;flex-direction:column">
           </div>
         </div>
         <div
@@ -3727,7 +3727,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.1.17 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.1.18 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -6475,6 +6475,19 @@
       { id: 'attr_spirit', name: 'Ascendant Spirit', desc: '+1 WIS and +1 CHA per rank.', maxRank: 5, wisPerRank: 1, chaPerRank: 1 }
     ];
 
+    // Shared "General" branch — non-class-specific upgrades available to every
+    // class: flat single stats, HP/MP pools, luck (loot/magic find), toughness,
+    // and mana regen. HP/MP bonuses are baked into max pools via reconcileAAVitals().
+    const AA_GENERAL_NODES = [
+      { id: 'gen_vitality', name: 'Vitality', desc: '+40 max HP per rank.', maxRank: 5, hpBonusPerRank: 40 },
+      { id: 'gen_mana', name: 'Mana Reservoir', desc: '+30 max MP per rank.', maxRank: 5, mpBonusPerRank: 30 },
+      { id: 'gen_weapon', name: 'Weapon Training', desc: '+2 ATK per rank.', maxRank: 5, atkBonusPerRank: 2 },
+      { id: 'gen_armor', name: 'Armor Training', desc: '+2 DEF per rank.', maxRank: 5, defBonusPerRank: 2 },
+      { id: 'gen_luck', name: "Fortune's Favor", desc: '+3% luck (loot &amp; magic find) per rank.', maxRank: 5, lootMultPerRank: 0.03 },
+      { id: 'gen_hardiness', name: 'Hardiness', desc: '-2% incoming damage per rank.', maxRank: 5, mobDamageMultPerRank: -0.02 },
+      { id: 'gen_focus', name: 'Inner Focus', desc: '+1 MP regen per rank.', maxRank: 5, mpRegenPerRank: 1 }
+    ];
+
     const AA_ARCHETYPE_NODES = {
       melee: [
         { id: 'discipline', name: 'Discipline', desc: '+2 ATK per rank.', maxRank: 5, atkBonusPerRank: 2 },
@@ -6643,7 +6656,12 @@
         key: archetype + '_' + n.id,
         title: n.name + ' (' + cls + ')'
       }));
-      return baseNodes.concat(attrNodes).concat(classNodes);
+      const generalNodes = AA_GENERAL_NODES.map(n => ({
+        ...n,
+        key: 'general_' + n.id,
+        title: n.name
+      }));
+      return baseNodes.concat(attrNodes).concat(generalNodes).concat(classNodes);
     }
 
     function getAANodeRequirementState(targetChar, node, allNodes, nodeRanksOverride = null) {
@@ -6667,6 +6685,8 @@
       const gains = [];
       if (node.atkBonusPerRank) gains.push('+' + node.atkBonusPerRank + ' ATK');
       if (node.defBonusPerRank) gains.push('+' + node.defBonusPerRank + ' DEF');
+      if (node.hpBonusPerRank) gains.push('+' + node.hpBonusPerRank + ' Max HP');
+      if (node.mpBonusPerRank) gains.push('+' + node.mpBonusPerRank + ' Max MP');
       if (node.extraSpellSlotsPerRank) gains.push('+' + node.extraSpellSlotsPerRank + ' Spell Sigil Slot');
       if (node.mpRegenPerRank) gains.push('+' + node.mpRegenPerRank + ' MP Regen');
       if (node.playerDamageMultPerRank) gains.push('+' + Math.round(node.playerDamageMultPerRank * 100) + '% Melee Damage');
@@ -7340,6 +7360,8 @@
       targetChar.aa.spent = Math.max(0, Math.floor(Number(targetChar.aa.spent || 0)));
       targetChar.aa.xpProgress = Math.max(0, Math.floor(Number(targetChar.aa.xpProgress || 0)));
       targetChar.aa.xpAllocPct = Math.max(0, Math.min(100, Math.floor(Number(targetChar.aa.xpAllocPct || 0))));
+      targetChar.aa.appliedHp = Math.max(0, Math.floor(Number(targetChar.aa.appliedHp || 0)));
+      targetChar.aa.appliedMp = Math.max(0, Math.floor(Number(targetChar.aa.appliedMp || 0)));
       if (!targetChar.aa.nodes || typeof targetChar.aa.nodes !== 'object' || Array.isArray(targetChar.aa.nodes)) {
         targetChar.aa.nodes = {};
       }
@@ -7347,8 +7369,9 @@
         targetChar.aa.presets = { slot1: null, slot2: null };
       }
       if (!targetChar.aa.ui || typeof targetChar.aa.ui !== 'object' || Array.isArray(targetChar.aa.ui)) {
-        targetChar.aa.ui = { archetypeOpen: true, classOpen: true, capstoneOpen: true };
+        targetChar.aa.ui = { generalOpen: true, archetypeOpen: true, classOpen: true, capstoneOpen: true };
       }
+      if (typeof targetChar.aa.ui.generalOpen !== 'boolean') targetChar.aa.ui.generalOpen = true;
       if (typeof targetChar.aa.ui.archetypeOpen !== 'boolean') targetChar.aa.ui.archetypeOpen = true;
       if (typeof targetChar.aa.ui.classOpen !== 'boolean') targetChar.aa.ui.classOpen = true;
       if (typeof targetChar.aa.ui.capstoneOpen !== 'boolean') targetChar.aa.ui.capstoneOpen = true;
@@ -7440,7 +7463,9 @@
         healMult: 1,
         manaMult: 1,
         lootMult: 1,
-        mpRegenBonus: 0
+        mpRegenBonus: 0,
+        hpBonus: 0,
+        mpBonus: 0
       };
       if (!targetChar) return out;
       ensureExtendedSystems(targetChar);
@@ -7452,6 +7477,8 @@
         out.defBonus += Math.floor((node.defBonusPerRank || 0) * rank);
         out.extraSpellSlots += Math.floor((node.extraSpellSlotsPerRank || 0) * rank);
         out.mpRegenBonus += Math.floor((node.mpRegenPerRank || 0) * rank);
+        out.hpBonus += Math.floor((node.hpBonusPerRank || 0) * rank);
+        out.mpBonus += Math.floor((node.mpBonusPerRank || 0) * rank);
         out.playerDamageMult *= (1 + (node.playerDamageMultPerRank || 0) * rank);
         out.mobDamageMult *= (1 + (node.mobDamageMultPerRank || 0) * rank);
         out.spellPowerMult *= (1 + (node.spellPowerMultPerRank || 0) * rank);
@@ -7460,6 +7487,46 @@
         out.lootMult *= (1 + (node.lootMultPerRank || 0) * rank);
       });
       return out;
+    }
+
+    // Flat HP/MP granted by allocated General-branch AA nodes.
+    function getAAVitalBonuses(targetChar) {
+      let hp = 0, mp = 0;
+      if (!targetChar || !targetChar.aa || !targetChar.aa.nodes) return { hp, mp };
+      const nodes = getAANodesForClass(targetChar.cls);
+      nodes.forEach(node => {
+        const rank = Number(targetChar.aa.nodes[node.key] || 0);
+        if (!rank) return;
+        hp += Math.floor((node.hpBonusPerRank || 0) * rank);
+        mp += Math.floor((node.mpBonusPerRank || 0) * rank);
+      });
+      return { hp, mp };
+    }
+
+    // Bake the AA HP/MP bonus into the stored max pools (the game has no central
+    // stat recompute, so we apply the delta vs. what's already applied — like
+    // equipping/unequipping gear). Idempotent and safe to call repeatedly.
+    function reconcileAAVitals(targetChar) {
+      if (!targetChar || !targetChar.aa) return;
+      const { hp: targetHp, mp: targetMp } = getAAVitalBonuses(targetChar);
+      const appliedHp = Math.max(0, Math.floor(Number(targetChar.aa.appliedHp || 0)));
+      const appliedMp = Math.max(0, Math.floor(Number(targetChar.aa.appliedMp || 0)));
+
+      const dHp = targetHp - appliedHp;
+      if (dHp !== 0) {
+        targetChar.maxHp = Math.max(1, Math.floor(Number(targetChar.maxHp || 1)) + dHp);
+        if (dHp > 0) targetChar.hp = Math.min(targetChar.maxHp, Math.floor(Number(targetChar.hp || 0)) + dHp);
+        else targetChar.hp = Math.min(Math.floor(Number(targetChar.hp || 0)), targetChar.maxHp);
+        targetChar.aa.appliedHp = targetHp;
+      }
+
+      const dMp = targetMp - appliedMp;
+      if (dMp !== 0) {
+        targetChar.maxMp = Math.max(0, Math.floor(Number(targetChar.maxMp || 0)) + dMp);
+        if (dMp > 0) targetChar.mp = Math.min(targetChar.maxMp, Math.floor(Number(targetChar.mp || 0)) + dMp);
+        else targetChar.mp = Math.min(Math.floor(Number(targetChar.mp || 0)), targetChar.maxMp);
+        targetChar.aa.appliedMp = targetMp;
+      }
     }
 
     function awardExperience(rawXp, source = 'xp') {
@@ -8180,7 +8247,9 @@
         healMult: 1,
         manaMult: 1,
         lootMult: 1,
-        mpRegenBonus: 0
+        mpRegenBonus: 0,
+        hpBonus: 0,
+        mpBonus: 0
       };
       if (!targetChar) return out;
       const aaNodes = getAANodesForClass(targetChar.cls);
@@ -8192,6 +8261,8 @@
         out.defBonus += Math.floor((node.defBonusPerRank || 0) * rank);
         out.extraSpellSlots += Math.floor((node.extraSpellSlotsPerRank || 0) * rank);
         out.mpRegenBonus += Math.floor((node.mpRegenPerRank || 0) * rank);
+        out.hpBonus += Math.floor((node.hpBonusPerRank || 0) * rank);
+        out.mpBonus += Math.floor((node.mpBonusPerRank || 0) * rank);
         out.playerDamageMult *= (1 + (node.playerDamageMultPerRank || 0) * rank);
         out.mobDamageMult *= (1 + (node.mobDamageMultPerRank || 0) * rank);
         out.spellPowerMult *= (1 + (node.spellPowerMultPerRank || 0) * rank);
@@ -8207,6 +8278,8 @@
       return {
         atk: m.atkBonus,
         def: m.defBonus,
+        hp: m.hpBonus,
+        mp: m.mpBonus,
         memSlots: Math.max(2, Math.min(6, 2 + Math.floor(Number(m.extraSpellSlots || 0)))),
         mpRegen: m.mpRegenBonus,
         meleePct: Math.round((m.playerDamageMult - 1) * 100),
@@ -8255,6 +8328,7 @@
       char.aa.nodes[node.key] = rank + 1;
       char.aa.points -= cost;
       char.aa.spent += cost;
+      reconcileAAVitals(char);
       log('AA upgraded: ' + node.name + ' (' + char.aa.nodes[node.key] + '/' + node.maxRank + ')' + (cost > 1 ? ' [-' + cost + ' pts]' : '') + '.', 'lvl');
       renderAll();
       renderAATab();
@@ -8287,6 +8361,7 @@
     function toggleAAGroups(groupKey) {
       if (!char) return;
       ensureExtendedSystems(char);
+      if (groupKey === 'general') char.aa.ui.generalOpen = !char.aa.ui.generalOpen;
       if (groupKey === 'archetype') char.aa.ui.archetypeOpen = !char.aa.ui.archetypeOpen;
       if (groupKey === 'class') char.aa.ui.classOpen = !char.aa.ui.classOpen;
       if (groupKey === 'capstone') char.aa.ui.capstoneOpen = !char.aa.ui.capstoneOpen;
@@ -8453,6 +8528,7 @@
       char.aa.sim.active = false;
       char.aa.sim.nodes = Object.assign({}, target);
       char.aa.sim.points = char.aa.points;
+      reconcileAAVitals(char);
       log('Applied simulator build.', 'lvl');
       renderAll();
       renderAATab();
@@ -8480,6 +8556,7 @@
       });
       char.aa.spent = 0;
       char.aa.points = Math.max(0, Number(char.aa.points || 0)) + refunded;
+      reconcileAAVitals(char);
       log('AA respecced for ' + cost + 'g. Refunded ' + refunded + ' points.', 'loot');
       renderAll();
       renderAATab();
@@ -8530,6 +8607,7 @@
       char.aa.nodes = target;
       char.aa.spent = targetSpent;
       char.aa.points = totalOwned - targetSpent;
+      reconcileAAVitals(char);
       log('AA preset ' + (slotName === 'slot1' ? '1' : '2') + ' loaded.', 'lvl');
       renderAll();
       renderAATab();
@@ -11572,6 +11650,7 @@
       if (!char.quests) char.quests = freshQuests();
       ensureExtendedSystems(char);
       ensureSpellState(char);
+      reconcileAAVitals(char);
 
       autoUseSkills = char.autoUseSkills !== false;
       if (Array.isArray(char.autoSkillSlots) && char.autoSkillSlots.length) {
@@ -12969,6 +13048,8 @@
         '<div class="quest-name" style="margin:0 0 6px 0">Build Compare Overlay</div>' +
         row('ATK Bonus', 'atk') +
         row('DEF Bonus', 'def') +
+        row('HP Bonus', 'hp') +
+        row('MP Bonus', 'mp') +
         row('Spell Sigils', 'memSlots') +
         row('MP Regen', 'mpRegen') +
         row('Melee Damage', 'meleePct', '%') +
@@ -12981,7 +13062,8 @@
 
       const classPrefix = aaClassKey(char.cls) + '_';
       const capstoneNodes = aaNodes.filter(n => n.maxRank === 1);
-      const archetypeNodes = aaNodes.filter(n => n.key.indexOf('melee_') === 0 || n.key.indexOf('hybrid_') === 0 || n.key.indexOf('priest_') === 0 || n.key.indexOf('caster_') === 0);
+      const generalNodes = aaNodes.filter(n => n.key.indexOf('general_') === 0 || n.key.indexOf('_attr_') >= 0);
+      const archetypeNodes = aaNodes.filter(n => (n.key.indexOf('melee_') === 0 || n.key.indexOf('hybrid_') === 0 || n.key.indexOf('priest_') === 0 || n.key.indexOf('caster_') === 0) && n.key.indexOf('_attr_') < 0);
       const classNodes = aaNodes.filter(n => n.key.indexOf(classPrefix) === 0 && n.maxRank !== 1);
 
       function groupHeader(label, key, openState) {
@@ -13007,6 +13089,9 @@
         });
         return html;
       }
+
+      aaHtml += groupHeader('General Branch', 'general', char.aa.ui.generalOpen);
+      if (char.aa.ui.generalOpen) aaHtml += renderNodeList(generalNodes);
 
       aaHtml += groupHeader('Archetype Branch', 'archetype', char.aa.ui.archetypeOpen);
       if (char.aa.ui.archetypeOpen) aaHtml += renderNodeList(archetypeNodes);
