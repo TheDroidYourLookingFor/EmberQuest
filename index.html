@@ -9,10 +9,30 @@
     content="width=device-width, initial-scale=1.0">
   <title>EmberQuest
     RPG - Version
-    1.1.8</title>
+    1.1.9</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* Login screen */
+    #screen-login.active { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; background: linear-gradient(160deg, #2a2418 0%, #4a3a22 55%, #6b4f28 100%); padding: 16px; z-index: 50; }
+    #screen-login .login-card { background: rgba(20,16,10,0.88); border: 1px solid rgba(255,220,160,0.25); border-radius: 12px; padding: 28px 26px; width: 100%; max-width: 360px; color: #f0e6cc; box-shadow: 0 10px 40px rgba(0,0,0,0.5); font-family: var(--font); }
+    #screen-login h1 { font-family: 'Cinzel', serif; font-size: 28px; text-align: center; margin-bottom: 6px; letter-spacing: 2px; color: #f4d68a; }
+    #screen-login p { font-size: 13px; text-align: center; opacity: 0.75; margin-bottom: 18px; }
+    #screen-login input { width: 100%; padding: 10px 12px; margin-bottom: 10px; border-radius: 6px; border: 1px solid rgba(255,220,160,0.25); background: rgba(0,0,0,0.35); color: #f0e6cc; font-size: 14px; font-family: var(--font); }
+    #screen-login input:focus { outline: none; border-color: #f4d68a; }
+    #screen-login .login-actions { display: flex; gap: 8px; margin-top: 6px; }
+    #screen-login button { flex: 1; padding: 10px 12px; border-radius: 6px; border: 1px solid rgba(255,220,160,0.35); background: linear-gradient(180deg, #6b4f28, #3a2a14); color: #f4d68a; font-weight: 600; cursor: pointer; font-family: var(--font); font-size: 13px; }
+    #screen-login button:hover { background: linear-gradient(180deg, #8a6534, #4a3618); }
+    #screen-login button:disabled { opacity: 0.6; cursor: wait; }
+    #login-msg { margin-top: 10px; font-size: 12px; text-align: center; min-height: 16px; color: #f4a87a; }
+    #login-msg.success { color: #8ad078; }
+    /* Logout button on charselect */
+    #cs-account { position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 8px; z-index: 20; font-size: 12px; color: #f0e6cc; background: rgba(0,0,0,0.35); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,220,160,0.2); font-family: var(--font); }
+    #cs-account button { background: transparent; border: 1px solid rgba(255,220,160,0.35); color: #f4d68a; padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: var(--font); }
+    #cs-account button:hover { background: rgba(255,220,160,0.1); }
+  </style>
   <style>
     *,
     *::before,
@@ -2017,11 +2037,30 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════
+     SCREEN 0: Login / Register
+════════════════════════════════════════════════════ -->
+  <div id="screen-login" class="screen active">
+    <div class="login-card">
+      <h1>EmberQuest</h1>
+      <p>Sign in to sync your characters across devices.</p>
+      <form id="login-form" autocomplete="on">
+        <input id="login-user" type="email" placeholder="Email" autocomplete="username" required>
+        <input id="login-pass" type="password" placeholder="Password (min 6 chars)" autocomplete="current-password" minlength="6" required>
+        <div class="login-actions">
+          <button type="submit" id="login-signin">Sign In</button>
+          <button type="button" id="login-signup">Create Account</button>
+        </div>
+        <div id="login-msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
      SCREEN 1: Character Select / Slot Picker
 ════════════════════════════════════════════════════ -->
   <div
     id="screen-charselect"
-    class="screen active">
+    class="screen">
 
     <!-- Background gradients and lighting -->
     <div
@@ -2214,6 +2253,12 @@
       </div>
     </div>
 
+    <!-- Account / logout badge -->
+    <div id="cs-account">
+      <span id="cs-user-email"></span>
+      <button type="button" onclick="Cloud.signOut()">Log Out</button>
+    </div>
+
     <!-- LEFT-SIDE classic control panel -->
     <div
       id="charselect-panel">
@@ -2370,7 +2415,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.1.8</span>
+        1.1.9</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3838,6 +3883,116 @@
     const MAX_SLOTS = 24;
     const SAVE_KEY = 'EmberQuest_slots';
     const UI_LAYOUT_KEY = 'EmberQuest_uiLayout';
+
+    // ══════════════════════════════════════════════
+    //  SUPABASE CLOUD SAVES
+    // ══════════════════════════════════════════════
+    const SUPA_URL = 'https://vikrewfgxxkiyeqwpgio.supabase.co';
+    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3Jld2ZneHhraXllcXdwZ2lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMTYwNTEsImV4cCI6MjA5NTU5MjA1MX0.eezxLw6-0DMIXQsixWWFHXBqI4Lr5Iztw4vzGTKxeDo';
+    let sb = null;
+    let currentUser = null;
+
+    const Cloud = {
+      ready: false,
+      syncTimer: null,
+      init() {
+        if (!window.supabase) { console.warn('Supabase SDK not loaded'); return; }
+        sb = window.supabase.createClient(SUPA_URL, SUPA_ANON, { auth: { persistSession: true, autoRefreshToken: true } });
+        this.ready = true;
+      },
+      async start() {
+        this.init();
+        if (!this.ready) {
+          // Offline fallback — pure localStorage
+          loadSlots(); renderSlots(); showScreen('screen-charselect'); return;
+        }
+        const { data: { session } } = await sb.auth.getSession();
+        if (session && session.user) {
+          currentUser = session.user;
+          await this.afterLogin();
+        } else {
+          this.showLogin();
+        }
+      },
+      showLogin() {
+        showScreen('screen-login');
+        setTimeout(() => { const u = document.getElementById('login-user'); if (u) u.focus(); }, 30);
+      },
+      async signIn(email, password) {
+        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        currentUser = data.user;
+        await this.afterLogin();
+      },
+      async signUp(email, password) {
+        const { data, error } = await sb.auth.signUp({ email, password });
+        if (error) throw error;
+        if (data.session && data.user) {
+          currentUser = data.user;
+          await this.afterLogin();
+          return { confirmed: true };
+        }
+        return { confirmed: false };
+      },
+      async signOut() {
+        clearTimeout(this.syncTimer); this.syncTimer = null;
+        if (sb) { try { await sb.auth.signOut(); } catch (e) {} }
+        currentUser = null;
+        slots = []; while (slots.length < MAX_SLOTS) slots.push(null);
+        try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+        this.showLogin();
+      },
+      async afterLogin() {
+        const cloudSlots = await this.fetchAllSlots();
+        let localSlots = [];
+        try { localSlots = JSON.parse(localStorage.getItem(SAVE_KEY)) || []; } catch (e) {}
+        const cloudHasAny = cloudSlots.some(s => s);
+        const localHasAny = Array.isArray(localSlots) && localSlots.some(s => s);
+        if (!cloudHasAny && localHasAny) {
+          slots = localSlots.slice();
+          while (slots.length < MAX_SLOTS) slots.push(null);
+          await this.pushAll();
+        } else {
+          slots = cloudSlots;
+        }
+        try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
+        const badge = document.getElementById('cs-user-email');
+        if (badge && currentUser) badge.textContent = currentUser.email || '';
+        showScreen('screen-charselect');
+        renderSlots();
+      },
+      async fetchAllSlots() {
+        const out = new Array(MAX_SLOTS).fill(null);
+        if (!sb || !currentUser) return out;
+        const { data, error } = await sb.from('saves').select('slot, data').eq('user_id', currentUser.id);
+        if (error) { console.warn('cloud load failed', error); return out; }
+        (data || []).forEach(r => { if (r.slot >= 0 && r.slot < MAX_SLOTS) out[r.slot] = r.data; });
+        return out;
+      },
+      queueSync() {
+        if (!sb || !currentUser) return;
+        clearTimeout(this.syncTimer);
+        this.syncTimer = setTimeout(() => { this.pushAll(); }, 800);
+      },
+      async pushAll() {
+        if (!sb || !currentUser) return;
+        const rows = [];
+        const deletes = [];
+        for (let i = 0; i < MAX_SLOTS; i++) {
+          if (slots[i]) rows.push({ user_id: currentUser.id, slot: i, data: slots[i], updated_at: new Date().toISOString() });
+          else deletes.push(i);
+        }
+        try {
+          if (rows.length) {
+            const { error } = await sb.from('saves').upsert(rows, { onConflict: 'user_id,slot' });
+            if (error) console.warn('cloud save failed', error);
+          }
+          if (deletes.length) {
+            await sb.from('saves').delete().eq('user_id', currentUser.id).in('slot', deletes);
+          }
+        } catch (e) { console.warn('cloud sync error', e); }
+      }
+    };
 
     const CLASSES = {
       Warrior: { hp: 160, mp: 40, atk: 18, def: 12, mpRegen: 2, skill: 'Taunt', skillMp: 10, skillEffect: 'taunt' },
@@ -9291,6 +9446,7 @@
         slots[activeSlot] = JSON.parse(JSON.stringify(char));
       }
       try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) { }
+      Cloud.queueSync();
       flashSaved();
     }
 
@@ -9581,6 +9737,7 @@
       }
 
       localStorage.setItem(SAVE_KEY, JSON.stringify(slots));
+      Cloud.queueSync();
       showScreen('screen-charselect');
       renderSlots();
     }
@@ -10515,11 +10672,11 @@
       }
 
       if (oldChar.version === '1.0.9') {
-        oldChar.version = '1.1.8';
-        if (!silent) log('Upgraded save data to v1.1.8.', 'info');
+        oldChar.version = '1.1.9';
+        if (!silent) log('Upgraded save data to v1.1.9.', 'info');
       }
 
-      if (oldChar.version === '1.1.8') {
+      if (oldChar.version === '1.1.9') {
         if (typeof ensureStatsState === 'function') ensureStatsState(oldChar);
         if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(oldChar);
         if (!oldChar.bossCooldowns || typeof oldChar.bossCooldowns !== 'object') oldChar.bossCooldowns = {};
@@ -15058,8 +15215,43 @@
     window.addEventListener('resize', () => requestAnimationFrame(syncCombatLogSize));
     loadUiLayoutPreference();
     loadSharedBank();
-    loadSlots();
-    renderSlots();
+    loadSlots(); // fills local slots from localStorage as a fallback before cloud takes over
+
+    // Login form wiring
+    (function wireLogin() {
+      const form = document.getElementById('login-form');
+      const signupBtn = document.getElementById('login-signup');
+      const msg = document.getElementById('login-msg');
+      const userEl = document.getElementById('login-user');
+      const passEl = document.getElementById('login-pass');
+      const setMsg = (t, ok) => { msg.textContent = t || ''; msg.className = ok ? 'success' : ''; };
+      const busy = (on) => { form.querySelectorAll('button').forEach(b => b.disabled = on); };
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          setMsg('Signing in…');
+          busy(true);
+          try { await Cloud.signIn(userEl.value.trim(), passEl.value); setMsg(''); }
+          catch (err) { setMsg(err.message || 'Sign-in failed'); }
+          finally { busy(false); }
+        });
+      }
+      if (signupBtn) {
+        signupBtn.addEventListener('click', async () => {
+          if (!userEl.value || passEl.value.length < 6) { setMsg('Enter email and a password of 6+ characters.'); return; }
+          setMsg('Creating account…');
+          busy(true);
+          try {
+            const r = await Cloud.signUp(userEl.value.trim(), passEl.value);
+            if (r && r.confirmed === false) setMsg('Check your email to confirm, then sign in.', true);
+            else setMsg('');
+          } catch (err) { setMsg(err.message || 'Sign-up failed'); }
+          finally { busy(false); }
+        });
+      }
+    })();
+
+    Cloud.start();
   </script>
 </body>
 
