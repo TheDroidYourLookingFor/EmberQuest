@@ -16959,34 +16959,121 @@
     }
 
     let leaderboardFetchToken = 0;
+    let lbSortKey = 'power';
+    let lbSubTab = 'rankings';
+    let lbCachedEntries = null;
+    let lbScopeNote = '';
 
-    function renderLeaderboardRows(el, entries, scopeNote) {
-      if (!entries.length) {
-        el.innerHTML = (scopeNote ? '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">' + scopeNote + '</div>' : '') + '<div class="eq-empty-bag">No characters to show yet.</div>';
+    // ── Sort config ─────────────────────────────────────────────────────────
+    const LB_SORTS = [
+      { key: 'power',       label: '⚡ Power',    field: e => e.power,       color: '#22c55e' },
+      { key: 'level',       label: '📈 Level',    field: e => e.level,       color: '#3b82f6' },
+      { key: 'prestige',    label: '👑 Prestige', field: e => e.prestigeRank,color: '#a855f7' },
+      { key: 'hp',          label: '❤ HP',        field: e => e.maxHp,       color: '#ef4444' },
+      { key: 'mp',          label: '🔵 MP',        field: e => e.maxMp,       color: '#3b82f6' },
+      { key: 'aa',          label: '✨ AA',        field: e => e.aaSpent,     color: '#eab308' },
+      { key: 'gold',        label: '💰 Gold',     field: e => e.gold,        color: '#f59e0b' },
+      { key: 'atk',         label: '⚔ ATK',       field: e => e.atk,         color: '#f97316' },
+      { key: 'def',         label: '🛡 DEF',       field: e => e.def,         color: '#64748b' },
+    ];
+
+    function getLbSortConf() {
+      return LB_SORTS.find(s => s.key === lbSortKey) || LB_SORTS[0];
+    }
+
+    function setLbSort(key) {
+      lbSortKey = key;
+      renderLeaderboardContent();
+    }
+
+    function setLbSubTab(tab) {
+      lbSubTab = tab;
+      renderLeaderboardContent();
+    }
+
+    function renderLeaderboardContent() {
+      const el = document.getElementById('leaderboard-list');
+      if (!el) return;
+
+      // ── Scope note + sub-tab bar ─────────────────────────────────────────
+      let html = (lbScopeNote ? '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">' + lbScopeNote + '</div>' : '')
+        + '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">'
+        + ['rankings', 'trends'].map(t => {
+            const label = t === 'rankings' ? '🏆 Rankings' : '📊 Trends';
+            const active = t === lbSubTab;
+            return '<button class="btn' + (active ? ' active' : '') + '" style="font-size:11px" data-lbsubtab="' + t + '">' + label + '</button>';
+          }).join('')
+        + '</div>';
+
+      if (lbSubTab === 'trends') {
+        html += renderLbTrends();
+        el.innerHTML = html;
         return;
       }
-      entries.sort((a, b) => b.power - a.power || b.level - a.level || b.prestigeRank - a.prestigeRank);
+
+      // ── Sort pill bar ─────────────────────────────────────────────────────
+      html += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">';
+      LB_SORTS.forEach(sc => {
+        const active = sc.key === lbSortKey;
+        html += '<button data-lbsort="' + sc.key + '" style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid '
+          + (active ? sc.color : 'var(--border)') + ';background:' + (active ? sc.color + '18' : 'var(--bg-primary)') + ';color:'
+          + (active ? sc.color : 'var(--text-secondary)') + ';cursor:pointer;white-space:nowrap">' + sc.label + '</button>';
+      });
+      html += '</div>';
+
+      // ── Ranking rows ──────────────────────────────────────────────────────
+      const entries = lbCachedEntries;
+      if (!entries || !entries.length) {
+        html += '<div style="color:var(--text-secondary);font-size:12px;padding:12px">No characters to rank yet.</div>';
+        el.innerHTML = html;
+        return;
+      }
+
+      const conf = getLbSortConf();
+      const sorted = entries.slice().sort((a, b) => conf.field(b) - conf.field(a) || b.power - a.power);
       const medal = ['#f5c542', '#c8d0d8', '#cd7f32'];
-      let html = scopeNote ? ('<div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">' + scopeNote + '</div>') : '';
-      html += '<div style="display:flex;flex-direction:column;gap:8px">';
-      entries.forEach((e, idx) => {
+
+      html += '<div style="display:flex;flex-direction:column;gap:6px">';
+      sorted.forEach((e, idx) => {
         const rank = idx + 1;
         const rankColor = idx < 3 ? medal[idx] : 'var(--text-secondary)';
         const youTag = e.isYou ? ' <span style="font-size:10px;color:#22d3ee">(You)</span>' : '';
-        const hcTag = e.hardcore ? ' <span style="color:#f4a87a;font-size:9px;border:1px solid #f4a87a;border-radius:3px;padding:0 4px;vertical-align:middle">HARDCORE</span>' : '';
-        const pTag = e.prestigeRank > 0 ? ' · <span style="color:#a855f7">Prestige ' + e.prestigeRank + '</span>' : '';
-        const meta = [e.level ? ('Lv ' + e.level) : '', escapeHtml(e.race), escapeHtml(e.cls)].filter(Boolean).join(' ');
-        const border = e.isYou ? '1.5px solid #22d3ee' : '0.5px solid var(--border)';
+        const hcTag  = e.hardcore ? ' <span style="color:#f4a87a;font-size:9px;border:1px solid #f4a87a;border-radius:3px;padding:0 4px">HC</span>' : '';
+        const pTag   = e.prestigeRank > 0 ? '<span style="color:#a855f7;font-size:10px">P' + e.prestigeRank + '</span> ' : '';
+        const meta   = [e.level ? ('Lv ' + e.level) : '', escapeHtml(e.race), escapeHtml(e.cls)].filter(Boolean).join(' · ');
+        const border = e.isYou ? '1.5px solid #22d3ee' : '1px solid var(--border)';
+
+        // Highlighted stat value (what we're sorting by)
+        const sortVal = conf.field(e);
+        const statLabel = conf.label.replace(/^\S+\s/, ''); // strip emoji
+
+        // All stats as chips
+        const chips = [
+          { label: 'ATK',  val: e.atk,        c: '#f97316' },
+          { label: 'DEF',  val: e.def,        c: '#64748b' },
+          { label: 'HP',   val: e.maxHp,      c: '#ef4444' },
+          { label: 'MP',   val: e.maxMp,      c: '#3b82f6' },
+          { label: 'AA',   val: e.aaSpent,    c: '#eab308' },
+          { label: 'Gold', val: e.gold,       c: '#f59e0b' },
+        ].map(ch => {
+          const isActive = (ch.label.toLowerCase() === lbSortKey || (lbSortKey === 'hp' && ch.label === 'HP') || (lbSortKey === 'mp' && ch.label === 'MP'));
+          return '<span style="font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;border:1px solid '
+            + (isActive ? ch.c + '60' : 'var(--border)') + ';background:'
+            + (isActive ? ch.c + '15' : 'transparent') + ';color:'
+            + (isActive ? ch.c : 'var(--text-secondary)') + '">' + ch.label + ' ' + ch.val.toLocaleString() + '</span>';
+        }).join('');
+
         html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:' + border + ';border-radius:var(--radius-md);background:var(--bg-secondary)">'
-          + '<div style="font-size:18px;font-weight:700;min-width:28px;text-align:center;color:' + rankColor + '">' + rank + '</div>'
+          + '<div style="font-size:18px;font-weight:700;min-width:26px;text-align:center;color:' + rankColor + '">' + rank + '</div>'
           + '<div style="flex:1;min-width:0">'
-            + '<div style="font-weight:600;font-size:13px">' + escapeHtml(e.name) + youTag + hcTag + '</div>'
-            + '<div style="font-size:11px;color:var(--text-secondary)">' + meta + pTag + '</div>'
-            + '<div style="font-size:10px;color:var(--text-secondary);margin-top:2px">ATK ' + e.atk.toLocaleString() + ' · DEF ' + e.def.toLocaleString() + ' · HP ' + e.maxHp.toLocaleString() + ' · MP ' + e.maxMp.toLocaleString() + ' · AA ' + e.aaSpent + ' · ' + e.gold.toLocaleString() + 'g</div>'
+            + '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + pTag + escapeHtml(e.name) + youTag + hcTag + '</div>'
+            + '<div style="font-size:10px;color:var(--text-secondary);margin-top:1px">' + meta + '</div>'
+            + '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">' + chips + '</div>'
           + '</div>'
-          + '<div style="text-align:right">'
-            + '<div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em">Power</div>'
-            + '<div style="font-weight:700;font-size:15px;color:#22c55e">' + e.power.toLocaleString() + '</div>'
+          + '<div style="text-align:right;flex-shrink:0">'
+            + '<div style="font-size:9px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em">' + statLabel + '</div>'
+            + '<div style="font-weight:700;font-size:16px;color:' + conf.color + '">' + sortVal.toLocaleString() + '</div>'
+            + (lbSortKey !== 'power' ? '<div style="font-size:10px;color:var(--text-secondary)">Power ' + e.power.toLocaleString() + '</div>' : '')
           + '</div>'
         + '</div>';
       });
@@ -16994,42 +17081,137 @@
       el.innerHTML = html;
     }
 
+    function renderLbTrends() {
+      // Gather data from all local slots
+      const allChars = [];
+      for (let i = 0; i < slots.length; i++) {
+        const c = (i === activeSlot && char) ? char : slots[i];
+        if (c && typeof c === 'object') allChars.push(c);
+      }
+
+      if (!allChars.length) {
+        return '<div style="color:var(--text-secondary);font-size:12px;padding:12px">No local characters found.</div>';
+      }
+
+      const classCount = {}, raceCount = {};
+      let totalKills = 0, totalNamedKills = 0, totalEliteKills = 0, totalDeaths = 0, totalGoldEarned = 0, totalBossKills = 0;
+      let maxLevel = 0, maxPower = 0, maxPowerName = '';
+
+      allChars.forEach(c => {
+        const cls = c.cls || 'Unknown';
+        const race = c.race || 'Unknown';
+        classCount[cls] = (classCount[cls] || 0) + 1;
+        raceCount[race] = (raceCount[race] || 0) + 1;
+        totalKills       += Number(c.stats && c.stats.kills        || 0);
+        totalNamedKills  += Number(c.stats && c.stats.namedKills   || 0);
+        totalEliteKills  += Number(c.stats && c.stats.eliteKills   || 0);
+        totalBossKills   += Number(c.stats && c.stats.bossKills    || 0);
+        totalDeaths      += Number(c.stats && c.stats.deaths       || 0);
+        totalGoldEarned  += Number(c.stats && c.stats.goldEarned   || 0);
+        const lv = Number(c.level || 1);
+        if (lv > maxLevel) maxLevel = lv;
+        const pw = computeLeaderboardStats(c).power;
+        if (pw > maxPower) { maxPower = pw; maxPowerName = c.name || '?'; }
+      });
+
+      const total = allChars.length;
+
+      // Bar chart helper
+      const barChart = (counts, totalItems, colorFn) => {
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+        return sorted.map(([name, count]) => {
+          const pct = Math.round((count / totalItems) * 100);
+          const barW = Math.max(2, pct);
+          const col = colorFn(name);
+          return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+            + '<div style="font-size:11px;min-width:90px;color:var(--text-primary)">' + escapeHtml(name) + '</div>'
+            + '<div style="flex:1;height:14px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden">'
+            + '<div style="height:100%;width:' + barW + '%;background:' + col + ';border-radius:3px;transition:width .3s"></div>'
+            + '</div>'
+            + '<div style="font-size:10px;font-weight:700;color:var(--text-secondary);min-width:44px;text-align:right">' + count + ' (' + pct + '%)</div>'
+            + '</div>';
+        }).join('');
+      };
+
+      const classColors = { Warrior:'#ef4444',Cleric:'#22c55e',Paladin:'#3b82f6',Ranger:'#16a34a','Death Knight':'#7c3aed',Druid:'#65a30d',Monk:'#d97706',Bard:'#b45309',Rogue:'#0e7490',Shaman:'#0369a1',Necromancer:'#7e22ce',Wizard:'#4f46e5',Conjurer:'#2563eb',Enchanter:'#9333ea',Beastmaster:'#92400e',Berserker:'#dc2626' };
+      const raceColors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a855f7','#f97316','#06b6d4','#84cc16','#ec4899','#14b8a6','#8b5cf6','#fb923c','#0ea5e9','#10b981','#6366f1','#e11d48'];
+      const raceList = Object.keys(GAME_RACES ? {} : {});
+      const raceColorFn = name => { const i = Object.keys(raceCount).sort().indexOf(name) % raceColors.length; return raceColors[i]; };
+
+      const statBox = (label, val, color) =>
+        '<div style="text-align:center;padding:10px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);border-top:3px solid ' + color + '">'
+        + '<div style="font-size:18px;font-weight:700;color:' + color + '">' + (typeof val === 'number' ? val.toLocaleString() : val) + '</div>'
+        + '<div style="font-size:10px;color:var(--text-secondary);margin-top:2px;text-transform:uppercase;letter-spacing:.06em">' + label + '</div>'
+        + '</div>';
+
+      let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:16px">'
+        + statBox('Characters', total, '#3b82f6')
+        + statBox('Highest Lv', maxLevel, '#22c55e')
+        + statBox('Top Power', maxPower, '#f59e0b')
+        + statBox('Total Kills', totalKills, '#ef4444')
+        + statBox('Named Kills', totalNamedKills, '#f97316')
+        + statBox('Boss Kills', totalBossKills, '#a855f7')
+        + statBox('Total Deaths', totalDeaths, '#64748b')
+        + statBox('Gold Earned', totalGoldEarned, '#f59e0b')
+        + '</div>';
+
+      if (maxPowerName) {
+        html += '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:12px">🏆 Highest power character: <strong>' + escapeHtml(maxPowerName) + '</strong></div>';
+      }
+
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">'
+        + '<div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary);margin-bottom:8px">Class Breakdown</div>'
+        + barChart(classCount, total, n => classColors[n] || '#888')
+        + '</div>'
+        + '<div><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary);margin-bottom:8px">Race Breakdown</div>'
+        + barChart(raceCount, total, raceColorFn)
+        + '</div></div>';
+
+      html += '<div style="font-size:10px;color:var(--text-secondary);font-style:italic">Trends are based on your local save data only.</div>';
+      return html;
+    }
+
+    function renderLeaderboardRows(el, entries, scopeNote) {
+      // Legacy shim: store entries and re-render
+      lbCachedEntries = entries;
+      if (scopeNote) lbScopeNote = scopeNote;
+      renderLeaderboardContent();
+    }
+
     function renderLeaderboardTab() {
       const el = document.getElementById('leaderboard-list');
       if (!el) return;
 
-      // 1) Instant local render (your own characters)
+      // 1) Build local entries
       const local = [];
       for (let i = 0; i < slots.length; i++) {
         let c = slots[i];
-        if (i === activeSlot && char) c = char; // live stats for the active character
+        if (i === activeSlot && char) c = char;
         if (!c || typeof c !== 'object') continue;
         const s = computeLeaderboardStats(c);
         s.isYou = true;
         local.push(s);
       }
 
-      const canGlobal = !!(typeof Cloud === 'object' && Cloud.ready && currentUser && sb);
-      renderLeaderboardRows(
-        el,
-        local.slice(),
-        canGlobal
-          ? 'Loading global rankings…'
-          : 'Showing your local characters. Sign in (and enable the cloud leaderboard) to compare with other players.'
-      );
+      lbCachedEntries = local.slice();
 
-      // 2) Global render (everyone in the cloud), if signed in
+      const canGlobal = !!(typeof Cloud === 'object' && Cloud.ready && currentUser && sb);
+      lbScopeNote = canGlobal ? 'Loading global rankings…' : 'Showing your local characters. Sign in to compare globally.';
+
+      renderLeaderboardContent();
+
       if (!canGlobal) return;
       const token = ++leaderboardFetchToken;
       (async () => {
         try {
-          await Cloud.publishLeaderboard();           // push our latest summaries first
+          await Cloud.publishLeaderboard();
           const rows = await Cloud.fetchLeaderboard(200);
-          if (token !== leaderboardFetchToken) return; // a newer open superseded this one
+          if (token !== leaderboardFetchToken) return;
           const panel = document.getElementById('tab-leaderboard');
-          if (panel && panel.style.display === 'none') return; // navigated away
+          if (panel && panel.style.display === 'none') return;
           if (!rows) {
-            renderLeaderboardRows(el, local.slice(), 'Global leaderboard unavailable — showing your local characters. (Has the cloud leaderboard table been set up?)');
+            lbScopeNote = 'Global leaderboard unavailable — showing local characters.';
+            renderLeaderboardContent();
             return;
           }
           const entries = rows.map(r => ({
@@ -17046,10 +17228,12 @@
             power: Math.max(0, Math.floor(Number(r.power || 0))),
             isYou: r.user_id === currentUser.id
           }));
-          renderLeaderboardRows(el, entries, 'Global rankings — ' + entries.length + ' character' + (entries.length === 1 ? '' : 's') + ' across all players.');
+          lbCachedEntries = entries;
+          lbScopeNote = 'Global rankings — ' + entries.length + ' character' + (entries.length === 1 ? '' : 's') + ' across all players.';
+          renderLeaderboardContent();
         } catch (e) {
           if (token !== leaderboardFetchToken) return;
-          renderLeaderboardRows(el, local.slice(), 'Global leaderboard unavailable — showing your local characters.');
+          lbScopeNote = 'Global leaderboard unavailable — showing local characters.';
         }
       })();
     }
@@ -17099,6 +17283,14 @@
     document.addEventListener('keydown', handleModalKeydown);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('resize', () => requestAnimationFrame(syncCombatLogSize));
+
+    // Delegated handler for leaderboard sort/sub-tab buttons
+    document.getElementById('leaderboard-list').addEventListener('click', e => {
+      const sortBtn = e.target.closest('[data-lbsort]');
+      if (sortBtn) { setLbSort(sortBtn.dataset.lbsort); return; }
+      const subBtn = e.target.closest('[data-lbsubtab]');
+      if (subBtn) { setLbSubTab(subBtn.dataset.lbsubtab); }
+    });
 
     // Delegated handlers for spell buttons (avoids inline onclick quote issues)
     document.getElementById('spellbook-list').addEventListener('click', e => {
