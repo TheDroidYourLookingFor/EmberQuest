@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.3.2</title>
+    1.3.3</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2753,7 +2753,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.3.2</span>
+        1.3.3</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3315,6 +3315,11 @@
               style="font-size:10px;padding:2px 8px"
               onclick="applyCombatLogFilterPreset('all')">All</button>
             <button
+              class="btn active"
+              id="log-filter-herb-btn"
+              style="font-size:10px;padding:2px 8px"
+              onclick="toggleCombatLogFilter('herb')">Herbs On</button>
+            <button
               class="btn"
               id="log-plain-toggle-btn"
               style="font-size:10px;padding:2px 8px"
@@ -3874,7 +3879,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.3.2 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.3.3 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -3920,6 +3925,9 @@
             &nbsp;·&nbsp;
             <a href="https://thedroidyourlookingfor.github.io/EmberQuest/" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Play in your browser</a>
           </div>
+
+          <h4 style="margin:14px 0 6px">⚔ Hardcore Hall of Fame</h4>
+          <div id="hall-of-fame" style="font-size:12px;color:var(--text-secondary)">Loading...</div>
         </div>
       </div>
 
@@ -7244,7 +7252,8 @@
       return {
         dmg: targetChar.logFilters.dmg !== false,
         loot: targetChar.logFilters.loot !== false,
-        info: targetChar.logFilters.info !== false
+        info: targetChar.logFilters.info !== false,
+        herb: targetChar.logFilters.herb !== false
       };
     }
 
@@ -7657,11 +7666,12 @@
       targetChar.crafting.shards.unique = Math.max(0, Math.floor(Number(targetChar.crafting.shards.unique || 0)));
 
       if (!targetChar.logFilters || typeof targetChar.logFilters !== 'object' || Array.isArray(targetChar.logFilters)) {
-        targetChar.logFilters = { dmg: true, loot: true, info: true };
+        targetChar.logFilters = { dmg: true, loot: true, info: true, herb: true };
       }
       targetChar.logFilters.dmg = targetChar.logFilters.dmg !== false;
       targetChar.logFilters.loot = targetChar.logFilters.loot !== false;
       targetChar.logFilters.info = targetChar.logFilters.info !== false;
+      if (typeof targetChar.logFilters.herb !== 'boolean') targetChar.logFilters.herb = true;
       targetChar.logPlain = !!targetChar.logPlain;
       targetChar.logHideTimestamps = targetChar.logHideTimestamps !== false;
 
@@ -9771,6 +9781,25 @@
         const gold = Math.floor((10 + char.level * 4) * count * 0.25 * PHASE4.dailyGoldMult);
         quests.push({ name: 'Daily: ' + m, desc: 'Defeat ' + count + ' ' + m, mob: m, count, xp, gold, done: false, claimed: false, prog: 0, daily: true });
       }
+      // Add one alchemy daily challenge if player has alchemy skill > 1
+      if (char.alchemy && char.alchemy.skill > 1) {
+        const alcSkill = Math.max(1, Math.min(100, Math.floor(Number(char.alchemy.skill || 1))));
+        // Pick a recipe they can actually access
+        const accessible = ALCHEMY_RECIPES.filter(r => r.skillReq <= alcSkill);
+        if (accessible.length) {
+          // Prefer mid-tier recipe
+          const mid = accessible[Math.max(0, Math.floor(accessible.length * 0.6))];
+          const brewCount = 3 + Math.floor(alcSkill / 20); // 3–8 based on skill
+          const alcXp = Math.floor((30 + alcSkill * 10) * brewCount * 0.2);
+          const alcGold = Math.floor((50 + char.level * 8) * brewCount);
+          quests.push({
+            name: 'Daily Brew: ' + mid.name,
+            desc: 'Brew ' + brewCount + 'x ' + mid.name + ' today.',
+            mob: null, alchemy: mid.id, count: brewCount,
+            xp: alcXp, gold: alcGold, done: false, claimed: false, prog: 0, daily: true, isAlchemy: true
+          });
+        }
+      }
       char.dailyQuests = quests;
       char.dailyReset = Date.now() + PHASE4.dailyResetMs;
       log('Daily quests refreshed.', 'lvl');
@@ -10548,6 +10577,7 @@
     let char = null;
     let sharedBank = [];     // items shared across all characters in this save
     const BANK_KEY = 'EmberQuest_sharedBank';
+    const DEATH_LOG_KEY = 'EmberQuest_deathLog';
     const BANK_SLOTS = 200;
     let mob = null;
     let afkInterval = null;
@@ -10591,7 +10621,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.2';
+    const CURRENT_VERSION = '1.3.3';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -12063,8 +12093,8 @@
       if (oldChar.version === '1.2.1') {
         if (typeof ensureAuditState === 'function') ensureAuditState(oldChar);
         const auditFixes = (typeof auditCharacter === 'function') ? auditCharacter(oldChar) : 0;
-        oldChar.version = '1.3.2';
-        if (!silent) log('Upgraded save data to v1.3.2 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
+        oldChar.version = '1.3.3';
+        if (!silent) log('Upgraded save data to v1.3.3 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -12361,9 +12391,15 @@
         .sort((a, b) => (a.z.minLvl - b.z.minLvl) || (a.i - b.i));
       zoneOrder.forEach(({ z, i }) => {
         const btn = document.createElement('button');
+        const isBest = char.level >= z.minLvl && char.level <= z.maxLvl;
+        const isSlightlyOver = char.level > z.maxLvl && char.level <= z.maxLvl + 4;
         btn.className = 'btn zone-btn' + (i === char.zone ? ' current' : '');
-        btn.innerHTML = (char.level < z.minLvl ? '<i class="ti ti-lock" style="font-size:12px"></i> ' : '') + z.name + ' <span style="font-size:10px;opacity:.6">(Lv ' + z.minLvl + '+)</span>';
+        let zoneLabel = z.name + ' <span style="font-size:10px;opacity:.6">(Lv ' + z.minLvl + '–' + z.maxLvl + ')</span>';
+        if (isBest) zoneLabel += ' <span style="font-size:10px;color:#facc15" title="Best zone for your level">⭐ Best</span>';
+        else if (isSlightlyOver) zoneLabel += ' <span style="font-size:10px;color:#94a3b8" title="Slightly underleveled zone">↓</span>';
+        btn.innerHTML = (char.level < z.minLvl ? '<i class="ti ti-lock" style="font-size:12px"></i> ' : '') + zoneLabel;
         btn.disabled = char.level < z.minLvl;
+        btn.title = z.desc + ' (Lv ' + z.minLvl + '–' + z.maxLvl + ')';
         btn.onclick = () => travelZone(i, true);
         el.appendChild(btn);
       });
@@ -13458,7 +13494,8 @@
         char.dailyQuests.forEach((q, idx) => {
           const d = document.createElement('div'); d.className = 'quest';
           const statusTag = q.claimed ? ' ✓ Claimed' : (q.done ? ' — Ready to claim' : '');
-          d.innerHTML = '<div class="quest-name">' + q.name + statusTag + '</div>' +
+          const qIcon = q.isAlchemy ? '⚗️ ' : '📅 ';
+          d.innerHTML = '<div class="quest-name">' + qIcon + q.name + statusTag + '</div>' +
             '<div class="quest-prog">' + q.desc + ' (' + (q.prog || 0) + '/' + q.count + ')</div>' +
             '<div class="quest-prog">Reward: ' + q.xp + ' XP · ' + q.gold + 'g</div>' +
             '<div style="display:flex;gap:6px;margin-top:6px"><button class="btn" onclick="claimDailyQuest(' + idx + ')" ' + ((q.done && !q.claimed) ? '' : 'disabled') + '>Claim</button></div>';
@@ -14366,6 +14403,12 @@
         infoBtn.textContent = 'Info ' + (filters.info ? 'On' : 'Off');
       }
 
+      const herbBtn = document.getElementById('log-filter-herb-btn');
+      if (herbBtn) {
+        herbBtn.classList.toggle('active', filters.herb !== false);
+        herbBtn.textContent = 'Herbs ' + (filters.herb !== false ? 'On' : 'Off');
+      }
+
       const isCombatOnly = !!filters.dmg && !filters.loot && !filters.info;
       const isLootOnly = !filters.dmg && !!filters.loot && !filters.info;
       const isAll = !!filters.dmg && !!filters.loot && !!filters.info;
@@ -15015,11 +15058,23 @@
     function die() {
       bumpStat('deaths', 1);
       if (char.hardcore) {
+        // Record to hall of fame before wiping
+        try {
+          const deathLog = JSON.parse(localStorage.getItem(DEATH_LOG_KEY) || '[]');
+          deathLog.unshift({
+            name: char.name, cls: char.cls, race: char.race, level: char.level,
+            zone: (ZONES[char.zone] || {}).name || 'Unknown',
+            killer: mob ? mob.name : 'Unknown',
+            kills: char.stats ? char.stats.kills : 0,
+            gold: char.gold || 0,
+            ts: Date.now()
+          });
+          localStorage.setItem(DEATH_LOG_KEY, JSON.stringify(deathLog.slice(0, 20)));
+        } catch (e) {}
         log([
           'HARDCORE DEATH: ',
           { text: char.name, cls: 'combat-log-player' },
-          ' the ' + char.cls + ' has fallen forever at level ' + char.level + '.'
-        ], 'dmg');
+          ' the ' + char.cls + ' has fallen forever at level ' + char.level + '.'        ], 'dmg');
         if (typeof showToast === 'function') showToast('Hardcore death — save deleted.', 'error');
         // Stop any running AFK loop before tearing down the character.
         afkOn = false;
@@ -17460,6 +17515,7 @@
       if (tab === 'group') renderGroupTab();
       if (tab === 'tradeskill') renderTradeskillTab();
       if (tab === 'leaderboard') renderLeaderboardTab();
+      if (tab === 'about') renderHallOfFame();
     }
 
     function setupDrag() {
@@ -17571,98 +17627,98 @@
         id: 'minor_hp', name: 'Minor Healing Potion', emoji: '🧪',
         desc: 'Restores 150 HP.',
         cost: { thornweed: 2 },
-        produces: { type: 'healpotion', key: 'healpotions', qty: 1 },
+        produces: { type: 'healpotion', key: 'healpotions', qty: 1 }, _priceKey: 'hpMinor',
         skillReq: 1, xp: 8, brewTime: 4000,
       },
       {
         id: 'minor_mp', name: 'Minor Mana Potion', emoji: '💧',
         desc: 'Restores 150 MP.',
         cost: { thornweed: 2 },
-        produces: { type: 'manapotion', key: 'manapotions', qty: 1 },
+        produces: { type: 'manapotion', key: 'manapotions', qty: 1 }, _priceKey: 'mpMinor',
         skillReq: 1, xp: 8, brewTime: 4000,
       },
       {
         id: 'light_hp', name: 'Light Healing Potion', emoji: '🧪',
         desc: 'Restores 600 HP.',
         cost: { thornweed: 3, emberroot: 1 },
-        produces: { type: 'healpotion', key: 'healpotions_lhp', qty: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_lhp', qty: 1 }, _priceKey: 'hpLight',
         skillReq: 10, xp: 20, brewTime: 7000,
       },
       {
         id: 'light_mp', name: 'Light Mana Potion', emoji: '💧',
         desc: 'Restores 600 MP.',
         cost: { thornweed: 3, emberroot: 1 },
-        produces: { type: 'manapotion', key: 'manapotions_lmp', qty: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_lmp', qty: 1 }, _priceKey: 'mpLight',
         skillReq: 10, xp: 20, brewTime: 7000,
       },
       {
         id: 'greater_hp', name: 'Greater Healing Potion', emoji: '🧪',
         desc: 'Restores 2,500 HP.',
         cost: { emberroot: 2, moonpetal: 1 },
-        produces: { type: 'healpotion', key: 'healpotions_ghp', qty: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_ghp', qty: 1 }, _priceKey: 'hpGreater',
         skillReq: 25, xp: 40, brewTime: 12000,
       },
       {
         id: 'greater_mp', name: 'Greater Mana Potion', emoji: '💧',
         desc: 'Restores 2,500 MP.',
         cost: { emberroot: 2, moonpetal: 1 },
-        produces: { type: 'manapotion', key: 'manapotions_gmp', qty: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_gmp', qty: 1 }, _priceKey: 'mpGreater',
         skillReq: 25, xp: 40, brewTime: 12000,
       },
       {
         id: 'superior_hp', name: 'Superior Healing Potion', emoji: '🧪',
         desc: 'Restores 10,000 HP.',
         cost: { moonpetal: 2, voidcap: 1 },
-        produces: { type: 'healpotion', key: 'healpotions_shp', qty: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_shp', qty: 1 }, _priceKey: 'hpSuperior',
         skillReq: 45, xp: 75, brewTime: 18000,
       },
       {
         id: 'superior_mp', name: 'Superior Mana Potion', emoji: '💧',
         desc: 'Restores 10,000 MP.',
         cost: { moonpetal: 2, voidcap: 1 },
-        produces: { type: 'manapotion', key: 'manapotions_smp', qty: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_smp', qty: 1 }, _priceKey: 'mpSuperior',
         skillReq: 45, xp: 75, brewTime: 18000,
       },
       {
         id: 'heroic_hp', name: 'Heroic Healing Potion', emoji: '🧪',
         desc: 'Restores 30,000 HP.',
         cost: { voidcap: 2, solarbloom: 1 },
-        produces: { type: 'healpotion', key: 'healpotions_heroic', qty: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_heroic', qty: 1 }, _priceKey: 'hpHeroic',
         skillReq: 65, xp: 120, brewTime: 25000,
       },
       {
         id: 'heroic_mp', name: 'Heroic Mana Potion', emoji: '💧',
         desc: 'Restores 30,000 MP.',
         cost: { voidcap: 2, solarbloom: 1 },
-        produces: { type: 'manapotion', key: 'manapotions_heroic', qty: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_heroic', qty: 1 }, _priceKey: 'mpHeroic',
         skillReq: 65, xp: 120, brewTime: 25000,
       },
       {
         id: 'epic_hp', name: 'Epic Healing Potion', emoji: '🧪',
         desc: 'Restores 75,000 HP.',
         cost: { moonpetal: 2, voidcap: 2, solarbloom: 2 },
-        produces: { type: 'healpotion', key: 'healpotions_epic', qty: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_epic', qty: 1 }, _priceKey: 'hpEpic',
         skillReq: 82, xp: 200, brewTime: 40000,
       },
       {
         id: 'epic_mp', name: 'Epic Mana Potion', emoji: '💧',
         desc: 'Restores 75,000 MP.',
         cost: { moonpetal: 2, voidcap: 2, solarbloom: 2 },
-        produces: { type: 'manapotion', key: 'manapotions_epic', qty: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_epic', qty: 1 }, _priceKey: 'mpEpic',
         skillReq: 82, xp: 200, brewTime: 40000,
       },
       {
         id: 'legendary_hp', name: 'Legendary Healing Potion', emoji: '🧪',
         desc: 'Restores 200,000 HP.',
         cost: { emberroot: 2, moonpetal: 3, voidcap: 3, solarbloom: 3 },
-        produces: { type: 'healpotion', key: 'healpotions_legendary', qty: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_legendary', qty: 1 }, _priceKey: 'hpLegendary',
         skillReq: 95, xp: 350, brewTime: 60000,
       },
       {
         id: 'legendary_mp', name: 'Legendary Mana Potion', emoji: '💧',
         desc: 'Restores 200,000 MP.',
         cost: { emberroot: 2, moonpetal: 3, voidcap: 3, solarbloom: 3 },
-        produces: { type: 'manapotion', key: 'manapotions_legendary', qty: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_legendary', qty: 1 }, _priceKey: 'mpLegendary',
         skillReq: 95, xp: 350, brewTime: 60000,
       },
     ];
@@ -17700,6 +17756,7 @@
       HERBS.forEach(h => { if (!Number.isFinite(Number(a.herbs[h.id]))) a.herbs[h.id] = 0; });
       if (!Number.isFinite(Number(a.totalBrewed))) a.totalBrewed = 0;
       if (a.brewQueue && typeof a.brewQueue !== 'object') a.brewQueue = null;
+      if (!a.stockTargets || typeof a.stockTargets !== 'object') a.stockTargets = {};
       if (!a.autoBrewEnabled || typeof a.autoBrewEnabled !== 'object') a.autoBrewEnabled = {};
       // Default all recipes to enabled
       ALCHEMY_RECIPES.forEach(r => { if (typeof a.autoBrewEnabled[r.id] !== 'boolean') a.autoBrewEnabled[r.id] = false; });
@@ -17786,7 +17843,7 @@
         if (r <= 0) { picked = eligible[i]; break; }
       }
       char.alchemy.herbs[picked.id] = (char.alchemy.herbs[picked.id] || 0) + 1;
-      log('🌿 You gathered a ' + picked.name + ' while fighting!', 'loot');
+      log('🌿 You gathered a ' + picked.name + ' while fighting!', 'herb');
     }
 
     // ── Silent herb drop (AFK simulation) ────────────
@@ -17838,6 +17895,17 @@
       const xpGain = auto ? Math.ceil(recipe.xp * 0.6) : recipe.xp;
       addAlchemyXp(xpGain);
 
+      // Tick daily alchemy quest progress
+      if (char && Array.isArray(char.dailyQuests)) {
+        char.dailyQuests.forEach(q => {
+          if (!q || q.done || !q.isAlchemy || q.alchemy !== recipe.id) return;
+          q.prog = Math.min(q.count, (q.prog || 0) + 1);
+          if (q.prog >= q.count) {
+            q.done = true;
+            log('⚗️ Daily brew quest complete: ' + q.name + '. Claim in the Quests tab.', 'lvl');
+          }
+        });
+      }
       if (!auto) log('⚗️ You brewed ' + p.qty + 'x ' + recipe.name + '! (+' + xpGain + ' Alchemy XP)', 'loot');
       autoSave();
       renderTradeskillTab();
@@ -17865,7 +17933,7 @@
       let brewed = 0;
       for (let attempt = 0; attempt < ab.count; attempt++) {
         // Sort recipes by skillReq descending, pick highest-tier one we can brew
-        const eligible = ALCHEMY_RECIPES.filter(r => r.skillReq <= ab.maxTier && canBrew(r) && char.alchemy.autoBrewEnabled[r.id] !== false)
+        const eligible = ALCHEMY_RECIPES.filter(r => r.skillReq <= ab.maxTier && canBrew(r) && char.alchemy.autoBrewEnabled[r.id] !== false && !isAtStockTarget(r))
           .sort((a, b) => b.skillReq - a.skillReq);
         if (!eligible.length) break;
         const recipe = eligible[0];
@@ -17887,6 +17955,23 @@
       solarbloom: 3500,
     };
 
+    function sellHerb(herbId, qty) {
+      if (!char) return;
+      ensureAlchemyState(char);
+      const herb = HERBS.find(h => h.id === herbId);
+      if (!herb) return;
+      const owned = Math.max(0, Math.floor(Number(char.alchemy.herbs[herbId] || 0)));
+      const toSell = Math.max(0, Math.min(qty === 'all' ? owned : qty, owned));
+      if (toSell <= 0) { log('No ' + herb.name + ' to sell.', 'info'); return; }
+      const unitPrice = Math.max(1, Math.floor(HERB_BUY_PRICES[herbId] * 0.4));
+      const total = unitPrice * toSell;
+      char.alchemy.herbs[herbId] -= toSell;
+      char.gold += total;
+      log('🌿 Sold ' + toSell + 'x ' + herb.name + ' for ' + total.toLocaleString() + 'g.', 'loot');
+      autoSave();
+      renderTradeskillTab();
+    }
+
     function buyHerb(herbId, qty) {
       if (!char) return;
       ensureAlchemyState(char);
@@ -17902,6 +17987,23 @@
     }
 
     // ── Render ───────────────────────────────────────
+    function isAtStockTarget(recipe) {
+      if (!char) return false;
+      ensureAlchemyState(char);
+      const target = char.alchemy.stockTargets[recipe.id];
+      if (!target || target <= 0) return false;
+      return (char[recipe.produces.key] || 0) >= target;
+    }
+
+    function setStockTarget(recipeId, value) {
+      if (!char) return;
+      ensureAlchemyState(char);
+      const val = parseInt(value, 10);
+      char.alchemy.stockTargets[recipeId] = isNaN(val) || val <= 0 ? 0 : val;
+      autoSave();
+      renderTradeskillTab();
+    }
+
     function toggleAutoBrewRecipe(recipeId) {
       if (!char) return;
       ensureAlchemyState(char);
@@ -17983,6 +18085,7 @@
                 <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 10 for ${(buyPrice*10).toLocaleString()}g total" onclick="buyHerb('${herb.id}',10)" ${char.gold < buyPrice*10?'disabled':''}>×10 (${(buyPrice*10).toLocaleString()}g)</button>
                 <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 100 for ${(buyPrice*100).toLocaleString()}g total" onclick="buyHerb('${herb.id}',100)" ${char.gold < buyPrice*100?'disabled':''}>×100 (${(buyPrice*100).toLocaleString()}g)</button>
                 <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 1,000 for ${(buyPrice*1000).toLocaleString()}g total" onclick="buyHerb('${herb.id}',1000)" ${char.gold < buyPrice*1000?'disabled':''}>×1000 (${(buyPrice*1000).toLocaleString()}g)</button>
+                ${qty > 0 ? `<button class="btn" style="font-size:10px;padding:2px 6px;color:#f87171" title="Sell all at 40% of buy price: ${Math.floor(buyPrice*0.4).toLocaleString()}g each" onclick="sellHerb('${herb.id}','all')">Sell All (${(Math.floor(buyPrice*0.4)*qty).toLocaleString()}g)</button>` : ''}
               </div>`}
           </div>`;
       });
@@ -18014,6 +18117,10 @@
                 <span style="font-weight:600;font-size:13px;margin-left:4px">${recipe.name}</span>
                 ${!unlocked ? `<span style="font-size:11px;color:var(--text-secondary);margin-left:8px">(Skill ${recipe.skillReq})</span>` : ''}
                 <span style="font-size:11px;color:var(--text-secondary);margin-left:8px">Stock: ${stock}</span>
+                ${unlocked && stock > 0 ? `
+                  <button class="btn" style="font-size:10px;padding:1px 6px;margin-left:4px" onclick="sellAlchemyPotion('${recipe.id}',1)" title="Sell 1 for ${Math.max(1,Math.floor(getMerchantPrice(SHOP_BASE_PRICES[recipe._priceKey])*0.5))}g">Sell 1</button>
+                  <button class="btn" style="font-size:10px;padding:1px 6px" onclick="sellAlchemyPotion('${recipe.id}',stock)" title="Sell all ${stock} for ${Math.max(1,Math.floor(getMerchantPrice(SHOP_BASE_PRICES[recipe._priceKey])*0.5))*stock}g">Sell All</button>
+                ` : ''}
               </div>
               <div style="display:flex;gap:6px">
                 ${unlocked ? `
@@ -18035,7 +18142,16 @@
                 ` : ''}
               </div>
             </div>
-            ${unlocked ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px">${costStr}</div>` : ''}
+            ${unlocked ? `
+              <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">${costStr}</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:5px">
+                <span style="font-size:11px;color:var(--text-secondary)">Auto-stop at:</span>
+                <input type="number" min="0" step="10" value="${a.stockTargets[recipe.id]||0}"
+                  style="width:64px;font-size:11px;padding:2px 5px;background:var(--bg-tertiary);border:1px solid var(--border-md);border-radius:4px;color:var(--text-primary)"
+                  title="Auto-brew will stop when stock reaches this number. Set to 0 for unlimited."
+                  onchange="setStockTarget('${recipe.id}',this.value)">
+                <span style="font-size:10px;color:var(--text-secondary)">${a.stockTargets[recipe.id]>0 ? (isAtStockTarget(recipe) ? '⛔ Target reached' : '▶ Brewing toward '+a.stockTargets[recipe.id]) : 'unlimited'}</span>
+              </div>` : ''}
           </div>`;
       });
 
@@ -18062,6 +18178,23 @@
     }
 
     // Batch brew helper
+    function sellAlchemyPotion(recipeId, qty) {
+      if (!char) return;
+      const recipe = ALCHEMY_RECIPES.find(r => r.id === recipeId);
+      if (!recipe || !recipe._priceKey) return;
+      const key = recipe.produces.key;
+      const owned = Math.max(0, Math.floor(Number(char[key] || 0)));
+      const toSell = Math.max(0, Math.min(qty, owned));
+      if (toSell <= 0) { log('No ' + recipe.name + ' to sell.', 'info'); return; }
+      const unitPrice = Math.max(1, Math.floor(getMerchantPrice(SHOP_BASE_PRICES[recipe._priceKey]) * 0.5));
+      const total = unitPrice * toSell;
+      char[key] = owned - toSell;
+      char.gold += total;
+      log('⚗️ Sold ' + toSell + 'x ' + recipe.name + ' for ' + total.toLocaleString() + 'g.', 'loot');
+      autoSave();
+      renderTradeskillTab();
+    }
+
     function canBatchAfford(recipe, qty) {
       if (!char || !recipe) return false;
       ensureAlchemyState(char);
@@ -18100,6 +18233,27 @@
 
     // Start auto-brew loop
     startAlchemyLoop();
+
+    function renderHallOfFame() {
+      const el = document.getElementById('hall-of-fame');
+      if (!el) return;
+      let log = [];
+      try { log = JSON.parse(localStorage.getItem(DEATH_LOG_KEY) || '[]'); } catch (e) {}
+      if (!Array.isArray(log) || !log.length) {
+        el.innerHTML = '<div style="font-style:italic;opacity:.6">No hardcore deaths recorded yet.</div>';
+        return;
+      }
+      el.innerHTML = log.map((d, i) => {
+        const dt = new Date(d.ts);
+        const date = dt.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+        return `<div style="padding:7px 10px;background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:6px;margin-bottom:5px">
+          <span style="font-weight:700;color:var(--text-primary)">${d.name}</span>
+          <span style="color:var(--text-secondary)"> · ${d.race} ${d.cls} · Lv ${d.level}</span>
+          <span style="float:right;color:var(--text-secondary);font-size:11px">${date}</span>
+          <div style="margin-top:2px;font-size:11px">Slain by <strong>${d.killer}</strong> in ${d.zone} · ${(d.kills||0).toLocaleString()} kills · ${(d.gold||0).toLocaleString()}g at death</div>
+        </div>`;
+      }).join('');
+    }
 
     Cloud.start();
   </script>
