@@ -4988,14 +4988,14 @@
       mpLight: 500,
       hpGreater: 1400,
       mpGreater: 1400,
-      hpSuperior: 3500,
-      mpSuperior: 3500,
-      hpHeroic: 8500,
-      mpHeroic: 8500,
-      hpEpic: 18000,
-      mpEpic: 18000,
-      hpLegendary: 40000,
-      mpLegendary: 40000,
+      hpSuperior: 4500,
+      mpSuperior: 4500,
+      hpHeroic: 11000,
+      mpHeroic: 11000,
+      hpEpic: 24000,
+      mpEpic: 24000,
+      hpLegendary: 55000,
+      mpLegendary: 55000,
       steelLongsword: 40,
       knightChestplate: 55,
       occultistReforge: 80,
@@ -10560,14 +10560,14 @@
     let potionHealAmount_lmp_Mana = 125;
     let potionHealAmount_ghp_Health = 350;
     let potionHealAmount_gmp_Mana = 350;
-    let potionHealAmount_shp_Health = 900;
-    let potionHealAmount_smp_Mana = 900;
-    let potionHealAmount_heroic_Health = 2200;
-    let potionHealAmount_heroic_Mana = 2200;
-    let potionHealAmount_epic_Health = 5200;
-    let potionHealAmount_epic_Mana = 5200;
-    let potionHealAmount_legendary_Health = 12000;
-    let potionHealAmount_legendary_Mana = 12000;
+    let potionHealAmount_shp_Health = 1600;
+    let potionHealAmount_smp_Mana = 1600;
+    let potionHealAmount_heroic_Health = 4500;
+    let potionHealAmount_heroic_Mana = 4500;
+    let potionHealAmount_epic_Health = 12000;
+    let potionHealAmount_epic_Mana = 12000;
+    let potionHealAmount_legendary_Health = 32000;
+    let potionHealAmount_legendary_Mana = 32000;
     let pendingImportedSlots = null;
     let pendingImportFileName = '';
     let pendingTransmuteSourceRune = null;
@@ -13057,29 +13057,29 @@
       // Superior potions unlock at level 45.
       if (char.level >= 45) {
         shopHtml +=
-          renderPotionCard('Superior Healing Potion', 'Restores 900 HP', 'hpSuperior', 'healpotions_shp', 'buyHpPotion_SHP', 'buyHpPotion_SHP_10') +
-          renderPotionCard('Superior Mana Potion', 'Restores 900 MP', 'mpSuperior', 'manapotions_smp', 'buyMpPotion_SMP', 'buyMpPotion_SMP_10');
+          renderPotionCard('Superior Healing Potion', 'Restores 1,600 HP', 'hpSuperior', 'healpotions_shp', 'buyHpPotion_SHP', 'buyHpPotion_SHP_10') +
+          renderPotionCard('Superior Mana Potion', 'Restores 1,600 MP', 'mpSuperior', 'manapotions_smp', 'buyMpPotion_SMP', 'buyMpPotion_SMP_10');
       }
 
       // Heroic potions unlock at level 60.
       if (char.level >= 60) {
         shopHtml +=
-          renderPotionCard('Heroic Healing Potion', 'Restores 2,200 HP', 'hpHeroic', 'healpotions_heroic', 'buyHpPotion_HEROIC', 'buyHpPotion_HEROIC_10') +
-          renderPotionCard('Heroic Mana Potion', 'Restores 2,200 MP', 'mpHeroic', 'manapotions_heroic', 'buyMpPotion_HEROIC', 'buyMpPotion_HEROIC_10');
+          renderPotionCard('Heroic Healing Potion', 'Restores 4,500 HP', 'hpHeroic', 'healpotions_heroic', 'buyHpPotion_HEROIC', 'buyHpPotion_HEROIC_10') +
+          renderPotionCard('Heroic Mana Potion', 'Restores 4,500 MP', 'mpHeroic', 'manapotions_heroic', 'buyMpPotion_HEROIC', 'buyMpPotion_HEROIC_10');
       }
 
       // Epic potions unlock at level 70.
       if (char.level >= 70) {
         shopHtml +=
-          renderPotionCard('Epic Healing Potion', 'Restores 5,200 HP', 'hpEpic', 'healpotions_epic', 'buyHpPotion_EPIC', 'buyHpPotion_EPIC_10') +
-          renderPotionCard('Epic Mana Potion', 'Restores 5,200 MP', 'mpEpic', 'manapotions_epic', 'buyMpPotion_EPIC', 'buyMpPotion_EPIC_10');
+          renderPotionCard('Epic Healing Potion', 'Restores 32,000 HP', 'hpEpic', 'healpotions_epic', 'buyHpPotion_EPIC', 'buyHpPotion_EPIC_10') +
+          renderPotionCard('Epic Mana Potion', 'Restores 32,000 MP', 'mpEpic', 'manapotions_epic', 'buyMpPotion_EPIC', 'buyMpPotion_EPIC_10');
       }
 
       // Legendary potions unlock at level 80.
       if (char.level >= 80) {
         shopHtml +=
-          renderPotionCard('Legendary Healing Potion', 'Restores 12,000 HP', 'hpLegendary', 'healpotions_legendary', 'buyHpPotion_LEGENDARY', 'buyHpPotion_LEGENDARY_10') +
-          renderPotionCard('Legendary Mana Potion', 'Restores 12,000 MP', 'mpLegendary', 'manapotions_legendary', 'buyMpPotion_LEGENDARY', 'buyMpPotion_LEGENDARY_10');
+          renderPotionCard('Legendary Healing Potion', 'Restores 32,000 HP', 'hpLegendary', 'healpotions_legendary', 'buyHpPotion_LEGENDARY', 'buyHpPotion_LEGENDARY_10') +
+          renderPotionCard('Legendary Mana Potion', 'Restores 32,000 MP', 'mpLegendary', 'manapotions_legendary', 'buyMpPotion_LEGENDARY', 'buyMpPotion_LEGENDARY_10');
       }
 
       const activeMercType = char.mercenary?.type || 'none';
