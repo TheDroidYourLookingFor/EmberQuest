@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.2.6</title>
+    1.3.0</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2746,7 +2746,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.2.6</span>
+        1.3.0</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3861,7 +3861,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.2.6 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.3.0 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -4383,15 +4383,25 @@
       },
       // Read the global leaderboard (everyone's published character summaries).
       // Returns an array of rows, or null if unavailable (table missing / offline).
-      async fetchLeaderboard(limit = 200) {
+      async fetchLeaderboard(limit = null) {
         if (!sb) return null;
         try {
-          const { data, error } = await sb.from('leaderboard')
-            .select('user_id,name,race,class,level,prestige,power,hardcore,atk,def,hp,mp,aa,gold')
-            .order('power', { ascending: false })
-            .limit(limit);
-          if (error) { console.warn('leaderboard fetch failed', error); return null; }
-          return data || [];
+          const rows = [];
+          const pageSize = 1000;
+          let from = 0;
+          while (true) {
+            let query = sb.from('leaderboard')
+              .select('user_id,name,race,class,level,prestige,power,hardcore,atk,def,hp,mp,aa,gold,kills,named_kills,elite_kills,boss_kills,deaths,gold_earned')
+              .order('power', { ascending: false })
+              .range(from, from + pageSize - 1);
+            const { data, error } = await query;
+            if (error) { console.warn('leaderboard fetch failed', error); return null; }
+            const batch = data || [];
+            rows.push(...batch);
+            if (batch.length < pageSize || (limit && rows.length >= limit)) break;
+            from += pageSize;
+          }
+          return limit ? rows.slice(0, limit) : rows;
         } catch (e) { console.warn('leaderboard fetch error', e); return null; }
       },
       // Publish this account's character summaries (safe, derived fields only —
@@ -4410,6 +4420,8 @@
               name: s.name, race: s.race, class: s.cls, level: s.level,
               prestige: s.prestigeRank, power: s.power, hardcore: s.hardcore,
               atk: s.atk, def: s.def, hp: s.maxHp, mp: s.maxMp, aa: s.aaSpent, gold: s.gold,
+              kills: s.kills, named_kills: s.namedKills, elite_kills: s.eliteKills,
+              boss_kills: s.bossKills, deaths: s.deaths, gold_earned: s.goldEarned,
               updated_at: new Date().toISOString()
             });
           } else {
@@ -4956,14 +4968,18 @@
     const SHOP_BASE_PRICES = {
       hpMinor: 50,
       mpMinor: 50,
-      hpLesser: 250,
-      mpLesser: 250,
       hpLight: 500,
       mpLight: 500,
       hpGreater: 1400,
       mpGreater: 1400,
       hpSuperior: 3500,
       mpSuperior: 3500,
+      hpHeroic: 8500,
+      mpHeroic: 8500,
+      hpEpic: 18000,
+      mpEpic: 18000,
+      hpLegendary: 40000,
+      mpLegendary: 40000,
       steelLongsword: 40,
       knightChestplate: 55,
       occultistReforge: 80,
@@ -10506,6 +10522,12 @@
     let potionHealAmount_gmp_Mana = 350;
     let potionHealAmount_shp_Health = 900;
     let potionHealAmount_smp_Mana = 900;
+    let potionHealAmount_heroic_Health = 2200;
+    let potionHealAmount_heroic_Mana = 2200;
+    let potionHealAmount_epic_Health = 5200;
+    let potionHealAmount_epic_Mana = 5200;
+    let potionHealAmount_legendary_Health = 12000;
+    let potionHealAmount_legendary_Mana = 12000;
     let pendingImportedSlots = null;
     let pendingImportFileName = '';
     let pendingTransmuteSourceRune = null;
@@ -11641,7 +11663,7 @@
         name, race: selectedRace, cls: selectedClass, level: 1, xp: 0, xpNext: 100,
         hp: base.hp, maxHp: base.hp, mp: base.mp, maxMp: base.mp,
         atk: base.atk, def: base.def, mpRegen: base.mpRegen,
-        gold: 0, faction: 0, healpotions: 3, manapotions: 3, healpotions_lhp: 0, manapotions_lmp: 0, healpotions_ghp: 0, manapotions_gmp: 0, healpotions_shp: 0, manapotions_smp: 0, zone: 0, inventory: [],
+        gold: 0, faction: 0, healpotions: 3, manapotions: 3, healpotions_lhp: 0, manapotions_lmp: 0, healpotions_ghp: 0, manapotions_gmp: 0, healpotions_shp: 0, manapotions_smp: 0, healpotions_heroic: 0, manapotions_heroic: 0, healpotions_epic: 0, manapotions_epic: 0, healpotions_legendary: 0, manapotions_legendary: 0, zone: 0, inventory: [],
         bindZone: 0, corpse: null,
         runeStash: [], discoveredRunewords: [],
         bags: ['Worn Pouch', 'Worn Pouch', 'Worn Pouch', 'Worn Pouch'],
@@ -11829,6 +11851,12 @@
       oldChar.manapotions_gmp = nonNegativeInt(oldChar.manapotions_gmp, 0);
       oldChar.healpotions_shp = nonNegativeInt(oldChar.healpotions_shp, 0);
       oldChar.manapotions_smp = nonNegativeInt(oldChar.manapotions_smp, 0);
+      oldChar.healpotions_heroic = nonNegativeInt(oldChar.healpotions_heroic, 0);
+      oldChar.manapotions_heroic = nonNegativeInt(oldChar.manapotions_heroic, 0);
+      oldChar.healpotions_epic = nonNegativeInt(oldChar.healpotions_epic, 0);
+      oldChar.manapotions_epic = nonNegativeInt(oldChar.manapotions_epic, 0);
+      oldChar.healpotions_legendary = nonNegativeInt(oldChar.healpotions_legendary, 0);
+      oldChar.manapotions_legendary = nonNegativeInt(oldChar.manapotions_legendary, 0);
       oldChar.afkEnabled = !!oldChar.afkEnabled;
       if (oldChar.lastAfkAt === undefined || oldChar.lastAfkAt === null) {
         oldChar.lastAfkAt = null;
@@ -12970,8 +12998,8 @@
         renderPotionCard('Minor Healing Potion', 'Restores 50 HP', 'hpMinor', 'healpotions', 'buyHpPotion', 'buyHpPotion_10') +
         renderPotionCard('Minor Mana Potion', 'Restores 50 MP', 'mpMinor', 'manapotions', 'buyMpPotion', 'buyMpPotion_10');
 
-      // Gate Light Potions behind character level > 10 (shows up starting at Level 11)
-      if (char.level > 10) {
+      // Gate Light Potions behind character level 11.
+      if (char.level >= 11) {
         shopHtml +=
           renderPotionCard('Light Healing Potion', 'Restores 125 HP', 'hpLight', 'healpotions_lhp', 'buyHpPotion_LHP', 'buyHpPotion_LHP_10') +
           renderPotionCard('Light Mana Potion', 'Restores 125 MP', 'mpLight', 'manapotions_lmp', 'buyMpPotion_LMP', 'buyMpPotion_LMP_10');
@@ -12989,6 +13017,27 @@
         shopHtml +=
           renderPotionCard('Superior Healing Potion', 'Restores 900 HP', 'hpSuperior', 'healpotions_shp', 'buyHpPotion_SHP', 'buyHpPotion_SHP_10') +
           renderPotionCard('Superior Mana Potion', 'Restores 900 MP', 'mpSuperior', 'manapotions_smp', 'buyMpPotion_SMP', 'buyMpPotion_SMP_10');
+      }
+
+      // Heroic potions unlock at level 60.
+      if (char.level >= 60) {
+        shopHtml +=
+          renderPotionCard('Heroic Healing Potion', 'Restores 2,200 HP', 'hpHeroic', 'healpotions_heroic', 'buyHpPotion_HEROIC', 'buyHpPotion_HEROIC_10') +
+          renderPotionCard('Heroic Mana Potion', 'Restores 2,200 MP', 'mpHeroic', 'manapotions_heroic', 'buyMpPotion_HEROIC', 'buyMpPotion_HEROIC_10');
+      }
+
+      // Epic potions unlock at level 70.
+      if (char.level >= 70) {
+        shopHtml +=
+          renderPotionCard('Epic Healing Potion', 'Restores 5,200 HP', 'hpEpic', 'healpotions_epic', 'buyHpPotion_EPIC', 'buyHpPotion_EPIC_10') +
+          renderPotionCard('Epic Mana Potion', 'Restores 5,200 MP', 'mpEpic', 'manapotions_epic', 'buyMpPotion_EPIC', 'buyMpPotion_EPIC_10');
+      }
+
+      // Legendary potions unlock at level 80.
+      if (char.level >= 80) {
+        shopHtml +=
+          renderPotionCard('Legendary Healing Potion', 'Restores 12,000 HP', 'hpLegendary', 'healpotions_legendary', 'buyHpPotion_LEGENDARY', 'buyHpPotion_LEGENDARY_10') +
+          renderPotionCard('Legendary Mana Potion', 'Restores 12,000 MP', 'mpLegendary', 'manapotions_legendary', 'buyMpPotion_LEGENDARY', 'buyMpPotion_LEGENDARY_10');
       }
 
       const activeMercType = char.mercenary?.type || 'none';
@@ -16097,15 +16146,21 @@
         // All potion tiers in descending quality order. The auto-buyer picks the
         // best tier that is (a) unlocked by level and (b) affordable.
         const HP_TIERS = [
+          { name: 'Legendary HP', levelReq: 80, priceKey: 'hpLegendary', ownedKey: 'healpotions_legendary' },
+          { name: 'Epic HP',      levelReq: 70, priceKey: 'hpEpic',      ownedKey: 'healpotions_epic' },
+          { name: 'Heroic HP',    levelReq: 60, priceKey: 'hpHeroic',    ownedKey: 'healpotions_heroic' },
           { name: 'Superior HP', levelReq: 45, priceKey: 'hpSuperior', ownedKey: 'healpotions_shp' },
           { name: 'Greater HP',  levelReq: 25, priceKey: 'hpGreater',  ownedKey: 'healpotions_ghp' },
-          { name: 'Light HP',    levelReq: 10, priceKey: 'hpLight',    ownedKey: 'healpotions_lhp' },
+          { name: 'Light HP',    levelReq: 11, priceKey: 'hpLight',    ownedKey: 'healpotions_lhp' },
           { name: 'Minor HP',    levelReq: 1,  priceKey: 'hpMinor',    ownedKey: 'healpotions'     },
         ];
         const MP_TIERS = [
+          { name: 'Legendary MP', levelReq: 80, priceKey: 'mpLegendary', ownedKey: 'manapotions_legendary' },
+          { name: 'Epic MP',      levelReq: 70, priceKey: 'mpEpic',      ownedKey: 'manapotions_epic' },
+          { name: 'Heroic MP',    levelReq: 60, priceKey: 'mpHeroic',    ownedKey: 'manapotions_heroic' },
           { name: 'Superior MP', levelReq: 45, priceKey: 'mpSuperior', ownedKey: 'manapotions_smp' },
           { name: 'Greater MP',  levelReq: 25, priceKey: 'mpGreater',  ownedKey: 'manapotions_gmp' },
-          { name: 'Light MP',    levelReq: 10, priceKey: 'mpLight',    ownedKey: 'manapotions_lmp' },
+          { name: 'Light MP',    levelReq: 11, priceKey: 'mpLight',    ownedKey: 'manapotions_lmp' },
           { name: 'Minor MP',    levelReq: 1,  priceKey: 'mpMinor',    ownedKey: 'manapotions'     },
         ];
 
@@ -16126,11 +16181,15 @@
 
         autoBuyTier(HP_TIERS, () =>
           Number(char.healpotions || 0) + Number(char.healpotions_lhp || 0) +
-          Number(char.healpotions_ghp || 0) + Number(char.healpotions_shp || 0)
+          Number(char.healpotions_ghp || 0) + Number(char.healpotions_shp || 0) +
+          Number(char.healpotions_heroic || 0) + Number(char.healpotions_epic || 0) +
+          Number(char.healpotions_legendary || 0)
         );
         autoBuyTier(MP_TIERS, () =>
           Number(char.manapotions || 0) + Number(char.manapotions_lmp || 0) +
-          Number(char.manapotions_gmp || 0) + Number(char.manapotions_smp || 0)
+          Number(char.manapotions_gmp || 0) + Number(char.manapotions_smp || 0) +
+          Number(char.manapotions_heroic || 0) + Number(char.manapotions_epic || 0) +
+          Number(char.manapotions_legendary || 0)
         );
       }
 
@@ -16511,8 +16570,26 @@
         return;
       }
 
-      // Check and use Light Healing Potion first
-      if (char.healpotions_shp && char.healpotions_shp > 0) {
+      // Use the strongest available healing potion first.
+      if (char.healpotions_legendary && char.healpotions_legendary > 0) {
+        char.healpotions_legendary -= 1;
+        const healAmt = potionHealAmount_legendary_Health;
+        char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        log('Used a legendary healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
+      }
+      else if (char.healpotions_epic && char.healpotions_epic > 0) {
+        char.healpotions_epic -= 1;
+        const healAmt = potionHealAmount_epic_Health;
+        char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        log('Used an epic healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
+      }
+      else if (char.healpotions_heroic && char.healpotions_heroic > 0) {
+        char.healpotions_heroic -= 1;
+        const healAmt = potionHealAmount_heroic_Health;
+        char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        log('Used a heroic healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
+      }
+      else if (char.healpotions_shp && char.healpotions_shp > 0) {
         char.healpotions_shp -= 1;
         const healAmt = potionHealAmount_shp_Health;
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
@@ -16554,8 +16631,26 @@
         return;
       }
 
-      // Check and use Light Mana Potion first
-      if (char.manapotions_smp && char.manapotions_smp > 0) {
+      // Use the strongest available mana potion first.
+      if (char.manapotions_legendary && char.manapotions_legendary > 0) {
+        char.manapotions_legendary -= 1;
+        const healAmt = potionHealAmount_legendary_Mana;
+        char.mp = Math.min(char.maxMp, char.mp + healAmt);
+        log('Used a legendary mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
+      }
+      else if (char.manapotions_epic && char.manapotions_epic > 0) {
+        char.manapotions_epic -= 1;
+        const healAmt = potionHealAmount_epic_Mana;
+        char.mp = Math.min(char.maxMp, char.mp + healAmt);
+        log('Used an epic mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
+      }
+      else if (char.manapotions_heroic && char.manapotions_heroic > 0) {
+        char.manapotions_heroic -= 1;
+        const healAmt = potionHealAmount_heroic_Mana;
+        char.mp = Math.min(char.maxMp, char.mp + healAmt);
+        log('Used a heroic mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
+      }
+      else if (char.manapotions_smp && char.manapotions_smp > 0) {
         char.manapotions_smp -= 1;
         const healAmt = potionHealAmount_smp_Mana;
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
@@ -16674,14 +16769,26 @@
     function buyHpPotion_SHP_10() { buyPotionStock('healpotions_shp', 'hpSuperior', 10); }
     function buyMpPotion_SMP() { buyPotionStock('manapotions_smp', 'mpSuperior', 1); }
     function buyMpPotion_SMP_10() { buyPotionStock('manapotions_smp', 'mpSuperior', 10); }
+    function buyHpPotion_HEROIC() { buyPotionStock('healpotions_heroic', 'hpHeroic', 1); }
+    function buyHpPotion_HEROIC_10() { buyPotionStock('healpotions_heroic', 'hpHeroic', 10); }
+    function buyMpPotion_HEROIC() { buyPotionStock('manapotions_heroic', 'mpHeroic', 1); }
+    function buyMpPotion_HEROIC_10() { buyPotionStock('manapotions_heroic', 'mpHeroic', 10); }
+    function buyHpPotion_EPIC() { buyPotionStock('healpotions_epic', 'hpEpic', 1); }
+    function buyHpPotion_EPIC_10() { buyPotionStock('healpotions_epic', 'hpEpic', 10); }
+    function buyMpPotion_EPIC() { buyPotionStock('manapotions_epic', 'mpEpic', 1); }
+    function buyMpPotion_EPIC_10() { buyPotionStock('manapotions_epic', 'mpEpic', 10); }
+    function buyHpPotion_LEGENDARY() { buyPotionStock('healpotions_legendary', 'hpLegendary', 1); }
+    function buyHpPotion_LEGENDARY_10() { buyPotionStock('healpotions_legendary', 'hpLegendary', 10); }
+    function buyMpPotion_LEGENDARY() { buyPotionStock('manapotions_legendary', 'mpLegendary', 1); }
+    function buyMpPotion_LEGENDARY_10() { buyPotionStock('manapotions_legendary', 'mpLegendary', 10); }
 
     function totalHpPotions(c) {
       c = c || char;
-      return Math.max(0, Number(c.healpotions || 0) + Number(c.healpotions_lhp || 0) + Number(c.healpotions_ghp || 0) + Number(c.healpotions_shp || 0));
+      return Math.max(0, Number(c.healpotions || 0) + Number(c.healpotions_lhp || 0) + Number(c.healpotions_ghp || 0) + Number(c.healpotions_shp || 0) + Number(c.healpotions_heroic || 0) + Number(c.healpotions_epic || 0) + Number(c.healpotions_legendary || 0));
     }
     function totalMpPotions(c) {
       c = c || char;
-      return Math.max(0, Number(c.manapotions || 0) + Number(c.manapotions_lmp || 0) + Number(c.manapotions_gmp || 0) + Number(c.manapotions_smp || 0));
+      return Math.max(0, Number(c.manapotions || 0) + Number(c.manapotions_lmp || 0) + Number(c.manapotions_gmp || 0) + Number(c.manapotions_smp || 0) + Number(c.manapotions_heroic || 0) + Number(c.manapotions_epic || 0) + Number(c.manapotions_legendary || 0));
     }
 
     function useHpPotion_LHP() {
@@ -16954,8 +17061,40 @@
       const maxMp = Math.max(0, Math.floor(Number(c.maxMp || 0)));
       const aaSpent = Math.max(0, Math.floor(Number((c.aa && c.aa.spent) || 0)));
       const gold = Math.max(0, Math.floor(Number(c.gold || 0)));
+      const stats = c.stats && typeof c.stats === 'object' ? c.stats : {};
+      const kills = Math.max(0, Math.floor(Number(stats.kills || 0)));
+      const namedKills = Math.max(0, Math.floor(Number(stats.namedKills || 0)));
+      const eliteKills = Math.max(0, Math.floor(Number(stats.eliteKills || 0)));
+      const bossKills = Math.max(0, Math.floor(Number(stats.bossKills || 0)));
+      const deaths = Math.max(0, Math.floor(Number(stats.deaths || 0)));
+      const goldEarned = Math.max(gold, Math.max(0, Math.floor(Number(stats.goldEarned || 0))));
       const power = Math.floor(level * 120 + prestigeRank * 8000 + atk * 3 + def * 3 + maxHp * 0.4 + maxMp * 0.2 + aaSpent * 60);
-      return { name: c.name || 'Unnamed', race: c.race || '', cls: c.cls || '', hardcore: !!c.hardcore, level, prestigeRank, atk, def, maxHp, maxMp, aaSpent, gold, power };
+      return { name: c.name || 'Unnamed', race: c.race || '', cls: c.cls || '', hardcore: !!c.hardcore, level, prestigeRank, atk, def, maxHp, maxMp, aaSpent, gold, kills, namedKills, eliteKills, bossKills, deaths, goldEarned, power };
+    }
+
+    function normalizeLeaderboardRow(r) {
+      return {
+        name: r.name || 'Unnamed',
+        race: r.race || '',
+        cls: r.class || r.cls || '',
+        hardcore: !!r.hardcore,
+        level: Math.max(1, Math.floor(Number(r.level || 1))),
+        prestigeRank: Math.max(0, Math.floor(Number(r.prestige ?? r.prestigeRank ?? 0))),
+        atk: Math.max(0, Math.floor(Number(r.atk || 0))),
+        def: Math.max(0, Math.floor(Number(r.def || 0))),
+        maxHp: Math.max(0, Math.floor(Number(r.hp ?? r.maxHp ?? 0))),
+        maxMp: Math.max(0, Math.floor(Number(r.mp ?? r.maxMp ?? 0))),
+        aaSpent: Math.max(0, Math.floor(Number(r.aa ?? r.aaSpent ?? 0))),
+        gold: Math.max(0, Math.floor(Number(r.gold || 0))),
+        power: Math.max(0, Math.floor(Number(r.power || 0))),
+        kills: Math.max(0, Math.floor(Number(r.kills || 0))),
+        namedKills: Math.max(0, Math.floor(Number(r.named_kills ?? r.namedKills ?? 0))),
+        eliteKills: Math.max(0, Math.floor(Number(r.elite_kills ?? r.eliteKills ?? 0))),
+        bossKills: Math.max(0, Math.floor(Number(r.boss_kills ?? r.bossKills ?? 0))),
+        deaths: Math.max(0, Math.floor(Number(r.deaths || 0))),
+        goldEarned: Math.max(0, Math.floor(Number(r.gold_earned ?? r.goldEarned ?? 0))),
+        isYou: !!r.isYou || (currentUser && r.user_id === currentUser.id)
+      };
     }
 
     let leaderboardFetchToken = 0;
@@ -16963,6 +17102,7 @@
     let lbSubTab = 'rankings';
     let lbCachedEntries = null;
     let lbScopeNote = '';
+    let lbTrendsGlobal = false;
 
     // ── Sort config ─────────────────────────────────────────────────────────
     const LB_SORTS = [
@@ -17082,19 +17222,16 @@
     }
 
     function renderLbTrends() {
-      // Gather data from all local slots
-      const allChars = [];
-      for (let i = 0; i < slots.length; i++) {
-        const c = (i === activeSlot && char) ? char : slots[i];
-        if (c && typeof c === 'object') allChars.push(c);
-      }
+      const allChars = (lbTrendsGlobal && Array.isArray(lbCachedEntries))
+        ? lbCachedEntries.map(normalizeLeaderboardRow)
+        : getLocalLeaderboardEntries();
 
       if (!allChars.length) {
-        return '<div style="color:var(--text-secondary);font-size:12px;padding:12px">No local characters found.</div>';
+        return '<div style="color:var(--text-secondary);font-size:12px;padding:12px">No characters found for trends.</div>';
       }
 
       const classCount = {}, raceCount = {};
-      let totalKills = 0, totalNamedKills = 0, totalEliteKills = 0, totalDeaths = 0, totalGoldEarned = 0, totalBossKills = 0;
+      let totalKills = 0, totalNamedKills = 0, totalEliteKills = 0, totalDeaths = 0, totalGoldEarned = 0, totalGoldHeld = 0, totalBossKills = 0;
       let maxLevel = 0, maxPower = 0, maxPowerName = '';
 
       allChars.forEach(c => {
@@ -17102,15 +17239,16 @@
         const race = c.race || 'Unknown';
         classCount[cls] = (classCount[cls] || 0) + 1;
         raceCount[race] = (raceCount[race] || 0) + 1;
-        totalKills       += Number(c.stats && c.stats.kills        || 0);
-        totalNamedKills  += Number(c.stats && c.stats.namedKills   || 0);
-        totalEliteKills  += Number(c.stats && c.stats.eliteKills   || 0);
-        totalBossKills   += Number(c.stats && c.stats.bossKills    || 0);
-        totalDeaths      += Number(c.stats && c.stats.deaths       || 0);
-        totalGoldEarned  += Number(c.stats && c.stats.goldEarned   || 0);
+        totalKills       += Number(c.kills || 0);
+        totalNamedKills  += Number(c.namedKills || 0);
+        totalEliteKills  += Number(c.eliteKills || 0);
+        totalBossKills   += Number(c.bossKills || 0);
+        totalDeaths      += Number(c.deaths || 0);
+        totalGoldHeld    += Number(c.gold || 0);
+        totalGoldEarned  += Math.max(Number(c.goldEarned || 0), Number(c.gold || 0));
         const lv = Number(c.level || 1);
         if (lv > maxLevel) maxLevel = lv;
-        const pw = computeLeaderboardStats(c).power;
+        const pw = Number(c.power || 0);
         if (pw > maxPower) { maxPower = pw; maxPowerName = c.name || '?'; }
       });
 
@@ -17135,16 +17273,15 @@
 
       const classColors = { Warrior:'#ef4444',Cleric:'#22c55e',Paladin:'#3b82f6',Ranger:'#16a34a','Death Knight':'#7c3aed',Druid:'#65a30d',Monk:'#d97706',Bard:'#b45309',Rogue:'#0e7490',Shaman:'#0369a1',Necromancer:'#7e22ce',Wizard:'#4f46e5',Conjurer:'#2563eb',Enchanter:'#9333ea',Beastmaster:'#92400e',Berserker:'#dc2626' };
       const raceColors = ['#3b82f6','#22c55e','#f59e0b','#ef4444','#a855f7','#f97316','#06b6d4','#84cc16','#ec4899','#14b8a6','#8b5cf6','#fb923c','#0ea5e9','#10b981','#6366f1','#e11d48'];
-      const raceList = Object.keys(GAME_RACES ? {} : {});
       const raceColorFn = name => { const i = Object.keys(raceCount).sort().indexOf(name) % raceColors.length; return raceColors[i]; };
 
       const statBox = (label, val, color) =>
-        '<div style="text-align:center;padding:10px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);border-top:3px solid ' + color + '">'
-        + '<div style="font-size:18px;font-weight:700;color:' + color + '">' + (typeof val === 'number' ? val.toLocaleString() : val) + '</div>'
+        '<div style="text-align:center;min-width:0;padding:10px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);border-top:3px solid ' + color + '">'
+        + '<div style="font-size:clamp(13px, 4.8vw, 18px);line-height:1.1;font-weight:700;color:' + color + ';max-width:100%;overflow-wrap:anywhere;word-break:break-word">' + (typeof val === 'number' ? val.toLocaleString() : val) + '</div>'
         + '<div style="font-size:10px;color:var(--text-secondary);margin-top:2px;text-transform:uppercase;letter-spacing:.06em">' + label + '</div>'
         + '</div>';
 
-      let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:16px">'
+      let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;margin-bottom:16px">'
         + statBox('Characters', total, '#3b82f6')
         + statBox('Highest Lv', maxLevel, '#22c55e')
         + statBox('Top Power', maxPower, '#f59e0b')
@@ -17152,6 +17289,7 @@
         + statBox('Named Kills', totalNamedKills, '#f97316')
         + statBox('Boss Kills', totalBossKills, '#a855f7')
         + statBox('Total Deaths', totalDeaths, '#64748b')
+        + statBox('Current Gold', totalGoldHeld, '#eab308')
         + statBox('Gold Earned', totalGoldEarned, '#f59e0b')
         + '</div>';
 
@@ -17167,8 +17305,21 @@
         + barChart(raceCount, total, raceColorFn)
         + '</div></div>';
 
-      html += '<div style="font-size:10px;color:var(--text-secondary);font-style:italic">Trends are based on your local save data only.</div>';
+      html += '<div style="font-size:10px;color:var(--text-secondary);font-style:italic">Trends are based on ' + (lbTrendsGlobal ? 'published global leaderboard data.' : 'your local save data only.') + '</div>';
       return html;
+    }
+
+    function getLocalLeaderboardEntries() {
+      const local = [];
+      for (let i = 0; i < slots.length; i++) {
+        let c = slots[i];
+        if (i === activeSlot && char) c = char;
+        if (!c || typeof c !== 'object') continue;
+        const s = computeLeaderboardStats(c);
+        s.isYou = true;
+        local.push(s);
+      }
+      return local;
     }
 
     function renderLeaderboardRows(el, entries, scopeNote) {
@@ -17183,17 +17334,10 @@
       if (!el) return;
 
       // 1) Build local entries
-      const local = [];
-      for (let i = 0; i < slots.length; i++) {
-        let c = slots[i];
-        if (i === activeSlot && char) c = char;
-        if (!c || typeof c !== 'object') continue;
-        const s = computeLeaderboardStats(c);
-        s.isYou = true;
-        local.push(s);
-      }
+      const local = getLocalLeaderboardEntries();
 
       lbCachedEntries = local.slice();
+      lbTrendsGlobal = false;
 
       const canGlobal = !!(typeof Cloud === 'object' && Cloud.ready && currentUser && sb);
       lbScopeNote = canGlobal ? 'Loading global rankings…' : 'Showing your local characters. Sign in to compare globally.';
@@ -17205,7 +17349,7 @@
       (async () => {
         try {
           await Cloud.publishLeaderboard();
-          const rows = await Cloud.fetchLeaderboard(200);
+          const rows = await Cloud.fetchLeaderboard();
           if (token !== leaderboardFetchToken) return;
           const panel = document.getElementById('tab-leaderboard');
           if (panel && panel.style.display === 'none') return;
@@ -17214,25 +17358,14 @@
             renderLeaderboardContent();
             return;
           }
-          const entries = rows.map(r => ({
-            name: r.name || 'Unnamed', race: r.race || '', cls: r.class || '',
-            hardcore: !!r.hardcore,
-            level: Math.max(1, Math.floor(Number(r.level || 1))),
-            prestigeRank: Math.max(0, Math.floor(Number(r.prestige || 0))),
-            atk: Math.max(0, Math.floor(Number(r.atk || 0))),
-            def: Math.max(0, Math.floor(Number(r.def || 0))),
-            maxHp: Math.max(0, Math.floor(Number(r.hp || 0))),
-            maxMp: Math.max(0, Math.floor(Number(r.mp || 0))),
-            aaSpent: Math.max(0, Math.floor(Number(r.aa || 0))),
-            gold: Math.max(0, Math.floor(Number(r.gold || 0))),
-            power: Math.max(0, Math.floor(Number(r.power || 0))),
-            isYou: r.user_id === currentUser.id
-          }));
+          const entries = rows.map(normalizeLeaderboardRow);
           lbCachedEntries = entries;
+          lbTrendsGlobal = true;
           lbScopeNote = 'Global rankings — ' + entries.length + ' character' + (entries.length === 1 ? '' : 's') + ' across all players.';
           renderLeaderboardContent();
         } catch (e) {
           if (token !== leaderboardFetchToken) return;
+          lbTrendsGlobal = false;
           lbScopeNote = 'Global leaderboard unavailable — showing local characters.';
         }
       })();
