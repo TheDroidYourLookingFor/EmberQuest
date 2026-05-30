@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.3.1</title>
+    1.3.2</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2753,7 +2753,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.3.1</span>
+        1.3.2</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3874,7 +3874,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.3.1 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.3.2 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -10591,7 +10591,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.1';
+    const CURRENT_VERSION = '1.3.2';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -12063,8 +12063,8 @@
       if (oldChar.version === '1.2.1') {
         if (typeof ensureAuditState === 'function') ensureAuditState(oldChar);
         const auditFixes = (typeof auditCharacter === 'function') ? auditCharacter(oldChar) : 0;
-        oldChar.version = '1.3.1';
-        if (!silent) log('Upgraded save data to v1.3.1 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
+        oldChar.version = '1.3.2';
+        if (!silent) log('Upgraded save data to v1.3.2 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -17671,11 +17671,14 @@
     const ALCHEMY_MILESTONES = [
       { level: 1,  label: 'Novice Alchemist',    desc: 'Can brew Minor Potions.' },
       { level: 10, label: 'Apprentice Alchemist', desc: 'Unlocks Light Potions. Herbs drop 10% more often.' },
+      { level: 15, label: 'Batch Brewing I',       desc: 'Unlocks Brew ×10.' },
       { level: 20, label: 'Auto-Brew I',          desc: 'Auto-brews 1 Minor potion every 30s.' },
       { level: 25, label: 'Journeyman Alchemist', desc: 'Unlocks Greater Potions.' },
+      { level: 40, label: 'Batch Brewing II',      desc: 'Unlocks Brew ×50.' },
       { level: 35, label: 'Auto-Brew II',         desc: 'Auto-brews up to Light tier every 20s.' },
       { level: 45, label: 'Adept Alchemist',      desc: 'Unlocks Superior Potions. Herbs drop 25% more often.' },
       { level: 50, label: 'Auto-Brew III',        desc: 'Auto-brews best available recipe every 15s.' },
+      { level: 70, label: 'Batch Brewing III',     desc: 'Unlocks Brew ×100.' },
       { level: 65, label: 'Expert Alchemist',     desc: 'Unlocks Heroic Potions. Potions heal +15% bonus.' },
       { level: 75, label: 'Auto-Brew IV',         desc: 'Auto-brews 2 potions every 12s.' },
       { level: 82, label: 'Master Alchemist',     desc: 'Unlocks Epic Potions. Potions heal +25% bonus.' },
@@ -17697,6 +17700,9 @@
       HERBS.forEach(h => { if (!Number.isFinite(Number(a.herbs[h.id]))) a.herbs[h.id] = 0; });
       if (!Number.isFinite(Number(a.totalBrewed))) a.totalBrewed = 0;
       if (a.brewQueue && typeof a.brewQueue !== 'object') a.brewQueue = null;
+      if (!a.autoBrewEnabled || typeof a.autoBrewEnabled !== 'object') a.autoBrewEnabled = {};
+      // Default all recipes to enabled
+      ALCHEMY_RECIPES.forEach(r => { if (typeof a.autoBrewEnabled[r.id] !== 'boolean') a.autoBrewEnabled[r.id] = true; });
     }
 
     function getAlchemySkill() {
@@ -17859,7 +17865,7 @@
       let brewed = 0;
       for (let attempt = 0; attempt < ab.count; attempt++) {
         // Sort recipes by skillReq descending, pick highest-tier one we can brew
-        const eligible = ALCHEMY_RECIPES.filter(r => r.skillReq <= ab.maxTier && canBrew(r))
+        const eligible = ALCHEMY_RECIPES.filter(r => r.skillReq <= ab.maxTier && canBrew(r) && char.alchemy.autoBrewEnabled[r.id] !== false)
           .sort((a, b) => b.skillReq - a.skillReq);
         if (!eligible.length) break;
         const recipe = eligible[0];
@@ -17896,6 +17902,15 @@
     }
 
     // ── Render ───────────────────────────────────────
+    function toggleAutoBrewRecipe(recipeId) {
+      if (!char) return;
+      ensureAlchemyState(char);
+      const current = char.alchemy.autoBrewEnabled[recipeId] !== false;
+      char.alchemy.autoBrewEnabled[recipeId] = !current;
+      autoSave();
+      renderTradeskillTab();
+    }
+
     function renderTradeskillTab() {
       const panel = document.getElementById('tradeskill-panel');
       if (!panel) return;
@@ -17906,6 +17921,12 @@
       const xpNeeded = skill < ALCHEMY_MAX_SKILL ? alchemyXpForLevel(skill) : 0;
       const xpPct = skill < ALCHEMY_MAX_SKILL ? Math.min(100, Math.round(a.xp / xpNeeded * 100)) : 100;
       const ab = getAutoBrew();
+      // Determine which recipe auto-brew would pick next (highest skillReq, enabled, affordable, within maxTier)
+      const nextAutoId = ab ? (() => {
+        const eligible = ALCHEMY_RECIPES.filter(r => r.skillReq <= ab.maxTier && canBrew(r) && a.autoBrewEnabled[r.id] !== false)
+          .sort((a, b) => b.skillReq - a.skillReq);
+        return eligible.length ? eligible[0].id : null;
+      })() : null;
       const healBonus = getAlchemyBonusHealPct();
       const nextMs = ALCHEMY_MILESTONES.find(m => m.level > skill);
       const herbBonus = Math.round(getAlchemyHerbDropBonus() * 100);
@@ -17935,7 +17956,7 @@
             ${skill < ALCHEMY_MAX_SKILL ? `<span>${a.xp}/${xpNeeded} XP to level ${skill+1}</span>` : '<span style="color:#a855f7;font-weight:700">MAX SKILL</span>'}
             ${healBonus > 0 ? `<span style="color:#4ade80">+${Math.round(healBonus*100)}% potion healing</span>` : ''}
             ${herbBonus > 0 ? `<span style="color:#4ade80">+${herbBonus}% herb drop rate</span>` : ''}
-            ${ab ? `<span style="color:#60a5fa">Auto-brew: ${ab.count} potion${ab.count>1?'s':''} every ${ab.intervalMs/1000}s</span>` : '<span>Auto-brew unlocks at skill 20</span>'}
+            ${!ab ? '<span>Auto-brew unlocks at skill 20</span>' : ''}
           </div>
           ${nextMs ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px">Next: <b>Skill ${nextMs.level}</b> — ${nextMs.desc}</div>` : ''}
         </div>
@@ -17998,6 +18019,19 @@
                 ${unlocked ? `
                   <button class="btn${affordable?' active':''}" style="font-size:12px" onclick="brewPotion('${recipe.id}')" ${!affordable?'disabled':''}>Brew (+${recipe.xp} XP)</button>
                   <button class="btn${affordable?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',5)" ${!affordable?'disabled':''}>×5</button>
+                  ${skill >= 15 ? `<button class="btn${canBatchAfford(recipe,10)?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',10)" ${!canBatchAfford(recipe,10)?'disabled':''}>×10</button>` : ''}
+                  ${skill >= 40 ? `<button class="btn${canBatchAfford(recipe,50)?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',50)" ${!canBatchAfford(recipe,50)?'disabled':''}>×50</button>` : ''}
+                  ${skill >= 70 ? `<button class="btn${canBatchAfford(recipe,100)?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',100)" ${!canBatchAfford(recipe,100)?'disabled':''}>×100</button>` : ''}
+                  ${ab ? (() => {
+                    const enabled = a.autoBrewEnabled[recipe.id] !== false;
+                    const isNext = nextAutoId === recipe.id;
+                    const label = isNext
+                      ? `⚙ Auto: brewing ${ab.count > 1 ? ab.count + '× ' : ''}every ${ab.intervalMs/1000}s`
+                      : `⚙ Auto: ${enabled ? 'On' : 'Off'}`;
+                    const col = enabled ? '#a855f7' : 'var(--text-secondary)';
+                    const bdr = enabled ? '#a855f7' : 'var(--border-md)';
+                    return `<button class="btn${enabled?' active':''}" style="font-size:11px;margin-left:4px;border-color:${bdr};color:${col}" onclick="toggleAutoBrewRecipe('${recipe.id}')" title="Toggle auto-brew for this recipe">${label}</button>`;
+                  })() : ''}
                 ` : ''}
               </div>
             </div>
@@ -18028,6 +18062,12 @@
     }
 
     // Batch brew helper
+    function canBatchAfford(recipe, qty) {
+      if (!char || !recipe) return false;
+      ensureAlchemyState(char);
+      return Object.entries(recipe.cost).every(([h, q]) => (char.alchemy.herbs[h] || 0) >= q * qty);
+    }
+
     function brewBatch(recipeId, qty) {
       if (!char) return;
       for (let i = 0; i < qty; i++) {
