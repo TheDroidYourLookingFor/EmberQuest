@@ -17968,7 +17968,7 @@
 
       HERBS.forEach(herb => {
         const qty = a.herbs[herb.id] || 0;
-        const locked = char.zone < herb.zone;
+        const locked = false; // purchase always allowed; zone only gates wild drops
         const buyPrice = HERB_BUY_PRICES[herb.id];
         const canAfford = char.gold >= buyPrice;
         html += `
