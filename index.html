@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.3.0</title>
+    1.3.1</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2383,6 +2383,7 @@
     #screen-game.ui-layout-mobile #tab-prestige,
     #screen-game.ui-layout-mobile #tab-bank,
     #screen-game.ui-layout-mobile #tab-group,
+    #screen-game.ui-layout-mobile #tab-tradeskill,
     #screen-game.ui-layout-mobile #tab-quests,
     #screen-game.ui-layout-mobile #tab-loot,
     #screen-game.ui-layout-mobile #tab-dungeon,
@@ -2409,7 +2410,9 @@
   <div id="screen-login" class="screen active">
     <div class="login-card">
       <h1>EmberQuest</h1>
-      <p>Sign in to sync your characters across devices.</p>
+      <div style="background:rgba(244,214,138,0.10);border:1px solid rgba(244,214,138,0.28);border-radius:7px;padding:9px 12px;margin-bottom:14px;font-size:12px;line-height:1.5;color:#f0e6cc">
+        <span style="color:#f4d68a;font-weight:700">☁ Account benefits:</span> sync characters across devices, cloud backup, and global leaderboards.
+      </div>
       <form id="login-form" autocomplete="on">
         <input id="login-user" type="email" placeholder="Email" autocomplete="username" required>
         <input id="login-pass" type="password" placeholder="Password (min 6 chars)" autocomplete="current-password" minlength="6" required>
@@ -2419,6 +2422,10 @@
         </div>
         <div id="login-msg"></div>
       </form>
+      <div style="margin-top:14px;border-top:1px solid rgba(255,220,160,0.15);padding-top:12px;text-align:center">
+        <button type="button" id="login-local" style="width:100%;background:transparent;border:1px solid rgba(255,220,160,0.25);color:#c8b888;font-size:12px;padding:9px 12px;border-radius:6px;cursor:pointer;font-family:var(--font)" onmouseover="this.style.background='rgba(255,220,160,0.07)'" onmouseout="this.style.background='transparent'">Play Locally (no account required)</button>
+        <div style="font-size:11px;color:rgba(240,230,204,0.45);margin-top:6px">Progress saved to this browser only.</div>
+      </div>
     </div>
   </div>
 
@@ -2746,7 +2753,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.3.0</span>
+        1.3.1</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3199,6 +3206,7 @@
           <div class="tab-sep"></div>
           <!-- 👥 Social cluster -->
           <div class="tab" onclick="switchTab('group')">👥 Group</div>
+          <div class="tab" onclick="switchTab('tradeskill')">⚗️ Alchemy</div>
           <div class="tab" onclick="switchTab('leaderboard')">🏅 Leaderboard</div>
           <div class="tab-sep"></div>
           <!-- ℹ Meta -->
@@ -3857,11 +3865,16 @@
           <div id="leaderboard-list"></div>
         </div>
         <div
+          id="tab-tradeskill"
+          style="display:none">
+          <div id="tradeskill-panel"></div>
+        </div>
+                <div
           id="tab-about"
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.3.0 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.3.1 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -10122,7 +10135,7 @@
     const PHASE6 = {
       zoneLevelFloor: true,
       zoneRangeAbovePlayer: 2,
-      highLevelHpScale: 1.12,
+      highLevelHpScale: 1.055,
       tributeBaseGold: 2500,
       tributeGoldPerLevel: 350,
       tributeFactionPerDonation: 1,
@@ -10554,20 +10567,20 @@
     let autoRestMpPercent = 20;
     let autoHpPotionPercent = 35;
     let autoMpPotionPercent = 20;
-    let potionHealAmount_Health = 50;
-    let potionHealAmount_Mana = 50;
-    let potionHealAmount_lhp_Health = 125;
-    let potionHealAmount_lmp_Mana = 125;
-    let potionHealAmount_ghp_Health = 350;
-    let potionHealAmount_gmp_Mana = 350;
-    let potionHealAmount_shp_Health = 1600;
-    let potionHealAmount_smp_Mana = 1600;
-    let potionHealAmount_heroic_Health = 4500;
-    let potionHealAmount_heroic_Mana = 4500;
-    let potionHealAmount_epic_Health = 12000;
-    let potionHealAmount_epic_Mana = 12000;
-    let potionHealAmount_legendary_Health = 32000;
-    let potionHealAmount_legendary_Mana = 32000;
+    let potionHealAmount_Health = 150;
+    let potionHealAmount_Mana = 150;
+    let potionHealAmount_lhp_Health = 600;
+    let potionHealAmount_lmp_Mana = 600;
+    let potionHealAmount_ghp_Health = 2500;
+    let potionHealAmount_gmp_Mana = 2500;
+    let potionHealAmount_shp_Health = 10000;
+    let potionHealAmount_smp_Mana = 10000;
+    let potionHealAmount_heroic_Health = 30000;
+    let potionHealAmount_heroic_Mana = 30000;
+    let potionHealAmount_epic_Health = 75000;
+    let potionHealAmount_epic_Mana = 75000;
+    let potionHealAmount_legendary_Health = 200000;
+    let potionHealAmount_legendary_Mana = 200000;
     let pendingImportedSlots = null;
     let pendingImportFileName = '';
     let pendingTransmuteSourceRune = null;
@@ -10578,7 +10591,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.0';
+    const CURRENT_VERSION = '1.3.1';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -12050,8 +12063,8 @@
       if (oldChar.version === '1.2.1') {
         if (typeof ensureAuditState === 'function') ensureAuditState(oldChar);
         const auditFixes = (typeof auditCharacter === 'function') ? auditCharacter(oldChar) : 0;
-        oldChar.version = '1.3.0';
-        if (!silent) log('Upgraded save data to v1.3.0 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
+        oldChar.version = '1.3.1';
+        if (!silent) log('Upgraded save data to v1.3.1 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -13037,49 +13050,49 @@
       };
 
       let shopHtml =
-        renderPotionCard('Minor Healing Potion', 'Restores 50 HP', 'hpMinor', 'healpotions', 'buyHpPotion', 'buyHpPotion_10') +
-        renderPotionCard('Minor Mana Potion', 'Restores 50 MP', 'mpMinor', 'manapotions', 'buyMpPotion', 'buyMpPotion_10');
+        renderPotionCard('Minor Healing Potion', 'Restores 150 HP', 'hpMinor', 'healpotions', 'buyHpPotion', 'buyHpPotion_10') +
+        renderPotionCard('Minor Mana Potion', 'Restores 150 MP', 'mpMinor', 'manapotions', 'buyMpPotion', 'buyMpPotion_10');
 
       // Gate Light Potions behind character level 11.
       if (char.level >= 11) {
         shopHtml +=
-          renderPotionCard('Light Healing Potion', 'Restores 125 HP', 'hpLight', 'healpotions_lhp', 'buyHpPotion_LHP', 'buyHpPotion_LHP_10') +
-          renderPotionCard('Light Mana Potion', 'Restores 125 MP', 'mpLight', 'manapotions_lmp', 'buyMpPotion_LMP', 'buyMpPotion_LMP_10');
+          renderPotionCard('Light Healing Potion', 'Restores 600 HP', 'hpLight', 'healpotions_lhp', 'buyHpPotion_LHP', 'buyHpPotion_LHP_10') +
+          renderPotionCard('Light Mana Potion', 'Restores 600 MP', 'mpLight', 'manapotions_lmp', 'buyMpPotion_LMP', 'buyMpPotion_LMP_10');
       }
 
       // Greater potions unlock at level 25.
       if (char.level >= 25) {
         shopHtml +=
-          renderPotionCard('Greater Healing Potion', 'Restores 350 HP', 'hpGreater', 'healpotions_ghp', 'buyHpPotion_GHP', 'buyHpPotion_GHP_10') +
-          renderPotionCard('Greater Mana Potion', 'Restores 350 MP', 'mpGreater', 'manapotions_gmp', 'buyMpPotion_GMP', 'buyMpPotion_GMP_10');
+          renderPotionCard('Greater Healing Potion', 'Restores 2,500 HP', 'hpGreater', 'healpotions_ghp', 'buyHpPotion_GHP', 'buyHpPotion_GHP_10') +
+          renderPotionCard('Greater Mana Potion', 'Restores 2,500 MP', 'mpGreater', 'manapotions_gmp', 'buyMpPotion_GMP', 'buyMpPotion_GMP_10');
       }
 
       // Superior potions unlock at level 45.
       if (char.level >= 45) {
         shopHtml +=
-          renderPotionCard('Superior Healing Potion', 'Restores 1,600 HP', 'hpSuperior', 'healpotions_shp', 'buyHpPotion_SHP', 'buyHpPotion_SHP_10') +
-          renderPotionCard('Superior Mana Potion', 'Restores 1,600 MP', 'mpSuperior', 'manapotions_smp', 'buyMpPotion_SMP', 'buyMpPotion_SMP_10');
+          renderPotionCard('Superior Healing Potion', 'Restores 10,000 HP', 'hpSuperior', 'healpotions_shp', 'buyHpPotion_SHP', 'buyHpPotion_SHP_10') +
+          renderPotionCard('Superior Mana Potion', 'Restores 10,000 MP', 'mpSuperior', 'manapotions_smp', 'buyMpPotion_SMP', 'buyMpPotion_SMP_10');
       }
 
       // Heroic potions unlock at level 60.
       if (char.level >= 60) {
         shopHtml +=
-          renderPotionCard('Heroic Healing Potion', 'Restores 4,500 HP', 'hpHeroic', 'healpotions_heroic', 'buyHpPotion_HEROIC', 'buyHpPotion_HEROIC_10') +
-          renderPotionCard('Heroic Mana Potion', 'Restores 4,500 MP', 'mpHeroic', 'manapotions_heroic', 'buyMpPotion_HEROIC', 'buyMpPotion_HEROIC_10');
+          renderPotionCard('Heroic Healing Potion', 'Restores 30,000 HP', 'hpHeroic', 'healpotions_heroic', 'buyHpPotion_HEROIC', 'buyHpPotion_HEROIC_10') +
+          renderPotionCard('Heroic Mana Potion', 'Restores 30,000 MP', 'mpHeroic', 'manapotions_heroic', 'buyMpPotion_HEROIC', 'buyMpPotion_HEROIC_10');
       }
 
       // Epic potions unlock at level 70.
       if (char.level >= 70) {
         shopHtml +=
-          renderPotionCard('Epic Healing Potion', 'Restores 32,000 HP', 'hpEpic', 'healpotions_epic', 'buyHpPotion_EPIC', 'buyHpPotion_EPIC_10') +
-          renderPotionCard('Epic Mana Potion', 'Restores 32,000 MP', 'mpEpic', 'manapotions_epic', 'buyMpPotion_EPIC', 'buyMpPotion_EPIC_10');
+          renderPotionCard('Epic Healing Potion', 'Restores 75,000 HP', 'hpEpic', 'healpotions_epic', 'buyHpPotion_EPIC', 'buyHpPotion_EPIC_10') +
+          renderPotionCard('Epic Mana Potion', 'Restores 75,000 MP', 'mpEpic', 'manapotions_epic', 'buyMpPotion_EPIC', 'buyMpPotion_EPIC_10');
       }
 
       // Legendary potions unlock at level 80.
       if (char.level >= 80) {
         shopHtml +=
-          renderPotionCard('Legendary Healing Potion', 'Restores 32,000 HP', 'hpLegendary', 'healpotions_legendary', 'buyHpPotion_LEGENDARY', 'buyHpPotion_LEGENDARY_10') +
-          renderPotionCard('Legendary Mana Potion', 'Restores 32,000 MP', 'mpLegendary', 'manapotions_legendary', 'buyMpPotion_LEGENDARY', 'buyMpPotion_LEGENDARY_10');
+          renderPotionCard('Legendary Healing Potion', 'Restores 200,000 HP', 'hpLegendary', 'healpotions_legendary', 'buyHpPotion_LEGENDARY', 'buyHpPotion_LEGENDARY_10') +
+          renderPotionCard('Legendary Mana Potion', 'Restores 200,000 MP', 'mpLegendary', 'manapotions_legendary', 'buyMpPotion_LEGENDARY', 'buyMpPotion_LEGENDARY_10');
       }
 
       const activeMercType = char.mercenary?.type || 'none';
@@ -14546,7 +14559,10 @@
       const playerAtk = char.atk + aa.atkBonus + (setBonus.atk || 0) + (fx.atkBonus || 0) + (abil.atkBonus || 0);
       const playerDef = char.def + aa.defBonus + (setBonus.def || 0) + (fx.defBonus || 0);
 
-      let dmg = Math.max(1, playerAtk - mob.def + Math.floor(Math.random() * 6) - 2);
+      // Base dmg: atk vs def, plus a progressive level-scaling floor so damage stays meaningful at high levels
+      const _lvlMult = 1.5 + char.level * 0.025;
+      const _lvlFloor = Math.floor(char.level * _lvlMult);
+      let dmg = Math.max(1, playerAtk - mob.def + _lvlFloor + Math.floor(Math.random() * 10) - 3);
       dmg = Math.max(1, Math.floor(dmg * aa.playerDamageMult * prestige.playerDamageMult * (event.playerDamageMult || 1) * (fx.playerDamageMult || 1) * (dungeonMod.playerDamageMult || 1)));
 
       // Mob dodge
@@ -14944,6 +14960,7 @@
         }
       }
 
+      if (typeof maybeDropHerb === 'function') maybeDropHerb();
       checkLevelUp(); renderQuests();
       // If we auto-descended to the next floor, spawnMob() already set `mob`; avoid clearing it.
       if (!(char.dungeon && char.dungeon.active && char.dungeon.autoDescend)) {
@@ -16473,6 +16490,8 @@
           char.runeStash.push(runeDrop);
           totalRunes++;
         }
+        // Herb drops during AFK (silent)
+        if (typeof maybeDropHerbSilent === 'function') maybeDropHerbSilent();
       }
 
       const afkXp = awardExperience(totalXp, 'afk');
@@ -16616,44 +16635,44 @@
       // Use the strongest available healing potion first.
       if (char.healpotions_legendary && char.healpotions_legendary > 0) {
         char.healpotions_legendary -= 1;
-        const healAmt = potionHealAmount_legendary_Health;
+        const healAmt = Math.floor(potionHealAmount_legendary_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a legendary healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_epic && char.healpotions_epic > 0) {
         char.healpotions_epic -= 1;
-        const healAmt = potionHealAmount_epic_Health;
+        const healAmt = Math.floor(potionHealAmount_epic_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used an epic healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_heroic && char.healpotions_heroic > 0) {
         char.healpotions_heroic -= 1;
-        const healAmt = potionHealAmount_heroic_Health;
+        const healAmt = Math.floor(potionHealAmount_heroic_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a heroic healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_shp && char.healpotions_shp > 0) {
         char.healpotions_shp -= 1;
-        const healAmt = potionHealAmount_shp_Health;
+        const healAmt = Math.floor(potionHealAmount_shp_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a superior healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_ghp && char.healpotions_ghp > 0) {
         char.healpotions_ghp -= 1;
-        const healAmt = potionHealAmount_ghp_Health;
+        const healAmt = Math.floor(potionHealAmount_ghp_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a greater healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_lhp && char.healpotions_lhp > 0) {
         char.healpotions_lhp -= 1;
-        const healAmt = potionHealAmount_lhp_Health;
+        const healAmt = Math.floor(potionHealAmount_lhp_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a light healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       // Fallback to Minor Healing Potion
       else if (char.healpotions && char.healpotions > 0) {
         char.healpotions -= 1;
-        const healAmt = potionHealAmount_Health;
+        const healAmt = Math.floor(potionHealAmount_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
@@ -16677,44 +16696,44 @@
       // Use the strongest available mana potion first.
       if (char.manapotions_legendary && char.manapotions_legendary > 0) {
         char.manapotions_legendary -= 1;
-        const healAmt = potionHealAmount_legendary_Mana;
+        const healAmt = Math.floor(potionHealAmount_legendary_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a legendary mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_epic && char.manapotions_epic > 0) {
         char.manapotions_epic -= 1;
-        const healAmt = potionHealAmount_epic_Mana;
+        const healAmt = Math.floor(potionHealAmount_epic_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used an epic mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_heroic && char.manapotions_heroic > 0) {
         char.manapotions_heroic -= 1;
-        const healAmt = potionHealAmount_heroic_Mana;
+        const healAmt = Math.floor(potionHealAmount_heroic_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a heroic mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_smp && char.manapotions_smp > 0) {
         char.manapotions_smp -= 1;
-        const healAmt = potionHealAmount_smp_Mana;
+        const healAmt = Math.floor(potionHealAmount_smp_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a superior mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_gmp && char.manapotions_gmp > 0) {
         char.manapotions_gmp -= 1;
-        const healAmt = potionHealAmount_gmp_Mana;
+        const healAmt = Math.floor(potionHealAmount_gmp_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a greater mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_lmp && char.manapotions_lmp > 0) {
         char.manapotions_lmp -= 1;
-        const healAmt = potionHealAmount_lmp_Mana;
+        const healAmt = Math.floor(potionHealAmount_lmp_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a light mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       // Fallback to Minor Mana Potion
       else if (char.manapotions && char.manapotions > 0) {
         char.manapotions -= 1;
-        const healAmt = potionHealAmount_Mana;
+        const healAmt = Math.floor(potionHealAmount_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
@@ -16846,7 +16865,7 @@
 
       char.healpotions_lhp -= 1;
 
-      const healAmt = potionHealAmount_lhp_Health;
+      const healAmt = Math.floor(potionHealAmount_lhp_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
 
       char.hp = Math.min(char.maxHp, char.hp + healAmt);
 
@@ -16868,7 +16887,7 @@
 
       char.manapotions_lmp -= 1;
 
-      const healAmt = potionHealAmount_lmp_Mana;
+      const healAmt = Math.floor(potionHealAmount_lmp_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
 
       char.mp = Math.min(char.maxMp, char.mp + healAmt);
 
@@ -17416,7 +17435,7 @@
 
     // ══════════════════════════════════════════════
     function switchTab(tab) {
-      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'aa', 'prestige', 'inv', 'spells', 'runes', 'shop', 'loot', 'bank', 'group', 'leaderboard', 'about'];
+      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'aa', 'prestige', 'inv', 'spells', 'runes', 'shop', 'loot', 'bank', 'group', 'tradeskill', 'leaderboard', 'about'];
       tabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
       });
@@ -17439,6 +17458,7 @@
       if (tab === 'prestige') renderPrestigeTab();
       if (tab === 'bank') renderBank();
       if (tab === 'group') renderGroupTab();
+      if (tab === 'tradeskill') renderTradeskillTab();
       if (tab === 'leaderboard') renderLeaderboardTab();
     }
 
@@ -17518,7 +17538,528 @@
           finally { busy(false); }
         });
       }
+      const localBtn = document.getElementById('login-local');
+      if (localBtn) {
+        localBtn.addEventListener('click', () => {
+          loadSlots(); renderSlots(); showScreen('screen-charselect');
+        });
+      }
     })();
+
+
+    // ══════════════════════════════════════════════
+    //  TRADESKILL — ALCHEMY
+    // ══════════════════════════════════════════════
+
+    // ── Constants ──────────────────────────────────
+    const ALCHEMY_MAX_SKILL = 100;
+    const ALCHEMY_XP_PER_LEVEL = 100; // xp needed per skill level
+
+    // Herb definitions: { id, name, emoji, desc, zone: minZone }
+    const HERBS = [
+      { id: 'thornweed',   name: 'Thornweed',    emoji: '🌿', desc: 'Common roadside herb.',         zone: 0  },
+      { id: 'emberroot',   name: 'Emberroot',    emoji: '🌱', desc: 'Glows faintly with heat.',      zone: 3  },
+      { id: 'moonpetal',   name: 'Moonpetal',    emoji: '🌸', desc: 'Blooms only at dusk.',          zone: 8  },
+      { id: 'voidcap',     name: 'Voidcap',      emoji: '🍄', desc: 'Dark mushroom from the deep.',  zone: 15 },
+      { id: 'solarbloom',  name: 'Solarbloom',   emoji: '🌻', desc: 'Radiates pure light energy.',   zone: 22 },
+    ];
+
+    // Recipe definitions
+    // cost: { herbId: count }, produces: { type, key, qty }, skillReq, xp, brewTime (ms)
+    const ALCHEMY_RECIPES = [
+      {
+        id: 'minor_hp', name: 'Minor Healing Potion', emoji: '🧪',
+        desc: 'Restores 150 HP.',
+        cost: { thornweed: 2 },
+        produces: { type: 'healpotion', key: 'healpotions', qty: 1 },
+        skillReq: 1, xp: 8, brewTime: 4000,
+      },
+      {
+        id: 'minor_mp', name: 'Minor Mana Potion', emoji: '💧',
+        desc: 'Restores 150 MP.',
+        cost: { thornweed: 2 },
+        produces: { type: 'manapotion', key: 'manapotions', qty: 1 },
+        skillReq: 1, xp: 8, brewTime: 4000,
+      },
+      {
+        id: 'light_hp', name: 'Light Healing Potion', emoji: '🧪',
+        desc: 'Restores 600 HP.',
+        cost: { thornweed: 3, emberroot: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_lhp', qty: 1 },
+        skillReq: 10, xp: 20, brewTime: 7000,
+      },
+      {
+        id: 'light_mp', name: 'Light Mana Potion', emoji: '💧',
+        desc: 'Restores 600 MP.',
+        cost: { thornweed: 3, emberroot: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_lmp', qty: 1 },
+        skillReq: 10, xp: 20, brewTime: 7000,
+      },
+      {
+        id: 'greater_hp', name: 'Greater Healing Potion', emoji: '🧪',
+        desc: 'Restores 2,500 HP.',
+        cost: { emberroot: 2, moonpetal: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_ghp', qty: 1 },
+        skillReq: 25, xp: 40, brewTime: 12000,
+      },
+      {
+        id: 'greater_mp', name: 'Greater Mana Potion', emoji: '💧',
+        desc: 'Restores 2,500 MP.',
+        cost: { emberroot: 2, moonpetal: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_gmp', qty: 1 },
+        skillReq: 25, xp: 40, brewTime: 12000,
+      },
+      {
+        id: 'superior_hp', name: 'Superior Healing Potion', emoji: '🧪',
+        desc: 'Restores 10,000 HP.',
+        cost: { moonpetal: 2, voidcap: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_shp', qty: 1 },
+        skillReq: 45, xp: 75, brewTime: 18000,
+      },
+      {
+        id: 'superior_mp', name: 'Superior Mana Potion', emoji: '💧',
+        desc: 'Restores 10,000 MP.',
+        cost: { moonpetal: 2, voidcap: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_smp', qty: 1 },
+        skillReq: 45, xp: 75, brewTime: 18000,
+      },
+      {
+        id: 'heroic_hp', name: 'Heroic Healing Potion', emoji: '🧪',
+        desc: 'Restores 30,000 HP.',
+        cost: { voidcap: 2, solarbloom: 1 },
+        produces: { type: 'healpotion', key: 'healpotions_heroic', qty: 1 },
+        skillReq: 65, xp: 120, brewTime: 25000,
+      },
+      {
+        id: 'heroic_mp', name: 'Heroic Mana Potion', emoji: '💧',
+        desc: 'Restores 30,000 MP.',
+        cost: { voidcap: 2, solarbloom: 1 },
+        produces: { type: 'manapotion', key: 'manapotions_heroic', qty: 1 },
+        skillReq: 65, xp: 120, brewTime: 25000,
+      },
+      {
+        id: 'epic_hp', name: 'Epic Healing Potion', emoji: '🧪',
+        desc: 'Restores 75,000 HP.',
+        cost: { moonpetal: 2, voidcap: 2, solarbloom: 2 },
+        produces: { type: 'healpotion', key: 'healpotions_epic', qty: 1 },
+        skillReq: 82, xp: 200, brewTime: 40000,
+      },
+      {
+        id: 'epic_mp', name: 'Epic Mana Potion', emoji: '💧',
+        desc: 'Restores 75,000 MP.',
+        cost: { moonpetal: 2, voidcap: 2, solarbloom: 2 },
+        produces: { type: 'manapotion', key: 'manapotions_epic', qty: 1 },
+        skillReq: 82, xp: 200, brewTime: 40000,
+      },
+      {
+        id: 'legendary_hp', name: 'Legendary Healing Potion', emoji: '🧪',
+        desc: 'Restores 200,000 HP.',
+        cost: { emberroot: 2, moonpetal: 3, voidcap: 3, solarbloom: 3 },
+        produces: { type: 'healpotion', key: 'healpotions_legendary', qty: 1 },
+        skillReq: 95, xp: 350, brewTime: 60000,
+      },
+      {
+        id: 'legendary_mp', name: 'Legendary Mana Potion', emoji: '💧',
+        desc: 'Restores 200,000 MP.',
+        cost: { emberroot: 2, moonpetal: 3, voidcap: 3, solarbloom: 3 },
+        produces: { type: 'manapotion', key: 'manapotions_legendary', qty: 1 },
+        skillReq: 95, xp: 350, brewTime: 60000,
+      },
+    ];
+
+    // Milestones: { level, label, desc }
+    const ALCHEMY_MILESTONES = [
+      { level: 1,  label: 'Novice Alchemist',    desc: 'Can brew Minor Potions.' },
+      { level: 10, label: 'Apprentice Alchemist', desc: 'Unlocks Light Potions. Herbs drop 10% more often.' },
+      { level: 20, label: 'Auto-Brew I',          desc: 'Auto-brews 1 Minor potion every 30s.' },
+      { level: 25, label: 'Journeyman Alchemist', desc: 'Unlocks Greater Potions.' },
+      { level: 35, label: 'Auto-Brew II',         desc: 'Auto-brews up to Light tier every 20s.' },
+      { level: 45, label: 'Adept Alchemist',      desc: 'Unlocks Superior Potions. Herbs drop 25% more often.' },
+      { level: 50, label: 'Auto-Brew III',        desc: 'Auto-brews best available recipe every 15s.' },
+      { level: 65, label: 'Expert Alchemist',     desc: 'Unlocks Heroic Potions. Potions heal +15% bonus.' },
+      { level: 75, label: 'Auto-Brew IV',         desc: 'Auto-brews 2 potions every 12s.' },
+      { level: 82, label: 'Master Alchemist',     desc: 'Unlocks Epic Potions. Potions heal +25% bonus.' },
+      { level: 90, label: 'Auto-Brew V',          desc: 'Auto-brews 3 potions every 10s.' },
+      { level: 95, label: 'Grand Alchemist',      desc: 'Unlocks Legendary Potions. Herbs drop 50% more often.' },
+      { level: 100,label: 'Transcendent Alchemist',desc: 'Auto-brews 5 potions every 8s. Potions heal +40% bonus.' },
+    ];
+
+    // ── State helpers ───────────────────────────────
+    function ensureAlchemyState(c) {
+      if (!c) return;
+      if (!c.alchemy || typeof c.alchemy !== 'object') {
+        c.alchemy = { skill: 1, xp: 0, herbs: {}, brewQueue: null, totalBrewed: 0 };
+      }
+      const a = c.alchemy;
+      if (!Number.isFinite(Number(a.skill)) || a.skill < 1) a.skill = 1;
+      if (!Number.isFinite(Number(a.xp)) || a.xp < 0) a.xp = 0;
+      if (!a.herbs || typeof a.herbs !== 'object') a.herbs = {};
+      HERBS.forEach(h => { if (!Number.isFinite(Number(a.herbs[h.id]))) a.herbs[h.id] = 0; });
+      if (!Number.isFinite(Number(a.totalBrewed))) a.totalBrewed = 0;
+      if (a.brewQueue && typeof a.brewQueue !== 'object') a.brewQueue = null;
+    }
+
+    function getAlchemySkill() {
+      if (!char) return 1;
+      ensureAlchemyState(char);
+      return Math.max(1, Math.min(ALCHEMY_MAX_SKILL, Math.floor(Number(char.alchemy.skill))));
+    }
+
+    function getAlchemyBonusHealPct() {
+      const skill = getAlchemySkill();
+      if (skill >= 100) return 0.40;
+      if (skill >= 82)  return 0.25;
+      if (skill >= 65)  return 0.15;
+      return 0;
+    }
+
+    function getAlchemyHerbDropBonus() {
+      const skill = getAlchemySkill();
+      if (skill >= 95) return 0.50;
+      if (skill >= 45) return 0.25;
+      if (skill >= 10) return 0.10;
+      return 0;
+    }
+
+    function getAutoBrew() {
+      // Returns { count, intervalMs, maxTier } or null
+      const skill = getAlchemySkill();
+      if (skill >= 100) return { count: 5, intervalMs: 8000,  maxTier: 99 };
+      if (skill >= 90)  return { count: 3, intervalMs: 10000, maxTier: 99 };
+      if (skill >= 75)  return { count: 2, intervalMs: 12000, maxTier: 99 };
+      if (skill >= 50)  return { count: 1, intervalMs: 15000, maxTier: 99 };
+      if (skill >= 35)  return { count: 1, intervalMs: 20000, maxTier: 25 }; // up to Light
+      if (skill >= 20)  return { count: 1, intervalMs: 30000, maxTier: 10 }; // Minor only
+      return null;
+    }
+
+    // XP required to reach next skill level from current
+    function alchemyXpForLevel(level) {
+      return Math.floor(ALCHEMY_XP_PER_LEVEL * (1 + (level - 1) * 0.18));
+    }
+
+    function addAlchemyXp(amount) {
+      if (!char) return;
+      ensureAlchemyState(char);
+      const a = char.alchemy;
+      if (a.skill >= ALCHEMY_MAX_SKILL) return;
+      a.xp += amount;
+      let leveled = false;
+      while (a.skill < ALCHEMY_MAX_SKILL) {
+        const needed = alchemyXpForLevel(a.skill);
+        if (a.xp >= needed) {
+          a.xp -= needed;
+          a.skill += 1;
+          leveled = true;
+          const ms = ALCHEMY_MILESTONES.find(m => m.level === a.skill);
+          if (ms) log('🏆 Alchemy milestone: ' + ms.label + ' — ' + ms.desc, 'lvl');
+          else log('⚗️ Alchemy skill increased to ' + a.skill + '!', 'lvl');
+        } else break;
+      }
+      if (a.skill >= ALCHEMY_MAX_SKILL) a.xp = 0;
+      return leveled;
+    }
+
+    // ── Herb drops from combat ──────────────────────
+    function maybeDropHerb() {
+      if (!char) return;
+      ensureAlchemyState(char);
+      const skill = getAlchemySkill();
+      const baseChance = 0.18 + getAlchemyHerbDropBonus();
+      if (Math.random() > baseChance) return;
+      // Pick an herb appropriate for the current zone
+      const eligible = HERBS.filter(h => char.zone >= h.zone);
+      if (!eligible.length) return;
+      // Weight toward lower-tier herbs (more common)
+      const weights = eligible.map((_, i) => Math.max(1, eligible.length - i));
+      const total = weights.reduce((s, w) => s + w, 0);
+      let r = Math.random() * total;
+      let picked = eligible[0];
+      for (let i = 0; i < eligible.length; i++) {
+        r -= weights[i];
+        if (r <= 0) { picked = eligible[i]; break; }
+      }
+      char.alchemy.herbs[picked.id] = (char.alchemy.herbs[picked.id] || 0) + 1;
+      log('🌿 You gathered a ' + picked.name + ' while fighting!', 'loot');
+    }
+
+    // ── Silent herb drop (AFK simulation) ────────────
+    function maybeDropHerbSilent() {
+      if (!char) return;
+      ensureAlchemyState(char);
+      const baseChance = 0.18 + getAlchemyHerbDropBonus();
+      if (Math.random() > baseChance) return;
+      const eligible = HERBS.filter(h => char.zone >= h.zone);
+      if (!eligible.length) return;
+      const weights = eligible.map((_, i) => Math.max(1, eligible.length - i));
+      const total = weights.reduce((s, w) => s + w, 0);
+      let r = Math.random() * total;
+      let picked = eligible[0];
+      for (let i = 0; i < eligible.length; i++) {
+        r -= weights[i];
+        if (r <= 0) { picked = eligible[i]; break; }
+      }
+      char.alchemy.herbs[picked.id] = (char.alchemy.herbs[picked.id] || 0) + 1;
+    }
+
+    // ── Brewing ─────────────────────────────────────
+    function canBrew(recipe) {
+      if (!char) return false;
+      ensureAlchemyState(char);
+      if (getAlchemySkill() < recipe.skillReq) return false;
+      return Object.entries(recipe.cost).every(([h, qty]) => (char.alchemy.herbs[h] || 0) >= qty);
+    }
+
+    function brewPotion(recipeId, auto = false) {
+      if (!char) return;
+      ensureAlchemyState(char);
+      const recipe = ALCHEMY_RECIPES.find(r => r.id === recipeId);
+      if (!recipe) return;
+      if (getAlchemySkill() < recipe.skillReq) { if (!auto) log('Your Alchemy skill is too low for this recipe.', 'info'); return; }
+      if (!canBrew(recipe)) { if (!auto) log('You lack the herbs to brew ' + recipe.name + '.', 'info'); return; }
+
+      // Deduct herbs
+      Object.entries(recipe.cost).forEach(([h, qty]) => { char.alchemy.herbs[h] -= qty; });
+
+      // Grant product
+      const p = recipe.produces;
+      if (p.type === 'healpotion' || p.type === 'manapotion') {
+        char[p.key] = (char[p.key] || 0) + p.qty;
+      }
+      char.alchemy.totalBrewed = (char.alchemy.totalBrewed || 0) + p.qty;
+
+      // XP (auto brewing gives 60% xp)
+      const xpGain = auto ? Math.ceil(recipe.xp * 0.6) : recipe.xp;
+      addAlchemyXp(xpGain);
+
+      if (!auto) log('⚗️ You brewed ' + p.qty + 'x ' + recipe.name + '! (+' + xpGain + ' Alchemy XP)', 'loot');
+      autoSave();
+      renderTradeskillTab();
+    }
+
+    // ── Auto-brew loop ──────────────────────────────
+    let alchemyAutoInterval = null;
+    let alchemyAutoLastTick = 0;
+
+    function startAlchemyLoop() {
+      if (alchemyAutoInterval) return;
+      alchemyAutoInterval = setInterval(alchemyAutoTick, 1000);
+    }
+
+    function alchemyAutoTick() {
+      if (!char) return;
+      const ab = getAutoBrew();
+      if (!ab) return;
+      const now = Date.now();
+      if (now - alchemyAutoLastTick < ab.intervalMs) return;
+      alchemyAutoLastTick = now;
+      ensureAlchemyState(char);
+
+      // Pick best eligible recipe up to maxTier skill
+      let brewed = 0;
+      for (let attempt = 0; attempt < ab.count; attempt++) {
+        // Sort recipes by skillReq descending, pick highest-tier one we can brew
+        const eligible = ALCHEMY_RECIPES.filter(r => r.skillReq <= ab.maxTier && canBrew(r))
+          .sort((a, b) => b.skillReq - a.skillReq);
+        if (!eligible.length) break;
+        const recipe = eligible[0];
+        brewPotion(recipe.id, true);
+        brewed++;
+      }
+      if (brewed > 0) {
+        log('⚗️ Auto-brew crafted ' + brewed + ' potion' + (brewed > 1 ? 's' : '') + '.', 'loot');
+        renderTradeskillTab();
+      }
+    }
+
+    // ── Buy herbs at shop ────────────────────────────
+    const HERB_BUY_PRICES = {
+      thornweed: 30,
+      emberroot: 120,
+      moonpetal: 400,
+      voidcap: 1200,
+      solarbloom: 3500,
+    };
+
+    function buyHerb(herbId, qty) {
+      if (!char) return;
+      ensureAlchemyState(char);
+      const herb = HERBS.find(h => h.id === herbId);
+      if (!herb) return;
+      const price = HERB_BUY_PRICES[herbId] * qty;
+      if (char.gold < price) { log('Not enough gold to buy ' + qty + 'x ' + herb.name + '.', 'info'); return; }
+      char.gold -= price;
+      char.alchemy.herbs[herbId] = (char.alchemy.herbs[herbId] || 0) + qty;
+      log('Bought ' + qty + 'x ' + herb.name + ' for ' + price.toLocaleString() + 'g.', 'loot');
+      autoSave();
+      renderTradeskillTab();
+    }
+
+    // ── Render ───────────────────────────────────────
+    function renderTradeskillTab() {
+      const panel = document.getElementById('tradeskill-panel');
+      if (!panel) return;
+      if (!char) { panel.innerHTML = '<p style="color:var(--text-secondary);font-size:13px">No character loaded.</p>'; return; }
+      ensureAlchemyState(char);
+      const a = char.alchemy;
+      const skill = getAlchemySkill();
+      const xpNeeded = skill < ALCHEMY_MAX_SKILL ? alchemyXpForLevel(skill) : 0;
+      const xpPct = skill < ALCHEMY_MAX_SKILL ? Math.min(100, Math.round(a.xp / xpNeeded * 100)) : 100;
+      const ab = getAutoBrew();
+      const healBonus = getAlchemyBonusHealPct();
+      const nextMs = ALCHEMY_MILESTONES.find(m => m.level > skill);
+      const herbBonus = Math.round(getAlchemyHerbDropBonus() * 100);
+
+      // Current milestone label
+      const curMs = [...ALCHEMY_MILESTONES].reverse().find(m => m.level <= skill) || ALCHEMY_MILESTONES[0];
+
+      let html = `
+        <h3 style="margin-bottom:4px">⚗️ Alchemy</h3>
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">
+          Brew potions from herbs gathered in combat. Higher skill unlocks stronger recipes, auto-brewing, and potion bonuses.
+        </div>
+
+        <!-- Skill header -->
+        <div style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:12px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div>
+              <span style="font-weight:700;font-size:15px">Alchemy Skill ${skill}</span>
+              <span style="font-size:11px;color:var(--text-secondary);margin-left:8px">${curMs.label}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary)">${a.totalBrewed || 0} potions crafted</div>
+          </div>
+          <div style="background:var(--bg-tertiary);border-radius:4px;height:8px;margin-bottom:6px;overflow:hidden">
+            <div style="background:linear-gradient(90deg,#7c3aed,#a855f7);height:100%;width:${xpPct}%;transition:width .3s"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-secondary);display:flex;gap:16px;flex-wrap:wrap">
+            ${skill < ALCHEMY_MAX_SKILL ? `<span>${a.xp}/${xpNeeded} XP to level ${skill+1}</span>` : '<span style="color:#a855f7;font-weight:700">MAX SKILL</span>'}
+            ${healBonus > 0 ? `<span style="color:#4ade80">+${Math.round(healBonus*100)}% potion healing</span>` : ''}
+            ${herbBonus > 0 ? `<span style="color:#4ade80">+${herbBonus}% herb drop rate</span>` : ''}
+            ${ab ? `<span style="color:#60a5fa">Auto-brew: ${ab.count} potion${ab.count>1?'s':''} every ${ab.intervalMs/1000}s</span>` : '<span>Auto-brew unlocks at skill 20</span>'}
+          </div>
+          ${nextMs ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px">Next: <b>Skill ${nextMs.level}</b> — ${nextMs.desc}</div>` : ''}
+        </div>
+
+        <!-- Herb stash -->
+        <div style="font-weight:600;font-size:13px;margin-bottom:6px">🌿 Herb Stash</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+      `;
+
+      HERBS.forEach(herb => {
+        const qty = a.herbs[herb.id] || 0;
+        const locked = char.zone < herb.zone;
+        const buyPrice = HERB_BUY_PRICES[herb.id];
+        const canAfford = char.gold >= buyPrice;
+        html += `
+          <div style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px 10px;min-width:110px;flex:1">
+            <div style="font-size:18px;line-height:1">${herb.emoji}</div>
+            <div style="font-weight:600;font-size:12px;margin-top:2px">${herb.name}</div>
+            <div style="font-size:11px;color:var(--text-secondary)">${herb.desc}</div>
+            <div style="font-size:13px;font-weight:700;margin:4px 0;color:${qty > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}">×${qty}</div>
+            ${locked ? `<div style="font-size:10px;color:var(--text-secondary)">Zone ${herb.zone}+ only</div>` : `
+              <div style="display:flex;gap:4px;margin-top:4px">
+                <button class="btn" style="font-size:10px;padding:2px 6px" onclick="buyHerb('${herb.id}',1)" ${!canAfford?'disabled':''}>Buy 1 (${buyPrice}g)</button>
+                <button class="btn" style="font-size:10px;padding:2px 6px" onclick="buyHerb('${herb.id}',10)" ${char.gold < buyPrice*10?'disabled':''}>×10</button>
+                <button class="btn" style="font-size:10px;padding:2px 6px" onclick="buyHerb('${herb.id}',100)" ${char.gold < buyPrice*100?'disabled':''}>×100</button>
+                <button class="btn" style="font-size:10px;padding:2px 6px" onclick="buyHerb('${herb.id}',1000)" ${char.gold < buyPrice*1000?'disabled':''}>×1000</button>
+              </div>`}
+          </div>`;
+      });
+
+      html += `</div>
+
+        <!-- Recipes -->
+        <div style="font-weight:600;font-size:13px;margin-bottom:6px">📜 Recipes</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+      `;
+
+      ALCHEMY_RECIPES.forEach(recipe => {
+        const unlocked = skill >= recipe.skillReq;
+        const affordable = canBrew(recipe);
+        const p = recipe.produces;
+        const stock = char[p.key] || 0;
+        const costStr = Object.entries(recipe.cost).map(([h, q]) => {
+          const herb = HERBS.find(hb => hb.id === h);
+          const have = a.herbs[h] || 0;
+          const ok = have >= q;
+          return `<span style="color:${ok?'var(--text-primary)':'#ef4444'}">${herb ? herb.emoji : '🌿'} ${herb ? herb.name : h} ×${q} (have ${have})</span>`;
+        }).join(' + ');
+
+        html += `
+          <div style="background:var(--bg-secondary);border:0.5px solid ${unlocked ? 'var(--border)' : 'transparent'};border-radius:var(--radius-md);padding:10px 12px;opacity:${unlocked?1:0.45}">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+              <div>
+                <span style="font-size:16px">${recipe.emoji}</span>
+                <span style="font-weight:600;font-size:13px;margin-left:4px">${recipe.name}</span>
+                ${!unlocked ? `<span style="font-size:11px;color:var(--text-secondary);margin-left:8px">(Skill ${recipe.skillReq})</span>` : ''}
+                <span style="font-size:11px;color:var(--text-secondary);margin-left:8px">Stock: ${stock}</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                ${unlocked ? `
+                  <button class="btn${affordable?' active':''}" style="font-size:12px" onclick="brewPotion('${recipe.id}')" ${!affordable?'disabled':''}>Brew (+${recipe.xp} XP)</button>
+                  <button class="btn${affordable?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',5)" ${!affordable?'disabled':''}>×5</button>
+                ` : ''}
+              </div>
+            </div>
+            ${unlocked ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px">${costStr}</div>` : ''}
+          </div>`;
+      });
+
+      html += `</div>
+
+        <!-- Milestones -->
+        <div style="font-weight:600;font-size:13px;margin:14px 0 6px">🏆 Milestones</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+      `;
+      ALCHEMY_MILESTONES.forEach(ms => {
+        const done = skill >= ms.level;
+        html += `
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:6px;opacity:${done?1:0.5}">
+            <span style="font-size:15px">${done?'✅':'🔒'}</span>
+            <div>
+              <span style="font-weight:600;font-size:12px">Skill ${ms.level} — ${ms.label}</span>
+              <div style="font-size:11px;color:var(--text-secondary)">${ms.desc}</div>
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+
+      panel.innerHTML = html;
+    }
+
+    // Batch brew helper
+    function brewBatch(recipeId, qty) {
+      if (!char) return;
+      for (let i = 0; i < qty; i++) {
+        if (!canBrew(ALCHEMY_RECIPES.find(r => r.id === recipeId))) break;
+        brewPotion(recipeId, false);
+      }
+    }
+
+    // ── Hook into killMob for herb drops ────────────
+    // Patch killMob to call maybeDropHerb after kill
+    const _origKillMob = killMob;
+    // We hook via overriding the function reference after definition
+    // Instead we patch by wrapping — done below after killMob is defined
+    // Actually: insert a call to maybeDropHerb() via the existing killMob's end
+    // We'll register a post-kill hook array
+    if (!window._postKillHooks) window._postKillHooks = [];
+    window._postKillHooks.push(maybeDropHerb);
+
+    // ── Apply alchemy bonus to potion heals ─────────
+    // Patch useHpPotion and similar to apply the bonus
+    // We'll apply it by wrapping after the fact using a shared modifier
+    // The heal amount is read from potionHealAmount_* globals, which we can
+    // modify dynamically when a potion is used.
+    // Simplest approach: wrap the heal application functions.
+    // But they are defined above — we intercept via the alchemyHealBonus getter.
+    // We expose this globally so the potion functions can call it.
+    window.getAlchemyHealMultiplier = function() {
+      return 1 + getAlchemyBonusHealPct();
+    };
+
+    // Start auto-brew loop
+    startAlchemyLoop();
 
     Cloud.start();
   </script>
