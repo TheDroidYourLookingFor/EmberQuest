@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.3.4</title>
+    1.3.5</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -3074,13 +3074,16 @@
             style="font-size:11px;color:var(--text-secondary)">
             XP</div>
           <div
-            class="bar-wrap">
+            class="bar-wrap"
+            style="position:relative;height:14px;">
             <div
               class="bar xp-bar"
               id="xp-bar"
-              style="width:0%">
+              style="width:0%;transition:none">
             </div>
+            <span id="xp-pct-label" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,0.7);pointer-events:none;line-height:1">0.0%</span>
           </div>
+          <div style="font-size:10px;color:var(--text-secondary);text-align:center;margin-top:-3px;margin-bottom:4px" id="xp-needed-label">0 / 100 XP</div>
           <div
             class="stat-row"
             style="margin-top:4px">
@@ -3679,29 +3682,9 @@
                   <option value="misc">Misc</option>
                   <option value="magicplus">Magic+</option>
                 </select>
-                <select id="inv-armorslot-select" onchange="setArmorSlotFilter(this.value)" style="font-size:11px;padding:4px 9px;border:1px solid var(--border-md);border-radius:20px;background:var(--bg-primary);color:var(--text-primary);cursor:pointer;display:none">
-                  <option value="all">Slot: All</option>
-                  <option value="head">Head</option>
-                  <option value="shoulders">Shoulders</option>
-                  <option value="back">Back</option>
-                  <option value="chest">Chest</option>
-                  <option value="wrist">Wrists</option>
-                  <option value="hands">Hands</option>
-                  <option value="waist">Waist</option>
-                  <option value="legs">Legs</option>
-                  <option value="feet">Feet</option>
-                </select>
                 <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:5px;cursor:pointer">
                   <input type="checkbox" id="inv-overflow-toggle" onchange="toggleAutoVendorOverflow(this.checked)"> Auto-vendor overflow
                 </label>
-                <div style="display:flex;align-items:center;gap:4px;margin-left:4px">
-                  <select id="sell-below-rarity-sel" style="font-size:11px;padding:4px 6px;border:1px solid var(--border-md);border-radius:6px;background:var(--bg-primary);color:var(--text-primary)">
-                    <option value="Normal">Sell: Common</option>
-                    <option value="Magic">Sell: Common+Magic</option>
-                    <option value="Rare">Sell: Up to Rare</option>
-                  </select>
-                  <button class="btn" style="font-size:11px;padding:3px 8px" onclick="sellBelowRarity()" title="Sell all unlocked, non-favorited items below the selected rarity">Sell All</button>
-                </div>
               </div>
               <div
                 id="bag-tab-row"
@@ -3914,19 +3897,27 @@
             style="display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-bottom:8px">
             <button
               class="btn"
-              onclick="sellAllJunk()"><i
+              onclick="sellAllJunk()" title="Sell all non-equipment, non-container items"><i
                 class="ti ti-coins"></i>
-              Sell
-              All
-              Junk
+              Sell Junk
             </button>
             <button
+              class="btn"
+              onclick="sellByRarity('Normal')" title="Sell all Common (Normal) quality items">Sell Common</button>
+            <button
+              class="btn"
+              onclick="sellByRarity('Magic')" title="Sell all Magic quality items">Sell Magic</button>
+            <button
+              class="btn"
+              onclick="sellByRarity('Rare')" title="Sell all Rare quality items">Sell Rare</button>
+            <button
+              class="btn"
+              onclick="sellByRarity('Unique')" title="Sell all Unique quality items">Sell Unique</button>
+            <button
               class="btn danger"
-              onclick="sellAllInventory()"><i
+              onclick="sellAllInventory()" title="Sell everything (respects locked &amp; favorited items)"><i
                 class="ti ti-trash"></i>
-              Sell
-              All
-              Inventory
+              Sell All
             </button>
           </div>
 
@@ -9336,7 +9327,7 @@
     };
 
     // Inventory view state (transient — not saved)
-    const invView = { sort: 'default', filter: 'all', armorSlot: 'all' };
+    const invView = { sort: 'default', filter: 'all' };
 
     function getItemLevel(entry) {
       if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.ilvl))) {
@@ -9527,11 +9518,6 @@
     }
     function setInventoryFilter(filter) {
       invView.filter = filter || 'all';
-      invView.armorSlot = 'all';
-      renderInv();
-    }
-    function setArmorSlotFilter(slot) {
-      invView.armorSlot = slot || 'all';
       renderInv();
     }
     function toggleAutoVendorOverflow(on) {
@@ -10432,12 +10418,7 @@
         const data = getItemData(item);
         const slot = data ? data.slot : null;
         if (invView.filter === 'weapon') return slot === 'weapon' || slot === 'offhand';
-        if (invView.filter === 'armor') {
-          const armorSlots = ['chest', 'legs', 'feet', 'head', 'hands', 'waist', 'wrist', 'shoulders', 'back'];
-          if (!armorSlots.includes(slot)) return false;
-          if (invView.armorSlot && invView.armorSlot !== 'all') return slot === invView.armorSlot;
-          return true;
-        }
+        if (invView.filter === 'armor') return ['chest', 'legs', 'feet'].includes(slot);
         if (invView.filter === 'accessory') return ['charm', 'ring', 'amulet', 'neck'].includes(slot);
         if (invView.filter === 'misc') return !data && !isRuneEntry(item);
         if (invView.filter === 'magicplus') {
@@ -12469,13 +12450,14 @@
       document.getElementById('hp-bar').style.width = Math.max(0, char.hp / char.maxHp * 100) + '%';
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
       const _xpBar = document.getElementById('xp-bar');
-      const _xpPct = (char.xp / char.xpNext * 100) + '%';
-      if (_xpBar && _xpBar.style.width !== _xpPct) {
-        _xpBar.style.width = _xpPct;
-        _xpBar.classList.remove('stat-flash'); void _xpBar.offsetWidth; _xpBar.classList.add('stat-flash');
-      } else if (_xpBar) {
-        _xpBar.style.width = _xpPct;
+      const _xpPct = Math.min(100, char.xp / char.xpNext * 100);
+      if (_xpBar) {
+        _xpBar.style.width = _xpPct + '%';
       }
+      const _xpPctEl = document.getElementById('xp-pct-label');
+      if (_xpPctEl) _xpPctEl.textContent = _xpPct.toFixed(1) + '%';
+      const _xpNeededEl = document.getElementById('xp-needed-label');
+      if (_xpNeededEl) _xpNeededEl.textContent = fmt(char.xp) + ' / ' + fmt(char.xpNext) + ' XP';
       renderMob();
       // Only re-render tabs that are currently visible — prevents destroying
       // open selects (e.g. spell gem assignment) during combat ticks.
@@ -13061,14 +13043,8 @@
       // Sync sort/filter selects (in case they were re-rendered)
       const sortSel = document.getElementById('inv-sort-select');
       const filterSel = document.getElementById('inv-filter-select');
-      const armorSlotSel = document.getElementById('inv-armorslot-select');
       if (sortSel && sortSel.value !== invView.sort) sortSel.value = invView.sort;
       if (filterSel && filterSel.value !== invView.filter) filterSel.value = invView.filter;
-      if (armorSlotSel) {
-        const showSlotFilter = invView.filter === 'armor';
-        armorSlotSel.style.display = showSlotFilter ? '' : 'none';
-        if (armorSlotSel.value !== invView.armorSlot) armorSlotSel.value = invView.armorSlot;
-      }
       const overflowChk = document.getElementById('inv-overflow-toggle');
       if (overflowChk) overflowChk.checked = !!(getLootFilterState(char).autoVendorOverflow);
 
@@ -15504,6 +15480,32 @@
         autoSave();
       } else {
         log('No eligible items to sell.', 'info');
+      }
+    }
+
+    function sellByRarity(rarity) {
+      if (!char || !Array.isArray(char.inventory)) return;
+      let sold = 0, totalGold = 0;
+      const keep = [];
+      for (const item of char.inventory) {
+        const q = getItemQuality(item);
+        if (q === rarity && !isItemLocked(item) && !isItemFavorite(item)) {
+          const val = getItemSellValue(item);
+          char.gold += val;
+          totalGold += val;
+          sold++;
+        } else {
+          keep.push(item);
+        }
+      }
+      char.inventory = keep;
+      if (sold > 0) {
+        log('Sold ' + sold + ' ' + rarity + ' item' + (sold === 1 ? '' : 's') + ' for ' + totalGold.toLocaleString() + 'g.', 'loot');
+        showToast('Sold ' + rarity + ': +' + totalGold.toLocaleString() + 'g', 'success');
+        renderAll();
+        autoSave();
+      } else {
+        log('No unlocked ' + rarity + ' items to sell.', 'info');
       }
     }
 
