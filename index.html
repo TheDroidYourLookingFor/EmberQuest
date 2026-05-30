@@ -1446,7 +1446,7 @@
     }
     .eq-item-card.rarity-border-magic    { border-left-color: #22C55E; }
     .eq-item-card.rarity-border-rare     { border-left-color: #3B82F6; }
-    .eq-item-card.rarity-border-unique   { border-left-color: #A855F7; }
+    .eq-item-card.rarity-border-epic   { border-left-color: #A855F7; }
     .eq-item-card.rarity-border-legendary{ border-left-color: #F97316; }
     .eq-item-card.rarity-border-mythic   { border-left-color: #EF4444; }
     .eq-item-card.rarity-border-runeword { border-left-color: #EAB308; }
@@ -1514,7 +1514,7 @@
 
     /* Legacy aliases (older markup / runtime references) */
     .rarity-magic { color: #22C55E; }
-    .rarity-unique { color: #A855F7; text-shadow: 0 0 6px rgba(168, 85, 247, 0.35); }
+    .rarity-epic { color: #A855F7; text-shadow: 0 0 6px rgba(168, 85, 247, 0.35); }
 
     /* XP / Gold flash animation */
     @keyframes stat-flash {
@@ -3075,7 +3075,7 @@
             XP</div>
           <div
             class="bar-wrap"
-            style="position:relative;height:14px;">
+            style="position:relative;height:14px;border-radius:3px 3px 0 0;overflow:hidden;margin-bottom:0">
             <div
               class="bar xp-bar"
               id="xp-bar"
@@ -3083,7 +3083,11 @@
             </div>
             <span id="xp-pct-label" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,0.7);pointer-events:none;line-height:1">0.0%</span>
           </div>
-          <div style="font-size:10px;color:var(--text-secondary);text-align:center;margin-top:-3px;margin-bottom:4px" id="xp-needed-label">0 / 100 XP</div>
+          <div style="position:relative;height:5px;background:var(--bg-tertiary);border-radius:0 0 3px 3px;overflow:hidden;margin-bottom:3px" id="aa-xp-bar-track">
+            <div id="aa-xp-bar" style="height:100%;width:0%;background:#a855f7;transition:width 0.3s ease"></div>
+            <span id="aa-xp-pct-label" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,0.8);pointer-events:none;line-height:1"></span>
+          </div>
+          <div style="font-size:10px;color:var(--text-secondary);text-align:center;margin-bottom:4px" id="xp-needed-label">0 / 100 XP</div>
           <div
             class="stat-row"
             style="margin-top:4px">
@@ -3912,7 +3916,7 @@
               onclick="sellByRarity('Rare')" title="Sell all Rare quality items">Sell Rare</button>
             <button
               class="btn"
-              onclick="sellByRarity('Unique')" title="Sell all Unique quality items">Sell Unique</button>
+              onclick="sellByRarity('Epic')" title="Sell all Epic quality items">Sell Epic</button>
             <button
               class="btn danger"
               onclick="sellAllInventory()" title="Sell everything (respects locked &amp; favorited items)"><i
@@ -5002,7 +5006,7 @@
         { stat: 'int', min: 1, max: 2, prefix: 'Brilliant',   suffix: 'the Arcane' }
       ]
     };
-    const UNIQUE_ITEM_BY_BASE = {
+    const EPIC_ITEM_BY_BASE = {
       'Rusty Dagger': [
         { id: 'bloodletter_shiv', name: 'Bloodletter Shiv', rolls: { atk: 10, hp: 24 } }
       ],
@@ -6182,7 +6186,7 @@
 
     function getItemQuality(entry) {
       if (!entry || typeof entry !== 'object') return 'Normal';
-      if (entry.quality === 'Magic' || entry.quality === 'Rare' || entry.quality === 'Unique' || entry.quality === 'Runeword' || entry.quality === 'Legendary' || entry.quality === 'Mythic') return entry.quality;
+      if (entry.quality === 'Magic' || entry.quality === 'Rare' || entry.quality === 'Epic' || entry.quality === 'Runeword' || entry.quality === 'Legendary' || entry.quality === 'Mythic') return entry.quality;
       return 'Normal';
     }
 
@@ -6192,7 +6196,7 @@
       Normal: 'Common',
       Magic: 'Uncommon',
       Rare: 'Rare',
-      Unique: 'Epic',
+      Epic: 'Epic',
       Legendary: 'Legendary',
       Mythic: 'Mythic',
       Runeword: 'Runeword'
@@ -6207,7 +6211,7 @@
       const quality = getItemQuality(entry);
       if (quality === 'Magic') return 'rarity-uncommon';
       if (quality === 'Rare') return 'rarity-rare';
-      if (quality === 'Unique') return 'rarity-epic';
+      if (quality === 'Epic') return 'rarity-epic';
       if (quality === 'Legendary') return 'rarity-legendary';
       if (quality === 'Mythic') return 'rarity-mythic';
       if (quality === 'Runeword') return 'rarity-runeword';
@@ -6488,7 +6492,7 @@
       if (!base) return null;
 
       const quality = getItemQuality(entry);
-      const uniqueRollMult = quality === 'Unique' ? 1.75 : (quality === 'Mythic' ? 1.6 : (quality === 'Legendary' ? 1.4 : 1));
+      const epicRollMult = quality === 'Epic' ? 1.75 : (quality === 'Mythic' ? 1.6 : (quality === 'Legendary' ? 1.4 : 1));
 
       const stats = {
         atk: base.atk || 0,
@@ -6501,16 +6505,16 @@
       if (entry && typeof entry === 'object' && entry.rolls && typeof entry.rolls === 'object') {
         ['atk', 'def', 'hp', 'mp'].forEach(stat => {
           const rolled = Number(entry.rolls[stat] || 0);
-          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * uniqueRollMult);
+          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * epicRollMult);
         });
         // Apply ability-score rolls (str/dex/con/int/wis/cha)
         ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
           const rolled = Number(entry.rolls[stat] || 0);
-          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * uniqueRollMult);
+          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * epicRollMult);
         });
       }
 
-      if (quality === 'Unique') {
+      if (quality === 'Epic') {
         stats.atk += 2;
         stats.def += 2;
         stats.hp += 12;
@@ -6584,9 +6588,9 @@
 
       const cleanName = (typeof entry.name === 'string' && entry.name.trim()) ? entry.name.trim() : baseName;
       const rawQuality = entry.quality;
-      const cleanQuality = (rawQuality === 'Magic' || rawQuality === 'Rare' || rawQuality === 'Unique' || rawQuality === 'Runeword' || rawQuality === 'Legendary' || rawQuality === 'Mythic') ? rawQuality : (Object.keys(cleanRolls).length ? 'Magic' : 'Normal');
+      const cleanQuality = (rawQuality === 'Magic' || rawQuality === 'Rare' || rawQuality === 'Epic' || rawQuality === 'Runeword' || rawQuality === 'Legendary' || rawQuality === 'Mythic') ? rawQuality : (Object.keys(cleanRolls).length ? 'Magic' : 'Normal');
       const normalized = { base: baseName, name: cleanName, rolls: cleanRolls, quality: cleanQuality };
-      if (cleanQuality === 'Unique' && typeof entry.uniqueId === 'string') normalized.uniqueId = entry.uniqueId;
+      if (cleanQuality === 'Epic' && typeof entry.epicId === 'string') normalized.epicId = entry.epicId;
       const ilvl = Number(entry.ilvl);
       if (Number.isFinite(ilvl) && ilvl > 0) normalized.ilvl = Math.max(1, Math.floor(ilvl));
       const lreq = Number(entry.levelReq);
@@ -6689,11 +6693,11 @@
       const ilvl = Math.max(1, Math.floor(mobLvl + Math.floor(Math.random() * 3) - 1));
       const levelReq = Math.max(1, ilvl - PHASE2.levelReqOffset);
 
-      const uniquePool = UNIQUE_ITEM_BY_BASE[baseName] || [];
-      let uniqueChance = 0;
-      if (source === 'loot_named') uniqueChance = 0.015;
-      else if (source === 'loot') uniqueChance = 0.0035;
-      else if (source === 'afk') uniqueChance = 0.0015;
+      const epicPool = EPIC_ITEM_BY_BASE[baseName] || [];
+      let epicChance = 0;
+      if (source === 'loot_named') epicChance = 0.015;
+      else if (source === 'loot') epicChance = 0.0035;
+      else if (source === 'afk') epicChance = 0.0015;
 
       // Mythic chance — the rarest tier, checked first
       const mythicChance = source === 'loot_named' ? PHASE2.mythicChanceNamed : (source === 'loot' ? PHASE2.mythicChanceRegular : 0);
@@ -6713,16 +6717,16 @@
         return legendary;
       }
 
-      if (uniquePool.length && uniqueChance > 0 && Math.random() < uniqueChance) {
-        const chosen = uniquePool[Math.floor(Math.random() * uniquePool.length)];
-        const uniqueRolls = Object.assign({}, chosen.rolls);
-        addAbilityRollBonuses(uniqueRolls, 1, 2, 4); // Epic drops carry an ability bonus
+      if (epicPool.length && epicChance > 0 && Math.random() < epicChance) {
+        const chosen = epicPool[Math.floor(Math.random() * epicPool.length)];
+        const epicRolls = Object.assign({}, chosen.rolls);
+        addAbilityRollBonuses(epicRolls, 1, 2, 4); // Epic drops carry an ability bonus
         return {
           base: baseName,
           name: chosen.name,
-          rolls: uniqueRolls,
-          quality: 'Unique',
-          uniqueId: chosen.id,
+          rolls: epicRolls,
+          quality: 'Epic',
+          epicId: chosen.id,
           ilvl,
           levelReq
         };
@@ -6788,7 +6792,7 @@
       value += Math.floor((stats.mp || 0) / 16);
 
       if (entry && typeof entry === 'object' && entry.quality === 'Rare') value += 12;
-      else if (entry && typeof entry === 'object' && entry.quality === 'Unique') value += 30;
+      else if (entry && typeof entry === 'object' && entry.quality === 'Epic') value += 30;
       else if (entry && typeof entry === 'object' && entry.quality === 'Runeword') value += 40;
       else if (entry && typeof entry === 'object' && entry.quality === 'Legendary') value += 75;
       else if (entry && typeof entry === 'object' && entry.quality === 'Mythic') value += 130;
@@ -6804,7 +6808,7 @@
       const quality = getItemQuality(entry);
       if (quality === 'Magic') base += 15;
       if (quality === 'Rare') base += 45;
-      if (quality === 'Unique') base += 120;
+      if (quality === 'Epic') base += 120;
       if (quality === 'Runeword') base += 160;
       return getMerchantPrice(base);
     }
@@ -7226,7 +7230,7 @@
       if (quality === 'Mythic') return 7;
       if (quality === 'Legendary') return 6;
       if (quality === 'Runeword') return 5;
-      if (quality === 'Unique') return 4;
+      if (quality === 'Epic') return 4;
       if (quality === 'Rare') return 3;
       if (quality === 'Magic') return 2;
       return 1;
@@ -7787,15 +7791,15 @@
       targetChar.afkRules.potMin = Math.max(0, Math.min(99, Math.floor(Number(targetChar.afkRules.potMin || 5))));
 
       if (!targetChar.crafting || typeof targetChar.crafting !== 'object' || Array.isArray(targetChar.crafting)) {
-        targetChar.crafting = { shards: { common: 0, magic: 0, rare: 0, unique: 0 } };
+        targetChar.crafting = { shards: { common: 0, magic: 0, rare: 0, epic: 0 } };
       }
       if (!targetChar.crafting.shards || typeof targetChar.crafting.shards !== 'object' || Array.isArray(targetChar.crafting.shards)) {
-        targetChar.crafting.shards = { common: 0, magic: 0, rare: 0, unique: 0 };
+        targetChar.crafting.shards = { common: 0, magic: 0, rare: 0, epic: 0 };
       }
       targetChar.crafting.shards.common = Math.max(0, Math.floor(Number(targetChar.crafting.shards.common || 0)));
       targetChar.crafting.shards.magic = Math.max(0, Math.floor(Number(targetChar.crafting.shards.magic || 0)));
       targetChar.crafting.shards.rare = Math.max(0, Math.floor(Number(targetChar.crafting.shards.rare || 0)));
-      targetChar.crafting.shards.unique = Math.max(0, Math.floor(Number(targetChar.crafting.shards.unique || 0)));
+      targetChar.crafting.shards.epic = Math.max(0, Math.floor(Number(targetChar.crafting.shards.epic || 0)));
 
       if (!targetChar.logFilters || typeof targetChar.logFilters !== 'object' || Array.isArray(targetChar.logFilters)) {
         targetChar.logFilters = { dmg: true, loot: true, info: true, herb: true };
@@ -10423,7 +10427,7 @@
         if (invView.filter === 'misc') return !data && !isRuneEntry(item);
         if (invView.filter === 'magicplus') {
           const q = getItemQuality(item);
-          return q === 'Magic' || q === 'Rare' || q === 'Unique' || q === 'Runeword' || q === 'Legendary' || q === 'Mythic';
+          return q === 'Magic' || q === 'Rare' || q === 'Epic' || q === 'Runeword' || q === 'Legendary' || q === 'Mythic';
         }
         return true;
       });
@@ -11896,7 +11900,7 @@
         abilities: rollClassAbilities(selectedClass, 1),
         afkProfiles: { slot1: null, slot2: null, slot3: null },
         afkRules: { autoBuyPots: true, potMin: 5, autoAdvanceContract: true },
-        crafting: { shards: { common: 0, magic: 0, rare: 0, unique: 0 } },
+        crafting: { shards: { common: 0, magic: 0, rare: 0, epic: 0 } },
         contractTierPref: 'normal',
         eliteContract: generateEliteContract(0, 'normal', 1, CONTRACT_CHAIN_TOTAL),
         eliteContracts: [
@@ -12370,6 +12374,7 @@
         const unspent = (char.aa && Number.isFinite(Number(char.aa.points))) ? Math.max(0, Math.floor(Number(char.aa.points))) : 0;
         aaTabLabel.textContent = unspent > 0 ? ('AA (' + unspent + ')') : 'AA';
       }
+      char.hp = Math.min(char.hp, char.maxHp);
       document.getElementById('hp-disp').textContent = fmt(char.hp) + '/' + fmt(char.maxHp);
       document.getElementById('mp-disp').textContent = fmt(char.mp) + '/' + fmt(char.maxMp);
       const aa = getAACombatModifiers(char);
@@ -12447,7 +12452,7 @@
       renderSpellGemButtons();
 
 
-      document.getElementById('hp-bar').style.width = Math.max(0, char.hp / char.maxHp * 100) + '%';
+      document.getElementById('hp-bar').style.width = Math.max(0, Math.min(100, char.hp / char.maxHp * 100)) + '%';
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
       const _xpBar = document.getElementById('xp-bar');
       const _xpPct = Math.min(100, char.xp / char.xpNext * 100);
@@ -12458,6 +12463,17 @@
       if (_xpPctEl) _xpPctEl.textContent = _xpPct.toFixed(1) + '%';
       const _xpNeededEl = document.getElementById('xp-needed-label');
       if (_xpNeededEl) _xpNeededEl.textContent = fmt(char.xp) + ' / ' + fmt(char.xpNext) + ' XP';
+      const _aaXpBar = document.getElementById('aa-xp-bar');
+      const _aaXpPctEl = document.getElementById('aa-xp-pct-label');
+      const _aaXpTrack = document.getElementById('aa-xp-bar-track');
+      const _aaUnlocked = char.level >= AA_UNLOCK_LEVEL;
+      if (_aaXpTrack) _aaXpTrack.style.display = _aaUnlocked ? '' : 'none';
+      if (_aaUnlocked && _aaXpBar && _aaXpPctEl) {
+        const _aaProgress = Math.max(0, Math.floor(Number((char.aa && char.aa.xpProgress) || 0)));
+        const _aaPct = Math.min(100, _aaProgress / AA_XP_PER_POINT * 100);
+        _aaXpBar.style.width = _aaPct + '%';
+        _aaXpPctEl.textContent = _aaPct.toFixed(1) + '% AA';
+      }
       renderMob();
       // Only re-render tabs that are currently visible — prevents destroying
       // open selects (e.g. spell gem assignment) during combat ticks.
@@ -12853,7 +12869,7 @@
         const setLine = setName ? `<div class="eq-slot-stats">Set: ${setName}</div>` : '';
         const quality = getItemQuality(item);
         const locked = isItemLocked(item);
-        const socketable = quality !== 'Unique' && quality !== 'Runeword';
+        const socketable = quality !== 'Runeword';
         const socketObj = socketable ? toSocketableItem(item) : null;
         const hasSocketRoom = socketObj ? socketObj.maxSockets < getSocketCapacityForBase(socketObj.base) : false;
         const hasEmptySocket = socketObj ? (socketObj.maxSockets > 0 && socketObj.sockets.some(s => !s)) : false;
@@ -13072,7 +13088,7 @@
         const isEquip = !!getItemData(item);
         const locked = isItemLocked(item);
         const favorite = isItemFavorite(item);
-        const socketable = isEquip && quality !== 'Unique' && quality !== 'Runeword';
+        const socketable = isEquip && quality !== 'Runeword';
         const socketObj = socketable ? toSocketableItem(item) : null;
         const hasSocketRoom = socketObj ? socketObj.maxSockets < getSocketCapacityForBase(socketObj.base) : false;
         const hasEmptySocket = socketObj ? (socketObj.maxSockets > 0 && socketObj.sockets.some(s => !s)) : false;
@@ -13080,7 +13096,7 @@
         const socketCost = socketable ? getSocketCost(item) : 0;
         const rerollCost = isEquip ? getRerollCost(item) : 0;
         const rerollBtn = isEquip
-          ? `<button class="btn" onclick="rerollInventoryItem(${absoluteIndex})" ${(quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic' || locked) ? 'disabled' : ''}>${(quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic') ? 'Locked' : ('Reroll (' + rerollCost + 'g)')}</button>`
+          ? `<button class="btn" onclick="rerollInventoryItem(${absoluteIndex})" ${(quality === 'Epic' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic' || locked) ? 'disabled' : ''}>${(quality === 'Epic' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic') ? 'Locked' : ('Reroll (' + rerollCost + 'g)')}</button>`
           : '';
         const socketBtn = socketable && hasSocketRoom
           ? `<button class="btn" onclick="addSocketToItem(${absoluteIndex})">Add Socket (${socketCost}g)</button>`
@@ -13359,7 +13375,7 @@
       shopHtml += `
         <div class="eq-item-card">
           <div class="eq-item-name">Crafting Bench</div>
-          <div class="eq-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Unique ${char.crafting.shards.unique}</div>
+          <div class="eq-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Epic ${char.crafting.shards.epic}</div>
           <div class="eq-item-bonus">Salvage unlocked gear in inventory and reroll target slot using shards.</div>
           <div class="eq-item-actions">
             <button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button>
@@ -13428,7 +13444,7 @@
       shopHtml += `
         <div class="eq-item-card">
           <div class="eq-item-name rarity-magic">Occultist Reforge</div>
-          <div class="eq-item-type">Rerolls one random non-unique gear piece in your inventory.</div>
+          <div class="eq-item-type">Rerolls one random non-epic gear piece in your inventory.</div>
           <div class="eq-item-bonus">${occultistPrice} Gold</div>
           <div class="eq-item-actions">
             <button class="btn" onclick="rerollRandomInventoryItem()">Reforge</button>
@@ -13440,7 +13456,7 @@
       const mysticChestCost = Math.max(250, Math.floor(150 + char.level * 50));
       shopHtml += `
         <div class="eq-item-card">
-          <div class="eq-item-name rarity-unique">Mystic Chest</div>
+          <div class="eq-item-name rarity-epic">Mystic Chest</div>
           <div class="eq-item-type">Pay to open a mysterious chest — chance for runes, shards, or gear.</div>
           <div class="eq-item-bonus">${mysticChestCost} Gold</div>
           <div class="eq-item-actions">
@@ -13646,18 +13662,22 @@
       ensureStatsState(char);
       checkDailyRollover();
 
-      // ── Two-column grid wrapper ──────────────────────────────────────
-      // Left col:  Kill Quests + Daily Quests
-      // Right col: Epic Quest + Contracts + Achievements
+      // ── Three-column grid wrapper ────────────────────────────────────
+      // Left col:   Kill Quests + Daily Quests
+      // Middle col: Epic Quest + Contracts
+      // Right col:  Achievements
       const grid = document.createElement('div');
-      grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start';
+      grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start';
       el.appendChild(grid);
 
       const colL = document.createElement('div');
       colL.style.cssText = 'display:flex;flex-direction:column;gap:5px';
+      const colM = document.createElement('div');
+      colM.style.cssText = 'display:flex;flex-direction:column;gap:5px';
       const colR = document.createElement('div');
       colR.style.cssText = 'display:flex;flex-direction:column;gap:5px';
       grid.appendChild(colL);
+      grid.appendChild(colM);
       grid.appendChild(colR);
 
       // ── LEFT: Kill Quests ────────────────────────────────────────────
@@ -13678,61 +13698,12 @@
         });
       }
 
-      // ── LEFT: Daily Quests ───────────────────────────────────────────
-      if (Array.isArray(char.dailyQuests) && char.dailyQuests.length) {
-        const resetIn = Math.max(0, Number(char.dailyReset || 0) - Date.now());
-        const hours = Math.floor(resetIn / 3600000);
-        const mins = Math.floor((resetIn % 3600000) / 60000);
-        colL.appendChild(_sectionLabel('Daily Quests — resets in ' + hours + 'h ' + mins + 'm'));
-        char.dailyQuests.forEach((q, idx) => {
-          const claimed = !!q.claimed;
-          const ready = q.done && !claimed;
-          const d = document.createElement('div');
-          d.className = 'quest ' + (claimed ? 'q-done' : ready ? 'q-ready' : 'q-active');
-          const qIcon = q.isAlchemy ? '⚗️' : '📅';
-          d.innerHTML =
-            '<div style="display:flex;align-items:baseline;gap:4px">' +
-              '<span class="quest-name">' + qIcon + ' ' + q.name + '</span>' +
-              (claimed ? _statusBadge('Claimed', '#22c55e') : ready ? _statusBadge('Ready!', '#facc15') : '') +
-            '</div>' +
-            '<div class="quest-prog" style="margin-top:3px">' + q.desc + '</div>' +
-            (claimed ? '' : _questBar(q.prog || 0, q.count, ready)) +
-            '<div class="quest-prog">Reward: <strong>' + q.xp.toLocaleString() + ' XP · ' + q.gold.toLocaleString() + 'g</strong></div>' +
-            (!claimed ? '<div style="margin-top:8px"><button class="btn' + (ready ? ' active' : '') + '" onclick="claimDailyQuest(' + idx + ')" ' + (ready ? '' : 'disabled') + '>Claim</button></div>' : '');
-          colL.appendChild(d);
-        });
-      }
-
-      // ── RIGHT: Epic Class Quest ──────────────────────────────────────
-      const cq = char.classQuest;
-      if (cq) {
-        colR.appendChild(_sectionLabel('Class Epic Quest'));
-        const epicSpell = getSpellById(cq.rewardSpellId);
-        const ready = cq.completed && !cq.claimed;
-        const done = cq.claimed;
-        const card = document.createElement('div');
-        card.className = 'quest ' + (done ? 'q-done' : ready ? 'q-ready' : 'q-active');
-        card.innerHTML =
-          '<div style="display:flex;align-items:baseline;gap:4px">' +
-            '<span class="quest-name">' + cq.name + '</span>' +
-            (done ? _statusBadge('Claimed', '#22c55e') : ready ? _statusBadge('Ready!', '#facc15') : '') +
-          '</div>' +
-          '<div class="quest-prog" style="margin-top:3px">' + cq.desc + '</div>' +
-          '<div class="quest-prog">Target: <strong>' + cq.target + '</strong></div>' +
-          (done ? '' : _questBar(cq.progress, cq.count, cq.completed)) +
-          '<div class="quest-prog" style="margin-top:4px">Reward: <strong>' + (epicSpell ? epicSpell.name : 'Epic Spell') + '</strong></div>' +
-          '<div style="margin-top:8px">' +
-            '<button class="btn' + (ready ? ' active' : '') + '" onclick="claimClassQuestReward()" ' + (ready ? '' : 'disabled') + '>Claim Epic Spell</button>' +
-          '</div>';
-        colR.appendChild(card);
-      }
-
-      // ── RIGHT: Elite Contracts ───────────────────────────────────────
+      // ── MIDDLE: Elite Contracts ──────────────────────────────────────
       const activeContracts = (char.eliteContracts || []).filter(c => c && c.active);
       if (activeContracts.length) {
         const mastery = getContractMasteryState(char);
         const masteryNeed = getContractMasteryThreshold(mastery.level);
-        colR.appendChild(_sectionLabel('Elite Contracts'));
+        colM.appendChild(_sectionLabel('Elite Contracts'));
         const masteryStrip = document.createElement('div');
         masteryStrip.className = 'quest q-active';
         masteryStrip.innerHTML =
@@ -13741,7 +13712,7 @@
             '<span class="quest-prog">' + mastery.xp + '/' + masteryNeed + ' · +' + (mastery.level * 5) + '% rewards</span>' +
           '</div>' +
           _questBar(mastery.xp, masteryNeed, false);
-        colR.appendChild(masteryStrip);
+        colM.appendChild(masteryStrip);
 
         (char.eliteContracts || []).forEach((c, idx) => {
           if (!c || !c.active) return;
@@ -13776,7 +13747,7 @@
               '<button class="btn' + (primary ? ' active' : '') + '" onclick="setPrimaryContract(' + idx + ')">Primary</button>' +
               '<button class="btn' + (afkPinned ? ' active' : '') + '" onclick="setAfkPinnedContract(' + idx + ')">Pin AFK</button>' +
             '</div>';
-          colR.appendChild(card);
+          colM.appendChild(card);
         });
       }
 
@@ -13813,6 +13784,55 @@
       achHtml += '</div>';
       achCard.innerHTML = achHtml;
       colR.appendChild(achCard);
+
+      // ── RIGHT: Class Epic Quest ──────────────────────────────────────
+      const cq = char.classQuest;
+      if (cq) {
+        colR.appendChild(_sectionLabel('Class Epic Quest'));
+        const epicSpell = getSpellById(cq.rewardSpellId);
+        const ready = cq.completed && !cq.claimed;
+        const done = cq.claimed;
+        const card = document.createElement('div');
+        card.className = 'quest ' + (done ? 'q-done' : ready ? 'q-ready' : 'q-active');
+        card.innerHTML =
+          '<div style="display:flex;align-items:baseline;gap:4px">' +
+            '<span class="quest-name">' + cq.name + '</span>' +
+            (done ? _statusBadge('Claimed', '#22c55e') : ready ? _statusBadge('Ready!', '#facc15') : '') +
+          '</div>' +
+          '<div class="quest-prog" style="margin-top:3px">' + cq.desc + '</div>' +
+          '<div class="quest-prog">Target: <strong>' + cq.target + '</strong></div>' +
+          (done ? '' : _questBar(cq.progress, cq.count, cq.completed)) +
+          '<div class="quest-prog" style="margin-top:4px">Reward: <strong>' + (epicSpell ? epicSpell.name : 'Epic Spell') + '</strong></div>' +
+          '<div style="margin-top:8px">' +
+            '<button class="btn' + (ready ? ' active' : '') + '" onclick="claimClassQuestReward()" ' + (ready ? '' : 'disabled') + '>Claim Epic Spell</button>' +
+          '</div>';
+        colR.appendChild(card);
+      }
+
+      // ── RIGHT: Daily Quests ──────────────────────────────────────────
+      if (Array.isArray(char.dailyQuests) && char.dailyQuests.length) {
+        const resetIn = Math.max(0, Number(char.dailyReset || 0) - Date.now());
+        const hours = Math.floor(resetIn / 3600000);
+        const mins = Math.floor((resetIn % 3600000) / 60000);
+        colR.appendChild(_sectionLabel('Daily Quests — resets in ' + hours + 'h ' + mins + 'm'));
+        char.dailyQuests.forEach((q, idx) => {
+          const claimed = !!q.claimed;
+          const ready = q.done && !claimed;
+          const d = document.createElement('div');
+          d.className = 'quest ' + (claimed ? 'q-done' : ready ? 'q-ready' : 'q-active');
+          const qIcon = q.isAlchemy ? '⚗️' : '📅';
+          d.innerHTML =
+            '<div style="display:flex;align-items:baseline;gap:4px">' +
+              '<span class="quest-name">' + qIcon + ' ' + q.name + '</span>' +
+              (claimed ? _statusBadge('Claimed', '#22c55e') : ready ? _statusBadge('Ready!', '#facc15') : '') +
+            '</div>' +
+            '<div class="quest-prog" style="margin-top:3px">' + q.desc + '</div>' +
+            (claimed ? '' : _questBar(q.prog || 0, q.count, ready)) +
+            '<div class="quest-prog">Reward: <strong>' + q.xp.toLocaleString() + ' XP · ' + q.gold.toLocaleString() + 'g</strong></div>' +
+            (!claimed ? '<div style="margin-top:8px"><button class="btn' + (ready ? ' active' : '') + '" onclick="claimDailyQuest(' + idx + ')" ' + (ready ? '' : 'disabled') + '>Claim</button></div>' : '');
+          colR.appendChild(d);
+        });
+      }
     }
 
     function renderAATab() {
@@ -14408,7 +14428,7 @@
             + '  <span style="font-size:10px;font-weight:700;color:#a855f7;background:#a855f718;border:1px solid #a855f740;border-radius:3px;padding:1px 6px">⭐ Epic Spell</span>'
             + '  ' + buildSpellKindBadge(sp)
             + '</div>'
-            + '<div class="eq-item-name rarity-unique" style="font-size:13px">' + sp.name + '</div>'
+            + '<div class="eq-item-name rarity-epic" style="font-size:13px">' + sp.name + '</div>'
             + '<div class="eq-item-type" style="margin-top:3px">' + sp.desc + '</div>'
             + (statLine ? '<div style="margin-top:5px;font-size:11px;font-weight:600;color:' + km.color + '">' + statLine + '</div>' : '')
             + '<div style="margin-top:5px;font-size:11px;color:#eab308">🏆 Complete your Class Epic Quest to unlock</div>'
@@ -15457,7 +15477,7 @@
       if (!char || !Array.isArray(char.inventory)) return;
       const sel = document.getElementById('sell-below-rarity-sel');
       const maxRarity = sel ? sel.value : 'Normal';
-      const RARITY_ORDER = ['Normal', 'Magic', 'Rare', 'Unique', 'Legendary', 'Runeword', 'Mythic'];
+      const RARITY_ORDER = ['Normal', 'Magic', 'Rare', 'Epic', 'Legendary', 'Runeword', 'Mythic'];
       const maxIdx = RARITY_ORDER.indexOf(maxRarity);
       let sold = 0, totalGold = 0;
       const keep = [];
@@ -15617,10 +15637,10 @@
       if (lf.autoSellRareGear && isEquipment && quality === 'Rare') {
         return true;
       }
-      if (lf.autoSellLegendaryGear && isEquipment && (quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary')) {
+      if (lf.autoSellLegendaryGear && isEquipment && (quality === 'Epic' || quality === 'Runeword' || quality === 'Legendary')) {
         return true;
       }
-      if (lf.protectRarePlus && (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic')) {
+      if (lf.protectRarePlus && (quality === 'Rare' || quality === 'Epic' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic')) {
         return false;
       }
       if (lf.autoSellJunk && !isEquipment && !isContainer) {
@@ -15702,7 +15722,7 @@
       if (char.inventory.length < capacity) return false;
       const quality = getItemQuality(item);
       // Never auto-vendor Rare+ via overflow even if toggle is on
-      if (quality === 'Rare' || quality === 'Unique' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic') return false;
+      if (quality === 'Rare' || quality === 'Epic' || quality === 'Runeword' || quality === 'Legendary' || quality === 'Mythic') return false;
       const value = getItemSellValue(item);
       char.gold += value;
       log(sourceLabel + ': ' + getItemDisplayName(item) + ' auto-vendored (bags full) for ' + fmt(value) + 'g.', 'loot');
@@ -15900,8 +15920,8 @@
       }
 
       const quality = getItemQuality(entry);
-      if (quality === 'Unique') {
-        log('Unique items cannot be rerolled.', 'info');
+      if (quality === 'Epic') {
+        log('Epic items cannot be rerolled.', 'info');
         return;
       }
       if (quality === 'Runeword') {
@@ -15930,7 +15950,7 @@
 
       char.inventory.forEach((entry, idx) => {
         if (!getItemData(entry)) return;
-        if (getItemQuality(entry) === 'Unique' || getItemQuality(entry) === 'Runeword') return;
+        if (getItemQuality(entry) === 'Epic' || getItemQuality(entry) === 'Runeword') return;
         if (isItemLocked(entry) || isItemFavorite(entry)) return;
         candidates.push(idx);
       });
@@ -15962,7 +15982,7 @@
 
     function getCraftShardYieldByQuality(entry) {
       const quality = getItemQuality(entry);
-      if (quality === 'Unique') return { unique: 1 };
+      if (quality === 'Epic') return { epic: 1 };
       if (quality === 'Rare' || quality === 'Runeword') return { rare: 2, magic: 2 };
       if (quality === 'Magic') return { magic: 2, common: 2 };
       return { common: 3 };
@@ -16018,7 +16038,7 @@
         const data = getItemData(entry);
         if (!data || data.slot !== targetSlot) return;
         const q = getItemQuality(entry);
-        if (q === 'Unique' || q === 'Runeword') return;
+        if (q === 'Epic' || q === 'Runeword') return;
         if (isItemLocked(entry) || isItemFavorite(entry)) return;
         candidates.push(idx);
       });
@@ -16104,7 +16124,7 @@
       }
 
       const quality = getItemQuality(entry);
-      if (quality === 'Unique' || quality === 'Runeword') {
+      if (quality === 'Runeword') {
         log('That item is sealed and cannot gain more sockets.', 'info');
         return;
       }
@@ -16155,7 +16175,7 @@
       }
 
       const quality = getItemQuality(entry);
-      if (quality === 'Unique' || quality === 'Runeword') {
+      if (quality === 'Runeword') {
         log('That item cannot accept more runes.', 'info');
         return;
       }
@@ -16245,7 +16265,7 @@
         return;
       }
       const quality = getItemQuality(originalEntry);
-      if (quality === 'Unique' || quality === 'Runeword') {
+      if (quality === 'Runeword') {
         log('That item cannot accept more runes.', 'info');
         closeRuneInsertModal();
         return;
@@ -17353,10 +17373,10 @@
         const topRune = RUNE_TRANSMUTE_CHAIN[RUNE_TRANSMUTE_CHAIN.length - 1];
         char.runeStash = char.runeStash || [];
         char.runeStash.push(topRune);
-        char.crafting = char.crafting || { shards: { common: 0, magic: 0, rare: 0, unique: 0 } };
-        char.crafting.shards.unique = (char.crafting.shards.unique || 0) + 1;
-        log('Mystic Chest exploded! You found a ' + topRune + ' and a Unique Shard!', 'loot');
-        chestToast = 'Mystic Chest: ' + topRune + ' +1 Unique Shard';
+        char.crafting = char.crafting || { shards: { common: 0, magic: 0, rare: 0, epic: 0 } };
+        char.crafting.shards.epic = (char.crafting.shards.epic || 0) + 1;
+        log('Mystic Chest exploded! You found a ' + topRune + ' and a Epic Shard!', 'loot');
+        chestToast = 'Mystic Chest: ' + topRune + ' +1 Epic Shard';
       } else if (r < 0.12) {
         // rare gear
         const lootBase = pickWeightedLootBase(char?.zone ?? 0, 'mystic');
@@ -17367,7 +17387,7 @@
       } else if (r < 0.4) {
         // shards
         const shardType = (Math.random() < 0.6) ? 'common' : (Math.random() < 0.7 ? 'magic' : 'rare');
-        char.crafting = char.crafting || { shards: { common: 0, magic: 0, rare: 0, unique: 0 } };
+        char.crafting = char.crafting || { shards: { common: 0, magic: 0, rare: 0, epic: 0 } };
         const amt = shardType === 'common' ? 5 : (shardType === 'magic' ? 2 : 1);
         char.crafting.shards[shardType] = (char.crafting.shards[shardType] || 0) + amt;
         log('Mystic Chest gave you +' + amt + ' ' + shardType + ' shards.', 'loot');
