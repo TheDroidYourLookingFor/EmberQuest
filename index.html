@@ -13905,7 +13905,9 @@
       }
       char.memorizedSpells[slotIdx] = spellId;
       log('Memorized ' + (getSpellById(spellId)?.name || spellId) + ' in gem ' + (slotIdx + 1) + '.', 'info');
+      if (document.activeElement) document.activeElement.blur();
       renderAll();
+      renderSpellbook();
       autoSave();
     }
 
@@ -14230,7 +14232,9 @@
       }
 
       log('You have learned the spell: ' + sp.name + '. (' + fmt(cost) + 'g)', 'loot');
+      if (document.activeElement) document.activeElement.blur();
       renderAll();
+      renderSpellbook();
       autoSave();
     }
 
