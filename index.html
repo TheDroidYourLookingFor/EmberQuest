@@ -572,14 +572,26 @@
     }
 
     #tab-zone,
+    #tab-dungeon,
+    #tab-quests,
     #tab-inv,
     #tab-runes,
     #tab-shop,
     #tab-spells,
+    #tab-loot,
+    #tab-bank,
+    #tab-group,
+    #tab-tradeskill,
+    #tab-leaderboard,
+    #tab-about,
     #tab-aa,
     #tab-prestige {
       min-width: 0;
       overflow-x: auto;
+      overflow-y: auto;
+      height: 100%;
+      min-height: 0;
+      box-sizing: border-box;
     }
 
     #combat-log {
@@ -722,7 +734,15 @@
 
     .queue-handle {
       color: var(--text-secondary);
-      font-size: 10px;
+      font-size: 13px;
+      opacity: 0.5;
+      cursor: grab;
+      line-height: 1;
+      padding: 0 2px;
+    }
+    .queue-item:hover .queue-handle {
+      opacity: 1;
+      color: var(--text-primary);
     }
 
     .queue-item.dragging {
@@ -731,6 +751,21 @@
 
     .queue-item.drag-over {
       border-color: #378ADD;
+    }
+
+    /* Spell gem cooldown bar */
+    .spell-gem-btn {
+      position: relative;
+      overflow: hidden;
+    }
+    .spell-gem-cd-bar {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 3px;
+      background: #6366f1;
+      transition: width 0.5s linear;
+      pointer-events: none;
+      border-radius: 0 0 0 var(--radius-md);
     }
 
     /* ── misc ── */
@@ -847,23 +882,66 @@
       }
     }
 
+    /* ── Quest cards ── */
     .quest {
-      padding: 6px;
-      border-left: 2px solid #BA7517;
-      margin: 4px 0;
+      padding: 10px 12px;
+      border: 0.5px solid var(--border);
+      margin: 0;
       background: var(--bg-secondary);
-      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      border-radius: var(--radius-md);
     }
-
+    .quest.q-done {
+      opacity: 0.65;
+      border-left: 3px solid #22c55e;
+    }
+    .quest.q-ready {
+      border-left: 3px solid #facc15;
+    }
+    .quest.q-active {
+      border-left: 3px solid #BA7517;
+    }
+    .quest.q-header {
+      background: transparent;
+      border: none;
+      padding: 4px 0 2px;
+    }
     .quest-name {
-      font-weight: 500;
-      font-size: 12px;
+      font-weight: 600;
+      font-size: 13px;
+      line-height: 1.3;
     }
-
     .quest-prog {
       color: var(--text-secondary);
       font-size: 11px;
+      margin-top: 2px;
     }
+    /* Progress bar inside quest card */
+    .quest-bar-track {
+      height: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      margin: 5px 0 2px;
+      overflow: hidden;
+    }
+    .quest-bar-fill {
+      height: 100%;
+      background: #BA7517;
+      border-radius: 2px;
+      transition: width .3s;
+    }
+    .quest-bar-fill.q-fill-done { background: #22c55e; }
+    /* Section label */
+    .quest-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-secondary);
+      padding: 10px 0 4px;
+    }
+    .quest-section-label:first-child { padding-top: 0; }
+    /* Quest list gap */
+    #quest-list { display: flex; flex-direction: column; gap: 5px; }
 
     .tab-bar {
       display: flex;
@@ -1358,6 +1436,7 @@
     .eq-item-card {
       background: var(--bg-primary);
       border: 1px solid var(--border);
+      border-left-width: 3px;
       border-radius: var(--radius-md);
       padding: 0;
       overflow: hidden;
@@ -1365,6 +1444,12 @@
       flex-direction: column;
       transition: border-color .15s, box-shadow .15s;
     }
+    .eq-item-card.rarity-border-magic    { border-left-color: #22C55E; }
+    .eq-item-card.rarity-border-rare     { border-left-color: #3B82F6; }
+    .eq-item-card.rarity-border-unique   { border-left-color: #A855F7; }
+    .eq-item-card.rarity-border-legendary{ border-left-color: #F97316; }
+    .eq-item-card.rarity-border-mythic   { border-left-color: #EF4444; }
+    .eq-item-card.rarity-border-runeword { border-left-color: #EAB308; }
 
     .eq-item-card:hover {
       border-color: var(--border-md);
@@ -1430,6 +1515,30 @@
     /* Legacy aliases (older markup / runtime references) */
     .rarity-magic { color: #22C55E; }
     .rarity-unique { color: #A855F7; text-shadow: 0 0 6px rgba(168, 85, 247, 0.35); }
+
+    /* XP / Gold flash animation */
+    @keyframes stat-flash {
+      0%   { transform: scale(1); color: inherit; }
+      30%  { transform: scale(1.18); color: #facc15; }
+      100% { transform: scale(1); color: inherit; }
+    }
+    .stat-flash { animation: stat-flash 0.45s ease-out; }
+
+    /* Level-up flash overlay */
+    @keyframes levelup-flash {
+      0%   { opacity: 0.7; }
+      100% { opacity: 0; }
+    }
+    #levelup-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: radial-gradient(ellipse at 50% 40%, rgba(250,204,21,0.35) 0%, transparent 70%);
+      pointer-events: none;
+      display: none;
+    }
+    #levelup-overlay.active {
+      display: block;
+      animation: levelup-flash 1.2s ease-out forwards;
+    }
 
     /* Item tooltip */
     #item-tooltip {
@@ -2407,6 +2516,7 @@
   <!-- ═══════════════════════════════════════════════════
      SCREEN 0: Login / Register
 ════════════════════════════════════════════════════ -->
+  <div id="levelup-overlay"></div>
   <div id="screen-login" class="screen active">
     <div class="login-card">
       <h1>EmberQuest</h1>
@@ -3144,11 +3254,6 @@
             </button>
 
             <div
-              id="skill-desc"
-              style="font-size:10px;color:var(--text-secondary);margin-top:6px;line-height:1.4">
-            </div>
-
-            <div
               style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
               <div
                 style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">
@@ -3337,6 +3442,13 @@
           <div
             id="afk-goal-status"
             style="font-size:10px;color:var(--text-secondary);margin-top:6px;line-height:1.35">
+          </div>
+          <div style="font-size:10px;color:var(--text-secondary);opacity:.55;margin-top:3px">
+            Shortcuts: <kbd style="font-family:var(--font-mono);background:var(--bg-tertiary);padding:0 3px;border-radius:3px;border:1px solid var(--border)">Space</kbd> Attack &nbsp;
+            <kbd style="font-family:var(--font-mono);background:var(--bg-tertiary);padding:0 3px;border-radius:3px;border:1px solid var(--border)">P</kbd> Potion &nbsp;
+            <kbd style="font-family:var(--font-mono);background:var(--bg-tertiary);padding:0 3px;border-radius:3px;border:1px solid var(--border)">M</kbd> Meditate &nbsp;
+            <kbd style="font-family:var(--font-mono);background:var(--bg-tertiary);padding:0 3px;border-radius:3px;border:1px solid var(--border)">F</kbd> Find Mob &nbsp;
+            <kbd style="font-family:var(--font-mono);background:var(--bg-tertiary);padding:0 3px;border-radius:3px;border:1px solid var(--border)">1-3</kbd> Spells
           </div>
           <div
             style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
@@ -3570,6 +3682,14 @@
                 <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:5px;cursor:pointer">
                   <input type="checkbox" id="inv-overflow-toggle" onchange="toggleAutoVendorOverflow(this.checked)"> Auto-vendor overflow
                 </label>
+                <div style="display:flex;align-items:center;gap:4px;margin-left:4px">
+                  <select id="sell-below-rarity-sel" style="font-size:11px;padding:4px 6px;border:1px solid var(--border-md);border-radius:6px;background:var(--bg-primary);color:var(--text-primary)">
+                    <option value="Normal">Sell: Common</option>
+                    <option value="Magic">Sell: Common+Magic</option>
+                    <option value="Rare">Sell: Up to Rare</option>
+                  </select>
+                  <button class="btn" style="font-size:11px;padding:3px 8px" onclick="sellBelowRarity()" title="Sell all unlocked, non-favorited items below the selected rarity">Sell All</button>
+                </div>
               </div>
               <div
                 id="bag-tab-row"
@@ -3743,6 +3863,15 @@
           </h3>
           <div
             id="runeword-compendium"
+            class="eq-bag-grid"
+            style="margin-bottom:10px">
+          </div>
+          <h3 style="margin-bottom:6px">Focused Transmutes</h3>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">
+            Spend 3 runes of the same tier + gold to upgrade to the next tier.
+          </div>
+          <div
+            id="focused-transmute-list"
             class="eq-bag-grid"
             style="margin-bottom:10px">
           </div>
@@ -4058,7 +4187,7 @@
                 draggable="true"
                 data-action="attack">
                 <span
-                  class="queue-handle">⠿</span>
+                  class="queue-handle" title="Drag to reorder">⠶</span>
                 <i class="ti ti-sword"
                   style="font-size:14px"></i>
                 <span
@@ -4072,7 +4201,7 @@
                 style="margin-left:28px;width:calc(100% - 28px);border-left:2px solid #378ADD;padding-left:12px">
 
                 <span
-                  class="queue-handle">⠿</span>
+                  class="queue-handle" title="Drag to reorder">⠶</span>
                 <i class="ti ti-bolt"
                   style="font-size:14px"></i>
                 <span
@@ -4107,7 +4236,7 @@
                 style="margin-left:28px;width:calc(100% - 28px);border-left:2px solid #1D9E75;padding-left:12px">
 
                 <span
-                  class="queue-handle">⠿</span>
+                  class="queue-handle" title="Drag to reorder">⠶</span>
                 <i class="ti ti-flask"
                   style="font-size:14px"></i>
 
@@ -4140,7 +4269,7 @@
                 style="margin-left:28px;width:calc(100% - 28px);border-left:2px solid #1127a0;padding-left:12px">
 
                 <span
-                  class="queue-handle">⠿</span>
+                  class="queue-handle" title="Drag to reorder">⠶</span>
                 <i class="ti ti-flask"
                   style="font-size:14px"></i>
 
@@ -4173,7 +4302,7 @@
               draggable="true"
               data-action="auto_loot">
               <span
-                class="queue-handle">⠿</span>
+                class="queue-handle" title="Drag to reorder">⠶</span>
               <i class="ti ti-package"
                 style="font-size:14px"></i>
               <span
@@ -4185,7 +4314,7 @@
               draggable="true"
               data-action="heal_if_low">
               <span
-                class="queue-handle">⠿</span>
+                class="queue-handle" title="Drag to reorder">⠶</span>
               <i class="ti ti-heart"
                 style="font-size:14px"></i>
               <span
@@ -4206,7 +4335,7 @@
               draggable="true"
               data-action="rest_if_oom">
               <span
-                class="queue-handle">⠿</span>
+                class="queue-handle" title="Drag to reorder">⠶</span>
               <i class="ti ti-moon"
                 style="font-size:14px"></i>
               <span
@@ -4227,7 +4356,7 @@
               draggable="true"
               data-action="respawn_mob">
               <span
-                class="queue-handle">⠿</span>
+                class="queue-handle" title="Drag to reorder">⠶</span>
               <i class="ti ti-refresh"
                 style="font-size:14px"></i>
               <span
@@ -6721,10 +6850,10 @@
 
     function freshQuests() {
       return [
-        { name: 'Rat Problem', desc: 'Kill 5 Field Rats', mob: 'Field Rat', count: 5, xp: 150, gold: 20, done: false, prog: 0 },
-        { name: 'Gnoll Slayer', desc: 'Kill 8 Gnoll Warriors', mob: 'Gnoll Warrior', count: 8, xp: 400, gold: 60, done: false, prog: 0 },
+        { name: 'Rat Problem', desc: 'Kill 5 Field Rats in Newbie Yard', mob: 'Field Rat', count: 5, xp: 150, gold: 20, done: false, prog: 0 },
+        { name: 'Gnoll Slayer', desc: 'Kill 8 Gnoll Warriors in Howlfang Burrow', mob: 'Gnoll Warrior', count: 8, xp: 400, gold: 60, done: false, prog: 0 },
         { name: 'Thicket Pest Control', desc: 'Kill 6 Forest Wolves in Mistveil Hollow', mob: 'Forest Wolf', count: 6, xp: 700, gold: 95, done: false, prog: 0 },
-        { name: 'Manor Cleansing', desc: 'Kill 6 Restless Zombies', mob: 'Restless Zombie', count: 6, xp: 900, gold: 120, done: false, prog: 0 },
+        { name: 'Manor Cleansing', desc: 'Kill 6 Restless Zombies in Hollowmere Manor', mob: 'Restless Zombie', count: 6, xp: 900, gold: 120, done: false, prog: 0 },
         { name: 'Break the Ironskull Line', desc: 'Kill 8 Orc Centurions in Ironskull Keep', mob: 'Orc Centurion', count: 8, xp: 1500, gold: 190, done: false, prog: 0 },
         { name: 'Clear the Pass', desc: 'Kill 8 Cragpass Bandits in Cragpass Hold', mob: 'Cragpass Bandit', count: 8, xp: 2400, gold: 290, done: false, prog: 0 },
         { name: 'Fear Made Flesh', desc: 'Kill 7 Fear Elementals in Temple of Dread', mob: 'Fear Elemental', count: 7, xp: 3300, gold: 380, done: false, prog: 0 },
@@ -11858,10 +11987,19 @@
     // keeps matching after mobs were renamed.
     function applyMobRenamesToQuests(qList) {
       if (!Array.isArray(qList)) return;
+      // Build a lookup from mob name → canonical freshQuests template
+      const _freshByMob = {};
+      if (typeof freshQuests === 'function') {
+        freshQuests().forEach(fq => { if (fq.mob) _freshByMob[fq.mob] = fq; });
+      }
       qList.forEach(q => {
         if (!q || typeof q !== 'object') return;
         if (typeof q.mob === 'string' && RENAMED_MOBS[q.mob]) q.mob = RENAMED_MOBS[q.mob];
         if (typeof q.target === 'string' && RENAMED_MOBS[q.target]) q.target = RENAMED_MOBS[q.target];
+        // Re-sync desc from canonical template so stale zone names get corrected
+        if (!q.daily && !q.isAlchemy && typeof q.mob === 'string' && _freshByMob[q.mob]) {
+          q.desc = _freshByMob[q.mob].desc;
+        }
       });
     }
 
@@ -12144,7 +12282,10 @@
       afkOn = false; clearInterval(afkInterval); afkInterval = null;
       document.getElementById('new-char-form').style.display = 'none';
       showScreen('screen-game');
-      renderAll(); renderZones(); renderQuests(); setupDrag(); switchTab('combat');
+      renderAll(); renderZones(); renderQuests(); setupDrag();
+      const _savedTab = (() => { try { return sessionStorage.getItem('EQ_lastTab'); } catch(e) { return null; } })();
+      const _validTabs = ['combat','zone','dungeon','quests','aa','prestige','inv','spells','runes','shop','loot','bank','group','tradeskill','leaderboard','about'];
+      switchTab(_savedTab && _validTabs.includes(_savedTab) ? _savedTab : 'combat');
       resetAFKUI();
       document.getElementById('combat-log').innerHTML = '';
       log([
@@ -12247,7 +12388,13 @@
         }).join('');
       }
       const goldValue = Math.max(0, Math.floor(Number(char.gold || 0))).toLocaleString();
-      document.getElementById('gold-disp').textContent = goldValue;
+      const _goldEl = document.getElementById('gold-disp');
+      if (_goldEl && _goldEl.textContent !== goldValue) {
+        _goldEl.textContent = goldValue;
+        _goldEl.classList.remove('stat-flash'); void _goldEl.offsetWidth; _goldEl.classList.add('stat-flash');
+      } else if (_goldEl) {
+        _goldEl.textContent = goldValue;
+      }
       document.getElementById('faction-disp').textContent = getFactionTier(char.faction || 0);
       const activeMerc = getActiveMercenary();
       const groupMercTypesForDisplay = (typeof getGroupMercTypes === 'function') ? getGroupMercTypes(char) : [];
@@ -12275,14 +12422,38 @@
       const cdOne = spellOne ? getSpellCooldownRemaining(spellOne.id) : 0;
       const cdTwo = spellTwo ? getSpellCooldownRemaining(spellTwo.id) : 0;
 
-      document.getElementById('skill-name-btn').textContent = spellOne ? (spellOne.name + ' (' + spellOne.mp + ' MP)' + (cdOne > 0 ? ' [' + cdOne + 's]' : '')) : 'Gem 1 Empty';
-      document.getElementById('skill2-btn').textContent = spellTwo ? (spellTwo.name + ' (' + spellTwo.mp + ' MP)' + (cdTwo > 0 ? ' [' + cdTwo + 's]' : '')) : 'Gem 2 Empty';
+      const _gem1btn = document.getElementById('skill-name-btn').closest('button') || document.getElementById('skill-name-btn');
+      const _gem2btn = document.getElementById('skill2-btn');
+      if (_gem1btn) {
+        _gem1btn.classList.add('spell-gem-btn');
+        document.getElementById('skill-name-btn').textContent = spellOne ? (spellOne.name + ' (' + spellOne.mp + ' MP)' + (cdOne > 0 ? ' [' + cdOne + 's]' : '')) : 'Gem 1 Empty';
+        let _g1bar = _gem1btn.querySelector('.spell-gem-cd-bar');
+        const _g1pct = spellOne ? spellCdPct(spellOne) : 0;
+        if (_g1pct > 0) { if (!_g1bar) { _g1bar = document.createElement('div'); _g1bar.className = 'spell-gem-cd-bar'; _gem1btn.appendChild(_g1bar); } _g1bar.style.width = (_g1pct * 100) + '%'; } else if (_g1bar) { _g1bar.remove(); }
+      }
+      if (_gem2btn) {
+        _gem2btn.classList.add('spell-gem-btn');
+        _gem2btn.childNodes[0] && (_gem2btn.childNodes[0].nodeType === 3 ? _gem2btn.childNodes[0] : null) || (_gem2btn.querySelector('i') ? _gem2btn.querySelector('i').nextSibling : null);
+        const _g2textNode = Array.from(_gem2btn.childNodes).find(n => n.nodeType === 3);
+        if (_g2textNode) _g2textNode.textContent = ' ' + (spellTwo ? (spellTwo.name + ' (' + spellTwo.mp + ' MP)' + (cdTwo > 0 ? ' [' + cdTwo + 's]' : '')) : 'Gem 2 Empty');
+        else _gem2btn.innerHTML = '<i class="ti ti-bolt"></i> ' + (spellTwo ? (spellTwo.name + ' (' + spellTwo.mp + ' MP)' + (cdTwo > 0 ? ' [' + cdTwo + 's]' : '')) : 'Gem 2 Empty');
+        let _g2bar = _gem2btn.querySelector('.spell-gem-cd-bar');
+        const _g2pct = spellTwo ? spellCdPct(spellTwo) : 0;
+        if (_g2pct > 0) { if (!_g2bar) { _g2bar = document.createElement('div'); _g2bar.className = 'spell-gem-cd-bar'; _gem2btn.appendChild(_g2bar); } _g2bar.style.width = (_g2pct * 100) + '%'; } else if (_g2bar) { _g2bar.remove(); }
+      }
       renderSpellGemButtons();
-      document.getElementById('skill-desc').textContent = spellOne ? spellOne.desc : 'Memorize spells in the Spells tab.';
+
 
       document.getElementById('hp-bar').style.width = Math.max(0, char.hp / char.maxHp * 100) + '%';
       document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
-      document.getElementById('xp-bar').style.width = (char.xp / char.xpNext * 100) + '%';
+      const _xpBar = document.getElementById('xp-bar');
+      const _xpPct = (char.xp / char.xpNext * 100) + '%';
+      if (_xpBar && _xpBar.style.width !== _xpPct) {
+        _xpBar.style.width = _xpPct;
+        _xpBar.classList.remove('stat-flash'); void _xpBar.offsetWidth; _xpBar.classList.add('stat-flash');
+      } else if (_xpBar) {
+        _xpBar.style.width = _xpPct;
+      }
       renderMob();
       // Only re-render tabs that are currently visible — prevents destroying
       // open selects (e.g. spell gem assignment) during combat ticks.
@@ -12320,6 +12491,32 @@
       requestAnimationFrame(syncCombatLogSize);
     }
 
+    function spellCdPct(spell) {
+      if (!spell || !char || !char.spellCooldowns) return 0;
+      const readyAt = Number(char.spellCooldowns[spell.id] || 0);
+      if (!Number.isFinite(readyAt) || readyAt <= Date.now()) return 0;
+      const totalMs = (spell.cooldown || 0) * 1000;
+      if (totalMs <= 0) return 0;
+      return Math.min(1, (readyAt - Date.now()) / totalMs);
+    }
+
+    function makeSpellGemBtn(spell, slot, cdPct, cd) {
+      const btn = document.createElement('button');
+      btn.className = 'btn spell-gem-btn';
+      btn.style.width = '100%';
+      btn.style.justifyContent = 'center';
+      btn.innerHTML = '<i class="ti ti-bolt"></i> '
+        + (spell ? (spell.name + ' (' + spell.mp + ' MP)' + (cd > 0 ? ' [' + cd + 's]' : '')) : ('Gem ' + (slot + 1) + ' Empty'));
+      if (cdPct > 0) {
+        const bar = document.createElement('div');
+        bar.className = 'spell-gem-cd-bar';
+        bar.style.width = (cdPct * 100) + '%';
+        btn.appendChild(bar);
+      }
+      btn.onclick = () => castMemorizedSpell(slot);
+      return btn;
+    }
+
     function renderSpellGemButtons() {
       const host = document.getElementById('extra-skill-gems');
       if (!host || !char) return;
@@ -12330,13 +12527,8 @@
       for (let slot = 2; slot < maxSlots; slot++) {
         const spell = getSpellById(char.memorizedSpells[slot]);
         const cd = spell ? getSpellCooldownRemaining(spell.id) : 0;
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        btn.style.width = '100%';
-        btn.style.justifyContent = 'center';
-        btn.innerHTML = '<i class="ti ti-bolt"></i> ' + (spell ? (spell.name + ' (' + spell.mp + ' MP)' + (cd > 0 ? (' [' + cd + 's]') : '')) : ('Gem ' + (slot + 1) + ' Empty'));
-        btn.onclick = () => castMemorizedSpell(slot);
-        host.appendChild(btn);
+        const cdPct = spell ? spellCdPct(spell) : 0;
+        host.appendChild(makeSpellGemBtn(spell, slot, cdPct, cd));
       }
     }
 
@@ -12395,7 +12587,7 @@
         const isSlightlyOver = char.level > z.maxLvl && char.level <= z.maxLvl + 4;
         btn.className = 'btn zone-btn' + (i === char.zone ? ' current' : '');
         let zoneLabel = z.name + ' <span style="font-size:10px;opacity:.6">(Lv ' + z.minLvl + '–' + z.maxLvl + ')</span>';
-        if (isBest) zoneLabel += ' <span style="font-size:10px;color:#facc15" title="Best zone for your level">⭐ Best</span>';
+        if (isBest) zoneLabel += ` <button onclick="event.stopPropagation();travelZone(${i},true)" style="font-size:10px;padding:1px 6px;background:rgba(250,204,21,0.15);border:1px solid rgba(250,204,21,0.4);border-radius:4px;color:#facc15;cursor:pointer" title="Travel to this zone">⭐ Go Here</button>`;
         else if (isSlightlyOver) zoneLabel += ' <span style="font-size:10px;color:#94a3b8" title="Slightly underleveled zone">↓</span>';
         btn.innerHTML = (char.level < z.minLvl ? '<i class="ti ti-lock" style="font-size:12px"></i> ' : '') + zoneLabel;
         btn.disabled = char.level < z.minLvl;
@@ -12790,6 +12982,32 @@
         compendium.appendChild(card);
       });
 
+      // Focused transmutes
+      const transmuteList = document.getElementById('focused-transmute-list');
+      if (transmuteList) {
+        transmuteList.innerHTML = '';
+        for (let i = 0; i < RUNE_TRANSMUTE_CHAIN.length - 1; i++) {
+          const sourceRune = RUNE_TRANSMUTE_CHAIN[i];
+          const resultRune = RUNE_TRANSMUTE_CHAIN[i + 1];
+          const cost = getTargetTransmuteCost(sourceRune);
+          const owned = runeCounts[sourceRune] || 0;
+          const canCraft = owned >= 3 && char.gold >= cost;
+          const card = document.createElement('div');
+          card.className = 'eq-item-card';
+          card.innerHTML = `
+            <div class="eq-item-inner">
+              <div class="eq-item-name rarity-magic">${sourceRune} → ${resultRune}</div>
+              <div class="eq-item-type">Requires 3× ${sourceRune}</div>
+              <div class="eq-item-bonus">Owned: ${owned} · Cost: ${cost.toLocaleString()} Gold</div>
+              <div class="eq-item-actions">
+                <button class="btn${canCraft ? ' active' : ''}" onclick="openTransmuteConfirm('${sourceRune}')" ${canCraft ? '' : 'disabled'}>Transmute</button>
+              </div>
+            </div>
+          `;
+          transmuteList.appendChild(card);
+        }
+      }
+
       const bagLayout = getBagLayout(char);
       activeBagIndex = Math.max(0, Math.min(activeBagIndex, bagLayout.length - 1));
       const realBagCount = Math.max(1, char.bags.length);
@@ -13085,7 +13303,9 @@
       `;
       };
 
-      let shopHtml =
+      // Potion section header — spans the full grid row
+      const _potionHeader = '<div style="grid-column:1/-1;display:flex;gap:16px;align-items:center;padding:4px 0 2px"><span style="font-size:10px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.06em">❤ Healing Potions</span><span style="font-size:10px;color:var(--text-secondary)">|</span><span style="font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.06em">🔵 Mana Potions</span><span style="font-size:10px;color:var(--text-secondary)">(paired left/right)</span></div>';
+      let shopHtml = _potionHeader +
         renderPotionCard('Minor Healing Potion', 'Restores 150 HP', 'hpMinor', 'healpotions', 'buyHpPotion', 'buyHpPotion_10') +
         renderPotionCard('Minor Mana Potion', 'Restores 150 MP', 'mpMinor', 'manapotions', 'buyMpPotion', 'buyMpPotion_10');
 
@@ -13130,7 +13350,6 @@
           renderPotionCard('Legendary Healing Potion', 'Restores 200,000 HP', 'hpLegendary', 'healpotions_legendary', 'buyHpPotion_LEGENDARY', 'buyHpPotion_LEGENDARY_10') +
           renderPotionCard('Legendary Mana Potion', 'Restores 200,000 MP', 'mpLegendary', 'manapotions_legendary', 'buyMpPotion_LEGENDARY', 'buyMpPotion_LEGENDARY_10');
       }
-
       const activeMercType = char.mercenary?.type || 'none';
 
       shopHtml += `
@@ -13266,25 +13485,6 @@
         </div>
       `;
 
-      for (let i = 0; i < RUNE_TRANSMUTE_CHAIN.length - 1; i++) {
-        const sourceRune = RUNE_TRANSMUTE_CHAIN[i];
-        const resultRune = RUNE_TRANSMUTE_CHAIN[i + 1];
-        const cost = getTargetTransmuteCost(sourceRune);
-        const owned = runeCounts[sourceRune] || 0;
-        const canCraft = owned >= 3 && char.gold >= cost;
-
-        shopHtml += `
-          <div class="eq-item-card">
-            <div class="eq-item-name rarity-magic">Focused Transmute: ${sourceRune} -> ${resultRune}</div>
-            <div class="eq-item-type">Requires 3x ${sourceRune}</div>
-            <div class="eq-item-bonus">Owned: ${owned} · Cost: ${cost} Gold</div>
-            <div class="eq-item-actions">
-              <button class="btn${canCraft ? ' active' : ''}" onclick="openTransmuteConfirm('${sourceRune}')" ${canCraft ? '' : 'disabled'}>Craft</button>
-            </div>
-          </div>
-        `;
-      }
-
       shopGrid.innerHTML = shopHtml;
     }
 
@@ -13419,108 +13619,196 @@
       renderDungeonTab(); autoSave();
     }
 
+    function _questBar(prog, count, done) {
+      const pct = count > 0 ? Math.min(100, Math.round(prog / count * 100)) : 0;
+      return '<div class="quest-bar-track"><div class="quest-bar-fill' + (done ? ' q-fill-done' : '') + '" style="width:' + pct + '%"></div></div>' +
+             '<div class="quest-prog">' + prog + ' / ' + count + ' (' + pct + '%)</div>';
+    }
+    function _sectionLabel(text) {
+      const d = document.createElement('div');
+      d.className = 'quest-section-label';
+      d.textContent = text;
+      return d;
+    }
+    function _statusBadge(text, color) {
+      return '<span style="display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:' + color + '22;color:' + color + ';border:1px solid ' + color + '44;margin-left:6px">' + text + '</span>';
+    }
+
     function renderQuests() {
       const el = document.getElementById('quest-list');
       if (!el || !char) return;
       el.innerHTML = '';
-      char.quests.forEach(q => {
-        const d = document.createElement('div'); d.className = 'quest';
-        d.innerHTML = '<div class="quest-name">' + (q.done ? '✓ ' : '') + q.name + '</div><div class="quest-prog">' + q.desc + (q.done ? ' — Complete!' : ' (' + q.prog + '/' + q.count + ')') + '</div>';
-        el.appendChild(d);
-      });
-
       ensureExtendedSystems(char);
-      const mastery = getContractMasteryState(char);
-      const masteryNeed = getContractMasteryThreshold(mastery.level);
-      const masteryCard = document.createElement('div');
-      masteryCard.className = 'quest';
-      masteryCard.innerHTML = '<div class="quest-name">Contract Mastery</div>' +
-        '<div class="quest-prog">Level ' + mastery.level + ' · Chains completed: ' + mastery.totalChains + '</div>' +
-        '<div class="quest-prog">Progress: ' + mastery.xp + '/' + masteryNeed + ' chains to next level · Bonus contract rewards: +' + (mastery.level * 5) + '%</div>';
-      el.appendChild(masteryCard);
-
-      const cq = char.classQuest;
-      if (cq) {
-        const epicSpell = getSpellById(cq.rewardSpellId);
-        const questCard = document.createElement('div');
-        questCard.className = 'quest';
-        questCard.innerHTML = '<div class="quest-name">Class Epic Quest · ' + cq.name + (cq.claimed ? ' ✓' : '') + '</div>' +
-          '<div class="quest-prog">' + cq.desc + '</div>' +
-          '<div class="quest-prog">Target: ' + cq.target + ' (' + cq.progress + '/' + cq.count + ')' + (cq.completed ? ' — Complete!' : '') + '</div>' +
-          '<div class="quest-prog">Reward: ' + (epicSpell ? epicSpell.name : 'Epic Spell') + '</div>' +
-          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
-          '<button class="btn" onclick="claimClassQuestReward()" ' + ((cq.completed && !cq.claimed) ? '' : 'disabled') + '>Claim Epic Spell</button>' +
-          '</div>';
-        el.appendChild(questCard);
-      }
-
-      (char.eliteContracts || []).forEach((c, idx) => {
-        if (!c || !c.active) return;
-        const zone = ZONES[c.zone] || null;
-        const zoneName = zone ? zone.name : 'Unknown';
-        const zoneRange = zone ? ('Lv ' + zone.minLvl + '-' + zone.maxLvl) : 'Lv ?';
-        const tierLabel = getContractTierData(c.tier || 'normal').label;
-        const chainStep = Math.max(1, Number(c.chainStep || 1));
-        const chainTotal = Math.max(2, Number(c.chainTotal || CONTRACT_CHAIN_TOTAL));
-        const rerollCost = getContractRerollCost(char, c);
-        const primary = idx === Number(char.contractPrimaryIdx || 0);
-        const afkPinned = idx === Number(char.afkPinnedContractIdx || 0);
-        const contract = document.createElement('div');
-        contract.className = 'quest';
-        contract.innerHTML = '<div class="quest-name">Elite Hunt Contract #' + (idx + 1) + (primary ? ' · Primary' : '') + (afkPinned ? ' · AFK Pin' : '') + '</div>' +
-          '<div class="quest-prog">Tier: ' + tierLabel + ' · Chain Step ' + chainStep + '/' + chainTotal + ' <button class="btn" style="font-size:10px;padding:2px 8px;margin-left:6px" onclick="cycleContractTier(' + idx + ')">Cycle Tier</button></div>' +
-          '<div class="quest-prog">Zone: ' + zoneName + ' (' + zoneRange + ') · Hunt ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Complete!' : '') + (c.bossStep ? ' · Boss Step' : '') + '</div>' +
-          '<div class="quest-prog">Reward: ' + c.rewardXp + ' XP · ' + c.rewardGold + 'g</div>' +
-          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
-          '<button class="btn" onclick="claimEliteContractReward(' + idx + ')" ' + (c.complete ? '' : 'disabled') + '>' + (chainStep >= chainTotal ? 'Finish Chain' : 'Claim + Next Step') + '</button>' +
-          '<button class="btn" onclick="rerollEliteContract(' + idx + ')" ' + (char.gold >= rerollCost ? '' : 'disabled') + '>Reroll (' + rerollCost + 'g)</button>' +
-          '<button class="btn' + (primary ? ' active' : '') + '" onclick="setPrimaryContract(' + idx + ')">Set Primary</button>' +
-          '<button class="btn' + (afkPinned ? ' active' : '') + '" onclick="setAfkPinnedContract(' + idx + ')">Pin AFK</button>' +
-          '</div>';
-        el.appendChild(contract);
-      });
-
-      // ── Daily Quests (PHASE 4) ──
+      ensureStatsState(char);
       checkDailyRollover();
-      if (Array.isArray(char.dailyQuests) && char.dailyQuests.length) {
-        const dailyHeader = document.createElement('div');
-        dailyHeader.className = 'quest';
-        const resetIn = Math.max(0, Number(char.dailyReset || 0) - Date.now());
-        const hours = Math.floor(resetIn / 3600000);
-        const mins = Math.floor((resetIn % 3600000) / 60000);
-        dailyHeader.innerHTML = '<div class="quest-name">Daily Quests</div>' +
-          '<div class="quest-prog">Resets in ' + hours + 'h ' + mins + 'm. Earn bonus XP and gold for kill targets.</div>';
-        el.appendChild(dailyHeader);
-        char.dailyQuests.forEach((q, idx) => {
-          const d = document.createElement('div'); d.className = 'quest';
-          const statusTag = q.claimed ? ' ✓ Claimed' : (q.done ? ' — Ready to claim' : '');
-          const qIcon = q.isAlchemy ? '⚗️ ' : '📅 ';
-          d.innerHTML = '<div class="quest-name">' + qIcon + q.name + statusTag + '</div>' +
-            '<div class="quest-prog">' + q.desc + ' (' + (q.prog || 0) + '/' + q.count + ')</div>' +
-            '<div class="quest-prog">Reward: ' + q.xp + ' XP · ' + q.gold + 'g</div>' +
-            '<div style="display:flex;gap:6px;margin-top:6px"><button class="btn" onclick="claimDailyQuest(' + idx + ')" ' + ((q.done && !q.claimed) ? '' : 'disabled') + '>Claim</button></div>';
-          el.appendChild(d);
+
+      // ── Two-column grid wrapper ──────────────────────────────────────
+      // Left col:  Kill Quests + Daily Quests
+      // Right col: Epic Quest + Contracts + Achievements
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start';
+      el.appendChild(grid);
+
+      const colL = document.createElement('div');
+      colL.style.cssText = 'display:flex;flex-direction:column;gap:5px';
+      const colR = document.createElement('div');
+      colR.style.cssText = 'display:flex;flex-direction:column;gap:5px';
+      grid.appendChild(colL);
+      grid.appendChild(colR);
+
+      // ── LEFT: Kill Quests ────────────────────────────────────────────
+      if (char.quests.length) {
+        colL.appendChild(_sectionLabel('Kill Quests'));
+        char.quests.forEach(q => {
+          const done = !!q.done;
+          const d = document.createElement('div');
+          d.className = 'quest ' + (done ? 'q-done' : 'q-active');
+          d.innerHTML =
+            '<div style="display:flex;align-items:baseline;gap:4px">' +
+              '<span class="quest-name">' + q.name + '</span>' +
+              (done ? _statusBadge('Complete', '#22c55e') : '') +
+            '</div>' +
+            '<div class="quest-prog" style="margin-top:3px">' + q.desc + '</div>' +
+            (done ? '' : _questBar(q.prog, q.count, false));
+          colL.appendChild(d);
         });
       }
 
-      // ── Achievements & Titles (PHASE 4) ──
-      ensureStatsState(char);
+      // ── LEFT: Daily Quests ───────────────────────────────────────────
+      if (Array.isArray(char.dailyQuests) && char.dailyQuests.length) {
+        const resetIn = Math.max(0, Number(char.dailyReset || 0) - Date.now());
+        const hours = Math.floor(resetIn / 3600000);
+        const mins = Math.floor((resetIn % 3600000) / 60000);
+        colL.appendChild(_sectionLabel('Daily Quests — resets in ' + hours + 'h ' + mins + 'm'));
+        char.dailyQuests.forEach((q, idx) => {
+          const claimed = !!q.claimed;
+          const ready = q.done && !claimed;
+          const d = document.createElement('div');
+          d.className = 'quest ' + (claimed ? 'q-done' : ready ? 'q-ready' : 'q-active');
+          const qIcon = q.isAlchemy ? '⚗️' : '📅';
+          d.innerHTML =
+            '<div style="display:flex;align-items:baseline;gap:4px">' +
+              '<span class="quest-name">' + qIcon + ' ' + q.name + '</span>' +
+              (claimed ? _statusBadge('Claimed', '#22c55e') : ready ? _statusBadge('Ready!', '#facc15') : '') +
+            '</div>' +
+            '<div class="quest-prog" style="margin-top:3px">' + q.desc + '</div>' +
+            (claimed ? '' : _questBar(q.prog || 0, q.count, ready)) +
+            '<div class="quest-prog">Reward: <strong>' + q.xp.toLocaleString() + ' XP · ' + q.gold.toLocaleString() + 'g</strong></div>' +
+            (!claimed ? '<div style="margin-top:8px"><button class="btn' + (ready ? ' active' : '') + '" onclick="claimDailyQuest(' + idx + ')" ' + (ready ? '' : 'disabled') + '>Claim</button></div>' : '');
+          colL.appendChild(d);
+        });
+      }
+
+      // ── RIGHT: Epic Class Quest ──────────────────────────────────────
+      const cq = char.classQuest;
+      if (cq) {
+        colR.appendChild(_sectionLabel('Class Epic Quest'));
+        const epicSpell = getSpellById(cq.rewardSpellId);
+        const ready = cq.completed && !cq.claimed;
+        const done = cq.claimed;
+        const card = document.createElement('div');
+        card.className = 'quest ' + (done ? 'q-done' : ready ? 'q-ready' : 'q-active');
+        card.innerHTML =
+          '<div style="display:flex;align-items:baseline;gap:4px">' +
+            '<span class="quest-name">' + cq.name + '</span>' +
+            (done ? _statusBadge('Claimed', '#22c55e') : ready ? _statusBadge('Ready!', '#facc15') : '') +
+          '</div>' +
+          '<div class="quest-prog" style="margin-top:3px">' + cq.desc + '</div>' +
+          '<div class="quest-prog">Target: <strong>' + cq.target + '</strong></div>' +
+          (done ? '' : _questBar(cq.progress, cq.count, cq.completed)) +
+          '<div class="quest-prog" style="margin-top:4px">Reward: <strong>' + (epicSpell ? epicSpell.name : 'Epic Spell') + '</strong></div>' +
+          '<div style="margin-top:8px">' +
+            '<button class="btn' + (ready ? ' active' : '') + '" onclick="claimClassQuestReward()" ' + (ready ? '' : 'disabled') + '>Claim Epic Spell</button>' +
+          '</div>';
+        colR.appendChild(card);
+      }
+
+      // ── RIGHT: Elite Contracts ───────────────────────────────────────
+      const activeContracts = (char.eliteContracts || []).filter(c => c && c.active);
+      if (activeContracts.length) {
+        const mastery = getContractMasteryState(char);
+        const masteryNeed = getContractMasteryThreshold(mastery.level);
+        colR.appendChild(_sectionLabel('Elite Contracts'));
+        const masteryStrip = document.createElement('div');
+        masteryStrip.className = 'quest q-active';
+        masteryStrip.innerHTML =
+          '<div style="display:flex;justify-content:space-between;align-items:center">' +
+            '<span class="quest-name" style="font-size:12px">Contract Mastery Lv ' + mastery.level + '</span>' +
+            '<span class="quest-prog">' + mastery.xp + '/' + masteryNeed + ' · +' + (mastery.level * 5) + '% rewards</span>' +
+          '</div>' +
+          _questBar(mastery.xp, masteryNeed, false);
+        colR.appendChild(masteryStrip);
+
+        (char.eliteContracts || []).forEach((c, idx) => {
+          if (!c || !c.active) return;
+          const zone = ZONES[c.zone] || null;
+          const zoneName = zone ? zone.name : 'Unknown';
+          const zoneRange = zone ? ('Lv ' + zone.minLvl + '–' + zone.maxLvl) : 'Lv ?';
+          const tierLabel = getContractTierData(c.tier || 'normal').label;
+          const chainStep = Math.max(1, Number(c.chainStep || 1));
+          const chainTotal = Math.max(2, Number(c.chainTotal || CONTRACT_CHAIN_TOTAL));
+          const rerollCost = getContractRerollCost(char, c);
+          const primary = idx === Number(char.contractPrimaryIdx || 0);
+          const afkPinned = idx === Number(char.afkPinnedContractIdx || 0);
+          const ready = !!c.complete;
+          const card = document.createElement('div');
+          card.className = 'quest ' + (ready ? 'q-ready' : 'q-active');
+          card.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px">' +
+              '<span class="quest-name">Contract #' + (idx + 1) +
+                (primary ? _statusBadge('Primary', '#BA7517') : '') +
+                (afkPinned ? _statusBadge('AFK Pin', '#3b82f6') : '') +
+                (ready ? _statusBadge('Ready!', '#facc15') : '') +
+              '</span>' +
+              '<span class="quest-prog">Step ' + chainStep + '/' + chainTotal + ' · ' + tierLabel + (c.bossStep ? ' · Boss' : '') + '</span>' +
+            '</div>' +
+            '<div class="quest-prog" style="margin-top:4px">📍 ' + zoneName + ' <span style="opacity:.6">(' + zoneRange + ')</span> · Hunt <strong>' + c.target + '</strong></div>' +
+            _questBar(c.progress, c.count, ready) +
+            '<div class="quest-prog" style="margin-top:2px">Reward: <strong>' + Number(c.rewardXp).toLocaleString() + ' XP · ' + Number(c.rewardGold).toLocaleString() + 'g</strong></div>' +
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' +
+              '<button class="btn' + (ready ? ' active' : '') + '" onclick="claimEliteContractReward(' + idx + ')" ' + (ready ? '' : 'disabled') + '>' + (chainStep >= chainTotal ? 'Finish Chain' : 'Claim + Advance') + '</button>' +
+              '<button class="btn" onclick="cycleContractTier(' + idx + ')">Tier: ' + tierLabel + '</button>' +
+              '<button class="btn" onclick="rerollEliteContract(' + idx + ')" ' + (char.gold >= rerollCost ? '' : 'disabled') + '>Reroll (' + rerollCost.toLocaleString() + 'g)</button>' +
+              '<button class="btn' + (primary ? ' active' : '') + '" onclick="setPrimaryContract(' + idx + ')">Primary</button>' +
+              '<button class="btn' + (afkPinned ? ' active' : '') + '" onclick="setAfkPinnedContract(' + idx + ')">Pin AFK</button>' +
+            '</div>';
+          colR.appendChild(card);
+        });
+      }
+
+      // ── RIGHT: Achievements ──────────────────────────────────────────
+      colR.appendChild(_sectionLabel('Achievements'));
       const achCard = document.createElement('div');
-      achCard.className = 'quest';
+      achCard.className = 'quest q-active';
       const unlockedCount = Object.keys(char.achievements || {}).length;
-      let achHtml = '<div class="quest-name">Achievements (' + unlockedCount + '/' + ACHIEVEMENTS.length + ')</div>';
       const titles = getAvailableTitles();
+      let achHtml =
+        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">' +
+          '<span class="quest-name">Achievements</span>' +
+          '<span class="quest-prog">' + unlockedCount + ' / ' + ACHIEVEMENTS.length + ' unlocked</span>' +
+        '</div>';
       if (titles.length) {
-        achHtml += '<div class="quest-prog">Active Title: <select onchange="setActiveTitle(this.value)" style="margin-left:4px;font-size:11px"><option value=""' + (char.activeTitle ? '' : ' selected') + '>(none)</option>' +
+        achHtml += '<div class="quest-prog" style="margin-top:6px">Title: <select onchange="setActiveTitle(this.value)" style="margin-left:4px;font-size:11px;background:var(--bg-primary);border:1px solid var(--border-md);border-radius:4px;color:var(--text-primary);padding:2px 4px"><option value=""' + (char.activeTitle ? '' : ' selected') + '>(none)</option>' +
           titles.map(t => '<option value="' + t + '"' + (char.activeTitle === t ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></div>';
       }
-      achHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">Kills ' + char.stats.kills + ' · Named ' + char.stats.namedKills + ' · Elite ' + char.stats.eliteKills + ' · Bosses ' + char.stats.bossKills + ' · Deaths ' + char.stats.deaths + '</div>';
+      achHtml += '<div class="quest-prog" style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">' +
+        '<span>⚔ ' + char.stats.kills.toLocaleString() + ' kills</span>' +
+        '<span>🏷 ' + char.stats.namedKills.toLocaleString() + ' named</span>' +
+        '<span>⭐ ' + char.stats.eliteKills.toLocaleString() + ' elite</span>' +
+        '<span>💀 ' + char.stats.bossKills.toLocaleString() + ' bosses</span>' +
+        '<span>🪦 ' + char.stats.deaths.toLocaleString() + ' deaths</span>' +
+        '</div>';
+      achHtml += '<div style="margin-top:8px;display:flex;flex-direction:column;gap:3px">';
       ACHIEVEMENTS.forEach(a => {
         const got = !!char.achievements[a.id];
-        achHtml += '<div class="quest-prog" style="font-size:11px;' + (got ? '' : 'opacity:0.55;') + '">' + (got ? '✓ ' : '· ') + '<b>' + a.name + '</b> — ' + a.desc + (a.title ? ' (Title: ' + a.title + ')' : '') + '</div>';
+        achHtml += '<div style="display:flex;align-items:baseline;gap:6px;font-size:11px;' + (got ? '' : 'opacity:0.45') + '">' +
+          '<span style="flex-shrink:0;color:' + (got ? '#22c55e' : 'var(--text-secondary)') + '">' + (got ? '✓' : '○') + '</span>' +
+          '<span><strong>' + a.name + '</strong> — ' + a.desc + (a.title ? ' <span style="color:#facc15">(Title: ' + a.title + ')</span>' : '') + '</span>' +
+          '</div>';
       });
+      achHtml += '</div>';
       achCard.innerHTML = achHtml;
-      el.appendChild(achCard);
+      colR.appendChild(achCard);
     }
 
     function renderAATab() {
@@ -15052,6 +15340,9 @@
         // every few levels). Base scores only — gear bonuses apply on top.
         char.abilities = rollClassAbilities(char.cls, char.level);
         log('*** LEVEL UP! You are now level ' + char.level + '! ***', 'lvl');
+        if (typeof showToast === 'function') showToast('⬆ Level ' + char.level + '! HP, MP and stats increased.', 'success', 3000);
+        const _ov = document.getElementById('levelup-overlay');
+        if (_ov) { _ov.classList.remove('active'); void _ov.offsetWidth; _ov.classList.add('active'); }
         if (char.level === AA_UNLOCK_LEVEL) {
           log('Alternate Ascension unlocked. Configure XP diversion in the AA tab.', 'lvl');
         }
@@ -15156,6 +15447,36 @@
       char.def -= data.def || 0;
       char.maxHp -= data.hp || 0;
       char.maxMp -= data.mp || 0;
+    }
+
+    function sellBelowRarity() {
+      if (!char || !Array.isArray(char.inventory)) return;
+      const sel = document.getElementById('sell-below-rarity-sel');
+      const maxRarity = sel ? sel.value : 'Normal';
+      const RARITY_ORDER = ['Normal', 'Magic', 'Rare', 'Unique', 'Legendary', 'Runeword', 'Mythic'];
+      const maxIdx = RARITY_ORDER.indexOf(maxRarity);
+      let sold = 0, totalGold = 0;
+      const keep = [];
+      for (const item of char.inventory) {
+        const q = getItemQuality(item);
+        const qIdx = RARITY_ORDER.indexOf(q);
+        if (qIdx !== -1 && qIdx <= maxIdx && !isItemLocked(item) && !isItemFavorite(item)) {
+          const val = getItemSellValue(item);
+          char.gold += val;
+          totalGold += val;
+          sold++;
+        } else {
+          keep.push(item);
+        }
+      }
+      char.inventory = keep;
+      if (sold > 0) {
+        log('Sold ' + sold + ' item' + (sold === 1 ? '' : 's') + ' for ' + totalGold.toLocaleString() + 'g (below ' + maxRarity + ').', 'loot');
+        renderAll();
+        autoSave();
+      } else {
+        log('No eligible items to sell.', 'info');
+      }
     }
 
     function sellItem(index) {
@@ -17494,6 +17815,7 @@
 
     // ══════════════════════════════════════════════
     function switchTab(tab) {
+      try { sessionStorage.setItem('EQ_lastTab', tab); } catch(e) {}
       const tabs = ['combat', 'zone', 'dungeon', 'quests', 'aa', 'prestige', 'inv', 'spells', 'runes', 'shop', 'loot', 'bank', 'group', 'tradeskill', 'leaderboard', 'about'];
       tabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
@@ -17537,6 +17859,19 @@
     //  INIT
     // ══════════════════════════════════════════════
     document.addEventListener('keydown', handleModalKeydown);
+    document.addEventListener('keydown', function(e) {
+      // Skip if typing in an input/textarea/select
+      if (e.target && ['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (!char || document.getElementById('screen-game').style.display === 'none') return;
+      if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); attackOnce(); }
+      else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); if (typeof useHpPotion === 'function') useHpPotion(); }
+      else if (e.key === 'm' || e.key === 'M') { e.preventDefault(); if (typeof meditate === 'function') meditate(); }
+      else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); if (typeof spawnMob === 'function' && !mob) spawnMob(); }
+      else if (e.key === '1') { e.preventDefault(); castMemorizedSpell(0); }
+      else if (e.key === '2') { e.preventDefault(); castMemorizedSpell(1); }
+      else if (e.key === '3') { e.preventDefault(); castMemorizedSpell(2); }
+    });
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('resize', () => requestAnimationFrame(syncCombatLogSize));
 
