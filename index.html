@@ -7317,10 +7317,24 @@
       for (let i = 0; i < ZONES.length; i++) {
         const z = ZONES[i];
         if (!z || !Array.isArray(z.mobs) || !z.mobs.length) continue;
-        if (Number(z.minLvl || 1) <= lvl + 2) out.push(i);
+        const minLvl = Math.max(1, Math.floor(Number(z.minLvl || 1)));
+        const maxLvl = Math.max(minLvl, Math.floor(Number(z.maxLvl || minLvl)));
+        if (minLvl <= lvl + 2 && maxLvl >= lvl - 8) out.push(i);
+      }
+      if (!out.length) {
+        for (let i = 0; i < ZONES.length; i++) {
+          const z = ZONES[i];
+          if (!z || !Array.isArray(z.mobs) || !z.mobs.length) continue;
+          const minLvl = Math.max(1, Math.floor(Number(z.minLvl || 1)));
+          if (minLvl <= lvl + 2) out.push(i);
+        }
       }
       if (!out.length) out.push(0);
-      return out;
+      return out.sort((a, b) => {
+        const za = ZONES[a] || {};
+        const zb = ZONES[b] || {};
+        return (Number(za.minLvl || 1) - Number(zb.minLvl || 1)) || a - b;
+      });
     }
 
     function pickContractZone(targetChar, exclude = []) {
@@ -7332,21 +7346,30 @@
       return pool[Math.floor(Math.random() * pool.length)];
     }
 
+    function getContractZoneScale(zoneIdx) {
+      const z = ZONES[zoneIdx] || ZONES[0] || {};
+      const minLvl = Math.max(1, Math.floor(Number(z.minLvl || 1)));
+      const maxLvl = Math.max(minLvl, Math.floor(Number(z.maxLvl || minLvl)));
+      const midLvl = Math.floor((minLvl + maxLvl) / 2);
+      return { minLvl, maxLvl, midLvl, tierIndex: Math.max(0, Math.floor((minLvl - 1) / 4)) };
+    }
+
     function generateEliteContract(targetZone = null, tier = null, chainStep = 1, chainTotal = CONTRACT_CHAIN_TOTAL) {
       const zoneIdx = targetZone === null ? (char ? char.zone : 0) : targetZone;
       const zone = ZONES[zoneIdx] || ZONES[0];
       const chosenTier = tier || (char && char.contractTierPref) || 'normal';
       const tierData = getContractTierData(chosenTier);
       const mastery = getContractMasteryState(char);
+      const zoneScale = getContractZoneScale(zoneIdx);
       const countReduction = Math.min(0.2, mastery.level * 0.03);
       const step = Math.max(1, Math.min(chainTotal, Math.floor(Number(chainStep || 1))));
       const total = Math.max(2, Math.floor(Number(chainTotal || CONTRACT_CHAIN_TOTAL)));
       const bossStep = step >= total;
       const target = bossStep ? 'Named or Elite' : zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
-      const count = bossStep ? 1 : Math.max(3, Math.floor((4 + zoneIdx) * tierData.countMult * (1 + (step - 1) * 0.15) * (1 - countReduction)));
+      const count = bossStep ? 1 : Math.max(3, Math.floor((4 + zoneScale.tierIndex) * tierData.countMult * (1 + (step - 1) * 0.15) * (1 - countReduction)));
       const stepRewardMult = bossStep ? (1.9 + mastery.level * 0.04) : (1 + (step - 1) * 0.25);
-      const rewardXp = Math.floor((220 + zoneIdx * 180 + count * 25) * tierData.rewardMult * stepRewardMult);
-      const rewardGold = Math.floor((40 + zoneIdx * 28 + count * 8) * tierData.rewardMult * stepRewardMult);
+      const rewardXp = Math.floor((220 + zoneScale.midLvl * 45 + count * 25) * tierData.rewardMult * stepRewardMult);
+      const rewardGold = Math.floor((40 + zoneScale.midLvl * 7 + count * 8) * tierData.rewardMult * stepRewardMult);
       return {
         active: true,
         tier: chosenTier,
@@ -12345,7 +12368,9 @@
         if (!c || !c.active) {
           contractTracker.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">No active elite contract.</div>';
         } else {
-          const zoneName = ZONES[c.zone] ? ZONES[c.zone].name : 'Unknown';
+          const zone = ZONES[c.zone] || null;
+          const zoneName = zone ? zone.name : 'Unknown';
+          const zoneRange = zone ? ('Lv ' + zone.minLvl + '-' + zone.maxLvl) : 'Lv ?';
           const step = Math.max(1, Number(c.chainStep || 1));
           const total = Math.max(2, Number(c.chainTotal || CONTRACT_CHAIN_TOTAL));
           const inZone = c.zone === char.zone;
@@ -12353,7 +12378,7 @@
             '<div class="quest-name" style="margin:0">Contract Chain Tracker</div>' +
             '<div class="quest-prog" style="margin-top:4px">Step ' + step + '/' + total + ' · ' + getContractTierData(c.tier || 'normal').label + (c.bossStep ? ' · Boss Step' : '') + '</div>' +
             '<div class="quest-prog">Objective: ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Ready to claim in Quests' : '') + '</div>' +
-            '<div class="quest-prog">Zone: ' + zoneName + (inZone ? ' · You are here' : '') + '</div>' +
+            '<div class="quest-prog">Zone: ' + zoneName + ' (' + zoneRange + ')' + (inZone ? ' · You are here' : '') + '</div>' +
             '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
             '<button class="btn" onclick="travelToContractZone()" ' + (inZone ? 'disabled' : '') + '>Quick Travel</button>' +
             '<button class="btn" onclick="switchTab(\'quests\')">Open Quests</button>' +
@@ -13365,7 +13390,9 @@
 
       (char.eliteContracts || []).forEach((c, idx) => {
         if (!c || !c.active) return;
-        const zoneName = ZONES[c.zone] ? ZONES[c.zone].name : 'Unknown';
+        const zone = ZONES[c.zone] || null;
+        const zoneName = zone ? zone.name : 'Unknown';
+        const zoneRange = zone ? ('Lv ' + zone.minLvl + '-' + zone.maxLvl) : 'Lv ?';
         const tierLabel = getContractTierData(c.tier || 'normal').label;
         const chainStep = Math.max(1, Number(c.chainStep || 1));
         const chainTotal = Math.max(2, Number(c.chainTotal || CONTRACT_CHAIN_TOTAL));
@@ -13376,7 +13403,7 @@
         contract.className = 'quest';
         contract.innerHTML = '<div class="quest-name">Elite Hunt Contract #' + (idx + 1) + (primary ? ' · Primary' : '') + (afkPinned ? ' · AFK Pin' : '') + '</div>' +
           '<div class="quest-prog">Tier: ' + tierLabel + ' · Chain Step ' + chainStep + '/' + chainTotal + ' <button class="btn" style="font-size:10px;padding:2px 8px;margin-left:6px" onclick="cycleContractTier(' + idx + ')">Cycle Tier</button></div>' +
-          '<div class="quest-prog">Zone: ' + zoneName + ' · Hunt ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Complete!' : '') + (c.bossStep ? ' · Boss Step' : '') + '</div>' +
+          '<div class="quest-prog">Zone: ' + zoneName + ' (' + zoneRange + ') · Hunt ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Complete!' : '') + (c.bossStep ? ' · Boss Step' : '') + '</div>' +
           '<div class="quest-prog">Reward: ' + c.rewardXp + ' XP · ' + c.rewardGold + 'g</div>' +
           '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
           '<button class="btn" onclick="claimEliteContractReward(' + idx + ')" ' + (c.complete ? '' : 'disabled') + '>' + (chainStep >= chainTotal ? 'Finish Chain' : 'Claim + Next Step') + '</button>' +
