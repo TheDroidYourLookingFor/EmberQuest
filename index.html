@@ -17702,7 +17702,7 @@
       if (a.brewQueue && typeof a.brewQueue !== 'object') a.brewQueue = null;
       if (!a.autoBrewEnabled || typeof a.autoBrewEnabled !== 'object') a.autoBrewEnabled = {};
       // Default all recipes to enabled
-      ALCHEMY_RECIPES.forEach(r => { if (typeof a.autoBrewEnabled[r.id] !== 'boolean') a.autoBrewEnabled[r.id] = true; });
+      ALCHEMY_RECIPES.forEach(r => { if (typeof a.autoBrewEnabled[r.id] !== 'boolean') a.autoBrewEnabled[r.id] = false; });
     }
 
     function getAlchemySkill() {
@@ -17979,10 +17979,10 @@
             <div style="font-size:13px;font-weight:700;margin:4px 0;color:${qty > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}">×${qty}</div>
             ${locked ? `<div style="font-size:10px;color:var(--text-secondary)">Zone ${herb.zone}+ only</div>` : `
               <div style="display:flex;gap:4px;margin-top:4px">
-                <button class="btn" style="font-size:10px;padding:2px 6px" onclick="buyHerb('${herb.id}',1)" ${!canAfford?'disabled':''}>Buy 1 (${buyPrice}g)</button>
-                <button class="btn" style="font-size:10px;padding:2px 6px" onclick="buyHerb('${herb.id}',10)" ${char.gold < buyPrice*10?'disabled':''}>×10</button>
-                <button class="btn" style="font-size:10px;padding:2px 6px" onclick="buyHerb('${herb.id}',100)" ${char.gold < buyPrice*100?'disabled':''}>×100</button>
-                <button class="btn" style="font-size:10px;padding:2px 6px" onclick="buyHerb('${herb.id}',1000)" ${char.gold < buyPrice*1000?'disabled':''}>×1000</button>
+                <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 1 for ${buyPrice.toLocaleString()}g" onclick="buyHerb('${herb.id}',1)" ${!canAfford?'disabled':''}>Buy 1 (${buyPrice.toLocaleString()}g)</button>
+                <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 10 for ${(buyPrice*10).toLocaleString()}g total" onclick="buyHerb('${herb.id}',10)" ${char.gold < buyPrice*10?'disabled':''}>×10 (${(buyPrice*10).toLocaleString()}g)</button>
+                <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 100 for ${(buyPrice*100).toLocaleString()}g total" onclick="buyHerb('${herb.id}',100)" ${char.gold < buyPrice*100?'disabled':''}>×100 (${(buyPrice*100).toLocaleString()}g)</button>
+                <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 1,000 for ${(buyPrice*1000).toLocaleString()}g total" onclick="buyHerb('${herb.id}',1000)" ${char.gold < buyPrice*1000?'disabled':''}>×1000 (${(buyPrice*1000).toLocaleString()}g)</button>
               </div>`}
           </div>`;
       });
