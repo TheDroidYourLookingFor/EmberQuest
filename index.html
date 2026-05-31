@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.3.10</title>
+    1.3.18</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -1098,7 +1098,7 @@
     }
     #popup-backdrop.open { display: flex; }
     #popup-window {
-      width: min(680px, 100%);
+      width: min(760px, 100%);
       max-height: 88vh;
       background: var(--bg-primary);
       border: 0.5px solid var(--border-md);
@@ -1321,7 +1321,7 @@
     /* ── EQ inventory ── */
     .eq-inventory-layout {
       display: grid;
-      grid-template-columns: minmax(170px, 200px) minmax(0, 1fr);
+      grid-template-columns: minmax(200px, 230px) minmax(0, 1fr);
       gap: 14px;
       min-width: 0;
     }
@@ -1437,6 +1437,18 @@
       font-weight: 500;
       color: var(--text-secondary);
     }
+
+    .shop-section-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 14px 10px;
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius-md); cursor: pointer;
+      transition: border-color .15s, background .15s; text-align: center; width: 100%;
+    }
+    .shop-section-btn:hover { background: var(--bg-primary); border-color: var(--border-md); }
+    .shop-section-btn.active { border-color: #378ADD; background: var(--bg-primary); }
+    .shop-section-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .shop-section-sub { font-size: 10px; color: var(--text-secondary); }
 
     /* Bag area */
     .eq-bag-area {
@@ -2951,7 +2963,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.3.10</span>
+        1.3.18</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3168,7 +3180,9 @@
             XP</div>
           <div
             class="bar-wrap"
-            style="position:relative;height:14px;border-radius:3px 3px 0 0;overflow:hidden;margin-bottom:0">
+            style="position:relative;height:14px;border-radius:3px 3px 0 0;overflow:hidden;margin-bottom:0"
+            title="XP — hover to see progress"
+            id="xp-bar-wrap">
             <div
               class="bar xp-bar"
               id="xp-bar"
@@ -3669,7 +3683,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.3.10 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version 1.3.18 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -4074,46 +4088,29 @@
         <div
           id="tab-shop"
           style="display:none">
-          <h3>
-            Village
-            Merchant
-          </h3>
-          <div
-            id="merchant-rep-note"
-            style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
-          </div>
-          <div
-            style="display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-            <button
-              class="btn"
-              onclick="sellAllJunk()" title="Sell all non-equipment, non-container items"><i
-                class="ti ti-coins"></i>
-              Sell Junk
+          <h3>Village Merchant</h3>
+          <div id="merchant-rep-note" style="font-size:11px;color:var(--text-secondary);margin-bottom:10px"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <button class="shop-section-btn" id="ssbtn-potions" onclick="openShopSection('potions')">
+              <span style="font-size:20px">🧪</span>
+              <span class="shop-section-label">Potions</span>
+              <span class="shop-section-sub" id="shop-btn-potions-sub">Buy &amp; sell potions</span>
             </button>
-            <button
-              class="btn"
-              onclick="sellByRarity('Normal')" title="Sell all Common (Normal) quality items">Sell Common</button>
-            <button
-              class="btn"
-              onclick="sellByRarity('Magic')" title="Sell all Magic quality items">Sell Magic</button>
-            <button
-              class="btn"
-              onclick="sellByRarity('Rare')" title="Sell all Rare quality items">Sell Rare</button>
-            <button
-              class="btn"
-              onclick="sellByRarity('Epic')" title="Sell all Epic quality items">Sell Epic</button>
-            <button
-              class="btn danger"
-              onclick="sellAllInventory()" title="Sell everything (respects locked &amp; favorited items)"><i
-                class="ti ti-trash"></i>
-              Sell All
+            <button class="shop-section-btn" id="ssbtn-gear" onclick="openShopSection('gear')">
+              <span style="font-size:20px">⚔️</span>
+              <span class="shop-section-label">Gear &amp; Bags</span>
+              <span class="shop-section-sub">Equipment &amp; containers</span>
             </button>
-          </div>
-
-          <div
-            class="eq-bag-grid"
-            id="shop-item-grid">
-            <!-- Rendered dynamically via JavaScript -->
+            <button class="shop-section-btn" id="ssbtn-services" onclick="openShopSection('services')">
+              <span style="font-size:20px">✨</span>
+              <span class="shop-section-label">Services</span>
+              <span class="shop-section-sub">Crafting, reforge, chests</span>
+            </button>
+            <button class="shop-section-btn" id="ssbtn-sell" onclick="openShopSection('sell')">
+              <span style="font-size:20px">💰</span>
+              <span class="shop-section-label">Sell Items</span>
+              <span class="shop-section-sub">Sell by rarity or type</span>
+            </button>
           </div>
         </div>
         
@@ -4361,6 +4358,7 @@
                 </button>
               </div>
 
+
             </div>
 
             <div
@@ -4415,6 +4413,22 @@
                   style="width:42px;background:#222;color:white;border:1px solid #444;border-radius:4px;padding:2px">
                 %
                 MP</span>
+            </div>
+
+            <div
+              class="queue-item"
+              draggable="true"
+              data-action="auto_shrine">
+              <span class="queue-handle" title="Drag to reorder">⠶</span>
+              <i class="ti ti-flame" style="font-size:14px"></i>
+              <span style="flex:1">Invoke Random Shrine</span>
+              <button
+                class="btn active"
+                id="shrine-auto-btn"
+                onclick="toggleAutoShrine(event)"
+                style="font-size:10px;padding:2px 8px">
+                ON
+              </button>
             </div>
 
             <div
@@ -6610,6 +6624,48 @@
       return stats;
     }
 
+    // Like getItemEffectiveStats but excludes socketed runes and runeword bonuses,
+    // so comparisons in the inventory tooltip always reflect base-item stats only.
+    function getItemBaseStats(entry) {
+      const base = getItemData(entry);
+      if (!base) return null;
+
+      const quality = getItemQuality(entry);
+      const epicRollMult = quality === 'Epic' ? 1.75 : (quality === 'Mythic' ? 1.6 : (quality === 'Legendary' ? 1.4 : 1));
+
+      const stats = {
+        atk: base.atk || 0,
+        def: base.def || 0,
+        hp: base.hp || 0,
+        mp: base.mp || 0,
+        str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0
+      };
+
+      if (entry && typeof entry === 'object' && entry.rolls && typeof entry.rolls === 'object') {
+        ['atk', 'def', 'hp', 'mp'].forEach(stat => {
+          const rolled = Number(entry.rolls[stat] || 0);
+          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * epicRollMult);
+        });
+        ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
+          const rolled = Number(entry.rolls[stat] || 0);
+          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * epicRollMult);
+        });
+      }
+
+      if (quality === 'Epic') {
+        stats.atk += 2; stats.def += 2; stats.hp += 12; stats.mp += 12;
+      } else if (quality === 'Legendary') {
+        stats.atk += PHASE2.legendaryStatBoost.atk; stats.def += PHASE2.legendaryStatBoost.def;
+        stats.hp += PHASE2.legendaryStatBoost.hp; stats.mp += PHASE2.legendaryStatBoost.mp;
+      } else if (quality === 'Mythic') {
+        stats.atk += PHASE2.mythicStatBoost.atk; stats.def += PHASE2.mythicStatBoost.def;
+        stats.hp += PHASE2.mythicStatBoost.hp; stats.mp += PHASE2.mythicStatBoost.mp;
+      }
+
+      // Intentionally omits sockets and runeword bonuses — base item only.
+      return stats;
+    }
+
     function normalizeInventoryEntry(entry) {
       if (typeof entry === 'string') return entry;
       if (!entry || typeof entry !== 'object') return null;
@@ -8588,7 +8644,10 @@
         const member = slots[idx];
         if (!member) return;
         const hpPct = Math.min(100, ((member.hp || 0) / (member.maxHp || 1)) * 100);
-        const mpPct = Math.min(100, ((member.mp || 0) / (member.maxMp || 1)) * 100);
+        // Immersion-only mana simulation for grouped alts. Does not modify saves.
+        const _baseMpPct = Math.min(100, ((member.mp || 0) / (member.maxMp || 1)) * 100);
+        const _combatDrift = ((Date.now() / 10000) + idx * 17) % 100;
+        const mpPct = Math.max(5, Math.min(100, _baseMpPct - (_combatDrift * 0.35) + (hpPct * 0.15)));
         list.appendChild(makeRow(escapeHtml(member.name), hpPct, mpPct));
       });
 
@@ -9599,7 +9658,10 @@
       const slot = data.slot || '';
       const ilvl = getItemLevel(item);
       const current = (slot && char.equipment) ? char.equipment[slot] : null;
-      const curStats = current ? (getItemEffectiveStats(current) || { atk: 0, def: 0, hp: 0, mp: 0 }) : null;
+      // Compare base stats only (no socketed runes / runeword bonuses) so the
+      // upgrade arrows reflect the item's own merits rather than socket enhancements.
+      const itemBaseStats = getItemBaseStats(item) || { atk: 0, def: 0, hp: 0, mp: 0 };
+      const curStats = current ? (getItemBaseStats(current) || { atk: 0, def: 0, hp: 0, mp: 0 }) : null;
       const meta = [
         data.type || (isRuneEntry(item) ? 'Rune' : 'Misc'),
         slot ? ('Slot: ' + slot) : '',
@@ -9612,7 +9674,7 @@
       ['atk', 'def', 'hp', 'mp'].forEach(stat => {
         const v = stats[stat] || 0;
         if (!v && !(curStats && curStats[stat])) return;
-        const diff = curStats ? (v - (curStats[stat] || 0)) : 0;
+        const diff = curStats ? ((itemBaseStats[stat] || 0) - (curStats[stat] || 0)) : 0; // base-only compare
         html += formatStatLine(stat.toUpperCase(), v, current ? diff : 0);
       });
       // Ability-score rolls (str/dex/con/int/wis/cha)
@@ -9621,7 +9683,7 @@
         const v = stats[stat] || 0;
         const cv = curStats ? (curStats[stat] || 0) : 0;
         if (!v && !cv) return;
-        const diff = curStats ? (v - cv) : 0;
+        const diff = curStats ? ((itemBaseStats[stat] || 0) - cv) : 0; // base-only compare
         const label = stat.toUpperCase() + ' <span style="font-size:9px;color:var(--text-secondary)">(' + ABILITY_EFFECT_LABELS[stat] + ')</span>';
         html += '<div class="tt-stat"><span>' + label + '</span><span>+' + (v || 0) + (diff > 0 ? ' <span class="tt-up">▲ +' + diff + '</span>' : diff < 0 ? ' <span class="tt-down">▼ ' + diff + '</span>' : '') + '</span></div>';
       });
@@ -10650,10 +10712,6 @@
 
     function invokeShrine() {
       if (!char) return;
-      if (mob) {
-        log('You cannot invoke a shrine during combat.', 'info');
-        return;
-      }
 
       const cost = getShrineInvokeCost();
       if (char.gold < cost) {
@@ -10877,6 +10935,7 @@
     let autoSkillSlots = [true, true, true, true, true, true];
     let autoUseHpPotions = true;
     let autoUseMpPotions = true;
+    let autoUseShrine = false;
     let autoRestHpPercent = 40;
     let autoRestMpPercent = 20;
     let autoHpPotionPercent = 35;
@@ -10905,7 +10964,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.10';
+    const CURRENT_VERSION = '1.3.18';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -10924,6 +10983,7 @@
         char.autoSkillSlots = autoSkillSlots.slice(0, 6).map(v => v !== false);
         char.autoUseHpPotions = autoUseHpPotions !== false;
         char.autoUseMpPotions = autoUseMpPotions !== false;
+        char.autoUseShrine = !!autoUseShrine;
         char.autoRestHpPercent = Math.max(5, Math.min(95, Math.floor(Number(autoRestHpPercent || 40))));
         char.autoRestMpPercent = Math.max(5, Math.min(95, Math.floor(Number(autoRestMpPercent || 20))));
         char.autoHpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(autoHpPotionPercent || 35))));
@@ -12386,8 +12446,8 @@
       if (oldChar.version === '1.2.1') {
         if (typeof ensureAuditState === 'function') ensureAuditState(oldChar);
         const auditFixes = (typeof auditCharacter === 'function') ? auditCharacter(oldChar) : 0;
-        oldChar.version = '1.3.10';
-        if (!silent) log('Upgraded save data to v1.3.10 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
+        oldChar.version = '1.3.13';
+        if (!silent) log('Upgraded save data to v1.3.13 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -12428,6 +12488,7 @@
       }
       autoUseHpPotions = char.autoUseHpPotions !== false;
       autoUseMpPotions = char.autoUseMpPotions !== false;
+      autoUseShrine = !!char.autoUseShrine;
       autoRestHpPercent = Math.max(5, Math.min(95, Math.floor(Number(char.autoRestHpPercent || 40))));
       autoRestMpPercent = Math.max(5, Math.min(95, Math.floor(Number(char.autoRestMpPercent || 20))));
       autoHpPotionPercent = Math.max(5, Math.min(95, Math.floor(Number(char.autoHpPotionPercent || 35))));
@@ -12612,6 +12673,8 @@
       if (_xpBar) {
         _xpBar.style.width = _xpPct + '%';
       }
+      const _xpBarWrap = document.getElementById('xp-bar-wrap');
+      if (_xpBarWrap) _xpBarWrap.title = 'XP: ' + fmt(char.xp) + ' / ' + fmt(char.xpNext) + ' (' + _xpPct.toFixed(1) + '%)';
       const _xpPctEl = document.getElementById('xp-pct-label');
       if (_xpPctEl) _xpPctEl.textContent = _xpPct.toFixed(1) + '%';
       const _xpNeededEl = document.getElementById('xp-needed-label');
@@ -13453,248 +13516,100 @@
       autoSave();
     }
 
-    function renderShop() {
-      const shopGrid = document.getElementById('shop-item-grid');
-      const repNote = document.getElementById('merchant-rep-note');
-      const lootFilterControls = document.getElementById('loot-filter-controls');
-      if (!shopGrid || !char) return;
-      ensureExtendedSystems(char);
-
-      const hpMinorPrice = getMerchantPrice(SHOP_BASE_PRICES.hpMinor);
-      const mpMinorPrice = getMerchantPrice(SHOP_BASE_PRICES.mpMinor);
-      const hpLightPrice = getMerchantPrice(SHOP_BASE_PRICES.hpLight);
-      const mpLightPrice = getMerchantPrice(SHOP_BASE_PRICES.mpLight);
-      const steelPrice = getMerchantPrice(SHOP_BASE_PRICES.steelLongsword);
-      const chestPrice = getMerchantPrice(SHOP_BASE_PRICES.knightChestplate);
-      const occultistPrice = getMerchantPrice(SHOP_BASE_PRICES.occultistReforge + Math.floor(char.level * 6));
-      const runeCounts = getRuneCounts();
-      const lf = getLootFilterState(char);
-      const presetId = LOOT_FILTER_PRESETS[char.lootFilterPreset] ? char.lootFilterPreset : 'balanced';
-      const presetOptions = Object.entries(LOOT_FILTER_PRESETS)
-        .map(([id, data]) => '<option value="' + id + '" ' + (id === presetId ? 'selected' : '') + '>' + data.label + '</option>')
-        .join('');
-
-      repNote.textContent = 'Faction: ' + getFactionTier(char.faction || 0) + ' (' + (char.faction || 0) + ') · Occultist services available.';
-      if (lootFilterControls) {
-        lootFilterControls.innerHTML =
-          '<button class="btn' + (lf.autoSellJunk ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellJunk\')">Auto-Sell Junk: ' + (lf.autoSellJunk ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellNormalGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellNormalGear\')">Auto-Sell Common: ' + (lf.autoSellNormalGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellBlueMagicGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellBlueMagicGear\')">Auto-Sell Uncommon: ' + (lf.autoSellBlueMagicGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellRareGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellRareGear\')">Auto-Sell Rare: ' + (lf.autoSellRareGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellLegendaryGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellLegendaryGear\')">Auto-Sell Epic+: ' + (lf.autoSellLegendaryGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.protectRarePlus ? ' active' : '') + '" onclick="toggleLootFilter(\'protectRarePlus\')">Protect Rare+: ' + (lf.protectRarePlus ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoEquipEmptySlots ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipEmptySlots\')">Auto-Equip Empty Slots: ' + (lf.autoEquipEmptySlots ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoEquipUpgradedEquipment ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipUpgradedEquipment\')">Auto-Equip Upgraded Equipment: ' + (lf.autoEquipUpgradedEquipment ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoSellDisplacedGear ? ' active' : '') + '" onclick="toggleLootFilter(\'autoSellDisplacedGear\')">Auto-Sell Displaced Gear: ' + (lf.autoSellDisplacedGear ? 'On' : 'Off') + '</button>' +
-          '<button class="btn' + (lf.autoEquipBeforeAutoSell ? ' active' : '') + '" onclick="toggleLootFilter(\'autoEquipBeforeAutoSell\')">Try Equip Before Selling: ' + (lf.autoEquipBeforeAutoSell ? 'On' : 'Off') + '</button>' +
-          '<select id="loot-filter-preset-select" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + presetOptions + '</select>' +
-          '<button class="btn" onclick="setLootFilterPresetFromUI()">Apply Preset</button>';
+    function openShopSection(section) {
+      const titles = { potions: '🧪 Potions', gear: '⚔️ Gear & Bags', services: '✨ Services', sell: '💰 Sell Items' };
+      // Close if same section clicked again
+      if (_activePopup === 'shop-' + section) { closePopup(); return; }
+      // Build section content into popup
+      _activePopup = 'shop-' + section;
+      document.querySelectorAll('.shop-section-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('ssbtn-' + section);
+      if (activeBtn) activeBtn.classList.add('active');
+      renderShop();
+      const body = document.getElementById('popup-body');
+      const pool = document.getElementById('popup-pool');
+      if (body.firstElementChild && pool) { body.firstElementChild.style.display='none'; pool.appendChild(body.firstElementChild); }
+      // Build fresh content div
+      const div = document.createElement('div');
+      div.id = 'shop-section-' + section;
+      div.className = 'eq-bag-grid';
+      if (section === 'sell') {
+        div.className = '';
+        div.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:4px 0';
       }
+      // Content filled by renderShopSection
+      body.appendChild(div);
+      renderShopSection(section, div);
+      document.getElementById('popup-title').textContent = titles[section] || section;
+      document.getElementById('popup-backdrop').classList.add('open');
+      try { sessionStorage.setItem('EQ_activePopup', 'shop-' + section); } catch(e) {}
+    }
 
+    function renderShopSection(section, container) {
+      if (!char || !container) return;
+      ensureExtendedSystems(char);
+      const occultistPrice = getMerchantPrice(SHOP_BASE_PRICES.occultistReforge + Math.floor(char.level * 6));
       const renderPotionCard = (name, effectText, basePriceKey, ownedKey, buyOneHandler, buyTenHandler) => {
         const price = getMerchantPrice(SHOP_BASE_PRICES[basePriceKey]);
         const sellPrice = getPotionSellPrice(SHOP_BASE_PRICES[basePriceKey]);
         const owned = Math.max(0, Number(char[ownedKey] || 0));
-        const disabledAttr = owned > 0 ? '' : 'disabled';
-        return `
-        <div class="eq-item-card">
-          <div class="eq-item-name">${name}</div>
-          <div class="eq-item-type">${effectText}</div>
-          <div class="eq-item-bonus">Buy: ${price} Gold · Sell: ${sellPrice} Gold</div>
-          <div class="eq-item-actions compact">
-            <button class="btn" onclick="${buyOneHandler}()">Buy</button>
-            <button class="btn" onclick="${buyTenHandler}()">Buy x10</button>
-            <button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},false)" ${disabledAttr}>Sell 1</button>
-            <button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},true)" ${disabledAttr}>Sell All</button>
-          </div>
-          <div class="eq-item-owned">Owned: ${owned}</div>
-        </div>
-      `;
+        const dis = owned > 0 ? '' : 'disabled';
+        return `<div class="eq-item-card"><div class="eq-item-name">${name}</div><div class="eq-item-type">${effectText}</div><div class="eq-item-bonus">Buy: ${price}g · Sell: ${sellPrice}g · Owned: ${owned}</div><div class="eq-item-actions compact"><button class="btn" onclick="${buyOneHandler}()">Buy</button><button class="btn" onclick="${buyTenHandler}()">Buy ×10</button><button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},false)" ${dis}>Sell 1</button><button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},true)" ${dis}>Sell All</button></div></div>`;
       };
-
-      // Potion section header — spans the full grid row
-      const _potionHeader = '<div style="grid-column:1/-1;display:flex;gap:16px;align-items:center;padding:4px 0 2px"><span style="font-size:10px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.06em">❤ Healing Potions</span><span style="font-size:10px;color:var(--text-secondary)">|</span><span style="font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.06em">🔵 Mana Potions</span><span style="font-size:10px;color:var(--text-secondary)">(paired left/right)</span></div>';
-      let shopHtml = _potionHeader +
-        renderPotionCard('Minor Healing Potion', 'Restores 150 HP', 'hpMinor', 'healpotions', 'buyHpPotion', 'buyHpPotion_10') +
-        renderPotionCard('Minor Mana Potion', 'Restores 150 MP', 'mpMinor', 'manapotions', 'buyMpPotion', 'buyMpPotion_10');
-
-      // Gate Light Potions behind character level 11.
-      if (char.level >= 11) {
-        shopHtml +=
-          renderPotionCard('Light Healing Potion', 'Restores 600 HP', 'hpLight', 'healpotions_lhp', 'buyHpPotion_LHP', 'buyHpPotion_LHP_10') +
-          renderPotionCard('Light Mana Potion', 'Restores 600 MP', 'mpLight', 'manapotions_lmp', 'buyMpPotion_LMP', 'buyMpPotion_LMP_10');
+      if (section === 'potions') {
+        let html = '<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.06em;padding:2px 0">❤ Healing Potions</div>';
+        html += renderPotionCard('Minor Healing Potion','Restores 150 HP','hpMinor','healpotions','buyHpPotion','buyHpPotion_10');
+        if (char.level>=11) html += renderPotionCard('Light Healing Potion','Restores 600 HP','hpLight','healpotions_lhp','buyHpPotion_LHP','buyHpPotion_LHP_10');
+        if (char.level>=25) html += renderPotionCard('Greater Healing Potion','Restores 2,500 HP','hpGreater','healpotions_ghp','buyHpPotion_GHP','buyHpPotion_GHP_10');
+        if (char.level>=45) html += renderPotionCard('Superior Healing Potion','Restores 10,000 HP','hpSuperior','healpotions_shp','buyHpPotion_SHP','buyHpPotion_SHP_10');
+        if (char.level>=60) html += renderPotionCard('Heroic Healing Potion','Restores 30,000 HP','hpHeroic','healpotions_heroic','buyHpPotion_HEROIC','buyHpPotion_HEROIC_10');
+        if (char.level>=70) html += renderPotionCard('Epic Healing Potion','Restores 75,000 HP','hpEpic','healpotions_epic','buyHpPotion_EPIC','buyHpPotion_EPIC_10');
+        if (char.level>=80) html += renderPotionCard('Legendary Healing Potion','Restores 200,000 HP','hpLegendary','healpotions_legendary','buyHpPotion_LEGENDARY','buyHpPotion_LEGENDARY_10');
+        html += '<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.06em;padding:6px 0 2px">🔵 Mana Potions</div>';
+        html += renderPotionCard('Minor Mana Potion','Restores 150 MP','mpMinor','manapotions','buyMpPotion','buyMpPotion_10');
+        if (char.level>=11) html += renderPotionCard('Light Mana Potion','Restores 600 MP','mpLight','manapotions_lmp','buyMpPotion_LMP','buyMpPotion_LMP_10');
+        if (char.level>=25) html += renderPotionCard('Greater Mana Potion','Restores 2,500 MP','mpGreater','manapotions_gmp','buyMpPotion_GMP','buyMpPotion_GMP_10');
+        if (char.level>=45) html += renderPotionCard('Superior Mana Potion','Restores 10,000 MP','mpSuperior','manapotions_smp','buyMpPotion_SMP','buyMpPotion_SMP_10');
+        if (char.level>=60) html += renderPotionCard('Heroic Mana Potion','Restores 30,000 MP','mpHeroic','manapotions_heroic','buyMpPotion_HEROIC','buyMpPotion_HEROIC_10');
+        if (char.level>=70) html += renderPotionCard('Epic Mana Potion','Restores 75,000 MP','mpEpic','manapotions_epic','buyMpPotion_EPIC','buyMpPotion_EPIC_10');
+        if (char.level>=80) html += renderPotionCard('Legendary Mana Potion','Restores 200,000 MP','mpLegendary','manapotions_legendary','buyMpPotion_LEGENDARY','buyMpPotion_LEGENDARY_10');
+        container.innerHTML = html;
+      } else if (section === 'gear') {
+        const steelPrice = getMerchantPrice(SHOP_BASE_PRICES.steelLongsword);
+        const chestPrice = getMerchantPrice(SHOP_BASE_PRICES.knightChestplate);
+        let html = `<div class="eq-item-card"><div class="eq-item-name">Steel Longsword</div><div class="eq-item-type">Weapon</div><div class="eq-item-bonus">+12 ATK · ${steelPrice}g</div><div class="eq-item-actions"><button class="btn" onclick="buyShopItem('Steel Longsword')">Buy</button></div></div><div class="eq-item-card"><div class="eq-item-name">Knight Chestplate</div><div class="eq-item-type">Armor</div><div class="eq-item-bonus">+18 DEF · +80 HP · ${chestPrice}g</div><div class="eq-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Knight Chestplate')}</div><div class="eq-item-actions"><button class="btn" onclick="buyShopItem('Knight Chestplate')" ${meetsFactionGate(SHOP_FACTION_GATES['Knight Chestplate'])?'':'disabled'}>Buy</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-rare">Recipe Scroll</div><div class="eq-item-type">Reveals one random unknown Runeword recipe.</div><div class="eq-item-bonus">${getMerchantPrice(PHASE5.recipeScrollPrice)}g</div><div class="eq-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Recipe Scroll')}</div><div class="eq-item-actions"><button class="btn" onclick="buyRecipeScroll()" ${meetsFactionGate(SHOP_FACTION_GATES['Recipe Scroll'])?'':'disabled'}>Buy &amp; Read</button></div></div>`;
+        Object.entries(CONTAINER_ITEMS).filter(([_,d])=>!d.starter).forEach(([name,data])=>{ html+=`<div class="eq-item-card"><div class="eq-item-name">${name}</div><div class="eq-item-type">Container (${data.slots} slots)</div><div class="eq-item-bonus">${getMerchantPrice(data.cost)}g</div><div class="eq-item-actions"><button class="btn" onclick="buyContainer('${name}')">Buy</button></div></div>`; });
+        container.innerHTML = html;
+      } else if (section === 'services') {
+        const mysticCost = Math.max(250, Math.floor(150+char.level*50));
+        const nameTokenCost = getMerchantPrice(SHOP_BASE_PRICES.nameChangeToken);
+        const raceTokenCost = getMerchantPrice(SHOP_BASE_PRICES.raceChangeToken);
+        const tributeCost = (typeof getTributeCost==='function') ? getTributeCost() : PHASE6.tributeBaseGold;
+        const tributeLeft = (typeof getTributeRemainingToday==='function') ? getTributeRemainingToday() : PHASE6.tributeDailyCap;
+        const tributeAtMax = Number(char.faction||0)>=PHASE6.tributeFactionMax;
+        const tributeDisabled = (tributeLeft<=0)||tributeAtMax||(char.gold||0)<tributeCost;
+        container.innerHTML = `<div class="eq-item-card"><div class="eq-item-name">Crafting Bench</div><div class="eq-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Epic ${char.crafting.shards.epic}</div><div class="eq-item-bonus">Salvage gear &amp; reroll target slot using shards.</div><div class="eq-item-actions"><button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button></div><div class="eq-item-actions compact" style="margin-top:6px"><select id="craft-reroll-slot" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)"><option value="weapon">Weapon</option><option value="chest">Chest</option><option value="legs">Legs</option><option value="feet">Feet</option><option value="offhand">Offhand</option><option value="charm">Charm</option></select><button class="btn" onclick="craftTargetedRerollFromUI()">Targeted Reroll</button></div><div class="eq-item-bonus" style="margin-top:6px">Cost: 10 Common + 6 Magic + 2 Rare + 120g</div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Occultist Reforge</div><div class="eq-item-type">Rerolls one random non-epic gear piece in your inventory.</div><div class="eq-item-bonus">${occultistPrice}g</div><div class="eq-item-actions"><button class="btn" onclick="rerollRandomInventoryItem()">Reforge</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-epic">Mystic Chest</div><div class="eq-item-type">Pay to open a mysterious chest — chance for runes, shards, or gear.</div><div class="eq-item-bonus">${mysticCost}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseMysticChest()">Open</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Faction Tribute</div><div class="eq-item-type">Offer gold for +${PHASE6.tributeFactionPerDonation} faction (daily cap ${PHASE6.tributeDailyCap}).</div><div class="eq-item-bonus">${tributeCost}g · Remaining today: ${tributeLeft}${tributeAtMax?' · MAXED':''}</div><div class="eq-item-actions"><button class="btn${tributeDisabled?'':' active'}" onclick="donateFactionTribute()" ${tributeDisabled?'disabled':''}>Donate</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Name Change Token</div><div class="eq-item-type">Permanently change your character's name. Current: ${char.name}</div><div class="eq-item-bonus">${nameTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseNameChangeToken()" ${(char.gold||0)>=nameTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Race Change Token</div><div class="eq-item-type">Change your race. Must be compatible with ${char.cls}. Current: ${char.race}</div><div class="eq-item-bonus">${raceTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseRaceChangeToken()" ${(char.gold||0)>=raceTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div>`;
+      } else if (section === 'sell') {
+        container.innerHTML = `<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">Sell items from your inventory by rarity. Locked and favorited items are always protected.</div><div style="display:flex;flex-wrap:wrap;gap:6px"><button class="btn" onclick="sellAllJunk()" title="Sell junk"><i class="ti ti-coins"></i> Sell Junk</button><button class="btn" onclick="sellByRarity('Normal')">Sell Common</button><button class="btn" onclick="sellByRarity('Magic')">Sell Magic</button><button class="btn" onclick="sellByRarity('Rare')">Sell Rare</button><button class="btn" onclick="sellByRarity('Epic')">Sell Epic</button><button class="btn danger" onclick="sellAllInventory()" title="Sell everything"><i class="ti ti-trash"></i> Sell All</button></div>`;
       }
+    }
 
-      // Greater potions unlock at level 25.
-      if (char.level >= 25) {
-        shopHtml +=
-          renderPotionCard('Greater Healing Potion', 'Restores 2,500 HP', 'hpGreater', 'healpotions_ghp', 'buyHpPotion_GHP', 'buyHpPotion_GHP_10') +
-          renderPotionCard('Greater Mana Potion', 'Restores 2,500 MP', 'mpGreater', 'manapotions_gmp', 'buyMpPotion_GMP', 'buyMpPotion_GMP_10');
+    function renderShop() {
+      const repNote = document.getElementById('merchant-rep-note');
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (repNote) repNote.textContent = 'Faction: ' + getFactionTier(char.faction||0) + ' (' + (char.faction||0) + ') · Occultist services available.';
+      const potSub = document.getElementById('shop-btn-potions-sub');
+      if (potSub) {
+        const total = (char.healpotions||0)+(char.manapotions||0);
+        potSub.textContent = total > 0 ? total + ' potions owned' : 'Buy & sell potions';
       }
-
-      // Superior potions unlock at level 45.
-      if (char.level >= 45) {
-        shopHtml +=
-          renderPotionCard('Superior Healing Potion', 'Restores 10,000 HP', 'hpSuperior', 'healpotions_shp', 'buyHpPotion_SHP', 'buyHpPotion_SHP_10') +
-          renderPotionCard('Superior Mana Potion', 'Restores 10,000 MP', 'mpSuperior', 'manapotions_smp', 'buyMpPotion_SMP', 'buyMpPotion_SMP_10');
+      // If a shop section popup is open, re-render its content in place
+      if (_activePopup && _activePopup.startsWith('shop-')) {
+        const section = _activePopup.replace('shop-','');
+        const container = document.getElementById('popup-body')?.firstElementChild;
+        if (container) renderShopSection(section, container);
       }
-
-      // Heroic potions unlock at level 60.
-      if (char.level >= 60) {
-        shopHtml +=
-          renderPotionCard('Heroic Healing Potion', 'Restores 30,000 HP', 'hpHeroic', 'healpotions_heroic', 'buyHpPotion_HEROIC', 'buyHpPotion_HEROIC_10') +
-          renderPotionCard('Heroic Mana Potion', 'Restores 30,000 MP', 'mpHeroic', 'manapotions_heroic', 'buyMpPotion_HEROIC', 'buyMpPotion_HEROIC_10');
-      }
-
-      // Epic potions unlock at level 70.
-      if (char.level >= 70) {
-        shopHtml +=
-          renderPotionCard('Epic Healing Potion', 'Restores 75,000 HP', 'hpEpic', 'healpotions_epic', 'buyHpPotion_EPIC', 'buyHpPotion_EPIC_10') +
-          renderPotionCard('Epic Mana Potion', 'Restores 75,000 MP', 'mpEpic', 'manapotions_epic', 'buyMpPotion_EPIC', 'buyMpPotion_EPIC_10');
-      }
-
-      // Legendary potions unlock at level 80.
-      if (char.level >= 80) {
-        shopHtml +=
-          renderPotionCard('Legendary Healing Potion', 'Restores 200,000 HP', 'hpLegendary', 'healpotions_legendary', 'buyHpPotion_LEGENDARY', 'buyHpPotion_LEGENDARY_10') +
-          renderPotionCard('Legendary Mana Potion', 'Restores 200,000 MP', 'mpLegendary', 'manapotions_legendary', 'buyMpPotion_LEGENDARY', 'buyMpPotion_LEGENDARY_10');
-      }
-      const activeMercType = char.mercenary?.type || 'none';
-
-      shopHtml += `
-        <div class="eq-item-card">
-          <div class="eq-item-name">Crafting Bench</div>
-          <div class="eq-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Epic ${char.crafting.shards.epic}</div>
-          <div class="eq-item-bonus">Salvage unlocked gear in inventory and reroll target slot using shards.</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button>
-          </div>
-          <div class="eq-item-actions compact" style="margin-top:6px">
-            <select id="craft-reroll-slot" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
-              <option value="weapon">Weapon</option>
-              <option value="chest">Chest</option>
-              <option value="legs">Legs</option>
-              <option value="feet">Feet</option>
-              <option value="offhand">Offhand</option>
-              <option value="charm">Charm</option>
-            </select>
-            <button class="btn" onclick="craftTargetedRerollFromUI()">Targeted Reroll</button>
-          </div>
-          <div class="eq-item-bonus" style="margin-top:6px">Cost: 10 Common + 6 Magic + 2 Rare + 120g</div>
-        </div>
-      `;
-
-      shopHtml += `
-        <div class="eq-item-card">
-          <div class="eq-item-name">Steel Longsword</div>
-          <div class="eq-item-type">Weapon</div>
-          <div class="eq-item-bonus">+12 ATK · ${steelPrice} Gold</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="buyShopItem('Steel Longsword')">Buy</button>
-          </div>
-        </div>
-
-        <div class="eq-item-card">
-          <div class="eq-item-name">Knight Chestplate</div>
-          <div class="eq-item-type">Armor</div>
-          <div class="eq-item-bonus">+18 DEF · +80 HP · ${chestPrice} Gold</div>
-          <div class="eq-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Knight Chestplate')}</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="buyShopItem('Knight Chestplate')" ${meetsFactionGate(SHOP_FACTION_GATES['Knight Chestplate']) ? '' : 'disabled'}>Buy</button>
-          </div>
-        </div>
-
-        <div class="eq-item-card">
-          <div class="eq-item-name rarity-rare">Recipe Scroll</div>
-          <div class="eq-item-type">Reveals one random unknown Runeword recipe in your compendium.</div>
-          <div class="eq-item-bonus">${getMerchantPrice(PHASE5.recipeScrollPrice)} Gold</div>
-          <div class="eq-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Recipe Scroll')}</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="buyRecipeScroll()" ${meetsFactionGate(SHOP_FACTION_GATES['Recipe Scroll']) ? '' : 'disabled'}>Buy &amp; Read</button>
-          </div>
-        </div>
-      `;
-
-      const bagItems = Object.entries(CONTAINER_ITEMS).filter(([_, data]) => !data.starter);
-      bagItems.forEach(([name, data]) => {
-        const price = getMerchantPrice(data.cost);
-        shopHtml += `
-          <div class="eq-item-card">
-            <div class="eq-item-name">${name}</div>
-            <div class="eq-item-type">Container (${data.slots} slots)</div>
-            <div class="eq-item-bonus">${price} Gold</div>
-            <div class="eq-item-actions">
-              <button class="btn" onclick="buyContainer('${name}')">Buy</button>
-            </div>
-          </div>
-        `;
-      });
-
-      shopHtml += `
-        <div class="eq-item-card">
-          <div class="eq-item-name rarity-magic">Occultist Reforge</div>
-          <div class="eq-item-type">Rerolls one random non-epic gear piece in your inventory.</div>
-          <div class="eq-item-bonus">${occultistPrice} Gold</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="rerollRandomInventoryItem()">Reforge</button>
-          </div>
-        </div>
-      `;
-
-      // Mystic Chest: a repeatable gold sink that gives random rewards (runewords, runes, shards, gear)
-      const mysticChestCost = Math.max(250, Math.floor(150 + char.level * 50));
-      shopHtml += `
-        <div class="eq-item-card">
-          <div class="eq-item-name rarity-epic">Mystic Chest</div>
-          <div class="eq-item-type">Pay to open a mysterious chest — chance for runes, shards, or gear.</div>
-          <div class="eq-item-bonus">${mysticChestCost} Gold</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="purchaseMysticChest()">Open</button>
-          </div>
-        </div>
-      `;
-
-      // Name & Race Change Tokens — premium identity services
-      const nameTokenCost = getMerchantPrice(SHOP_BASE_PRICES.nameChangeToken);
-      const raceTokenCost = getMerchantPrice(SHOP_BASE_PRICES.raceChangeToken);
-      shopHtml += `
-        <div class="eq-item-card">
-          <div class="eq-item-name rarity-legendary">Name Change Token</div>
-          <div class="eq-item-type">A rare scroll inscribed by the Hall of Heralds.</div>
-          <div class="eq-item-bonus">Permanently change your character's name. Current: ${char.name}</div>
-          <div class="eq-item-bonus">${nameTokenCost.toLocaleString()} Gold</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="purchaseNameChangeToken()" ${(char.gold || 0) >= nameTokenCost ? '' : 'disabled'}>Purchase &amp; Use</button>
-          </div>
-        </div>
-        <div class="eq-item-card">
-          <div class="eq-item-name rarity-legendary">Race Change Token</div>
-          <div class="eq-item-type">Ancient elixir of metamorphosis — guarded by the Soulforge.</div>
-          <div class="eq-item-bonus">Permanently change your race. Must remain compatible with your class (${char.cls}). Current: ${char.race}</div>
-          <div class="eq-item-bonus">${raceTokenCost.toLocaleString()} Gold</div>
-          <div class="eq-item-actions">
-            <button class="btn" onclick="purchaseRaceChangeToken()" ${(char.gold || 0) >= raceTokenCost ? '' : 'disabled'}>Purchase &amp; Use</button>
-          </div>
-        </div>
-      `;
-
-      // PHASE 6 — Faction Tribute (gold sink for reputation)
-      const tributeCost = (typeof getTributeCost === 'function') ? getTributeCost() : PHASE6.tributeBaseGold;
-      const tributeLeft = (typeof getTributeRemainingToday === 'function') ? getTributeRemainingToday() : PHASE6.tributeDailyCap;
-      const tributeAtMax = Number(char.faction || 0) >= PHASE6.tributeFactionMax;
-      const tributeDisabled = (tributeLeft <= 0) || tributeAtMax || (char.gold || 0) < tributeCost;
-      shopHtml += `
-        <div class="eq-item-card">
-          <div class="eq-item-name rarity-magic">Faction Tribute</div>
-          <div class="eq-item-type">Offer gold at the shrine for +${PHASE6.tributeFactionPerDonation} faction (daily cap ${PHASE6.tributeDailyCap}).</div>
-          <div class="eq-item-bonus">${tributeCost} Gold · Remaining today: ${tributeLeft}${tributeAtMax ? ' · MAXED' : ''}</div>
-          <div class="eq-item-actions">
-            <button class="btn${tributeDisabled ? '' : ' active'}" onclick="donateFactionTribute()" ${tributeDisabled ? 'disabled' : ''}>Donate</button>
-          </div>
-        </div>
-      `;
-
-      shopGrid.innerHTML = shopHtml;
     }
 
     function renderLootTab() {
@@ -16674,6 +16589,7 @@
       setAutoToggleButtonState('skill-auto-btn', autoUseSkills);
       setAutoToggleButtonState('hp-potion-auto-btn', autoUseHpPotions);
       setAutoToggleButtonState('mp-potion-auto-btn', autoUseMpPotions);
+      setAutoToggleButtonState('shrine-auto-btn', autoUseShrine);
       const maxSkillSlots = getMaxMemorizedSpellSlots(char);
       for (let i = 0; i < 6; i++) {
         const btnId = 'skill-slot-' + (i + 1) + '-btn';
@@ -17005,6 +16921,15 @@
           if (autoUseMpPotions && char.mp < char.maxMp * (autoMpPotionPercent / 100) && totalMpPotions(char) > 0) {
             useMpPotion();
             return;
+          }
+
+          // Auto-shrine: invoke if enabled, affordable, and no shrine active
+          if (autoUseShrine) {
+            const shrineActive = Array.isArray(char.statusEffects) && char.statusEffects.some(e => e && e.id && e.id.startsWith('shrine_') && e.expiresAt > Date.now());
+            if (!shrineActive && char.gold >= getShrineInvokeCost()) {
+              invokeShrine();
+              return;
+            }
           }
 
           // Skill usage is now part of attack behavior
@@ -17723,6 +17648,13 @@
       log('Auto MP potion ' + (autoUseMpPotions ? 'enabled' : 'disabled') + '.', 'info');
     }
 
+    function toggleAutoShrine(event) {
+      event.stopPropagation();
+      autoUseShrine = !autoUseShrine;
+      refreshAutoBattleButtons();
+      log('Auto shrine ' + (autoUseShrine ? 'enabled' : 'disabled') + '.', 'info');
+    }
+
     function updateSpeed(val) {
       tickMs = parseInt(val);
       document.getElementById('speed-label').textContent = (tickMs / 1000).toFixed(1) + 's / action';
@@ -18104,6 +18036,7 @@
       }
       document.getElementById('popup-backdrop').classList.remove('open');
       document.querySelectorAll('.popup-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.shop-section-btn').forEach(b => b.classList.remove('active'));
       try { sessionStorage.removeItem('EQ_activePopup'); } catch(e) {}
       _activePopup = null;
     }
@@ -18688,7 +18621,7 @@
 
         <!-- Herb stash -->
         <div style="font-weight:600;font-size:13px;margin-bottom:6px">🌿 Herb Stash</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:14px">
       `;
 
       HERBS.forEach(herb => {
@@ -18697,17 +18630,17 @@
         const buyPrice = HERB_BUY_PRICES[herb.id];
         const canAfford = char.gold >= buyPrice;
         html += `
-          <div style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px 10px;min-width:110px;flex:1">
+          <div style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px 10px;min-width:0;width:100%">
             <div style="font-size:18px;line-height:1">${herb.emoji}</div>
             <div style="font-weight:600;font-size:12px;margin-top:2px">${herb.name}</div>
             <div style="font-size:11px;color:var(--text-secondary)">${herb.desc}</div>
             <div style="font-size:13px;font-weight:700;margin:4px 0;color:${qty > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}">×${qty}</div>
             ${locked ? `<div style="font-size:10px;color:var(--text-secondary)">Zone ${herb.zone}+ only</div>` : `
-              <div style="display:flex;gap:4px;margin-top:4px">
-                <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 1 for ${buyPrice.toLocaleString()}g" onclick="buyHerb('${herb.id}',1)" ${!canAfford?'disabled':''}>Buy 1 (${buyPrice.toLocaleString()}g)</button>
-                <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 10 for ${(buyPrice*10).toLocaleString()}g total" onclick="buyHerb('${herb.id}',10)" ${char.gold < buyPrice*10?'disabled':''}>×10 (${(buyPrice*10).toLocaleString()}g)</button>
-                <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 100 for ${(buyPrice*100).toLocaleString()}g total" onclick="buyHerb('${herb.id}',100)" ${char.gold < buyPrice*100?'disabled':''}>×100 (${(buyPrice*100).toLocaleString()}g)</button>
-                <button class="btn" style="font-size:10px;padding:2px 6px" title="Buy 1,000 for ${(buyPrice*1000).toLocaleString()}g total" onclick="buyHerb('${herb.id}',1000)" ${char.gold < buyPrice*1000?'disabled':''}>×1000 (${(buyPrice*1000).toLocaleString()}g)</button>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-top:4px">
+                <button class="btn" style="font-size:10px;padding:2px 4px;white-space:normal;line-height:1.15;justify-content:center;text-align:center" title="Buy 1 for ${buyPrice.toLocaleString()}g" onclick="buyHerb('${herb.id}',1)" ${!canAfford?'disabled':''}>Buy 1 (${buyPrice.toLocaleString()}g)</button>
+                <button class="btn" style="font-size:10px;padding:2px 4px;white-space:normal;line-height:1.15;justify-content:center;text-align:center" title="Buy 10 for ${(buyPrice*10).toLocaleString()}g total" onclick="buyHerb('${herb.id}',10)" ${char.gold < buyPrice*10?'disabled':''}>×10 (${(buyPrice*10).toLocaleString()}g)</button>
+                <button class="btn" style="font-size:10px;padding:2px 4px;white-space:normal;line-height:1.15;justify-content:center;text-align:center" title="Buy 100 for ${(buyPrice*100).toLocaleString()}g total" onclick="buyHerb('${herb.id}',100)" ${char.gold < buyPrice*100?'disabled':''}>×100 (${(buyPrice*100).toLocaleString()}g)</button>
+                <button class="btn" style="font-size:10px;padding:2px 4px;white-space:normal;line-height:1.15;justify-content:center;text-align:center" title="Buy 1,000 for ${(buyPrice*1000).toLocaleString()}g total" onclick="buyHerb('${herb.id}',1000)" ${char.gold < buyPrice*1000?'disabled':''}>×1000 (${(buyPrice*1000).toLocaleString()}g)</button>
                 ${qty > 0 ? `<button class="btn" style="font-size:10px;padding:2px 6px;color:#f87171" title="Sell all at 40% of buy price: ${Math.floor(buyPrice*0.4).toLocaleString()}g each" onclick="sellHerb('${herb.id}','all')">Sell All (${(Math.floor(buyPrice*0.4)*qty).toLocaleString()}g)</button>` : ''}
               </div>`}
           </div>`;
@@ -18734,7 +18667,7 @@
 
         html += `
           <div style="background:var(--bg-secondary);border:0.5px solid ${unlocked ? 'var(--border)' : 'transparent'};border-radius:var(--radius-md);padding:10px 12px;opacity:${unlocked?1:0.45}">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:6px">
               <div>
                 <span style="font-size:16px">${recipe.emoji}</span>
                 <span style="font-weight:600;font-size:13px;margin-left:4px">${recipe.name}</span>
@@ -18745,10 +18678,18 @@
                   <button class="btn" style="font-size:10px;padding:1px 6px" onclick="sellAlchemyPotion('${recipe.id}',stock)" title="Sell all ${stock} for ${Math.max(1,Math.floor(getMerchantPrice(SHOP_BASE_PRICES[recipe._priceKey])*0.5))*stock}g">Sell All</button>
                 ` : ''}
               </div>
-              <div style="display:flex;gap:6px">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
                 ${unlocked ? `
-                  <button class="btn${affordable?' active':''}" style="font-size:12px" onclick="brewPotion('${recipe.id}')" ${!affordable?'disabled':''}>Brew (+${recipe.xp} XP)</button>
-                  <button class="btn${affordable?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',5)" ${!affordable?'disabled':''}>×5</button>
+                  ${ab ? (() => {
+                    const enabled = a.autoBrewEnabled[recipe.id] !== false;
+                    const isNext = nextAutoId === recipe.id;
+                    const label = isNext
+                      ? `⚙ Auto: brewing ${ab.count > 1 ? ab.count + '× ' : ''}every ${ab.intervalMs/1000}s`
+                      : `⚙ Auto: ${enabled ? 'On' : 'Off'}`;
+                    const col = enabled ? '#a855f7' : 'var(--text-secondary)';
+                    const bdr = enabled ? '#a855f7' : 'var(--border-md)';
+                    return `<button class="btn${enabled?' active':''}" style="font-size:11px;margin-left:4px;border-color:${bdr};color:${col}" onclick="toggleAutoBrewRecipe('${recipe.id}')" title="Toggle auto-brew for this recipe">${label}</button>`;
+                  })() : ''}
                   ${skill >= 15 ? `<button class="btn${canBatchAfford(recipe,10)?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',10)" ${!canBatchAfford(recipe,10)?'disabled':''}>×10</button>` : ''}
                   ${skill >= 40 ? `<button class="btn${canBatchAfford(recipe,50)?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',50)" ${!canBatchAfford(recipe,50)?'disabled':''}>×50</button>` : ''}
                   ${skill >= 70 ? `<button class="btn${canBatchAfford(recipe,100)?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',100)" ${!canBatchAfford(recipe,100)?'disabled':''}>×100</button>` : ''}
