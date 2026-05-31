@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>EmberQuest
     RPG - Version
-    1.3.5</title>
+    1.3.10</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -1088,6 +1088,58 @@
       color: var(--text-secondary);
     }
 
+    /* ── Popup panel (modal window) ── */
+    #popup-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 50;
+      display: none; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    #popup-backdrop.open { display: flex; }
+    #popup-window {
+      width: min(680px, 100%);
+      max-height: 88vh;
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #popup-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 0.5px solid var(--border);
+      flex-shrink: 0;
+    }
+    #popup-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    #popup-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-secondary); font-size: 20px;
+      padding: 2px 6px; border-radius: var(--radius-md); line-height: 1;
+    }
+    #popup-close:hover { background: var(--bg-secondary); }
+    #popup-body {
+      flex: 1; overflow-y: auto; padding: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .popup-toolbar {
+      display: flex; gap: 4px; flex-wrap: wrap;
+      padding: 0 0 8px; margin-bottom: 4px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .popup-btn {
+      font-size: 11px; padding: 4px 9px;
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--border); background: var(--bg-secondary);
+      cursor: pointer; color: var(--text-secondary); touch-action: manipulation; white-space: nowrap;
+    }
+    .popup-btn:hover, .popup-btn.active {
+      background: var(--bg-primary); color: var(--text-primary); border-color: var(--border-md);
+    }
+    #screen-game.ui-layout-mobile .popup-btn { min-height: 40px; font-size: 12px; padding: 6px 11px; }
+
     .toast-host {
       position: fixed;
       right: 14px;
@@ -1279,7 +1331,7 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 12px;
+      padding: 10px;
       position: sticky;
       top: 0;
     }
@@ -1290,23 +1342,23 @@
       text-transform: uppercase;
       letter-spacing: .08em;
       color: var(--text-secondary);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .eq-paperdoll-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 6px;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
     }
 
     .eq-slot {
       background: var(--bg-primary);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      padding: 7px 9px;
+      padding: 6px 8px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       overflow: hidden;
       transition: border-color .15s;
     }
@@ -1321,6 +1373,9 @@
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: .07em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .eq-slot-item {
@@ -1358,6 +1413,29 @@
       padding: 3px 7px;
       flex: 1 1 auto;
       white-space: nowrap;
+    }
+
+    .eq-total-stats {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid var(--border);
+      font-size: 10px;
+    }
+
+    .eq-total-chip {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 6px;
+      border-radius: var(--radius-md);
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-secondary);
     }
 
     /* Bag area */
@@ -2173,6 +2251,16 @@
       color: #6fdc6f;
     }
 
+    #screen-game .eq-total-stats {
+      border-top-color: #2a2f3e;
+    }
+
+    #screen-game .eq-total-chip {
+      background: rgba(8,8,12,0.55);
+      border-color: #3a3f55;
+      color: #c8c0a8;
+    }
+
     /* Bag tab buttons — small EQ-style pill tabs */
     #screen-game .bag-tab-btn {
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -2863,7 +2951,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.3.4</span>
+        1.3.10</span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -2899,6 +2987,8 @@
         onclick="toggleLayoutMode()"
         style="font-size:11px;padding:4px 10px">Layout:
         Desktop</button>
+      <button class="btn" id="pbtn-leaderboard" onclick="openPopup('leaderboard')" style="font-size:11px;padding:4px 10px" title="Leaderboard">🏅</button>
+      <button class="btn" id="pbtn-about" onclick="openPopup('about')" style="font-size:11px;padding:4px 10px" title="About">ℹ</button>
     </div>
     <input
       id="import-save-input"
@@ -3040,9 +3130,12 @@
           <h3>
             Character
           </h3>
-          <div
-            style="font-size:13px;font-weight:500"
-            id="char-name-disp">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px">
+            <div
+              style="font-size:13px;font-weight:500"
+              id="char-name-disp">
+            </div>
+            <button class="popup-btn" id="pbtn-prestige" onclick="openPopup('prestige')" title="Prestige" style="padding:1px 7px;font-size:10px;flex-shrink:0">🏆 Prestige</button>
           </div>
           <div
             style="font-size:11px;color:var(--text-secondary);margin-bottom:6px"
@@ -3098,9 +3191,7 @@
           </div>
           <div
             class="stat-row">
-            <span
-              class="stat-label">AA
-              Points</span><span
+            <span class="stat-label" style="display:flex;align-items:center;gap:4px">AA Points <button class="popup-btn" id="pbtn-aa" onclick="openPopup('aa')" title="Alternate Ascension" style="padding:1px 6px;font-size:10px;line-height:1.4"><span id="aa-tab-label">✨ AA</span></button></span><span
               class="stat-val"
               id="aa-points-disp">0</span>
           </div>
@@ -3219,9 +3310,9 @@
           <div
             style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
             <div
-              style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">
-              Spell
-              Gems
+              style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <div style="font-size:11px;color:var(--text-secondary)">Spell Gems</div>
+              <button class="popup-btn" id="pbtn-spells" onclick="openPopup('spells')" title="Spellbook" style="padding:1px 7px;font-size:10px">🔮 Spells</button>
             </div>
 
             <div style="display:flex;gap:4px;margin-top:0">
@@ -3245,7 +3336,10 @@
             </div>
 
             <div id="compact-group-panel" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
-              <div style="font-size:11px;color:var(--text-secondary);margin-bottom:5px">Group</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+                <div style="font-size:11px;color:var(--text-secondary)">Group</div>
+                <button class="popup-btn" id="pbtn-group" onclick="openPopup('group')" title="Group" style="padding:1px 7px;font-size:10px">👥 Group</button>
+              </div>
               <div id="compact-group-list" style="display:flex;flex-direction:column;gap:4px"></div>
             </div>
 
@@ -3283,36 +3377,349 @@
         id="center-panel"
         class="panel"
         style="display:flex;flex-direction:column;gap:8px">
-        <div
-          class="tab-bar">
-          <!-- ⚔ Combat cluster -->
+        <div class="tab-bar">
           <div class="tab active" onclick="switchTab('combat')">⚔ Combat</div>
           <div class="tab" onclick="switchTab('zone')">🗺 Zones</div>
-          <div class="tab" onclick="switchTab('dungeon')">🏛 Dungeon</div>
-          <div class="tab-sep"></div>
-          <!-- 📜 Progress cluster -->
-          <div class="tab" onclick="switchTab('quests')">📜 Quests</div>
-          <div class="tab" onclick="switchTab('aa')"><span id="aa-tab-label">✨ AA</span></div>
-          <div class="tab" onclick="switchTab('prestige')">🏆 Prestige</div>
-          <div class="tab-sep"></div>
-          <!-- 🎒 Character cluster -->
           <div class="tab" onclick="switchTab('inv')">🎒 Inventory</div>
-          <div class="tab" onclick="switchTab('spells')">🔮 Spells</div>
-          <div class="tab" onclick="switchTab('runes')">💎 Runes</div>
-          <div class="tab-sep"></div>
-          <!-- 🏪 Economy cluster -->
           <div class="tab" onclick="switchTab('shop')">🏪 Shop</div>
-          <div class="tab" onclick="switchTab('loot')">🔍 Loot Filter</div>
-          <div class="tab" onclick="switchTab('bank')">🏦 Bank</div>
-          <div class="tab-sep"></div>
-          <!-- 👥 Social cluster -->
-          <div class="tab" onclick="switchTab('group')">👥 Group</div>
-          <div class="tab" onclick="switchTab('tradeskill')">⚗️ Alchemy</div>
-          <div class="tab" onclick="switchTab('leaderboard')">🏅 Leaderboard</div>
-          <div class="tab-sep"></div>
-          <!-- ℹ Meta -->
-          <div class="tab" onclick="switchTab('about')">ℹ About</div>
         </div>
+        <!-- Shared popup modal -->
+        <div id="popup-backdrop" onclick="if(event.target===this)closePopup()">
+          <div id="popup-window" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+            <div id="popup-header">
+              <span id="popup-title"></span>
+              <button id="popup-close" onclick="closePopup()" aria-label="Close">&#x2715;</button>
+            </div>
+            <div id="popup-body"></div>
+          </div>
+        </div>
+        <!-- Hidden pool: popup tab content lives here when not shown -->
+        <div id="popup-pool" style="display:none">
+<div
+          id="tab-dungeon"
+          style="display:none">
+          <h3>
+            Dungeon
+          </h3>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button
+              class="btn"
+              onclick="enterDungeon()"><i
+                class="ti ti-stairs"></i>
+              Enter
+              Dungeon</button>
+            <button
+              class="btn"
+              onclick="leaveDungeon()"><i
+                class="ti ti-door-exit"></i>
+              Leave
+              Dungeon</button>
+            <button
+              class="btn"
+              onclick="advanceDungeonFloor()">Descend
+              One
+              Floor</button>
+          </div>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            <label
+              style="font-size:11px;color:var(--text-secondary)">Dungeon
+              Modifier:</label>
+            <select
+              id="dungeon-modifier-select"
+              style="min-width:170px;font-size:12px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)"></select>
+            <button
+              class="btn"
+              onclick="setDungeonModifierFromUI()">Apply</button>
+          </div>
+          <div
+            id="dungeon-info"
+            style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
+          </div>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            <button
+              class="btn"
+              onclick="toggleDungeonOption('autoDescend')">Auto-Descend:
+              <span
+                id="dungeon-auto-descend">Off</span></button>
+            <button
+              class="btn"
+              onclick="toggleDungeonOption('autoLeaveOnDeath')">Auto-Leave
+              on
+              Death:
+              <span
+                id="dungeon-auto-leave">Off</span></button>
+          </div>
+          <div
+            id="dungeon-mod-details"
+            style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px;margin-bottom:8px;font-size:11px;color:var(--text-secondary)">
+          </div>
+        </div>
+<div
+          id="tab-quests"
+          style="display:none">
+          <h3>
+            Quests
+          </h3>
+          <div
+            id="quest-list">
+          </div>
+        </div>
+<div
+          id="tab-loot"
+          style="display:none">
+          <div
+            id="loot-rule-panel"
+            style="margin-top:8px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-md);display:grid;gap:8px;">
+            <div
+              style="font-size:11px;font-weight:600;">
+              Loot
+              Filter
+              Options
+            </div>
+            <div
+              id="loot-filter-options"
+              style="display:flex;flex-wrap:wrap;gap:6px;">
+            </div>
+            <div
+              style="font-size:11px;font-weight:600;">
+              Advanced
+              Loot
+              Rules
+            </div>
+            <div
+              style="display:flex;gap:6px;flex-wrap:wrap;">
+              <input
+                id="loot-filter-keyword"
+                type="text"
+                placeholder="Keyword (bone, rusty, etc)"
+                style="flex:1;min-width:140px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);">
+              <select
+                id="loot-filter-action"
+                style="font-size:11px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);">
+                <option
+                  value="keep">
+                  KEEP
+                </option>
+                <option
+                  value="sell">
+                  SELL
+                </option>
+                <option
+                  value="ignore">
+                  IGNORE
+                </option>
+              </select>
+              <button
+                class="btn"
+                onclick="addLootFilterRule()">Add
+                Rule</button>
+            </div>
+            <div
+              id="loot-filter-rule-list"
+              style="display:flex;flex-direction:column;gap:4px;">
+            </div>
+          </div>
+        </div>
+<div
+          id="tab-runes"
+          style="display:none">
+          <h3>
+            Runes
+          </h3>
+          <div
+            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button
+              class="btn"
+              onclick="stashAllRunesFromInventory()"><i
+                class="ti ti-box"></i>
+              Stash
+              All
+              Runes</button>
+            <button
+              class="btn"
+              onclick="transmuteRunes()"><i
+                class="ti ti-arrows-shuffle"></i>
+              Quick
+              Transmute</button>
+          </div>
+          <div
+            id="rune-stash-meta"
+            class="bag-meta">
+          </div>
+          <div
+            id="rune-stash-list"
+            class="eq-bag-grid"
+            style="margin-bottom:10px">
+          </div>
+          <h3
+            style="margin-bottom:6px">
+            Runeword
+            Compendium
+          </h3>
+          <div
+            id="runeword-compendium"
+            class="eq-bag-grid"
+            style="margin-bottom:10px">
+          </div>
+          <h3 style="margin-bottom:6px">Focused Transmutes</h3>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">
+            Spend 3 runes of the same tier + gold to upgrade to the next tier.
+          </div>
+          <div
+            id="focused-transmute-list"
+            class="eq-bag-grid"
+            style="margin-bottom:10px">
+          </div>
+          <div
+            style="font-size:10px;color:var(--text-secondary)">
+            Focused
+            transmute
+            options
+            are
+            available
+            in the
+            Shop
+            tab.
+          </div>
+        </div>
+<div
+          id="tab-spells"
+          style="display:none">
+          <h3>
+            Spellbook
+          </h3>
+          <div
+            id="spellbook-list"
+            style="display:flex;flex-direction:column">
+          </div>
+        </div>
+<div
+          id="tab-aa"
+          style="display:none">
+          <h3>
+            Alternate
+            Ascension
+          </h3>
+          <div
+            id="aa-list">
+          </div>
+        </div>
+<div
+          id="tab-prestige"
+          style="display:none">
+          <h3>
+            Prestige
+            and
+            Ascension
+          </h3>
+          <div
+            id="prestige-list">
+          </div>
+        </div>
+<div
+          id="tab-bank"
+          style="display:none">
+          <h3 style="margin-bottom:6px">Shared Bank</h3>
+          <div id="bank-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Items here are shared across all your characters in this save.
+          </div>
+          <div class="eq-inventory-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <div style="font-weight:600;margin-bottom:6px">Character Inventory</div>
+              <div id="bank-inv-meta" class="bag-meta" style="margin-bottom:6px"></div>
+              <div id="bank-inv-list" class="eq-bag-grid"></div>
+            </div>
+            <div>
+              <div style="font-weight:600;margin-bottom:6px">Shared Bank</div>
+              <div id="bank-list-meta" class="bag-meta" style="margin-bottom:6px"></div>
+              <div id="bank-list" class="eq-bag-grid"></div>
+            </div>
+          </div>
+        </div>
+<div
+          id="tab-group"
+          style="display:none">
+          <h3 style="margin-bottom:6px">Group</h3>
+          <div id="group-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Group your other characters to share experience. Each member reduces XP per kill. Max 6 total (you + mercenaries + grouped characters).
+          </div>
+          <div id="group-summary" style="margin-bottom:10px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px"></div>
+          <div style="font-weight:600;margin-bottom:6px">Available Characters</div>
+          <div id="group-roster-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+<div
+          id="tab-leaderboard"
+          style="display:none">
+          <h3 style="margin-bottom:4px">Leaderboard</h3>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Characters ranked by overall power. When you're signed in, this shows players across the whole cloud; offline, it shows the characters on this device.
+          </div>
+          <div id="leaderboard-list"></div>
+        </div>
+<div
+          id="tab-tradeskill"
+          style="display:none">
+          <div id="tradeskill-panel"></div>
+        </div>
+<div
+          id="tab-about"
+          style="display:none">
+          <h3 style="margin-bottom:4px">About EmberQuest</h3>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Version 1.3.10 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+          </div>
+
+          <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
+            EmberQuest is a love-letter to the late-90s era of online roleplaying games. Roll a character, pick a hunting ground, and grind your way from the newbie fields to the endgame — by hand or on full auto-battle. Everything (markup, styles, and game logic) lives in one self-contained page, and your progress is saved locally in your browser.
+          </div>
+
+          <h4 style="margin:12px 0 6px">Features</h4>
+          <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0;padding-left:18px">
+            <li><strong>Deep character creation.</strong> 16 races and 16 classes, with up to 24 character slots per account.</li>
+            <li><strong>Six ability scores.</strong> A D&amp;D-style STR/DEX/CON/INT/WIS/CHA layer drives attack, crit, dodge, mitigation, spell power, mana regen, and gold find. Scores grow with level, gear, and Ascension.</li>
+            <li><strong>Turn-based combat.</strong> HP/MP, attack/defense, criticals, dodges, weapon procs, item sets, and a colour-coded combat log.</li>
+            <li><strong>Zones from level 1 to 88.</strong> Each hunting ground has its own monsters, XP/gold multipliers, and a rare chase item.</li>
+            <li><strong>Loot, affixes, and sets.</strong> Random drops roll prefix/suffix affixes (now including ability-score rolls), set bonuses, and six rarity tiers from Common to Mythic.</li>
+            <li><strong>Runes &amp; runewords.</strong> Collect runes, choose which to socket, and forge runewords that grant stats and special effects (crit, lifesteal, gold/XP find) and evolve through tiers with use.</li>
+            <li><strong>Spellbook &amp; gems.</strong> Casters memorise spells into gem slots and meditate to recover mana.</li>
+            <li><strong>Quests &amp; elite contracts.</strong> Kill quests, a class epic quest with a legendary reward, and a rotating elite-contract chain with AFK pinning.</li>
+            <li><strong>Auto-Battle (AFK).</strong> Auto-fight, loot, rest, pot, and restock toward a chosen goal; long offline sessions are simulated on return.</li>
+            <li><strong>Alternate Ascension.</strong> Unlocks at level 51 — spend points on archetype trees, unique class nodes, a capstone, and attribute nodes that raise your six ability scores.</li>
+            <li><strong>Prestige.</strong> At the level cap, reset for permanent perks.</li>
+            <li><strong>Companions in the Group tab.</strong> Pets and per-mercenary weapons, plus grouping your own alts to share experience.</li>
+            <li><strong>Shop &amp; crafting.</strong> Tiered potions that scale as you level, a crafting bench, targeted rerolls, occultist reforge, and rune transmutation.</li>
+          </ul>
+
+          <h4 style="margin:14px 0 6px">Tips</h4>
+          <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0;padding-left:18px">
+            <li>The <strong>Combat</strong> tab is your main view; the <strong>Zones</strong> tab is where you travel to tougher hunting grounds.</li>
+            <li><strong>AA</strong> and <strong>Prestige</strong> unlock at levels 51 and the cap respectively.</li>
+            <li>Configure the <strong>Auto-Battle</strong> panel on the right, and pin an elite contract from the Quests tab so AFK chases the target you want.</li>
+          </ul>
+
+          <h4 style="margin:14px 0 6px">Saving &amp; Backups</h4>
+          <div style="font-size:12px;line-height:1.55;color:var(--text-secondary);margin-bottom:10px">
+            Progress autosaves to your browser's local storage and syncs to the cloud when you're signed in. Clearing your browser data can erase local characters, so use <strong>Export</strong> on the topbar to download a JSON backup; <strong>Import</strong> restores it (and offers to back up your current save first).
+          </div>
+
+          <h4 style="margin:14px 0 6px">Credits &amp; License</h4>
+          <div style="font-size:12px;line-height:1.55;color:var(--text-secondary)">
+            A fan tribute to the classic massively-multiplayer RPGs of the late 1990s, made in the spirit of homage and not affiliated with or endorsed by any rights holder. UI icons from <a href="https://tabler-icons.io/" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Tabler Icons</a>. Released under the <strong>GNU General Public License v3.0</strong> — free to use, modify, and redistribute, with derivatives shipping their source under the same license.
+          </div>
+
+          <div style="font-size:12px;line-height:1.55;margin-top:12px">
+            <a href="https://github.com/TheDroidYourLookingFor/EmberQuest" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Source on GitHub</a>
+            &nbsp;·&nbsp;
+            <a href="https://thedroidyourlookingfor.github.io/EmberQuest/" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Play in your browser</a>
+          </div>
+
+          <h4 style="margin:14px 0 6px">⚔ Hardcore Hall of Fame</h4>
+          <div id="hall-of-fame" style="font-size:12px;color:var(--text-secondary)">Loading...</div>
+        </div>
+</div>
         <div
           id="tab-combat">
           <div
@@ -3484,6 +3891,8 @@
               title="Challenge this zone's boss (30 min cooldown)"><i
                 class="ti ti-flame"></i>
               Hunt Boss</button>
+            <button id="pbtn-quests" class="btn" onclick="openPopup('quests')" title="Quests"><i class="ti ti-scroll"></i> Quests</button>
+            <button id="pbtn-dungeon" class="btn" onclick="openPopup('dungeon')" title="Dungeon"><i class="ti ti-stairs"></i> Dungeon</button>
           </div>
         </div>
         <div
@@ -3513,9 +3922,9 @@
             style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
             <button
               class="btn"
-              onclick="switchTab('dungeon')">Open
+              onclick="openPopup('dungeon')">Open
               Dungeon
-              Tab</button>
+              Panel</button>
           </div>
           <div
             id="zone-contract-tracker"
@@ -3551,20 +3960,17 @@
             id="zone-list">
           </div>
         </div>
-        <div
-          id="tab-quests"
-          style="display:none">
-          <h3>
-            Quests
-          </h3>
-          <div
-            id="quest-list">
-          </div>
-        </div>
+        
         <div
           id="tab-inv"
           style="display:none">
           <h3 style="display:none">Inventory</h3>
+          <div style="display:flex;gap:4px;margin-bottom:6px">
+            <button class="popup-btn" id="pbtn-loot" onclick="openPopup('loot')">🔍 Loot Filter</button>
+            <button class="popup-btn" id="pbtn-bank" onclick="openPopup('bank')">🏦 Bank</button>
+            <button class="popup-btn" id="pbtn-runes" onclick="openPopup('runes')">💎 Runes</button>
+            <button class="popup-btn" id="pbtn-tradeskill" onclick="openPopup('tradeskill')">⚗️ Alchemy</button>
+          </div>
 
           <div
             class="eq-inventory-layout">
@@ -3573,86 +3979,41 @@
               class="eq-paperdoll">
               <h3>Equipped</h3>
 
+              <div class="eq-total-stats" id="eq-total-stats-bar">
+                <span class="eq-total-chip" id="eq-total-atk" title="Total ATK from gear"><i class="ti ti-sword" style="font-size:10px;color:#F97316"></i> <span>—</span></span>
+                <span class="eq-total-chip" id="eq-total-def" title="Total DEF from gear"><i class="ti ti-shield" style="font-size:10px;color:#3B82F6"></i> <span>—</span></span>
+                <span class="eq-total-chip" id="eq-total-hp" title="Total HP from gear"><i class="ti ti-heart" style="font-size:10px;color:#22C55E"></i> <span>—</span></span>
+                <span class="eq-total-chip" id="eq-total-mp" title="Total MP from gear"><i class="ti ti-droplet" style="font-size:10px;color:#A855F7"></i> <span>—</span></span>
+              </div>
+
               <div
                 class="eq-paperdoll-grid">
-                <div
-                  class="eq-slot">
-                  <div
-                    class="eq-slot-name">
-                    Weapon
-                  </div>
-                  <div
-                    id="slot-weapon"
-                    class="eq-slot-item">
-                    Empty
-                  </div>
+                <div class="eq-slot">
+                  <div class="eq-slot-name"><i class="ti ti-sword" style="font-size:10px"></i> Weapon</div>
+                  <div id="slot-weapon" class="eq-slot-item">Empty</div>
                 </div>
-
-                <div
-                  class="eq-slot">
-                  <div
-                    class="eq-slot-name">
-                    Chest
-                  </div>
-                  <div
-                    id="slot-chest"
-                    class="eq-slot-item">
-                    Empty
-                  </div>
+                <div class="eq-slot">
+                  <div class="eq-slot-name"><i class="ti ti-shield" style="font-size:10px"></i> Offhand</div>
+                  <div id="slot-offhand" class="eq-slot-item">Empty</div>
                 </div>
-
-                <div
-                  class="eq-slot">
-                  <div
-                    class="eq-slot-name">
-                    Legs
-                  </div>
-                  <div
-                    id="slot-legs"
-                    class="eq-slot-item">
-                    Empty
-                  </div>
+                <div class="eq-slot">
+                  <div class="eq-slot-name"><i class="ti ti-shirt" style="font-size:10px"></i> Chest</div>
+                  <div id="slot-chest" class="eq-slot-item">Empty</div>
                 </div>
-
-                <div
-                  class="eq-slot">
-                  <div
-                    class="eq-slot-name">
-                    Feet
-                  </div>
-                  <div
-                    id="slot-feet"
-                    class="eq-slot-item">
-                    Empty
-                  </div>
+                <div class="eq-slot">
+                  <div class="eq-slot-name"><i class="ti ti-shoe" style="font-size:10px"></i> Legs</div>
+                  <div id="slot-legs" class="eq-slot-item">Empty</div>
                 </div>
-
-                <div
-                  class="eq-slot">
-                  <div
-                    class="eq-slot-name">
-                    Offhand
-                  </div>
-                  <div
-                    id="slot-offhand"
-                    class="eq-slot-item">
-                    Empty
-                  </div>
+                <div class="eq-slot">
+                  <div class="eq-slot-name"><i class="ti ti-sneaker" style="font-size:10px"></i> Feet</div>
+                  <div id="slot-feet" class="eq-slot-item">Empty</div>
                 </div>
-
-                <div
-                  class="eq-slot">
-                  <div
-                    class="eq-slot-name">
-                    Charm
-                  </div>
-                  <div
-                    id="slot-charm"
-                    class="eq-slot-item">
-                    Empty
-                  </div>
+                <div class="eq-slot">
+                  <div class="eq-slot-name"><i class="ti ti-sparkles" style="font-size:10px"></i> Charm</div>
+                  <div id="slot-charm" class="eq-slot-item">Empty</div>
                 </div>
               </div>
+
             </div>
 
             <div
@@ -3675,6 +4036,18 @@
                   <option value="misc">Misc</option>
                   <option value="magicplus">Magic+</option>
                 </select>
+                <select id="inv-armorslot-select" onchange="setArmorSlotFilter(this.value)" style="display:none;font-size:11px;padding:4px 9px;border:1px solid var(--border-md);border-radius:20px;background:var(--bg-primary);color:var(--text-primary);cursor:pointer">
+                  <option value="all">Slot: All</option>
+                  <option value="head">Head</option>
+                  <option value="shoulders">Shoulders</option>
+                  <option value="back">Back</option>
+                  <option value="chest">Chest</option>
+                  <option value="wrist">Wrists</option>
+                  <option value="hands">Hands</option>
+                  <option value="waist">Waist</option>
+                  <option value="legs">Legs</option>
+                  <option value="feet">Feet</option>
+                </select>
                 <label style="font-size:11px;color:var(--text-secondary);display:flex;align-items:center;gap:5px;cursor:pointer">
                   <input type="checkbox" id="inv-overflow-toggle" onchange="toggleAutoVendorOverflow(this.checked)"> Auto-vendor overflow
                 </label>
@@ -3695,186 +4068,9 @@
 
           </div>
         </div>
-        <div
-          id="tab-dungeon"
-          style="display:none">
-          <h3>
-            Dungeon
-          </h3>
-          <div
-            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-            <button
-              class="btn"
-              onclick="enterDungeon()"><i
-                class="ti ti-stairs"></i>
-              Enter
-              Dungeon</button>
-            <button
-              class="btn"
-              onclick="leaveDungeon()"><i
-                class="ti ti-door-exit"></i>
-              Leave
-              Dungeon</button>
-            <button
-              class="btn"
-              onclick="advanceDungeonFloor()">Descend
-              One
-              Floor</button>
-          </div>
-          <div
-            style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
-            <label
-              style="font-size:11px;color:var(--text-secondary)">Dungeon
-              Modifier:</label>
-            <select
-              id="dungeon-modifier-select"
-              style="min-width:170px;font-size:12px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)"></select>
-            <button
-              class="btn"
-              onclick="setDungeonModifierFromUI()">Apply</button>
-          </div>
-          <div
-            id="dungeon-info"
-            style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">
-          </div>
-          <div
-            style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
-            <button
-              class="btn"
-              onclick="toggleDungeonOption('autoDescend')">Auto-Descend:
-              <span
-                id="dungeon-auto-descend">Off</span></button>
-            <button
-              class="btn"
-              onclick="toggleDungeonOption('autoLeaveOnDeath')">Auto-Leave
-              on
-              Death:
-              <span
-                id="dungeon-auto-leave">Off</span></button>
-          </div>
-          <div
-            id="dungeon-mod-details"
-            style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px;margin-bottom:8px;font-size:11px;color:var(--text-secondary)">
-          </div>
-        </div>
-        <div
-          id="tab-loot"
-          style="display:none">
-          <div
-            id="loot-rule-panel"
-            style="margin-top:8px;padding:8px;background:var(--bg-secondary);border-radius:var(--radius-md);display:grid;gap:8px;">
-            <div
-              style="font-size:11px;font-weight:600;">
-              Loot
-              Filter
-              Options
-            </div>
-            <div
-              id="loot-filter-options"
-              style="display:flex;flex-wrap:wrap;gap:6px;">
-            </div>
-            <div
-              style="font-size:11px;font-weight:600;">
-              Advanced
-              Loot
-              Rules
-            </div>
-            <div
-              style="display:flex;gap:6px;flex-wrap:wrap;">
-              <input
-                id="loot-filter-keyword"
-                type="text"
-                placeholder="Keyword (bone, rusty, etc)"
-                style="flex:1;min-width:140px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);">
-              <select
-                id="loot-filter-action"
-                style="font-size:11px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);">
-                <option
-                  value="keep">
-                  KEEP
-                </option>
-                <option
-                  value="sell">
-                  SELL
-                </option>
-                <option
-                  value="ignore">
-                  IGNORE
-                </option>
-              </select>
-              <button
-                class="btn"
-                onclick="addLootFilterRule()">Add
-                Rule</button>
-            </div>
-            <div
-              id="loot-filter-rule-list"
-              style="display:flex;flex-direction:column;gap:4px;">
-            </div>
-          </div>
-        </div>
-        <div
-          id="tab-runes"
-          style="display:none">
-          <h3>
-            Runes
-          </h3>
-          <div
-            style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-            <button
-              class="btn"
-              onclick="stashAllRunesFromInventory()"><i
-                class="ti ti-box"></i>
-              Stash
-              All
-              Runes</button>
-            <button
-              class="btn"
-              onclick="transmuteRunes()"><i
-                class="ti ti-arrows-shuffle"></i>
-              Quick
-              Transmute</button>
-          </div>
-          <div
-            id="rune-stash-meta"
-            class="bag-meta">
-          </div>
-          <div
-            id="rune-stash-list"
-            class="eq-bag-grid"
-            style="margin-bottom:10px">
-          </div>
-          <h3
-            style="margin-bottom:6px">
-            Runeword
-            Compendium
-          </h3>
-          <div
-            id="runeword-compendium"
-            class="eq-bag-grid"
-            style="margin-bottom:10px">
-          </div>
-          <h3 style="margin-bottom:6px">Focused Transmutes</h3>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">
-            Spend 3 runes of the same tier + gold to upgrade to the next tier.
-          </div>
-          <div
-            id="focused-transmute-list"
-            class="eq-bag-grid"
-            style="margin-bottom:10px">
-          </div>
-          <div
-            style="font-size:10px;color:var(--text-secondary)">
-            Focused
-            transmute
-            options
-            are
-            available
-            in the
-            Shop
-            tab.
-          </div>
-        </div>
+        
+        
+        
         <div
           id="tab-shop"
           style="display:none">
@@ -3920,140 +4116,14 @@
             <!-- Rendered dynamically via JavaScript -->
           </div>
         </div>
-        <div
-          id="tab-spells"
-          style="display:none">
-          <h3>
-            Spellbook
-          </h3>
-          <div
-            id="spellbook-list"
-            style="display:flex;flex-direction:column">
-          </div>
-        </div>
-        <div
-          id="tab-aa"
-          style="display:none">
-          <h3>
-            Alternate
-            Ascension
-          </h3>
-          <div
-            id="aa-list">
-          </div>
-        </div>
-        <div
-          id="tab-prestige"
-          style="display:none">
-          <h3>
-            Prestige
-            and
-            Ascension
-          </h3>
-          <div
-            id="prestige-list">
-          </div>
-        </div>
-        <div
-          id="tab-bank"
-          style="display:none">
-          <h3 style="margin-bottom:6px">Shared Bank</h3>
-          <div id="bank-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Items here are shared across all your characters in this save.
-          </div>
-          <div class="eq-inventory-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div>
-              <div style="font-weight:600;margin-bottom:6px">Character Inventory</div>
-              <div id="bank-inv-meta" class="bag-meta" style="margin-bottom:6px"></div>
-              <div id="bank-inv-list" class="eq-bag-grid"></div>
-            </div>
-            <div>
-              <div style="font-weight:600;margin-bottom:6px">Shared Bank</div>
-              <div id="bank-list-meta" class="bag-meta" style="margin-bottom:6px"></div>
-              <div id="bank-list" class="eq-bag-grid"></div>
-            </div>
-          </div>
-        </div>
-        <div
-          id="tab-group"
-          style="display:none">
-          <h3 style="margin-bottom:6px">Group</h3>
-          <div id="group-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Group your other characters to share experience. Each member reduces XP per kill. Max 6 total (you + mercenaries + grouped characters).
-          </div>
-          <div id="group-summary" style="margin-bottom:10px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px"></div>
-          <div style="font-weight:600;margin-bottom:6px">Available Characters</div>
-          <div id="group-roster-list" style="display:flex;flex-direction:column;gap:6px"></div>
-        </div>
-        <div
-          id="tab-leaderboard"
-          style="display:none">
-          <h3 style="margin-bottom:4px">Leaderboard</h3>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Characters ranked by overall power. When you're signed in, this shows players across the whole cloud; offline, it shows the characters on this device.
-          </div>
-          <div id="leaderboard-list"></div>
-        </div>
-        <div
-          id="tab-tradeskill"
-          style="display:none">
-          <div id="tradeskill-panel"></div>
-        </div>
-                <div
-          id="tab-about"
-          style="display:none">
-          <h3 style="margin-bottom:4px">About EmberQuest</h3>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.3.4 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
-          </div>
-
-          <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
-            EmberQuest is a love-letter to the late-90s era of online roleplaying games. Roll a character, pick a hunting ground, and grind your way from the newbie fields to the endgame — by hand or on full auto-battle. Everything (markup, styles, and game logic) lives in one self-contained page, and your progress is saved locally in your browser.
-          </div>
-
-          <h4 style="margin:12px 0 6px">Features</h4>
-          <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0;padding-left:18px">
-            <li><strong>Deep character creation.</strong> 16 races and 16 classes, with up to 24 character slots per account.</li>
-            <li><strong>Six ability scores.</strong> A D&amp;D-style STR/DEX/CON/INT/WIS/CHA layer drives attack, crit, dodge, mitigation, spell power, mana regen, and gold find. Scores grow with level, gear, and Ascension.</li>
-            <li><strong>Turn-based combat.</strong> HP/MP, attack/defense, criticals, dodges, weapon procs, item sets, and a colour-coded combat log.</li>
-            <li><strong>Zones from level 1 to 88.</strong> Each hunting ground has its own monsters, XP/gold multipliers, and a rare chase item.</li>
-            <li><strong>Loot, affixes, and sets.</strong> Random drops roll prefix/suffix affixes (now including ability-score rolls), set bonuses, and six rarity tiers from Common to Mythic.</li>
-            <li><strong>Runes &amp; runewords.</strong> Collect runes, choose which to socket, and forge runewords that grant stats and special effects (crit, lifesteal, gold/XP find) and evolve through tiers with use.</li>
-            <li><strong>Spellbook &amp; gems.</strong> Casters memorise spells into gem slots and meditate to recover mana.</li>
-            <li><strong>Quests &amp; elite contracts.</strong> Kill quests, a class epic quest with a legendary reward, and a rotating elite-contract chain with AFK pinning.</li>
-            <li><strong>Auto-Battle (AFK).</strong> Auto-fight, loot, rest, pot, and restock toward a chosen goal; long offline sessions are simulated on return.</li>
-            <li><strong>Alternate Ascension.</strong> Unlocks at level 51 — spend points on archetype trees, unique class nodes, a capstone, and attribute nodes that raise your six ability scores.</li>
-            <li><strong>Prestige.</strong> At the level cap, reset for permanent perks.</li>
-            <li><strong>Companions in the Group tab.</strong> Pets and per-mercenary weapons, plus grouping your own alts to share experience.</li>
-            <li><strong>Shop &amp; crafting.</strong> Tiered potions that scale as you level, a crafting bench, targeted rerolls, occultist reforge, and rune transmutation.</li>
-          </ul>
-
-          <h4 style="margin:14px 0 6px">Tips</h4>
-          <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0;padding-left:18px">
-            <li>The <strong>Combat</strong> tab is your main view; the <strong>Zones</strong> tab is where you travel to tougher hunting grounds.</li>
-            <li><strong>AA</strong> and <strong>Prestige</strong> unlock at levels 51 and the cap respectively.</li>
-            <li>Configure the <strong>Auto-Battle</strong> panel on the right, and pin an elite contract from the Quests tab so AFK chases the target you want.</li>
-          </ul>
-
-          <h4 style="margin:14px 0 6px">Saving &amp; Backups</h4>
-          <div style="font-size:12px;line-height:1.55;color:var(--text-secondary);margin-bottom:10px">
-            Progress autosaves to your browser's local storage and syncs to the cloud when you're signed in. Clearing your browser data can erase local characters, so use <strong>Export</strong> on the topbar to download a JSON backup; <strong>Import</strong> restores it (and offers to back up your current save first).
-          </div>
-
-          <h4 style="margin:14px 0 6px">Credits &amp; License</h4>
-          <div style="font-size:12px;line-height:1.55;color:var(--text-secondary)">
-            A fan tribute to the classic massively-multiplayer RPGs of the late 1990s, made in the spirit of homage and not affiliated with or endorsed by any rights holder. UI icons from <a href="https://tabler-icons.io/" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Tabler Icons</a>. Released under the <strong>GNU General Public License v3.0</strong> — free to use, modify, and redistribute, with derivatives shipping their source under the same license.
-          </div>
-
-          <div style="font-size:12px;line-height:1.55;margin-top:12px">
-            <a href="https://github.com/TheDroidYourLookingFor/EmberQuest" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Source on GitHub</a>
-            &nbsp;·&nbsp;
-            <a href="https://thedroidyourlookingfor.github.io/EmberQuest/" target="_blank" rel="noopener" style="color:var(--accent,#8bd)">Play in your browser</a>
-          </div>
-
-          <h4 style="margin:14px 0 6px">⚔ Hardcore Hall of Fame</h4>
-          <div id="hall-of-fame" style="font-size:12px;color:var(--text-secondary)">Loading...</div>
-        </div>
+        
+        
+        
+        
+        
+        
+        
+                
       </div>
 
       <!-- Right: Auto-Battle + Zone info -->
@@ -9397,7 +9467,7 @@
     };
 
     // Inventory view state (transient — not saved)
-    const invView = { sort: 'default', filter: 'all' };
+    const invView = { sort: 'default', filter: 'all', armorSlot: 'all' };
 
     function getItemLevel(entry) {
       if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.ilvl))) {
@@ -9588,6 +9658,13 @@
     }
     function setInventoryFilter(filter) {
       invView.filter = filter || 'all';
+      invView.armorSlot = 'all';
+      const slotSel = document.getElementById('inv-armorslot-select');
+      if (slotSel) { slotSel.style.display = filter === 'armor' ? '' : 'none'; slotSel.value = 'all'; }
+      renderInv();
+    }
+    function setArmorSlotFilter(slot) {
+      invView.armorSlot = slot || 'all';
       renderInv();
     }
     function toggleAutoVendorOverflow(on) {
@@ -10488,7 +10565,12 @@
         const data = getItemData(item);
         const slot = data ? data.slot : null;
         if (invView.filter === 'weapon') return slot === 'weapon' || slot === 'offhand';
-        if (invView.filter === 'armor') return ['chest', 'legs', 'feet'].includes(slot);
+        if (invView.filter === 'armor') {
+          const armorSlots = ['head','shoulders','back','chest','wrist','hands','waist','legs','feet'];
+          if (!armorSlots.includes(slot)) return false;
+          if (invView.armorSlot && invView.armorSlot !== 'all') return slot === invView.armorSlot;
+          return true;
+        }
         if (invView.filter === 'accessory') return ['charm', 'ring', 'amulet', 'neck'].includes(slot);
         if (invView.filter === 'misc') return !data && !isRuneEntry(item);
         if (invView.filter === 'magicplus') {
@@ -10823,7 +10905,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.4';
+    const CURRENT_VERSION = '1.3.10';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -12304,8 +12386,8 @@
       if (oldChar.version === '1.2.1') {
         if (typeof ensureAuditState === 'function') ensureAuditState(oldChar);
         const auditFixes = (typeof auditCharacter === 'function') ? auditCharacter(oldChar) : 0;
-        oldChar.version = '1.3.4';
-        if (!silent) log('Upgraded save data to v1.3.4 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
+        oldChar.version = '1.3.10';
+        if (!silent) log('Upgraded save data to v1.3.10 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
@@ -12357,8 +12439,10 @@
       showScreen('screen-game');
       renderAll(); renderZones(); renderQuests(); setupDrag();
       const _savedTab = (() => { try { return sessionStorage.getItem('EQ_lastTab'); } catch(e) { return null; } })();
-      const _validTabs = ['combat','zone','dungeon','quests','aa','prestige','inv','spells','runes','shop','loot','bank','group','tradeskill','leaderboard','about'];
-      switchTab(_savedTab && _validTabs.includes(_savedTab) ? _savedTab : 'combat');
+      const _savedPopup = (() => { try { return sessionStorage.getItem('EQ_activePopup'); } catch(e) { return null; } })();
+      const _mainTabs = ['combat','zone','inv','shop'];
+      switchTab(_savedTab && _mainTabs.includes(_savedTab) ? _savedTab : 'combat');
+      if (_savedPopup && POPUP_PANEL_IDS.has(_savedPopup)) openPopup(_savedPopup);
       resetAFKUI();
       document.getElementById('combat-log').innerHTML = '';
       log([
@@ -12544,8 +12628,7 @@
         _aaXpPctEl.textContent = _aaPct.toFixed(1) + '% AA';
       }
       renderMob();
-      // Only re-render tabs that are currently visible — prevents destroying
-      // open selects (e.g. spell gem assignment) during combat ticks.
+      // Re-render visible main tabs and any open popup panel
       const _visibleTab = (id) => document.getElementById('tab-' + id)?.style.display !== 'none';
       if (_visibleTab('inv') && !isBagInstallSelectorActive()) renderInv();
       if (_visibleTab('runes') && !isBagInstallSelectorActive()) renderInv();
@@ -12555,6 +12638,8 @@
       if (_visibleTab('dungeon')) renderDungeonTab();
       if (_visibleTab('aa')) renderAATab();
       if (_visibleTab('prestige')) renderPrestigeTab();
+      if (_visibleTab('quests')) renderQuests();
+      if (_visibleTab('bank')) renderBank();
       const afkGoalSelect = document.getElementById('afk-goal-select');
       if (afkGoalSelect) {
         if (!afkGoalSelect.options.length) {
@@ -12727,7 +12812,7 @@
             '<div class="quest-prog">Zone: ' + zoneName + ' (' + zoneRange + ')' + (inZone ? ' · You are here' : '') + '</div>' +
             '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
             '<button class="btn" onclick="travelToContractZone()" ' + (inZone ? 'disabled' : '') + '>Quick Travel</button>' +
-            '<button class="btn" onclick="switchTab(\'quests\')">Open Quests</button>' +
+            '<button class="btn" onclick="openPopup(\'quests\')">Open Quests</button>' +
             '</div>';
         }
       }
@@ -12972,7 +13057,7 @@
               const rd = RUNE_DATA[r];
               const col = RUNE_STAT_COLOR_EQ[rd.stat] || '#999';
               return '<span class="eq-rune-chip eq-rune-filled" style="border-color:' + col + ';color:' + col + '" title="' + r + '">'
-                + rd.id + ' <span style="opacity:.75">+' + rd.value + ' ' + rd.stat.toUpperCase() + '</span></span>';
+                + rd.id + ' <span style="opacity:.75">+' + getRuneSocketValue(rd) + ' ' + rd.stat.toUpperCase() + '</span></span>';
             }
             return '<span class="eq-rune-chip eq-rune-empty" title="Empty socket">◇ Empty</span>';
           }).join('');
@@ -12984,6 +13069,24 @@
         el.onmousemove = positionItemTooltip;
         el.onmouseleave = hideItemTooltip;
       });
+      // Update total gear stats bar
+      if (char && char.equipment) {
+        const totals = { atk: 0, def: 0, hp: 0, mp: 0 };
+        Object.values(char.equipment).forEach(item => {
+          if (!item) return;
+          const s = getItemEffectiveStats(item) || {};
+          totals.atk += Number(s.atk || 0);
+          totals.def += Number(s.def || 0);
+          totals.hp  += Number(s.hp  || 0);
+          totals.mp  += Number(s.mp  || 0);
+        });
+        const fmtStat = v => v > 0 ? '+' + fmt(v) : '—';
+        const upd = (id, val) => { const el = document.getElementById(id); if (el) { const sp = el.querySelector('span'); if (sp) sp.textContent = fmtStat(val); } };
+        upd('eq-total-atk', totals.atk);
+        upd('eq-total-def', totals.def);
+        upd('eq-total-hp',  totals.hp);
+        upd('eq-total-mp',  totals.mp);
+      }
     }
 
     function isBagInstallSelectorActive() {
@@ -13097,38 +13200,56 @@
       }
 
       const bagLayout = getBagLayout(char);
-      activeBagIndex = Math.max(0, Math.min(activeBagIndex, bagLayout.length - 1));
+      activeBagIndex = activeBagIndex === -1 ? -1 : Math.max(0, Math.min(activeBagIndex, bagLayout.length - 1));
       const realBagCount = Math.max(1, char.bags.length);
+
+      // All Bags tab
+      const allBagsBtn = document.createElement('button');
+      allBagsBtn.className = 'bag-tab-btn' + (activeBagIndex === -1 ? ' active' : '');
+      allBagsBtn.textContent = 'All Bags';
+      allBagsBtn.onclick = () => { activeBagIndex = -1; renderInv(); };
+      tabRow.appendChild(allBagsBtn);
 
       bagLayout.forEach((bag, b) => {
         const btn = document.createElement('button');
         btn.className = 'bag-tab-btn' + (b === activeBagIndex ? ' active' : '');
         btn.textContent = bag.overflow ? 'Overflow' : ('Bag ' + (b + 1) + ' (' + bag.slots + ')');
-        btn.onclick = () => {
-          activeBagIndex = b;
-          renderInv();
-        };
+        btn.onclick = () => { activeBagIndex = b; renderInv(); };
         tabRow.appendChild(btn);
       });
 
-      const start = bagLayout.slice(0, activeBagIndex).reduce((sum, b) => sum + b.slots, 0);
-      const activeBag = bagLayout[activeBagIndex];
-      const end = start + activeBag.slots;
-      const rawVisibleItems = char.inventory.slice(start, end);
-      const viewItems = applyInventoryView(rawVisibleItems, start);
-      bagMeta.textContent = activeBag.overflow
-        ? 'Overflow slots (your bags are full). Total items: ' + char.inventory.length
-        : ('Showing ' + activeBag.name + ' · Slots ' + (start + 1) + '-' + end + ' · Total items: ' + char.inventory.length);
-
-      if (setBonus.names.length) {
-        bagMeta.textContent += ' · Active Sets: ' + setBonus.names.join(', ') + ' (+' + setBonus.atk + ' ATK, +' + setBonus.def + ' DEF)';
+      let start, activeBag, end, rawVisibleItems, viewItems;
+      if (activeBagIndex === -1) {
+        rawVisibleItems = char.inventory;
+        viewItems = applyInventoryView(rawVisibleItems, 0);
+        bagMeta.textContent = 'All bags · ' + char.inventory.length + ' item' + (char.inventory.length === 1 ? '' : 's');
+        if (setBonus.names.length) {
+          bagMeta.textContent += ' · Active Sets: ' + setBonus.names.join(', ') + ' (+' + setBonus.atk + ' ATK, +' + setBonus.def + ' DEF)';
+        }
+      } else {
+        start = bagLayout.slice(0, activeBagIndex).reduce((sum, b) => sum + b.slots, 0);
+        activeBag = bagLayout[activeBagIndex];
+        end = start + activeBag.slots;
+        rawVisibleItems = char.inventory.slice(start, end);
+        viewItems = applyInventoryView(rawVisibleItems, start);
+        bagMeta.textContent = activeBag.overflow
+          ? 'Overflow slots (your bags are full). Total items: ' + char.inventory.length
+          : ('Showing ' + activeBag.name + ' · Slots ' + (start + 1) + '-' + end + ' · Total items: ' + char.inventory.length);
+        if (setBonus.names.length) {
+          bagMeta.textContent += ' · Active Sets: ' + setBonus.names.join(', ') + ' (+' + setBonus.atk + ' ATK, +' + setBonus.def + ' DEF)';
+        }
       }
 
       // Sync sort/filter selects (in case they were re-rendered)
       const sortSel = document.getElementById('inv-sort-select');
       const filterSel = document.getElementById('inv-filter-select');
+      const armorSlotSel = document.getElementById('inv-armorslot-select');
       if (sortSel && sortSel.value !== invView.sort) sortSel.value = invView.sort;
       if (filterSel && filterSel.value !== invView.filter) filterSel.value = invView.filter;
+      if (armorSlotSel) {
+        armorSlotSel.style.display = invView.filter === 'armor' ? '' : 'none';
+        if (armorSlotSel.value !== invView.armorSlot) armorSlotSel.value = invView.armorSlot;
+      }
       const overflowChk = document.getElementById('inv-overflow-toggle');
       if (overflowChk) overflowChk.checked = !!(getLootFilterState(char).autoVendorOverflow);
 
@@ -13239,7 +13360,7 @@
               const rd = RUNE_DATA[r];
               const col = RUNE_STAT_COLOR[rd.stat] || '#999';
               return '<span class="eq-rune-chip eq-rune-filled" style="border-color:' + col + ';color:' + col + '" title="' + r + '">'
-                + rd.id + ' <span style="opacity:.75">+' + rd.value + ' ' + rd.stat.toUpperCase() + '</span></span>';
+                + rd.id + ' <span style="opacity:.75">+' + getRuneSocketValue(rd) + ' ' + rd.stat.toUpperCase() + '</span></span>';
             }
             return '<span class="eq-rune-chip eq-rune-empty" title="Empty socket">◇ Empty</span>';
           }).join('');
@@ -13276,7 +13397,7 @@
         el.appendChild(card);
       });
 
-      const emptyCount = (invView.filter === 'all' && invView.sort === 'default')
+      const emptyCount = (invView.filter === 'all' && invView.sort === 'default' && activeBag)
         ? Math.max(0, activeBag.slots - viewItems.length)
         : 0;
       for (let i = 0; i < emptyCount; i++) {
@@ -16459,7 +16580,7 @@
       const event = getActiveZoneEvent(i);
       log('Zone event: ' + event.name + ' — ' + event.desc, 'info');
       renderAll(); renderZones();
-      if (!stayOnCurrentTab) switchTab('combat');
+      if (!stayOnCurrentTab) { closePopup(); switchTab('combat'); }
       autoSave();
     }
 
@@ -17932,13 +18053,70 @@
     }
 
     // ══════════════════════════════════════════════
+    const POPUP_PANEL_TITLES = {
+      dungeon: '🏛 Dungeon', quests: '📜 Quests', aa: '✨ Alternate Ascension',
+      prestige: '🏆 Prestige & Ascension', spells: '🔮 Spellbook', runes: '💎 Runes',
+      loot: '🔍 Loot Filter', bank: '🏦 Shared Bank', group: '👥 Group',
+      tradeskill: '⚗️ Alchemy', leaderboard: '🏅 Leaderboard', about: 'ℹ About EmberQuest'
+    };
+    const POPUP_PANEL_IDS = new Set(Object.keys(POPUP_PANEL_TITLES));
+    let _activePopup = null;
+
+    function openPopup(name) {
+      if (_activePopup === name) { closePopup(); return; }
+      // Return previous content to pool first
+      const body = document.getElementById('popup-body');
+      const pool = document.getElementById('popup-pool');
+      if (body.firstElementChild && pool) {
+        body.firstElementChild.style.display = 'none';
+        pool.appendChild(body.firstElementChild);
+      }
+      _activePopup = name;
+      const tabEl = document.getElementById('tab-' + name);
+      if (tabEl) { tabEl.style.display = 'block'; body.appendChild(tabEl); }
+      document.getElementById('popup-title').textContent = POPUP_PANEL_TITLES[name] || name;
+      document.getElementById('popup-backdrop').classList.add('open');
+      document.querySelectorAll('.popup-btn').forEach(b => b.classList.remove('active'));
+      const pbtn = document.getElementById('pbtn-' + name);
+      if (pbtn) pbtn.classList.add('active');
+      try { sessionStorage.setItem('EQ_activePopup', name); } catch(e) {}
+      if (name === 'dungeon') renderDungeonTab();
+      if (name === 'quests') renderQuests();
+      if (name === 'aa') renderAATab();
+      if (name === 'prestige') renderPrestigeTab();
+      if (name === 'spells') renderSpellbook();
+      if (name === 'runes') renderInv();
+      if (name === 'loot') renderLootTab();
+      if (name === 'bank') renderBank();
+      if (name === 'group') { renderGroupTab(); renderCompactGroup(); }
+      if (name === 'tradeskill') renderTradeskillTab();
+      if (name === 'leaderboard') renderLeaderboardTab();
+      if (name === 'about') renderHallOfFame();
+    }
+
+    function closePopup() {
+      if (!_activePopup) return;
+      const body = document.getElementById('popup-body');
+      const pool = document.getElementById('popup-pool');
+      if (body.firstElementChild && pool) {
+        body.firstElementChild.style.display = 'none';
+        pool.appendChild(body.firstElementChild);
+      }
+      document.getElementById('popup-backdrop').classList.remove('open');
+      document.querySelectorAll('.popup-btn').forEach(b => b.classList.remove('active'));
+      try { sessionStorage.removeItem('EQ_activePopup'); } catch(e) {}
+      _activePopup = null;
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopup(); });
+
     function switchTab(tab) {
+      if (POPUP_PANEL_IDS.has(tab)) { openPopup(tab); return; }
       try { sessionStorage.setItem('EQ_lastTab', tab); } catch(e) {}
-      const tabs = ['combat', 'zone', 'dungeon', 'quests', 'aa', 'prestige', 'inv', 'spells', 'runes', 'shop', 'loot', 'bank', 'group', 'tradeskill', 'leaderboard', 'about'];
-      tabs.forEach(t => {
+      const mainTabs = ['combat', 'zone', 'inv', 'shop'];
+      mainTabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
       });
-      // Match by onclick content, not by index — separators in the tab bar break index-based matching
       document.querySelectorAll('.tab').forEach(el => {
         const onclick = el.getAttribute('onclick') || '';
         const match = onclick.match(/switchTab\('([^']+)'\)/);
@@ -17946,20 +18124,8 @@
       });
       if (tab === 'combat') requestAnimationFrame(syncCombatLogSize);
       if (tab === 'zone') renderZones();
-      if (tab === 'dungeon') renderDungeonTab();
-      if (tab === 'quests') renderQuests();
       if (tab === 'inv') renderInv();
-      if (tab === 'loot') renderLootTab();
-      if (tab === 'runes') renderInv();
       if (tab === 'shop') renderShop();
-      if (tab === 'spells') renderSpellbook();
-      if (tab === 'aa') renderAATab();
-      if (tab === 'prestige') renderPrestigeTab();
-      if (tab === 'bank') renderBank();
-      if (tab === 'group') renderGroupTab(); renderCompactGroup();
-      if (tab === 'tradeskill') renderTradeskillTab();
-      if (tab === 'leaderboard') renderLeaderboardTab();
-      if (tab === 'about') renderHallOfFame();
     }
 
     function setupDrag() {
