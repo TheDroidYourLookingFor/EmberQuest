@@ -7,9 +7,7 @@
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>EmberQuest
-    RPG - Version
-    1.3.19</title>
+  <title>EmberQuest RPG</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
@@ -2963,7 +2961,7 @@
       <span
         class="title">EmberQuest
         - Version
-        1.3.19</span>
+        <span id="version-topbar"></span></span>
       <span
         class="save-indicator"
         id="save-indicator"><i
@@ -3156,23 +3154,29 @@
             style="font-size:11px;color:var(--text-secondary)">
             HP</div>
           <div
-            class="bar-wrap">
+            class="bar-wrap"
+            style="position:relative"
+            id="hp-bar-wrap">
             <div
               class="bar hp-bar"
               id="hp-bar"
               style="width:100%">
             </div>
+            <span id="hp-pct-label" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,0.7);pointer-events:none;line-height:1"></span>
           </div>
           <div
             style="font-size:11px;color:var(--text-secondary)">
             MP</div>
           <div
-            class="bar-wrap">
+            class="bar-wrap"
+            style="position:relative"
+            id="mp-bar-wrap">
             <div
               class="bar mp-bar"
               id="mp-bar"
               style="width:100%">
             </div>
+            <span id="mp-pct-label" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;text-shadow:0 0 3px rgba(0,0,0,0.7);pointer-events:none;line-height:1"></span>
           </div>
           <div
             style="font-size:11px;color:var(--text-secondary)">
@@ -3684,7 +3688,7 @@
           style="display:none">
           <h3 style="margin-bottom:4px">About EmberQuest</h3>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Version 1.3.19 · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
+            Version <span id="version-about"></span> · A classic-MMO-inspired idle/incremental RPG that runs entirely in a single HTML file — no install, no server, no build step.
           </div>
 
           <div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px;line-height:1.55;margin-bottom:10px">
@@ -5182,33 +5186,75 @@
       'Rune: Zhar': { id: 'Zhar', stat: 'atk', value: 15, tier: 5 },
       'Rune: Morr': { id: 'Morr', stat: 'def', value: 15, tier: 6 }
     };
-    // Runeword recipes: socket the listed runes into the base item to forge it.
+    // Runeword recipes: keyed by ITEM SLOT, not specific item name.
+    // Each slot holds an array of recipes. Any socketed item in that slot can
+    // activate a matching recipe, regardless of which specific base item it is.
     // bonus may carry flat stats (atk/def/hp/mp) AND special effects
     // (crit, lifesteal, goldFind, xpFind) that scale with runeword evolution.
-    const RUNEWORD_RECIPES = {
-      // ── Original ──
-      'Steel Longsword': { runes: ['Rune: El', 'Rune: Tir'], name: 'Runeword: Steel', bonus: { atk: 12, mp: 20 } },
-      'Knight Chestplate': { runes: ['Rune: Tal', 'Rune: Ort'], name: 'Runeword: Bulwark', bonus: { def: 10, hp: 60 } },
-      'Cracked Staff': { runes: ['Rune: Tir', 'Rune: Sol'], name: 'Runeword: Sparkspine', bonus: { atk: 8, mp: 44 } },
-      // ── Weapons ──
-      'Rusty Dagger': { runes: ['Rune: El', 'Rune: Sol'], name: 'Runeword: Bloodfang', bonus: { atk: 8, lifesteal: 0.05 } },
-      'Worn Shortsword': { runes: ['Rune: El', 'Rune: Tal'], name: 'Runeword: Tempo', bonus: { atk: 9, crit: 0.04 } },
-      'Bronze Hatchet': { runes: ['Rune: Sol', 'Rune: Kor'], name: 'Runeword: Plunder', bonus: { atk: 14, goldFind: 0.20 } },
-      'Ashen Longbow': { runes: ['Rune: Tir', 'Rune: Zhar'], name: "Runeword: Hunter's Mark", bonus: { atk: 16, crit: 0.05, xpFind: 0.15 } },
-      'Runed Mace': { runes: ['Rune: Tal', 'Rune: Bron'], name: 'Runeword: Crusher', bonus: { atk: 12, def: 14 } },
-      'Glacite Spear': { runes: ['Rune: Zhar', 'Rune: Morr'], name: 'Runeword: Wyrmpierce', bonus: { atk: 28, def: 14, crit: 0.06 } },
-      // ── Chests ──
-      'Tattered Robe': { runes: ['Rune: Tir', 'Rune: Lyr'], name: 'Runeword: Mana Weave', bonus: { mp: 90, xpFind: 0.15 } },
-      'Studded Jerkin': { runes: ['Rune: Tal', 'Rune: Ort'], name: 'Runeword: Warden', bonus: { def: 8, hp: 55 } },
-      'Scaled Cuirass': { runes: ['Rune: Ort', 'Rune: Bron'], name: 'Runeword: Aegis', bonus: { def: 14, hp: 80, lifesteal: 0.04 } },
-      'Frostwoven Mantle': { runes: ['Rune: Lyr', 'Rune: Vald'], name: 'Runeword: Frostheart', bonus: { mp: 80, hp: 90 } },
-      'Hate Infused Plate': { runes: ['Rune: Vald', 'Rune: Morr'], name: 'Runeword: Dreadplate', bonus: { def: 26, hp: 150, lifesteal: 0.06 } },
-      // ── Offhands ──
-      'Mirror Shield': { runes: ['Rune: Tal', 'Rune: Vald'], name: 'Runeword: Sanctuary', bonus: { def: 16, hp: 110 } },
-      'Storm Orb': { runes: ['Rune: Tir', 'Rune: Sol'], name: 'Runeword: Stormcaller', bonus: { atk: 10, mp: 60, crit: 0.04 } },
-      'Bone Ward Totem': { runes: ['Rune: Ort', 'Rune: Bron'], name: 'Runeword: Bonewall', bonus: { def: 14, hp: 70, goldFind: 0.15 } },
-      'Dread Quill': { runes: ['Rune: Sol', 'Rune: Lyr'], name: 'Runeword: Loremaster', bonus: { atk: 8, mp: 70, xpFind: 0.20 } }
+    const RUNEWORD_RECIPES_BY_SLOT = {
+      weapon: [
+        { runes: ['Rune: El', 'Rune: Tir'],   name: 'Runeword: Steel',         bonus: { atk: 12, mp: 20 } },
+        { runes: ['Rune: El', 'Rune: Sol'],   name: 'Runeword: Bloodfang',     bonus: { atk: 8,  lifesteal: 0.05 } },
+        { runes: ['Rune: El', 'Rune: Tal'],   name: 'Runeword: Tempo',         bonus: { atk: 9,  crit: 0.04 } },
+        { runes: ['Rune: Tir', 'Rune: Sol'],  name: 'Runeword: Sparkspine',    bonus: { atk: 8,  mp: 44 } },
+        { runes: ['Rune: Sol', 'Rune: Kor'],  name: 'Runeword: Plunder',       bonus: { atk: 14, goldFind: 0.20 } },
+        { runes: ['Rune: Tal', 'Rune: Bron'], name: 'Runeword: Crusher',       bonus: { atk: 12, def: 14 } },
+        { runes: ['Rune: Tir', 'Rune: Zhar'], name: "Runeword: Hunter's Mark", bonus: { atk: 16, crit: 0.05, xpFind: 0.15 } },
+        { runes: ['Rune: Zhar', 'Rune: Morr'],name: 'Runeword: Wyrmpierce',    bonus: { atk: 28, def: 14, crit: 0.06 } },
+      ],
+      chest: [
+        { runes: ['Rune: Tal', 'Rune: Ort'],  name: 'Runeword: Bulwark',    bonus: { def: 10, hp: 60 } },
+        { runes: ['Rune: Tir', 'Rune: Lyr'],  name: 'Runeword: Mana Weave', bonus: { mp: 90,  xpFind: 0.15 } },
+        { runes: ['Rune: Tal', 'Rune: Ort'],  name: 'Runeword: Warden',     bonus: { def: 8,  hp: 55 } },
+        { runes: ['Rune: Ort', 'Rune: Bron'], name: 'Runeword: Aegis',      bonus: { def: 14, hp: 80, lifesteal: 0.04 } },
+        { runes: ['Rune: Lyr', 'Rune: Vald'], name: 'Runeword: Frostheart', bonus: { mp: 80,  hp: 90 } },
+        { runes: ['Rune: Vald', 'Rune: Morr'],name: 'Runeword: Dreadplate', bonus: { def: 26, hp: 150, lifesteal: 0.06 } },
+      ],
+      offhand: [
+        { runes: ['Rune: Tal', 'Rune: Vald'], name: 'Runeword: Sanctuary',   bonus: { def: 16, hp: 110 } },
+        { runes: ['Rune: Tir', 'Rune: Sol'],  name: 'Runeword: Stormcaller', bonus: { atk: 10, mp: 60,  crit: 0.04 } },
+        { runes: ['Rune: Ort', 'Rune: Bron'], name: 'Runeword: Bonewall',    bonus: { def: 14, hp: 70,  goldFind: 0.15 } },
+        { runes: ['Rune: Sol', 'Rune: Lyr'],  name: 'Runeword: Loremaster',  bonus: { atk: 8,  mp: 70,  xpFind: 0.20 } },
+      ],
+      legs: [
+        { runes: ['Rune: El', 'Rune: Ort'],   name: 'Runeword: Strider',    bonus: { def: 8,  hp: 40 } },
+        { runes: ['Rune: Tal', 'Rune: Sol'],  name: 'Runeword: Ironleg',    bonus: { def: 12, hp: 55 } },
+        { runes: ['Rune: Bron', 'Rune: Vald'],name: 'Runeword: Stonewall',  bonus: { def: 18, hp: 80, lifesteal: 0.03 } },
+      ],
+      feet: [
+        { runes: ['Rune: El', 'Rune: Tir'],   name: 'Runeword: Swiftfoot',  bonus: { def: 5,  hp: 24, crit: 0.03 } },
+        { runes: ['Rune: Sol', 'Rune: Dol'],  name: 'Runeword: Pathfinder', bonus: { def: 8,  hp: 36, goldFind: 0.10 } },
+        { runes: ['Rune: Lyr', 'Rune: Zhar'], name: 'Runeword: Windwalker', bonus: { def: 10, hp: 48, xpFind: 0.12 } },
+      ],
     };
+
+    // Flat lookup: runeword name → recipe (for backwards-compat lookups and compendium).
+    const RUNEWORD_RECIPES = (() => {
+      const flat = {};
+      for (const [slot, recipes] of Object.entries(RUNEWORD_RECIPES_BY_SLOT)) {
+        for (const recipe of recipes) {
+          // Deduplicate by name (Bulwark & Warden share same runes on chest — keep first).
+          if (!flat[recipe.name]) flat[recipe.name] = Object.assign({ slot }, recipe);
+        }
+      }
+      return flat;
+    })();
+
+    // Returns the matching runeword recipe for a given item object (uses its slot).
+    function getRunewordRecipeForItem(itemObj) {
+      const data = getItemData(itemObj);
+      const slot = (data && data.slot) ? data.slot : null;
+      if (!slot) return null;
+      const slotRecipes = RUNEWORD_RECIPES_BY_SLOT[slot];
+      if (!slotRecipes || !Array.isArray(itemObj.sockets)) return null;
+      const socketed = itemObj.sockets.filter(Boolean).slice().sort().join('|');
+      for (const recipe of slotRecipes) {
+        if (recipe.runes.length > itemObj.sockets.length) continue;
+        const needed = recipe.runes.slice().sort().join('|');
+        if (socketed === needed) return recipe;
+      }
+      return null;
+    }
     const RUNEWORD_EVOLUTION_THRESHOLDS = [0, 220, 560, 1040, 1720];
     const RUNEWORD_EVOLUTION_MULT_PER_TIER = 0.2;
     const RUNE_TRANSMUTE_CHAIN = ['Rune: El', 'Rune: Tir', 'Rune: Tal', 'Rune: Ort', 'Rune: Sol', 'Rune: Dol', 'Rune: Kor', 'Rune: Bron', 'Rune: Lyr', 'Rune: Vald', 'Rune: Zhar', 'Rune: Morr'];
@@ -6535,7 +6581,7 @@
     }
 
     function tryApplyRuneword(itemObj) {
-      const recipe = RUNEWORD_RECIPES[itemObj.base];
+      const recipe = getRunewordRecipeForItem(itemObj);
       if (!recipe || !Array.isArray(itemObj.sockets)) return;
 
       const usedSockets = itemObj.sockets.slice(0, recipe.runes.length);
@@ -10965,7 +11011,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.19';
+    const CURRENT_VERSION = '1.3.21';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -12667,8 +12713,18 @@
       renderCompactGroup();
 
 
-      document.getElementById('hp-bar').style.width = Math.max(0, Math.min(100, char.hp / char.maxHp * 100)) + '%';
-      document.getElementById('mp-bar').style.width = Math.max(0, char.mp / char.maxMp * 100) + '%';
+      const _hpPct = Math.max(0, Math.min(100, char.hp / char.maxHp * 100));
+      const _mpPct = Math.max(0, Math.min(100, char.mp / char.maxMp * 100));
+      document.getElementById('hp-bar').style.width = _hpPct + '%';
+      document.getElementById('mp-bar').style.width = _mpPct + '%';
+      const _hpPctEl = document.getElementById('hp-pct-label');
+      if (_hpPctEl) _hpPctEl.textContent = _hpPct.toFixed(1) + '%';
+      const _mpPctEl = document.getElementById('mp-pct-label');
+      if (_mpPctEl) _mpPctEl.textContent = _mpPct.toFixed(1) + '%';
+      const _hpBarWrap = document.getElementById('hp-bar-wrap');
+      if (_hpBarWrap) _hpBarWrap.title = 'HP: ' + fmt(char.hp) + ' / ' + fmt(char.maxHp) + ' (' + _hpPct.toFixed(1) + '%)';
+      const _mpBarWrap = document.getElementById('mp-bar-wrap');
+      if (_mpBarWrap) _mpBarWrap.title = 'MP: ' + fmt(char.mp) + ' / ' + fmt(char.maxMp) + ' (' + _mpPct.toFixed(1) + '%)';
       const _xpBar = document.getElementById('xp-bar');
       const _xpPct = Math.min(100, char.xp / char.xpNext * 100);
       if (_xpBar) {
@@ -13223,19 +13279,26 @@
         runeList.appendChild(card);
       });
 
-      Object.entries(RUNEWORD_RECIPES).forEach(([baseItem, recipe]) => {
-        const found = char.discoveredRunewords.includes(recipe.name);
-        const bonusText = describeRunewordBonus(recipe.bonus);
-        const card = document.createElement('div');
-        card.className = 'eq-item-card';
-        card.innerHTML = `
-          <div class="eq-item-name ${found ? 'rarity-runeword' : ''}">${recipe.name}${found ? ' ✓' : ''}</div>
-          <div class="eq-item-type">${baseItem} · ${recipe.runes.map(r => RUNE_DATA[r] ? RUNE_DATA[r].id : r).join(' + ')}</div>
-          <div class="eq-item-bonus">${bonusText}</div>
-          <div class="eq-item-type" style="opacity:0.8">${found ? ('Evolves to T' + RUNEWORD_EVOLUTION_THRESHOLDS.length + ' (+' + (RUNEWORD_EVOLUTION_MULT_PER_TIER * 100) + '%/tier)') : 'Socket these runes into the base to forge.'}</div>
-        `;
-        compendium.appendChild(card);
-      });
+      const SLOT_LABELS = { weapon: '⚔️ Weapon', chest: '🛡️ Chest', offhand: '🔮 Offhand', legs: '🦵 Legs', feet: '👢 Feet' };
+      for (const [slot, recipes] of Object.entries(RUNEWORD_RECIPES_BY_SLOT)) {
+        const header = document.createElement('div');
+        header.style.cssText = 'font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin:8px 0 4px;grid-column:1/-1';
+        header.textContent = SLOT_LABELS[slot] || slot;
+        compendium.appendChild(header);
+        recipes.forEach(recipe => {
+          const found = char.discoveredRunewords.includes(recipe.name);
+          const bonusText = describeRunewordBonus(recipe.bonus);
+          const card = document.createElement('div');
+          card.className = 'eq-item-card';
+          card.innerHTML = `
+            <div class="eq-item-name ${found ? 'rarity-runeword' : ''}">${recipe.name}${found ? ' ✓' : ''}</div>
+            <div class="eq-item-type">${SLOT_LABELS[slot] || slot} · ${recipe.runes.map(r => RUNE_DATA[r] ? RUNE_DATA[r].id : r).join(' + ')}</div>
+            <div class="eq-item-bonus">${bonusText}</div>
+            <div class="eq-item-type" style="opacity:0.8">${found ? ('Evolves to T' + RUNEWORD_EVOLUTION_THRESHOLDS.length + ' (+' + (RUNEWORD_EVOLUTION_MULT_PER_TIER * 100) + '%/tier)') : 'Socket these runes into any ' + slot + ' item to forge.'}</div>
+          `;
+          compendium.appendChild(card);
+        });
+      }
 
       // Focused transmutes
       const transmuteList = document.getElementById('focused-transmute-list');
@@ -18821,6 +18884,13 @@
     }
 
     Cloud.start();
+
+    // Populate version strings from single source of truth
+    document.title = 'EmberQuest RPG - Version ' + CURRENT_VERSION;
+    const _vTopbar = document.getElementById('version-topbar');
+    if (_vTopbar) _vTopbar.textContent = CURRENT_VERSION;
+    const _vAbout = document.getElementById('version-about');
+    if (_vAbout) _vAbout.textContent = CURRENT_VERSION;
   </script>
 </body>
 
