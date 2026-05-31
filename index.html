@@ -3663,7 +3663,7 @@
           style="display:none">
           <h3 style="margin-bottom:6px">Group</h3>
           <div id="group-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
-            Group your other characters to share experience. Each member reduces XP per kill. Max 6 total (you + mercenaries + grouped characters).
+            Group your other characters to share experience. Partial groups earn less XP per player than solo. A full group of 6 earns +20% XP per player vs solo. Max 6 total (you + mercenaries + grouped characters).
           </div>
           <div id="group-summary" style="margin-bottom:10px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px"></div>
           <div style="font-weight:600;margin-bottom:6px">Available Characters</div>
@@ -6038,7 +6038,12 @@
       const behavior = merc.behavior || 'damage';
 
       if (behavior === 'damage') {
-        const dmg = Math.max(3, Math.floor((level * 1.35 + char.atk * 0.18 + Math.random() * 5) * gearMult));
+        // HP-anchor: merc damage scales with player max HP so it stays relevant
+        // as HP compounds with level (mirrors how named mob ATK is anchored).
+        // Targets ~3% of player max HP per hit, blended with the old level+ATk term.
+        const hpAnchorDmg = Math.floor((char.maxHp || 100) * 0.05);
+        const legacyDmg = Math.floor(level * 2.1 + char.atk * 0.28 + Math.random() * 8);
+        const dmg = Math.max(3, Math.floor(Math.max(hpAnchorDmg, legacyDmg) * gearMult));
         mob.hp -= dmg;
         addDamageMeterEntry('merc', dmg);
         log([
@@ -6050,7 +6055,8 @@
           ' points of damage.'
         ], 'dmg');
       } else if (behavior === 'debuff') {
-        const dmg = Math.max(2, Math.floor((level * 1.05 + char.atk * 0.1 + Math.random() * 4) * gearMult));
+        const hpAnchorDmg = Math.floor((char.maxHp || 100) * 0.038);
+        const dmg = Math.max(2, Math.floor(Math.max(hpAnchorDmg, Math.floor(level * 1.8 + char.atk * 0.18 + Math.random() * 6)) * gearMult));
         const atkDebuff = Math.max(1, Math.floor(level / 26) + 1);
         const defDebuff = Math.max(1, Math.floor(level / 30) + 1);
         mob.hp -= dmg;
@@ -6077,7 +6083,7 @@
             ' hit points.'
           ], 'heal');
         } else {
-          const dmg = Math.max(2, Math.floor((level * 0.9 + char.mpRegen * 1.2 + Math.random() * 3) * gearMult));
+          const dmg = Math.max(2, Math.floor(Math.max(Math.floor((char.maxHp || 100) * 0.025), Math.floor(level * 0.9 + char.mpRegen * 1.2 + Math.random() * 3)) * gearMult));
           mob.hp -= dmg;
           addDamageMeterEntry('merc', dmg);
           log([
@@ -6101,7 +6107,7 @@
             ' mana.'
           ], 'heal');
         } else {
-          const dmg = Math.max(2, Math.floor((level * 0.85 + (char.mpRegen || 0) * 1.1 + Math.random() * 3) * gearMult));
+          const dmg = Math.max(2, Math.floor(Math.max(Math.floor((char.maxHp || 100) * 0.025), Math.floor(level * 0.85 + (char.mpRegen || 0) * 1.1 + Math.random() * 3)) * gearMult));
           mob.hp -= dmg;
           addDamageMeterEntry('merc', dmg);
           log([
@@ -8218,9 +8224,10 @@
     const MAX_GROUP_SIZE = 6;
     // Mercenaries can fill the whole group (every slot except the player).
     const MAX_GROUP_MERCS = MAX_GROUP_SIZE - 1;
-    // classic fantasy-style group XP bonus per member, applied once the group has
-    // more than 3 XP-sharing members. Index = group size.
-    const GROUP_XP_BONUS_BY_SIZE = { 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.2, 5: 1.4, 6: 1.6 };
+    // Group XP multiplier by size. Divide by size to get per-player share.
+    // Solo (1) = 100% baseline. Partial groups earn less per player than solo.
+    // Full group (6) = 120% per player (+20% over solo). Index = group size.
+    const GROUP_XP_BONUS_BY_SIZE = { 1: 1.0, 2: 1.7, 3: 2.6, 4: 3.6, 5: 4.9, 6: 7.2 };
 
     function getMainMercenaryCount(targetChar = char) {
       if (!targetChar || !targetChar.mercenary) return 0;
@@ -8524,7 +8531,7 @@
       for (let i = 0; i < types.length; i++) {
         if (!mob || mob.hp <= 0) break;
         const type = types[i];
-        if (Math.random() > 0.55) continue;
+        if (Math.random() > 0.42) continue;
         const merc = MERCENARY_TYPES[type];
         if (!merc) continue;
         const label = getGroupMercDisplayName(char, i);
@@ -8532,7 +8539,7 @@
         const gearMult = getGroupMercDamageBonusMult(char, i);
 
         if (behavior === 'damage') {
-          const dmg = Math.max(3, Math.floor((level * 1.2 + char.atk * 0.14 + Math.random() * 5) * gearMult));
+          const dmg = Math.max(3, Math.floor((level * 2.2 + char.atk * 0.26 + Math.random() * 8) * gearMult));
           mob.hp -= dmg;
           addDamageMeterEntry('merc', dmg);
           log([
@@ -8544,7 +8551,7 @@
             ' points of damage.'
           ], 'dmg');
         } else if (behavior === 'debuff') {
-          const dmg = Math.max(2, Math.floor((level * 0.95 + char.atk * 0.08 + Math.random() * 4) * gearMult));
+          const dmg = Math.max(2, Math.floor((level * 1.7 + char.atk * 0.18 + Math.random() * 6) * gearMult));
           const atkDebuff = Math.max(1, Math.floor(level / 28) + 1);
           const defDebuff = Math.max(1, Math.floor(level / 32) + 1);
           mob.hp -= dmg;
@@ -8571,7 +8578,7 @@
               ' hit points.'
             ], 'heal');
           } else {
-            const dmg = Math.max(2, Math.floor(level * 0.8 + (char.mpRegen || 0) * 1.0 + Math.random() * 3));
+            const dmg = Math.max(2, Math.floor(level * 1.6 + (char.mpRegen || 0) * 1.8 + Math.random() * 6));
             mob.hp -= dmg;
             addDamageMeterEntry('merc', dmg);
             log([
@@ -8595,7 +8602,7 @@
               ' mana.'
             ], 'heal');
           } else {
-            const dmg = Math.max(2, Math.floor(level * 0.75 + (char.mpRegen || 0) * 0.9 + Math.random() * 3));
+            const dmg = Math.max(2, Math.floor(level * 1.4 + (char.mpRegen || 0) * 1.6 + Math.random() * 5));
             mob.hp -= dmg;
             addDamageMeterEntry('merc', dmg);
             log([
@@ -8729,9 +8736,9 @@
       const bonus = getGroupXpBonus(xpShareSize);
       const sharePct = Math.round((bonus / xpShareSize) * 100);
       const totalPct = Math.round(bonus * 100);
-      const bonusNote = xpShareSize >= 4
-        ? ' (includes +' + Math.round((bonus - 1) * 100) + '% group bonus)'
-        : (xpShareSize > 1 ? ' (no bonus until 4+ characters)' : '');
+      const bonusNote = xpShareSize === MAX_GROUP_SIZE
+        ? ' (full group: +20% vs solo)'
+        : (xpShareSize > 1 ? ' (less than solo — bonus only at full group)' : '');
       const splitOn = !!char.groupSplitGold;
       summary.innerHTML =
         '<div><strong>Group size:</strong> ' + total + ' / ' + MAX_GROUP_SIZE +
@@ -11011,7 +11018,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.21';
+    const CURRENT_VERSION = '1.3.24';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -15035,8 +15042,8 @@
         ? Math.max(1, char.level + Math.floor(floor / 2))
         : (typeof getZoneMobLevel === 'function' ? getZoneMobLevel(zone, char.level) : Math.max(1, char.level + Math.floor(Math.random() * 3) - 1));
       const elite = inDungeon ? (dungeonBoss || Math.random() < (0.2 + (dungeonMod.eliteChanceBonus || 0))) : (Math.random() < 0.1);
-      const namedMult = named ? 2.8 : 1;
-      const rawHp = (60 + lvl * 25) * (elite ? 2.5 : 1) * namedMult;
+      const namedMult = named ? 3.4 : 1;
+      const rawHp = (80 + lvl * 38) * (elite ? 3.0 : 1) * namedMult;
       const hp = (typeof scaleMobHp === 'function') ? scaleMobHp(rawHp, lvl) : Math.max(1, Math.floor(rawHp));
       const namedMechanic = named ? NAMED_MECHANICS[Math.floor(Math.random() * NAMED_MECHANICS.length)] : null;
       // Mob ATK is anchored to a % of the player's actual max HP so it stays
@@ -15044,7 +15051,7 @@
       // hit for regular mobs; elites ~9%; named ~14%. The lvl² term provides
       // a secondary curve so low-level mobs still sting early game.
       const playerMaxHp = char.maxHp || 100;
-      const hpAnchorAtk = Math.floor(playerMaxHp * (named ? 0.14 : (elite ? 0.09 : 0.06)));
+      const hpAnchorAtk = Math.floor(playerMaxHp * (named ? 0.09 : (elite ? 0.06 : 0.04)));
       const levelCurveAtk = Math.floor(5 + lvl * 2 + Math.floor(lvl * lvl * 0.06) + (elite ? Math.floor(lvl * 1.5) : 0));
       mob = {
         name: (named ? '[Named] ' : (elite ? '[Elite] ' : '')) + mobName,
