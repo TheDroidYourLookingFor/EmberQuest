@@ -11662,7 +11662,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.43';
+    const CURRENT_VERSION = '1.3.44';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -17911,19 +17911,19 @@
       const rawHp = (80 + lvl * 38) * (elite ? 3.0 : 1) * namedMult;
       const hp = (typeof scaleMobHp === 'function') ? scaleMobHp(rawHp, lvl) : Math.max(1, Math.floor(rawHp));
       const namedMechanic = named ? NAMED_MECHANICS[Math.floor(Math.random() * NAMED_MECHANICS.length)] : null;
-      // Mob ATK is anchored to a % of the player's actual max HP so it stays
-      // relevant as HP compounds with level. Base targets ~6% of player HP per
-      // hit for regular mobs; elites ~9%; named ~14%. The lvl² term provides
-      // a secondary curve so low-level mobs still sting early game.
+      // Mob ATK is anchored to a fraction of the mob's OWN max HP plus a
+      // level curve, so its hit feels proportional to its own life bar.
+      // Capped at 25% of player max HP so even huge named mobs can't one-shot.
       const playerMaxHp = char.maxHp || 100;
-      const hpAnchorAtk = Math.floor(playerMaxHp * (named ? 0.09 : (elite ? 0.06 : 0.04)));
+      const mobHpAnchor = Math.floor(hp * (named ? 0.12 : (elite ? 0.08 : 0.05)));
       const levelCurveAtk = Math.floor(5 + lvl * 2 + Math.floor(lvl * lvl * 0.06) + (elite ? Math.floor(lvl * 1.5) : 0));
+      const hitCap = Math.max(1, Math.floor(playerMaxHp * 0.25));
       mob = {
         name: (named ? '[Named] ' : (elite ? '[Elite] ' : '')) + mobName,
         level: lvl,
         hp,
         maxHp: hp,
-        atk: Math.max(levelCurveAtk, hpAnchorAtk),
+        atk: Math.min(hitCap, Math.max(levelCurveAtk, mobHpAnchor)),
         def: Math.floor((2 + lvl) * (named ? 1.4 : 1)),
         baseName: mobName,
         elite,
@@ -18412,8 +18412,8 @@
         ensureExtendedSystems(char);
         char.xp -= char.xpNext; char.level++;
         char.xpNext = xpToNextLevel(char.level);
-        char.maxHp = Math.floor(char.maxHp * 1.12);
-        char.maxMp = Math.floor(char.maxMp * 1.1);
+        char.maxHp = Math.floor(char.maxHp * 1.08);
+        char.maxMp = Math.floor(char.maxMp * 1.06);
         char.hp = char.maxHp; char.mp = char.maxMp;
         char.atk += 2; char.def += 1;
         // Recompute class ability scores for the new level (primaries grow
