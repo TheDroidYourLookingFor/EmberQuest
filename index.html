@@ -3677,7 +3677,7 @@
             Group your other characters to share experience. Partial groups earn less XP per player than solo. A full group of 6 earns +20% XP per player vs solo. Max 6 total (you + mercenaries + grouped characters).
           </div>
           <div id="group-summary" style="margin-bottom:10px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);font-size:12px"></div>
-          <div style="font-weight:600;margin-bottom:6px">Available Characters</div>
+          <div id="lfg-section" style="margin-bottom:14px"></div>
           <div id="group-roster-list" style="display:flex;flex-direction:column;gap:6px"></div>
         </div>
 <div
@@ -4774,23 +4774,25 @@
           return { ok: true };
         } catch (e) { console.warn('lfg publish error', e); return { ok: false, error: e }; }
       },
-      // Read available LFG heroes (excluding the current user), filtered to the
-      // player's own Hardcore mode and to recently-active heroes.
+      // Read available LFG heroes, filtered to the player's own Hardcore mode.
+      // Rows owned by the current user are returned and marked so the browser
+      // can show that the pool is populated while still preventing self-borrow.
+      // Do not require a recent updated_at here:
+      // manually seeded/admin-created lfg_pool rows may omit it, and the UI
+      // should still be able to display valid LFG entries.
       async fetchLfgPool(hardcore, limit = 100) {
         if (!sb) return null;
         try {
-          const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
           let q = sb.from('lfg_pool')
             .select('user_id,char_key,name,class,race,level,atk,def,hp,mp,power,hardcore,known_spells,updated_at')
             .eq('lfg', true)
             .eq('hardcore', !!hardcore)
-            .gt('updated_at', cutoff)
             .order('power', { ascending: false })
             .limit(limit);
           const { data, error } = await q;
           if (error) { console.warn('lfg fetch failed', error); return null; }
           let rows = data || [];
-          if (currentUser) rows = rows.filter(r => r.user_id !== currentUser.id);
+          if (currentUser) rows = rows.map(r => ({ ...r, owned_by_current_user: r.user_id === currentUser.id }));
           return rows;
         } catch (e) { console.warn('lfg fetch error', e); return null; }
       },
@@ -8684,6 +8686,7 @@
       log('Added ' + slots[slotIdx].name + ' to your group.', 'info');
       saveSlots();
       renderGroupTab(); renderCompactGroup();
+      renderLfgBorrowedHeroesPopout();
     }
 
     function removeGroupMember(slotIdx) {
@@ -8695,6 +8698,7 @@
       log('Removed ' + name + ' from your group.', 'info');
       saveSlots();
       renderGroupTab(); renderCompactGroup();
+      renderLfgBorrowedHeroesPopout();
     }
 
     // ══════════════════════════════════════════════
@@ -8705,6 +8709,9 @@
     let _lfgBrowserRows = null;   // last fetched pool (or null = not yet loaded)
     let _lfgBrowserLoading = false;
     let _lfgBusy = false;
+    let _lfgBrowserPage = 0;
+    let _lfgBrowserSearch = '';
+    const LFG_BROWSER_PAGE_SIZE = 8;
 
     function lfgHeroKey(h) { return (h.user_id || h.userId || '') + ':' + (h.char_key != null ? h.char_key : h.charKey); }
 
@@ -8726,14 +8733,87 @@
         maxMp: Math.max(0, Math.floor(Number(r.mp ?? r.maxMp ?? 0))),
         power: Math.max(0, Math.floor(Number(r.power || 0))),
         hardcore: !!r.hardcore,
+        ownedByCurrentUser: !!(r.owned_by_current_user || r.ownedByCurrentUser),
         knownSpells: Array.isArray(r.known_spells) ? r.known_spells : (Array.isArray(r.knownSpells) ? r.knownSpells : [])
       };
+    }
+
+    function normalizeLocalLfgRow(slot, idx) {
+      const s = computeLeaderboardStats(slot);
+      return normalizeLfgRow({
+        user_id: currentUser ? currentUser.id : 'local',
+        char_key: idx,
+        name: s.name,
+        class: s.cls,
+        race: s.race,
+        level: s.level,
+        atk: s.atk,
+        def: s.def,
+        hp: s.maxHp,
+        mp: s.maxMp,
+        power: s.power,
+        hardcore: s.hardcore,
+        known_spells: Array.isArray(slot.knownSpells) ? slot.knownSpells : [],
+        owned_by_current_user: true
+      });
+    }
+
+    function mergeLocalHeroesIntoLfgRows(rows) {
+      const merged = Array.isArray(rows) ? rows.map(normalizeLfgRow) : [];
+      const seen = new Set(merged.map(lfgHeroKey));
+      slots.forEach((slot, idx) => {
+        if (!slot || idx === activeSlot) return;
+        const localRow = normalizeLocalLfgRow(slot, idx);
+        const key = lfgHeroKey(localRow);
+        if (seen.has(key)) return;
+        merged.push(localRow);
+        seen.add(key);
+      });
+      return merged;
+    }
+
+    function renderLfgCurrentPartyListHtml() {
+      if (!char) return '';
+      const localMembers = getGroupMemberSlotIndices().map(idx => ({
+        type: 'local',
+        idx,
+        name: slots[idx] && slots[idx].name ? slots[idx].name : 'Hero',
+        cls: slots[idx] && slots[idx].cls ? slots[idx].cls : '',
+        level: slots[idx] && slots[idx].level ? slots[idx].level : 1,
+        tag: 'YOURS'
+      }));
+      const borrowedMembers = getLfgParty(char).map((h, idx) => ({
+        type: 'lfg',
+        idx,
+        name: h.name || 'Hero',
+        cls: h.cls || '',
+        level: h.level || 1,
+        tag: 'LFG'
+      }));
+      const members = localMembers.concat(borrowedMembers);
+      if (!members.length) {
+        return '<div style="font-size:11px;color:var(--text-secondary);margin-top:8px">No added party heroes yet.</div>';
+      }
+      return '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px">'
+        + members.map(m =>
+          '<div style="min-width:0;padding:7px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary)">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px">'
+              + '<div style="min-width:0;font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(m.name) + '</div>'
+              + '<button class="btn danger" onclick="' + (m.type === 'local' ? 'removeGroupMember(' + m.idx + ')' : 'removeLfgHero(' + m.idx + ')') + '" style="font-size:10px;padding:2px 6px">Remove</button>'
+            + '</div>'
+            + '<div style="font-size:10px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px">'
+              + escapeHtml(m.cls || '') + ' · Lv ' + (m.level || 1) + ' · ' + m.tag
+            + '</div>'
+          + '</div>'
+        ).join('')
+      + '</div>';
     }
 
     function renderLfgSectionHtml() {
       if (!char) return '';
       const on = !!char.lfg;
       const borrowed = Array.isArray(char.lfgParty) ? char.lfgParty : [];
+      const partyHeroCount = getGroupMemberSlotIndices().length + getLfgParty(char).length;
       const cloudOk = !!(typeof Cloud !== 'undefined' && Cloud.ready);
       let html = '<div style="font-weight:600;margin-bottom:6px">🌐 Looking For Group</div>';
 
@@ -8752,32 +8832,25 @@
           + '</button>'
         + '</div></div>';
 
-      // Borrowed heroes currently in the group
-      html += '<div style="font-weight:600;margin:8px 0 6px 0">Borrowed Heroes (' + borrowed.length + ')</div>';
-      if (!borrowed.length) {
-        html += '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">None yet. Find allies below and add them to your group.</div>';
-      } else {
-        borrowed.forEach((h, i) => {
-          html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px">'
-            + '<div><div style="font-weight:600">' + escapeHtml(h.name)
-              + ' <span style="color:#7cc6ff;font-size:9px;border:1px solid #7cc6ff;border-radius:3px;padding:0 4px;vertical-align:middle">LFG</span></div>'
-              + '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(h.cls || '') + ' · Level ' + (h.level || 1)
-              + ' · ATK ' + (h.atk || 0) + ' · DEF ' + (h.def || 0) + '</div></div>'
-            + '<button class="btn danger" onclick="removeLfgHero(' + i + ')">Remove</button>'
-          + '</div>';
-        });
-      }
-
-      // Find Allies browser
       const canAdd = getGroupSize() < MAX_GROUP_SIZE;
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 6px 0">'
-        + '<div style="font-weight:600">Find Allies</div>'
-        + '<button class="btn" onclick="refreshLfgBrowser(true)">↻ Refresh</button>'
+      const availableCount = Array.isArray(_lfgBrowserRows) ? _lfgBrowserRows.length : null;
+      html += '<div style="padding:10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-md);margin-top:10px">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+          + '<div>'
+            + '<div style="font-weight:600;font-size:13px">Party Heroes (' + partyHeroCount + ')</div>'
+            + '<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">'
+              + (partyHeroCount
+                ? 'Manage your added characters and borrowed heroes here.'
+                : (canAdd ? 'Browse your characters and shared heroes to add them to your group.' : 'Your group is full. Remove someone to add another hero.'))
+              + (availableCount === null ? '' : ' Available: ' + availableCount + '.')
+            + '</div>'
+          + '</div>'
+          + '<button class="btn" onclick="openLfgBorrowedHeroesPopout()" style="white-space:nowrap">'
+            + 'Browse Heroes'
+          + '</button>'
+        + '</div>'
+        + renderLfgCurrentPartyListHtml()
       + '</div>';
-      if (!canAdd) {
-        html += '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">Your group is full — remove a member to borrow a hero.</div>';
-      }
-      html += '<div id="lfg-browser-list"><div style="font-size:11px;color:var(--text-secondary)">Loading available heroes…</div></div>';
       return html;
     }
 
@@ -8786,43 +8859,153 @@
       if (!box) return;
       if (_lfgBrowserLoading) { box.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">Loading available heroes…</div>'; return; }
       if (_lfgBrowserRows === null) { box.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">LFG is unavailable (offline or not signed in).</div>'; return; }
-      if (!_lfgBrowserRows.length) { box.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">No heroes are currently looking for group in your mode. Check back later!</div>'; return; }
+      if (!_lfgBrowserRows.length) { box.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">No heroes are available. Create another character or check back later for shared LFG heroes.</div>'; return; }
       const canAdd = getGroupSize() < MAX_GROUP_SIZE;
+      const query = (_lfgBrowserSearch || '').trim().toLowerCase();
+      const filteredRows = query ? _lfgBrowserRows.filter(h => (
+        (h.name || '') + ' ' + (h.cls || '') + ' ' + (h.race || '') + ' level ' + (h.level || 1)
+      ).toLowerCase().includes(query)) : _lfgBrowserRows;
+      if (!filteredRows.length) { box.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">No heroes match your search.</div>'; return; }
       let html = '';
-      _lfgBrowserRows.forEach((h, i) => {
+      const pageCount = Math.max(1, Math.ceil(filteredRows.length / LFG_BROWSER_PAGE_SIZE));
+      _lfgBrowserPage = Math.max(0, Math.min(_lfgBrowserPage, pageCount - 1));
+      const start = _lfgBrowserPage * LFG_BROWSER_PAGE_SIZE;
+      const pageRows = filteredRows.slice(start, start + LFG_BROWSER_PAGE_SIZE);
+      pageRows.forEach((h, pageIdx) => {
+        const i = _lfgBrowserRows.indexOf(h);
         const borrowed = isHeroBorrowed(h);
+        const ownHero = !!h.ownedByCurrentUser;
         html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px">'
           + '<div><div style="font-weight:600">' + escapeHtml(h.name)
+            + (ownHero ? ' <span style="color:var(--text-secondary);font-size:10px;border:1px solid var(--border);border-radius:3px;padding:0 4px;vertical-align:middle">YOURS</span>' : '')
             + (h.hardcore ? ' <span style="color:#f4a87a;font-size:10px;border:1px solid #f4a87a;border-radius:3px;padding:0 4px;vertical-align:middle">HARDCORE</span>' : '') + '</div>'
             + '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(h.cls || '') + ' · Level ' + (h.level || 1)
             + ' · ATK ' + (h.atk || 0) + ' · DEF ' + (h.def || 0) + ' · ⚡' + (h.power || 0).toLocaleString() + '</div></div>';
         if (borrowed) {
           html += '<button class="btn" disabled>In Group</button>';
+        } else if (ownHero) {
+          const slotIdx = Math.floor(Number(h.char_key));
+          const slot = Number.isFinite(slotIdx) ? slots[slotIdx] : null;
+          if (slot && slotIdx !== activeSlot) {
+            const inGroup = Array.isArray(char.group) && char.group.includes(slotIdx);
+            if (inGroup) {
+              html += '<button class="btn" onclick="removeGroupMember(' + slotIdx + ')">Remove</button>';
+            } else if (!sameHardcoreMode(char, slot)) {
+              html += '<button class="btn" disabled title="' + (char.hardcore ? 'Hardcore characters can only group with other Hardcore characters.' : 'Non-Hardcore characters cannot group with Hardcore characters.') + '">' + (char.hardcore ? 'Hardcore only' : 'Non-Hardcore only') + '</button>';
+            } else {
+              html += '<button class="btn" onclick="addGroupMember(' + slotIdx + ')"' + (canAdd ? '' : ' disabled title="Group full"') + '>' + (canAdd ? 'Add to Group' : 'Group Full') + '</button>';
+            }
+          } else if (slotIdx === activeSlot) {
+            html += '<button class="btn" disabled>You</button>';
+          } else {
+            html += '<button class="btn" disabled>Your Hero</button>';
+          }
         } else {
           html += '<button class="btn' + (canAdd ? '' : '') + '" onclick="addLfgHero(' + i + ')"' + (canAdd ? '' : ' disabled title="Group full"') + '>' + (canAdd ? 'Add to Group' : 'Group Full') + '</button>';
         }
         html += '</div>';
       });
+      if (query) {
+        html += '<div style="font-size:11px;color:var(--text-secondary);text-align:center;margin-top:8px">Showing ' + filteredRows.length + ' of ' + _lfgBrowserRows.length + ' heroes.</div>';
+      }
+      if (pageCount > 1) {
+        html += '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px">'
+          + '<button class="btn" onclick="setLfgBrowserPage(' + (_lfgBrowserPage - 1) + ')"' + (_lfgBrowserPage <= 0 ? ' disabled' : '') + '>Prev</button>'
+          + '<div style="font-size:11px;color:var(--text-secondary)">Page ' + (_lfgBrowserPage + 1) + ' / ' + pageCount + '</div>'
+          + '<button class="btn" onclick="setLfgBrowserPage(' + (_lfgBrowserPage + 1) + ')"' + (_lfgBrowserPage >= pageCount - 1 ? ' disabled' : '') + '>Next</button>'
+        + '</div>';
+      }
       box.innerHTML = html;
+    }
+
+    function setLfgBrowserPage(page) {
+      _lfgBrowserPage = Math.max(0, Math.floor(Number(page || 0)));
+      renderLfgBorrowedHeroesPopout();
+    }
+
+    function setLfgBrowserSearch(value) {
+      _lfgBrowserSearch = String(value || '');
+      _lfgBrowserPage = 0;
+      renderLfgBrowserList();
+    }
+
+    function renderBorrowedHeroesListHtml() {
+      return renderLfgCurrentPartyListHtml();
+    }
+
+    function openLfgBorrowedHeroesPopout() {
+      if (!char) return;
+      const existing = document.getElementById('lfg-browser-overlay');
+      if (existing) existing.remove();
+      _lfgBrowserPage = 0;
+      _lfgBrowserSearch = '';
+      const overlay = document.createElement('div');
+      overlay.id = 'lfg-browser-overlay';
+      overlay.onclick = e => { if (e.target === overlay) closeLfgBorrowedHeroesPopout(); };
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.78);padding:14px;animation:fadeIn 0.2s ease';
+      overlay.innerHTML =
+        '<div style="background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;width:min(760px,100%);max-height:88vh;overflow-y:auto;color:var(--text-primary);box-shadow:0 12px 48px rgba(0,0,0,0.7)">'
+          + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">'
+            + '<div style="font-size:16px;font-weight:800">Borrowed Heroes</div>'
+            + '<button class="btn" onclick="closeLfgBorrowedHeroesPopout()">Close</button>'
+          + '</div>'
+          + '<div id="lfg-browser-popout-body"></div>'
+        + '</div>';
+      document.body.appendChild(overlay);
+      renderLfgBorrowedHeroesPopout();
+      refreshLfgBrowser(false);
+    }
+
+    function closeLfgBorrowedHeroesPopout() {
+      const overlay = document.getElementById('lfg-browser-overlay');
+      if (overlay) overlay.remove();
+      renderGroupTab();
+      renderCompactGroup();
+    }
+
+    function renderLfgBorrowedHeroesPopout() {
+      const body = document.getElementById('lfg-browser-popout-body');
+      if (!body) return;
+      const canAdd = getGroupSize() < MAX_GROUP_SIZE;
+      body.innerHTML =
+        '<div style="font-weight:600;margin:8px 0 6px 0">In Your Group</div>'
+        + renderBorrowedHeroesListHtml()
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 6px 0;flex-wrap:wrap">'
+          + '<div>'
+            + '<div style="font-weight:600">Available Heroes</div>'
+            + '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px">'
+              + (canAdd ? 'Add your characters or shared heroes until your group reaches ' + MAX_GROUP_SIZE + ' members.' : 'Your group is full — remove a member before adding another hero.')
+            + '</div>'
+          + '</div>'
+          + '<button class="btn" onclick="refreshLfgBrowser(true)">Refresh</button>'
+        + '</div>'
+        + '<input type="search" value="' + escapeHtml(_lfgBrowserSearch || '') + '" placeholder="Search heroes by name, class, race, or level" oninput="setLfgBrowserSearch(this.value)" style="width:100%;box-sizing:border-box;margin:0 0 8px 0;padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-size:12px;outline:none">'
+        + '<div id="lfg-browser-list"><div style="font-size:11px;color:var(--text-secondary)">Loading available heroes…</div></div>';
+      renderLfgBrowserList();
     }
 
     async function refreshLfgBrowser(force) {
       const box = document.getElementById('lfg-browser-list');
       if (!char) return;
-      if (!(typeof Cloud !== 'undefined' && Cloud.ready)) { _lfgBrowserRows = null; renderLfgBrowserList(); return; }
+      if (!(typeof Cloud !== 'undefined' && Cloud.ready)) { _lfgBrowserRows = mergeLocalHeroesIntoLfgRows([]); renderLfgBrowserList(); return; }
       if (_lfgBrowserLoading) return;
       // Use cache unless forced or empty
       if (!force && Array.isArray(_lfgBrowserRows)) { renderLfgBrowserList(); return; }
       _lfgBrowserLoading = true;
       renderLfgBrowserList();
       try {
-        const rows = await Cloud.fetchLfgPool(!!char.hardcore, 100);
-        _lfgBrowserRows = rows === null ? null : rows.map(normalizeLfgRow);
+        const rows = await Cloud.fetchLfgPool(!!char.hardcore, 500);
+        _lfgBrowserRows = rows === null ? mergeLocalHeroesIntoLfgRows([]) : mergeLocalHeroesIntoLfgRows(rows);
+        _lfgBrowserPage = 0;
       } catch (e) {
-        _lfgBrowserRows = null;
+        _lfgBrowserRows = mergeLocalHeroesIntoLfgRows([]);
       }
       _lfgBrowserLoading = false;
       renderLfgBrowserList();
+      const section = document.getElementById('lfg-section');
+      if (section && !document.getElementById('lfg-browser-overlay')) {
+        section.innerHTML = renderLfgSectionHtml();
+      }
     }
 
     async function toggleLfgAvailability() {
@@ -8848,6 +9031,12 @@
       if (!raw) return;
       const hero = normalizeLfgRow(raw);
       if (!Array.isArray(char.lfgParty)) char.lfgParty = [];
+      if (hero.ownedByCurrentUser) {
+        const slotIdx = Math.floor(Number(hero.char_key));
+        if (Number.isFinite(slotIdx) && slots[slotIdx] && slotIdx !== activeSlot) addGroupMember(slotIdx);
+        else log('That is one of your own LFG heroes.', 'info');
+        return;
+      }
       if (isHeroBorrowed(hero)) { log('That hero is already in your group.', 'info'); return; }
       if (!!hero.hardcore !== !!char.hardcore) {
         log(char.hardcore ? 'Hardcore characters can only group with other Hardcore heroes.' : 'You cannot group with a Hardcore hero.', 'info');
@@ -8857,7 +9046,7 @@
       char.lfgParty.push(hero);
       log('Added ' + hero.name + ' (LFG) to your group.', 'info');
       saveSlots();
-      renderGroupTab(); renderCompactGroup();
+      renderGroupTab(); renderCompactGroup(); renderLfgBorrowedHeroesPopout();
     }
 
     function removeLfgHero(idx) {
@@ -8867,7 +9056,7 @@
       char.lfgParty.splice(idx, 1);
       log('Removed ' + hero.name + ' (LFG) from your group.', 'info');
       saveSlots();
-      renderGroupTab(); renderCompactGroup();
+      renderGroupTab(); renderCompactGroup(); renderLfgBorrowedHeroesPopout();
     }
 
     // Shown on login when this account's shared heroes earned LFG rewards
@@ -9201,11 +9390,13 @@
     function renderGroupTab() {
       const summary = document.getElementById('group-summary');
       const list = document.getElementById('group-roster-list');
+      const lfgSection = document.getElementById('lfg-section');
       if (!summary || !list) return;
       list.innerHTML = '';
 
       if (!char) {
         summary.textContent = 'No character loaded.';
+        if (lfgSection) lfgSection.innerHTML = '';
         return;
       }
 
@@ -9251,8 +9442,9 @@
             '</button>' +
           '</div>' +
         '</div>';
-
-      const canAdd = total < MAX_GROUP_SIZE;
+      if (lfgSection) {
+        lfgSection.innerHTML = renderLfgSectionHtml();
+      }
 
       // ── Mercenary roster ──
       const mercSection = document.createElement('div');
@@ -9348,60 +9540,6 @@
 
       list.appendChild(mercSection);
 
-      // ── Characters header ──
-      const charsHeader = document.createElement('div');
-      charsHeader.style.cssText = 'font-weight:600;margin:8px 0 6px 0';
-      charsHeader.textContent = 'Other Characters';
-      list.appendChild(charsHeader);
-
-      slots.forEach((slot, idx) => {
-        if (!slot) return;
-        if (idx === activeSlot) return;
-        const inGroup = char.group.includes(idx);
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary)';
-        const info = document.createElement('div');
-        info.innerHTML =
-          '<div style="font-weight:600">' + escapeHtml(slot.name) +
-          (slot.hardcore ? ' <span style="color:#f4a87a;font-size:10px;border:1px solid #f4a87a;border-radius:3px;padding:0 4px;vertical-align:middle">HARDCORE</span>' : '') +
-          '</div>' +
-          '<div style="font-size:11px;color:var(--text-secondary)">' +
-          escapeHtml(slot.cls || '') + ' · Level ' + (slot.level || 1) +
-          ' · XP ' + (slot.xp || 0) + ' / ' + (slot.xpNext || 100) + '</div>';
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        if (inGroup) {
-          btn.textContent = 'Remove';
-          btn.onclick = () => removeGroupMember(idx);
-        } else if (!sameHardcoreMode(char, slot)) {
-          btn.textContent = char.hardcore ? 'Hardcore only' : 'Non-Hardcore only';
-          btn.disabled = true;
-          btn.title = char.hardcore
-            ? 'Hardcore characters can only group with other Hardcore characters.'
-            : 'Non-Hardcore characters cannot group with Hardcore characters.';
-        } else {
-          btn.textContent = canAdd ? 'Add to Group' : 'Group Full';
-          btn.disabled = !canAdd;
-          btn.onclick = () => addGroupMember(idx);
-        }
-        row.appendChild(info);
-        row.appendChild(btn);
-        list.appendChild(row);
-      });
-
-      if (!slots.some((s, idx) => s && idx !== activeSlot)) {
-        const empty = document.createElement('div');
-        empty.style.cssText = 'color:var(--text-secondary);font-size:12px;padding:8px';
-        empty.textContent = 'No other characters available. Create more characters from the character select screen.';
-        list.appendChild(empty);
-      }
-
-      // ── LFG (Looking For Group) ──
-      const lfgSection = document.createElement('div');
-      lfgSection.id = 'lfg-section';
-      lfgSection.style.cssText = 'margin-top:16px;padding-top:12px;border-top:1px solid var(--border)';
-      lfgSection.innerHTML = renderLfgSectionHtml();
-      list.appendChild(lfgSection);
       // Populate the browser asynchronously (network read).
       refreshLfgBrowser();
 
@@ -11514,7 +11652,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.35';
+    const CURRENT_VERSION = '1.3.40';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
