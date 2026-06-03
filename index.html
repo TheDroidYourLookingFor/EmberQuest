@@ -18932,6 +18932,19 @@
       }
     }
 
+    // Try to add a won/granted item to the character inventory.
+    // Returns true on success, false if hard-capped (used by casino prize paths to fall back to gold).
+    function addToInventory(item) {
+      if (!char || !item) return false;
+      if (!Array.isArray(char.inventory)) char.inventory = [];
+      const bagLayout = (typeof getBagLayout === 'function') ? getBagLayout(char) : null;
+      const capacity = bagLayout ? bagLayout.reduce((s, b) => s + (b.slots || 0), 0) : Infinity;
+      if (char.inventory.length >= capacity) return false;
+      char.inventory.push(item);
+      if (typeof maybeWarnOverflow === 'function') maybeWarnOverflow();
+      return true;
+    }
+
     function sellAllJunk() {
       if (!char || !Array.isArray(char.inventory) || !char.inventory.length) {
         log('You have no junk to sell.', 'info');
