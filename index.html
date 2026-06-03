@@ -5910,11 +5910,12 @@
       contractProgressFloor: 1
     };
     const PRESTIGE_PERKS = {
-      xp: { label: 'Veteran Lore', desc: '+5% all XP gain per rank.', maxRank: 10, xpMultPerRank: 0.05 },
-      gold: { label: 'Golden Touch', desc: '+5% gold gain from combat/contracts/quests per rank.', maxRank: 10, goldMultPerRank: 0.05 },
-      loot: { label: 'Relic Hunter', desc: '+4% loot chance multiplier per rank.', maxRank: 10, lootMultPerRank: 0.04 },
-      power: { label: 'Battle Legacy', desc: '+3% outgoing damage per rank.', maxRank: 10, playerDamageMultPerRank: 0.03 },
-      ward: { label: 'Ancestral Ward', desc: '-2% incoming damage per rank.', maxRank: 10, mobDamageMultPerRank: -0.02 }
+      xp: { label: 'Veteran Lore', desc: '+5% all XP gain per rank.', maxRank: 15, xpMultPerRank: 0.05 },
+      gold: { label: 'Golden Touch', desc: '+5% gold gain from combat/contracts/quests per rank.', maxRank: 15, goldMultPerRank: 0.05 },
+      loot: { label: 'Relic Hunter', desc: '+4% loot chance multiplier per rank.', maxRank: 15, lootMultPerRank: 0.04 },
+      power: { label: 'Battle Legacy', desc: '+3% outgoing damage per rank.', maxRank: 15, playerDamageMultPerRank: 0.03 },
+      ward: { label: 'Ancestral Ward', desc: '-2% incoming damage per rank.', maxRank: 15, mobDamageMultPerRank: -0.02 },
+      momentum: { label: 'Ascendant Momentum', desc: '+3% all XP gain and +1% outgoing damage per rank.', maxRank: 10, xpMultPerRank: 0.03, playerDamageMultPerRank: 0.01 }
     };
 
     const CLASS_EPIC_CONTENT = {
@@ -11652,7 +11653,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.40';
+    const CURRENT_VERSION = '1.3.42';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -16938,10 +16939,18 @@
       wrap.className = 'quest';
       const prestige = char.prestige || { rank: 0, points: 0, spent: 0, perks: {} };
       const prestigeMods = getPrestigeModifiers(char);
+      const ascensionEstimate = getPrestigeAscensionPointEstimate(char.level || 1);
+      const estimateText = char.level >= PRESTIGE_LEVEL_REQ
+        ? 'Ascending now grants ' + fmt(ascensionEstimate.points) + ' Prestige Point' + (ascensionEstimate.points === 1 ? '' : 's') + ' (raw estimate ' + ascensionEstimate.exact.toFixed(1) + ').'
+        : 'Reach level ' + PRESTIGE_LEVEL_REQ + ' to earn 1 Prestige Point.';
+      const nextBonusText = char.level >= PRESTIGE_LEVEL_REQ
+        ? (ascensionEstimate.nextBonusLevel > char.level ? ' Next +1 point at level ' + ascensionEstimate.nextBonusLevel + '.' : '')
+        : '';
 
       let html = '<div class="quest-name">Prestige / Ascension</div>' +
         '<div class="quest-prog">Prestige Rank: ' + fmt(prestige.rank) + ' · Unspent Prestige Points: ' + fmt(prestige.points) + '</div>' +
         '<div class="quest-prog">Ascension requirement: Level ' + PRESTIGE_LEVEL_REQ + '+</div>' +
+        '<div class="quest-prog">Estimated ascension reward: ' + estimateText + nextBonusText + '</div>' +
         '<div class="quest-prog">Current bonuses: +' + Math.round((prestigeMods.xpMult - 1) * 100) + '% XP · +' + Math.round((prestigeMods.goldMult - 1) * 100) + '% Gold · +' + Math.round((prestigeMods.lootMult - 1) * 100) + '% Loot · +' + Math.round((prestigeMods.playerDamageMult - 1) * 100) + '% Damage · ' + Math.round((prestigeMods.mobDamageMult - 1) * 100) + '% Incoming</div>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
         '<button class="btn" onclick="ascendCharacter()" ' + ((char.level >= PRESTIGE_LEVEL_REQ) ? '' : 'disabled') + '>Ascend (Lv ' + PRESTIGE_LEVEL_REQ + '+)</button>' +
@@ -17016,6 +17025,18 @@
       autoSave();
     }
 
+    function getPrestigeAscensionPointEstimate(level) {
+      const lvl = Math.max(1, Math.floor(Number(level || 1)));
+      if (lvl < PRESTIGE_LEVEL_REQ) {
+        return { points: 0, exact: 0, bonus: 0, nextBonusLevel: PRESTIGE_LEVEL_REQ };
+      }
+      const extraLevels = Math.max(0, lvl - PRESTIGE_LEVEL_REQ);
+      const exact = 1 + extraLevels * 0.1;
+      const points = Math.max(1, Math.floor(exact));
+      const nextBonusLevel = PRESTIGE_LEVEL_REQ + (points * 10);
+      return { points, exact, bonus: points - 1, nextBonusLevel };
+    }
+
     function ascendCharacter() {
       if (!char) return;
       if (mob) {
@@ -17029,8 +17050,9 @@
 
       ensureExtendedSystems(char);
       const p = char.prestige;
+      const pointGrant = getPrestigeAscensionPointEstimate(char.level).points;
       p.rank = Math.max(0, Math.floor(Number(p.rank || 0))) + 1;
-      p.points = Math.max(0, Math.floor(Number(p.points || 0))) + 1;
+      p.points = Math.max(0, Math.floor(Number(p.points || 0))) + pointGrant;
 
       const base = CLASSES[char.cls] || CLASSES.Warrior;
       char.level = 1;
@@ -17113,7 +17135,7 @@
       }
       mob = null;
 
-      log('Ascension complete. Prestige Rank ' + p.rank + ' achieved and +1 prestige point earned.', 'lvl');
+      log('Ascension complete. Prestige Rank ' + p.rank + ' achieved and +' + pointGrant + ' prestige point' + (pointGrant === 1 ? '' : 's') + ' earned.', 'lvl');
       renderAll();
       renderZones();
       renderQuests();
