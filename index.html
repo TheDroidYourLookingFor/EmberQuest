@@ -575,6 +575,7 @@
     #tab-inv,
     #tab-runes,
     #tab-shop,
+    #tab-casino,
     #tab-spells,
     #tab-loot,
     #tab-bank,
@@ -2298,6 +2299,14 @@
       color: #c8c0a8;
     }
 
+    /* Scratch ticket squares */
+    .scratch-square:hover { transform: scale(1.06) !important; filter: brightness(1.2); }
+    .scratch-square[data-revealed="1"] { cursor: default !important; }
+    #scratch-overlay { animation: fadeIn 0.18s ease; }
+    #pachinko-overlay { animation: fadeIn 0.2s ease; }
+    #pachinko-canvas { image-rendering: pixelated; }
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+
     /* Shop item cards — make sure they look like the dark theme too */
     #screen-game .shop-card,
     #screen-game .shop-item,
@@ -2585,6 +2594,7 @@
     #screen-game.ui-layout-mobile #tab-inv,
     #screen-game.ui-layout-mobile #tab-runes,
     #screen-game.ui-layout-mobile #tab-shop,
+    #screen-game.ui-layout-mobile #tab-casino,
     #screen-game.ui-layout-mobile #tab-spells,
     #screen-game.ui-layout-mobile #tab-aa,
     #screen-game.ui-layout-mobile #tab-prestige,
@@ -3399,6 +3409,7 @@
           <div class="tab" onclick="switchTab('zone')">🗺 Zones</div>
           <div class="tab" onclick="switchTab('inv')">🎒 Inventory</div>
           <div class="tab" onclick="switchTab('shop')">🏪 Shop</div>
+          <div class="tab" onclick="switchTab('casino')">🎰 Casino</div>
           <div class="tab" onclick="openPopup('leaderboard')">🏅 Leaderboard</div>
           <div class="tab" onclick="openPopup('about')">ℹ About</div>
         </div>
@@ -4115,6 +4126,37 @@
               <span style="font-size:20px">💰</span>
               <span class="shop-section-label">Sell Items</span>
               <span class="shop-section-sub">Sell by rarity or type</span>
+            </button>
+          </div>
+        </div>
+        
+        
+        
+        <div
+          id="tab-casino"
+          style="display:none">
+          <h3>🎰 Golden Ember Casino</h3>
+          <div id="casino-note" style="font-size:11px;color:var(--text-secondary);margin-bottom:10px"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <button class="shop-section-btn" id="csbtn-slots" onclick="openCasinoSection('slots')" style="grid-column:1/-1">
+              <span style="font-size:20px">🎰</span>
+              <span class="shop-section-label">Slots</span>
+              <span class="shop-section-sub" id="casino-btn-slots-sub">6 machines · 5 reels · wilds, scatters &amp; free spins!</span>
+            </button>
+            <button class="shop-section-btn" id="csbtn-lottery" onclick="openCasinoSection('lottery')" style="grid-column:1/-1">
+              <span style="font-size:20px">🎟️</span>
+              <span class="shop-section-label">Scratch Tickets</span>
+              <span class="shop-section-sub" id="casino-btn-lottery-sub">Try your luck — win gold, runes &amp; more!</span>
+            </button>
+            <button class="shop-section-btn" id="csbtn-pachinko" onclick="openCasinoSection('pachinko')" style="grid-column:1/-1">
+              <span style="font-size:20px">🔮</span>
+              <span class="shop-section-label">Pachinko</span>
+              <span class="shop-section-sub" id="casino-btn-pachinko-sub">Drop a ball — physics-powered prizes!</span>
+            </button>
+            <button class="shop-section-btn" id="csbtn-poker" onclick="openCasinoSection('poker')" style="grid-column:1/-1">
+              <span style="font-size:20px">🃏</span>
+              <span class="shop-section-label">Texas Hold'em</span>
+              <span class="shop-section-sub" id="casino-btn-poker-sub">Play poker — bet gold, beat the dealer!</span>
             </button>
           </div>
         </div>
@@ -7747,6 +7789,16 @@
         });
       }
       if (!targetChar.bossCooldowns || typeof targetChar.bossCooldowns !== 'object') targetChar.bossCooldowns = {};
+      // Pachinko lifetime tracking (gold won vs gold spent)
+      if (!targetChar.pachinkoStats || typeof targetChar.pachinkoStats !== 'object') {
+        targetChar.pachinkoStats = { lifetimeWon: 0, lifetimeLost: 0, runesWon: 0, gearWon: 0 };
+      } else {
+        const ps = targetChar.pachinkoStats;
+        ps.lifetimeWon = Math.max(0, Number(ps.lifetimeWon) || 0);
+        ps.lifetimeLost = Math.max(0, Number(ps.lifetimeLost) || 0);
+        ps.runesWon = Math.max(0, Number(ps.runesWon) || 0);
+        ps.gearWon = Math.max(0, Number(ps.gearWon) || 0);
+      }
       if (typeof targetChar.hardcore !== 'boolean') targetChar.hardcore = false;
       if (!Array.isArray(targetChar.group)) targetChar.group = [];
       if (typeof targetChar.groupSplitGold !== 'boolean') targetChar.groupSplitGold = false;
@@ -11018,7 +11070,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.24';
+    const CURRENT_VERSION = '1.3.32';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -12555,7 +12607,7 @@
       renderAll(); renderZones(); renderQuests(); setupDrag();
       const _savedTab = (() => { try { return sessionStorage.getItem('EQ_lastTab'); } catch(e) { return null; } })();
       const _savedPopup = (() => { try { return sessionStorage.getItem('EQ_activePopup'); } catch(e) { return null; } })();
-      const _mainTabs = ['combat','zone','inv','shop'];
+      const _mainTabs = ['combat','zone','inv','shop','casino'];
       switchTab(_savedTab && _mainTabs.includes(_savedTab) ? _savedTab : 'combat');
       if (_savedPopup && POPUP_PANEL_IDS.has(_savedPopup)) openPopup(_savedPopup);
       resetAFKUI();
@@ -13588,7 +13640,8 @@
     }
 
     function openShopSection(section) {
-      const titles = { potions: '🧪 Potions', gear: '⚔️ Gear & Bags', services: '✨ Services', sell: '💰 Sell Items' };
+      const titles = { potions: '🧪 Potions', gear: '⚔️ Gear & Bags', services: '✨ Services', sell: '💰 Sell Items', lottery: '🎰 Scratch Tickets', pachinko: '🔮 Pachinko', poker: "🃏 Texas Hold'em" };
+      if (section === 'poker') { openPokerGame(); return; }
       // Close if same section clicked again
       if (_activePopup === 'shop-' + section) { closePopup(); return; }
       // Build section content into popup
@@ -13604,7 +13657,7 @@
       const div = document.createElement('div');
       div.id = 'shop-section-' + section;
       div.className = 'eq-bag-grid';
-      if (section === 'sell') {
+      if (section === 'sell' || section === 'lottery' || section === 'pachinko') {
         div.className = '';
         div.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:4px 0';
       }
@@ -13660,6 +13713,12 @@
         const tributeAtMax = Number(char.faction||0)>=PHASE6.tributeFactionMax;
         const tributeDisabled = (tributeLeft<=0)||tributeAtMax||(char.gold||0)<tributeCost;
         container.innerHTML = `<div class="eq-item-card"><div class="eq-item-name">Crafting Bench</div><div class="eq-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Epic ${char.crafting.shards.epic}</div><div class="eq-item-bonus">Salvage gear &amp; reroll target slot using shards.</div><div class="eq-item-actions"><button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button></div><div class="eq-item-actions compact" style="margin-top:6px"><select id="craft-reroll-slot" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)"><option value="weapon">Weapon</option><option value="chest">Chest</option><option value="legs">Legs</option><option value="feet">Feet</option><option value="offhand">Offhand</option><option value="charm">Charm</option></select><button class="btn" onclick="craftTargetedRerollFromUI()">Targeted Reroll</button></div><div class="eq-item-bonus" style="margin-top:6px">Cost: 10 Common + 6 Magic + 2 Rare + 120g</div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Occultist Reforge</div><div class="eq-item-type">Rerolls one random non-epic gear piece in your inventory.</div><div class="eq-item-bonus">${occultistPrice}g</div><div class="eq-item-actions"><button class="btn" onclick="rerollRandomInventoryItem()">Reforge</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-epic">Mystic Chest</div><div class="eq-item-type">Pay to open a mysterious chest — chance for runes, shards, or gear.</div><div class="eq-item-bonus">${mysticCost}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseMysticChest()">Open</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Faction Tribute</div><div class="eq-item-type">Offer gold for +${PHASE6.tributeFactionPerDonation} faction (daily cap ${PHASE6.tributeDailyCap}).</div><div class="eq-item-bonus">${tributeCost}g · Remaining today: ${tributeLeft}${tributeAtMax?' · MAXED':''}</div><div class="eq-item-actions"><button class="btn${tributeDisabled?'':' active'}" onclick="donateFactionTribute()" ${tributeDisabled?'disabled':''}>Donate</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Name Change Token</div><div class="eq-item-type">Permanently change your character's name. Current: ${char.name}</div><div class="eq-item-bonus">${nameTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseNameChangeToken()" ${(char.gold||0)>=nameTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Race Change Token</div><div class="eq-item-type">Change your race. Must be compatible with ${char.cls}. Current: ${char.race}</div><div class="eq-item-bonus">${raceTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseRaceChangeToken()" ${(char.gold||0)>=raceTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div>`;
+      } else if (section === 'lottery') {
+        container.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:4px 0';
+        renderLotterySection(container);
+      } else if (section === 'pachinko') {
+        container.style.cssText = 'display:flex;flex-direction:column;gap:10px;padding:4px 0';
+        renderPachinkoLobby(container);
       } else if (section === 'sell') {
         container.innerHTML = `<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">Sell items from your inventory by rarity. Locked and favorited items are always protected.</div><div style="display:flex;flex-wrap:wrap;gap:6px"><button class="btn" onclick="sellAllJunk()" title="Sell junk"><i class="ti ti-coins"></i> Sell Junk</button><button class="btn" onclick="sellByRarity('Normal')">Sell Common</button><button class="btn" onclick="sellByRarity('Magic')">Sell Magic</button><button class="btn" onclick="sellByRarity('Rare')">Sell Rare</button><button class="btn" onclick="sellByRarity('Epic')">Sell Epic</button><button class="btn danger" onclick="sellAllInventory()" title="Sell everything"><i class="ti ti-trash"></i> Sell All</button></div>`;
       }
@@ -13681,6 +13740,2111 @@
         const container = document.getElementById('popup-body')?.firstElementChild;
         if (container) renderShopSection(section, container);
       }
+      // Pachinko/Slots can be opened from the Casino tab but still call
+      // renderShop() internally — keep the casino popup fresh too.
+      if (typeof renderCasino === 'function' && _activePopup && _activePopup.startsWith('casino-')) {
+        renderCasino();
+      }
+    }
+
+
+    // ═══════════════════════════════════════════════════════════
+    // SCRATCH TICKETS — 1.3.25
+    // ═══════════════════════════════════════════════════════════
+
+    const SCRATCH_TICKETS = [
+      {
+        id: 'copper_scratch',
+        name: 'Copper Scratcher',
+        emoji: '🟤',
+        rarity: 'Common',
+        color: '#b87333',
+        bg: 'linear-gradient(135deg,#5c3b1e,#8b5e3c)',
+        cost: 50,
+        levelReq: 1,
+        desc: 'A humble copper-foil ticket. Small prizes but big hopes.',
+        squares: 9,
+        reveal: 3,
+        prizes: [
+          { label: '25g',    weight: 35, type: 'gold',   value: 25   },
+          { label: '50g',    weight: 30, type: 'gold',   value: 50   },
+          { label: '100g',   weight: 18, type: 'gold',   value: 100  },
+          { label: '250g',   weight:  8, type: 'gold',   value: 250  },
+          { label: 'MISS',   weight:  7, type: 'miss',   value: 0    },
+          { label: 'El Rune',weight:  2, type: 'rune',   value: 'El' },
+        ],
+        matchNeeded: 3,
+      },
+      {
+        id: 'silver_scratch',
+        name: 'Silver Fortune Slip',
+        emoji: '⚪',
+        rarity: 'Uncommon',
+        color: '#c0c0c0',
+        bg: 'linear-gradient(135deg,#2a2a3a,#4a4a6a)',
+        cost: 300,
+        levelReq: 10,
+        desc: 'Gleaming silver-foil. Better odds, bigger prizes.',
+        squares: 9,
+        reveal: 3,
+        prizes: [
+          { label: '150g',   weight: 30, type: 'gold',   value: 150  },
+          { label: '500g',   weight: 25, type: 'gold',   value: 500  },
+          { label: '1,000g', weight: 16, type: 'gold',   value: 1000 },
+          { label: '2,500g', weight:  8, type: 'gold',   value: 2500 },
+          { label: 'MISS',   weight:  8, type: 'miss',   value: 0    },
+          { label: 'Tir',    weight:  7, type: 'rune',   value: 'Tir'},
+          { label: 'Tal',    weight:  4, type: 'rune',   value: 'Tal'},
+          { label: '2× HP',  weight:  2, type: 'hppot',  value: 2    },
+        ],
+        matchNeeded: 3,
+      },
+      {
+        id: 'ember_scratch',
+        name: 'Ember Jackpot Card',
+        emoji: '🔥',
+        rarity: 'Rare',
+        color: '#ff6a00',
+        bg: 'linear-gradient(135deg,#3a1500,#7a3000)',
+        cost: 1200,
+        levelReq: 25,
+        desc: 'Flame-foil ticket with a blazing jackpot. High risk, high reward.',
+        squares: 12,
+        reveal: 4,
+        prizes: [
+          { label: '1k g',   weight: 28, type: 'gold',   value: 1000  },
+          { label: '3k g',   weight: 22, type: 'gold',   value: 3000  },
+          { label: '8k g',   weight: 12, type: 'gold',   value: 8000  },
+          { label: '20k g',  weight:  5, type: 'gold',   value: 20000 },
+          { label: 'MISS',   weight: 10, type: 'miss',   value: 0     },
+          { label: 'Sol',    weight: 10, type: 'rune',   value: 'Sol' },
+          { label: 'Dol',    weight:  7, type: 'rune',   value: 'Dol' },
+          { label: '5× HP',  weight:  4, type: 'hppot',  value: 5     },
+          { label: 'JACKPOT',weight:  2, type: 'gold',   value: 75000 },
+        ],
+        matchNeeded: 4,
+      },
+      {
+        id: 'arcane_scratch',
+        name: 'Arcane Mystic Slip',
+        emoji: '🔮',
+        rarity: 'Epic',
+        color: '#9b59b6',
+        bg: 'linear-gradient(135deg,#1a003a,#3d006a)',
+        cost: 5000,
+        levelReq: 40,
+        desc: 'Pulsing with magical energy. Rare shards and epic gear await.',
+        squares: 12,
+        reveal: 4,
+        prizes: [
+          { label: '5k g',    weight: 22, type: 'gold',   value: 5000   },
+          { label: '15k g',   weight: 18, type: 'gold',   value: 15000  },
+          { label: '40k g',   weight:  8, type: 'gold',   value: 40000  },
+          { label: 'MISS',    weight: 10, type: 'miss',   value: 0      },
+          { label: 'Kor',     weight: 12, type: 'rune',   value: 'Kor'  },
+          { label: 'Bron',    weight:  8, type: 'rune',   value: 'Bron' },
+          { label: 'Shards',  weight: 12, type: 'shards', value: 'rare' },
+          { label: 'Epic Gear',weight: 6, type: 'gear',   value: 'epic' },
+          { label: 'JACKPOT', weight:  4, type: 'gold',   value: 200000 },
+        ],
+        matchNeeded: 4,
+      },
+      {
+        id: 'legend_scratch',
+        name: 'Legendary Ember Codex',
+        emoji: '🌟',
+        rarity: 'Legendary',
+        color: '#f1c40f',
+        bg: 'linear-gradient(135deg,#2a1800,#5a3800)',
+        cost: 20000,
+        levelReq: 60,
+        desc: 'The ultimate scratcher. Legendary gear, high runes, and the mythic jackpot.',
+        squares: 16,
+        reveal: 5,
+        prizes: [
+          { label: '20k g',     weight: 18, type: 'gold',   value: 20000   },
+          { label: '60k g',     weight: 14, type: 'gold',   value: 60000   },
+          { label: '150k g',    weight:  6, type: 'gold',   value: 150000  },
+          { label: 'MISS',      weight:  8, type: 'miss',   value: 0       },
+          { label: 'Lyr',       weight: 10, type: 'rune',   value: 'Lyr'   },
+          { label: 'Vald',      weight:  8, type: 'rune',   value: 'Vald'  },
+          { label: 'Zhar',      weight:  5, type: 'rune',   value: 'Zhar'  },
+          { label: 'Epic Shards',weight: 8, type: 'shards', value: 'epic'  },
+          { label: 'Leg. Gear', weight: 10, type: 'gear',   value: 'legendary' },
+          { label: 'Morr',      weight:  5, type: 'rune',   value: 'Morr'  },
+          { label: 'JACKPOT',   weight:  8, type: 'gold',   value: 1000000 },
+        ],
+        matchNeeded: 4,
+      },
+    ];
+
+    // Build a weighted random prize pool for a ticket
+    function scratchWeightedPick(prizes) {
+      const total = prizes.reduce((s, p) => s + p.weight, 0);
+      let r = Math.random() * total;
+      for (const p of prizes) {
+        r -= p.weight;
+        if (r <= 0) return p;
+      }
+      return prizes[prizes.length - 1];
+    }
+
+    function renderLotterySection(container) {
+      if (!char) return;
+      let html = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">Buy a ticket, then scratch the foil to reveal your prizes. Match symbols to win!</div>';
+      SCRATCH_TICKETS.forEach(ticket => {
+        const locked = false;
+        const canAfford = (char.gold || 0) >= ticket.cost;
+        const rarityColorMap = { Common: '#aaa', Uncommon: '#4ade80', Rare: '#60a5fa', Epic: '#c084fc', Legendary: '#fb923c' };
+        const rc = rarityColorMap[ticket.rarity] || '#aaa';
+        html += `<div class="eq-item-card" style="position:relative;overflow:hidden">
+          <div style="position:absolute;inset:0;opacity:0.12;background:${ticket.bg};border-radius:inherit;pointer-events:none"></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <span style="font-size:28px">${ticket.emoji}</span>
+            <div>
+              <div class="eq-item-name" style="color:${ticket.color}">${ticket.name}</div>
+              <div style="font-size:10px;font-weight:700;color:${rc};text-transform:uppercase;letter-spacing:.06em">${ticket.rarity}</div>
+            </div>
+          </div>
+          <div class="eq-item-type">${ticket.desc}</div>
+          <div class="eq-item-bonus">Cost: ${ticket.cost.toLocaleString()}g</div>
+          <div class="eq-item-actions">
+            <button class="btn${canAfford ? ' active' : ''}" onclick="buyScratchTicket('${ticket.id}')" ${!canAfford ? 'disabled title="Not enough gold"' : ''}>
+              🎟 Buy & Scratch
+            </button>
+          </div>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function buyScratchTicket(ticketId) {
+      if (!char) return;
+      const ticket = SCRATCH_TICKETS.find(t => t.id === ticketId);
+      if (!ticket) return;
+      if ((char.gold || 0) < ticket.cost) { log('Not enough gold for a ' + ticket.name + '.', 'info'); return; }
+      char.gold -= ticket.cost;
+
+      // Generate the ticket squares
+      const totalSquares = ticket.squares;
+      const allPrizes = [];
+      for (let i = 0; i < totalSquares; i++) {
+        allPrizes.push(scratchWeightedPick(ticket.prizes));
+      }
+
+      // Show the scratch modal
+      showScratchModal(ticket, allPrizes);
+      renderShop();
+      autoSave();
+    }
+
+    function showScratchModal(ticket, squares) {
+      // Build modal over the popup
+      const existing = document.getElementById('scratch-overlay');
+      if (existing) existing.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'scratch-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);';
+
+      const cols = ticket.squares <= 9 ? 3 : 4;
+      const gridCols = 'grid-template-columns:repeat(' + cols + ',1fr)';
+
+      let squaresHTML = squares.map((prize, idx) => {
+        let prizeIcon = '❓';
+        let prizeColor = '#fff';
+        if (prize.type === 'gold')   { prizeIcon = '💰'; prizeColor = '#fbbf24'; }
+        if (prize.type === 'rune')   { prizeIcon = '🔷'; prizeColor = '#60a5fa'; }
+        if (prize.type === 'hppot') { prizeIcon = '🧪'; prizeColor = '#ef4444'; }
+        if (prize.type === 'shards') { prizeIcon = '💎'; prizeColor = '#a78bfa'; }
+        if (prize.type === 'gear')   { prizeIcon = '⚔️'; prizeColor = '#fb923c'; }
+        if (prize.type === 'miss')   { prizeIcon = '✕';  prizeColor = '#6b7280'; }
+        if (prize.label === 'JACKPOT') { prizeIcon = '🌟'; prizeColor = '#f59e0b'; }
+        return `<div class="scratch-square" data-idx="${idx}" data-revealed="0"
+          data-icon="${prizeIcon}" data-label="${prize.label}" data-color="${prizeColor}"
+          onclick="revealScratchSquare(this,${idx})"
+          style="width:100%;aspect-ratio:1;background:${ticket.bg};border:2px solid ${ticket.color};border-radius:8px;
+                 display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;
+                 user-select:none;transition:transform 0.15s;font-size:13px;font-weight:700;color:#888;">
+          <span style="font-size:22px">🪙</span>
+        </div>`;
+      }).join('');
+
+      overlay.innerHTML = `
+        <div style="background:var(--bg-primary);border:1.5px solid ${ticket.color};border-radius:16px;padding:20px;max-width:400px;width:95%;box-shadow:0 0 40px ${ticket.color}44">
+          <div style="text-align:center;margin-bottom:14px">
+            <div style="font-size:32px">${ticket.emoji}</div>
+            <div style="font-size:16px;font-weight:700;color:${ticket.color};margin-top:4px">${ticket.name}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:2px">Click squares to scratch · Match ${ticket.matchNeeded} to win!</div>
+          </div>
+          <div id="scratch-grid" style="display:grid;${gridCols};gap:8px;margin-bottom:14px">${squaresHTML}</div>
+          <div id="scratch-result" style="text-align:center;min-height:32px;font-size:13px;font-weight:600;color:var(--text-primary)"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;justify-content:center">
+            <button class="btn active" id="scratch-all-btn" onclick="scratchAllRemaining()">✨ Scratch All</button>
+            <button class="btn" onclick="closeScratchModal()">Close</button>
+          </div>
+        </div>`;
+
+      // Store data on overlay for access
+      overlay._ticket = ticket;
+      overlay._squares = squares;
+      overlay._revealed = 0;
+      overlay._claimed = false;
+
+      document.body.appendChild(overlay);
+    }
+
+    function revealScratchSquare(el, idx) {
+      const overlay = document.getElementById('scratch-overlay');
+      if (!overlay || el.dataset.revealed === '1') return;
+      el.dataset.revealed = '1';
+      overlay._revealed = (overlay._revealed || 0) + 1;
+
+      // Flip animation
+      el.style.transform = 'scale(0.85)';
+      setTimeout(() => {
+        el.innerHTML = `<div style="text-align:center;line-height:1.2"><div style="font-size:20px">${el.dataset.icon}</div><div style="font-size:10px;font-weight:700;color:${el.dataset.color};margin-top:2px">${el.dataset.label}</div></div>`;
+        el.style.background = 'var(--bg-secondary)';
+        el.style.cursor = 'default';
+        el.style.transform = 'scale(1)';
+      }, 80);
+
+      checkScratchComplete(overlay);
+    }
+
+    function scratchAllRemaining() {
+      const overlay = document.getElementById('scratch-overlay');
+      if (!overlay) return;
+      document.querySelectorAll('.scratch-square[data-revealed="0"]').forEach((el, i) => {
+        setTimeout(() => revealScratchSquare(el, Number(el.dataset.idx)), i * 60);
+      });
+    }
+
+    function checkScratchComplete(overlay) {
+      if (!overlay) return;
+      const ticket = overlay._ticket;
+      const squares = overlay._squares;
+      const totalRevealed = document.querySelectorAll('.scratch-square[data-revealed="1"]').length;
+      if (totalRevealed < ticket.squares) return;
+      if (overlay._claimed) return;
+      overlay._claimed = true;
+
+      // Tally prize counts
+      const counts = {};
+      squares.forEach(p => {
+        if (p.type === 'miss') return;
+        counts[p.label] = (counts[p.label] || 0) + 1;
+      });
+
+      const winningEntries = Object.entries(counts).filter(([_, c]) => c >= ticket.matchNeeded);
+      const resultEl = document.getElementById('scratch-result');
+
+      if (winningEntries.length === 0) {
+        if (resultEl) resultEl.innerHTML = '<span style="color:#6b7280">No matches — better luck next time!</span>';
+        return;
+      }
+
+      // Award all matched prizes
+      let winLines = [];
+      winningEntries.forEach(([label, count]) => {
+        const prize = ticket.prizes.find(p => p.label === label);
+        if (!prize) return;
+        const times = Math.floor(count / ticket.matchNeeded);
+        for (let i = 0; i < times; i++) {
+          if (prize.type === 'gold') {
+            char.gold = (char.gold || 0) + prize.value;
+            winLines.push('🏆 Won ' + prize.value.toLocaleString() + ' gold!');
+            log('🎟 Scratch Ticket: Won ' + prize.value.toLocaleString() + 'g from ' + ticket.name + '!', 'loot');
+          } else if (prize.type === 'rune') {
+            if (!char.runes) char.runes = {};
+            char.runes[prize.value] = (char.runes[prize.value] || 0) + 1;
+            winLines.push('🔷 Won a ' + prize.value + ' Rune!');
+            log('🎟 Scratch Ticket: Won ' + prize.value + ' Rune from ' + ticket.name + '!', 'loot');
+          } else if (prize.type === 'hppot') {
+            char.healpotions = (char.healpotions || 0) + prize.value;
+            winLines.push('🧪 Won ' + prize.value + 'x Minor HP Potion!');
+            log('🎟 Scratch Ticket: Won ' + prize.value + ' potions from ' + ticket.name + '!', 'loot');
+          } else if (prize.type === 'shards') {
+            if (!char.crafting) char.crafting = { shards: { common: 0, magic: 0, rare: 0, epic: 0 } };
+            const amount = prize.value === 'epic' ? 2 : 5;
+            char.crafting.shards[prize.value] = (char.crafting.shards[prize.value] || 0) + amount;
+            winLines.push('💎 Won ' + amount + 'x ' + prize.value.charAt(0).toUpperCase() + prize.value.slice(1) + ' Shards!');
+            log('🎟 Scratch Ticket: Won ' + amount + ' ' + prize.value + ' shards from ' + ticket.name + '!', 'loot');
+          } else if (prize.type === 'gear') {
+            const rarityMap = { epic: 'Epic', legendary: 'Legendary' };
+            const rarity = rarityMap[prize.value] || 'Rare';
+            if (typeof rollItemVariant === 'function') {
+              const gearItem = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: char.level });
+              if (gearItem) {
+                const added = addToInventory(gearItem);
+                if (added) {
+                  winLines.push('⚔️ Won ' + rarity + ' gear: ' + (gearItem.name || 'item') + '!');
+                  log('🎟 Scratch Ticket: Won ' + rarity + ' gear from ' + ticket.name + '!', 'loot');
+                }
+              }
+            } else {
+              // Fallback: give gold equivalent
+              const goldVal = rarity === 'Legendary' ? 10000 : 2500;
+              char.gold = (char.gold || 0) + goldVal;
+              winLines.push('⚔️ Gear prize: ' + goldVal.toLocaleString() + 'g (bags full)!');
+            }
+          }
+        }
+      });
+
+      if (resultEl && winLines.length > 0) {
+        resultEl.innerHTML = winLines.map(l => '<div>' + l + '</div>').join('');
+      }
+
+      // Update button
+      const btn = document.getElementById('scratch-all-btn');
+      if (btn) { btn.disabled = true; btn.textContent = '✓ Scratched'; }
+
+      renderShop();
+      renderAll();
+      autoSave();
+    }
+
+    function closeScratchModal() {
+      const overlay = document.getElementById('scratch-overlay');
+      if (overlay) overlay.remove();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // CASINO TAB — 1.3.29
+    // Hub for Slots, Pachinko, and Texas Hold'em
+    // ═══════════════════════════════════════════════════════════
+    function renderCasino() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const note = document.getElementById('casino-note');
+      if (note) note.textContent = 'Welcome to the Golden Ember Casino — your gold: ' + (char.gold || 0).toLocaleString() + 'g. Spin the slots, scratch a ticket, drop a ball at Pachinko, or face the dealer at Hold\'em!';
+      const slotsSub = document.getElementById('casino-btn-slots-sub');
+      if (slotsSub) slotsSub.textContent = SLOT_MACHINES.length + ' machines · 5 reels · wilds, scatters & free spins!';
+      // Re-render an open casino popup section in place
+      if (_activePopup && _activePopup.startsWith('casino-')) {
+        const section = _activePopup.replace('casino-', '');
+        const container = document.getElementById('popup-body')?.firstElementChild;
+        if (container && section === 'slots') renderSlotsLobby(container);
+        if (container && section === 'pachinko') renderPachinkoLobby(container);
+        if (container && section === 'lottery') renderLotterySection(container);
+      }
+    }
+
+    function openCasinoSection(section) {
+      if (!char) return;
+      if (section === 'poker') { openPokerGame(); return; }
+      if (section === 'pachinko') { openCasinoPachinko(); return; }
+      // section === 'slots' or 'lottery' → popup lobby
+      const titles = { slots: '🎰 Slots', lottery: '🎟️ Scratch Tickets' };
+      if (_activePopup === 'casino-' + section) { closePopup(); return; }
+      _activePopup = 'casino-' + section;
+      document.querySelectorAll('.shop-section-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('csbtn-' + section);
+      if (activeBtn) activeBtn.classList.add('active');
+      const body = document.getElementById('popup-body');
+      const pool = document.getElementById('popup-pool');
+      if (body.firstElementChild && pool) { body.firstElementChild.style.display = 'none'; pool.appendChild(body.firstElementChild); }
+      const div = document.createElement('div');
+      div.id = 'casino-section-' + section;
+      div.style.cssText = 'display:flex;flex-direction:column;gap:10px;padding:4px 0';
+      body.appendChild(div);
+      if (section === 'slots') renderSlotsLobby(div);
+      else if (section === 'lottery') renderLotterySection(div);
+      document.getElementById('popup-title').textContent = titles[section] || section;
+      document.getElementById('popup-backdrop').classList.add('open');
+      try { sessionStorage.setItem('EQ_activePopup', 'casino-' + section); } catch(e) {}
+    }
+
+    // Pachinko opened from the casino: render the lobby into the popup
+    function openCasinoPachinko() {
+      if (_activePopup === 'casino-pachinko') { closePopup(); return; }
+      _activePopup = 'casino-pachinko';
+      document.querySelectorAll('.shop-section-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('csbtn-pachinko');
+      if (activeBtn) activeBtn.classList.add('active');
+      const body = document.getElementById('popup-body');
+      const pool = document.getElementById('popup-pool');
+      if (body.firstElementChild && pool) { body.firstElementChild.style.display = 'none'; pool.appendChild(body.firstElementChild); }
+      const div = document.createElement('div');
+      div.id = 'casino-section-pachinko';
+      div.style.cssText = 'display:flex;flex-direction:column;gap:10px;padding:4px 0';
+      body.appendChild(div);
+      renderPachinkoLobby(div);
+      document.getElementById('popup-title').textContent = '🔮 Pachinko';
+      document.getElementById('popup-backdrop').classList.add('open');
+      try { sessionStorage.setItem('EQ_activePopup', 'casino-pachinko'); } catch(e) {}
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // SLOTS — 1.3.31  (Vegas-style 5×3 video slots)
+    // Six themed machines, each a 5-reel × 3-row grid with:
+    //   • Multiple paylines (rows + diagonals + V/Λ shapes)
+    //   • Adjustable bet-per-line (line bet × lines = total bet)
+    //   • Wild symbols that substitute for any paying symbol
+    //   • Scatter symbols that pay anywhere and trigger free spins
+    //   • Left-to-right line wins for 3, 4 or 5 of a kind
+    // Payouts are a multiple of the LINE bet (Vegas convention).
+    // Big special symbols can also award runes/gear on 4+ of a kind.
+    // ═══════════════════════════════════════════════════════════
+
+    // Standard 5×3 payline map. Each line is [row per reel] (row 0=top).
+    // 9 lines: 3 straight rows, 2 big diagonals, 4 zig-zags.
+    const SLOT_PAYLINES = [
+      [1, 1, 1, 1, 1], // middle row
+      [0, 0, 0, 0, 0], // top row
+      [2, 2, 2, 2, 2], // bottom row
+      [0, 1, 2, 1, 0], // V
+      [2, 1, 0, 1, 2], // Λ
+      [1, 0, 0, 0, 1], // top arc
+      [1, 2, 2, 2, 1], // bottom arc
+      [0, 0, 1, 2, 2], // descending
+      [2, 2, 1, 0, 0], // ascending
+    ];
+
+    // Helper to build a paying symbol entry.
+    // pays: { '3': mult, '4': mult, '5': mult } as multiples of the line bet.
+    function _slotSym(sym, weight, pays, opts) {
+      return Object.assign({ sym, weight, pays: pays || {} }, opts || {});
+    }
+
+    const SLOT_MACHINES = [
+      {
+        id: 'lucky_sevens',
+        name: 'Lucky 7s Deluxe',
+        emoji: '🎰',
+        color: '#ffd34d',
+        glowColor: 'rgba(255,211,77,0.16)',
+        bg: 'linear-gradient(160deg,#3a2e08,#6b5410)',
+        reelBg: 'linear-gradient(180deg,#1a1405,#000)',
+        lineBet: 5, levelReq: 1,
+        desc: 'The timeless classic — bars, bells, cherries and the legendary triple seven.',
+        freeSpins: 8,
+        symbols: [
+          _slotSym('🍒', 30, { '3': 3, '4': 10, '5': 34 }),
+          _slotSym('🍋', 26, { '3': 4, '4': 13, '5': 43 }),
+          _slotSym('🔔', 20, { '3': 7, '4': 21, '5': 77 }),
+          _slotSym('💰', 14, { '3': 10, '4': 34, '5': 128 }),
+          _slotSym('7️⃣', 9, { '3': 19, '4': 94, '5': 411 }),
+          _slotSym('⭐', 3, { '3': 3, '4': 7, '5': 21 }, { scatter: true }),
+          _slotSym('🃏', 5, {}, { wild: true }),
+        ],
+      },
+      {
+        id: 'wolf_moon',
+        name: 'Wolf Moon',
+        emoji: '🐺',
+        color: '#9fd8ff',
+        glowColor: 'rgba(159,216,255,0.18)',
+        bg: 'linear-gradient(160deg,#0a1430,#1b2c5a)',
+        reelBg: 'linear-gradient(180deg,#0a1024,#000)',
+        lineBet: 20, levelReq: 8,
+        desc: 'Howl at the moon on the windswept plains. Moons scatter, the wolf runs wild.',
+        freeSpins: 10,
+        symbols: [
+          _slotSym('🦌', 30, { '3': 3, '4': 10, '5': 34 }),
+          _slotSym('🦅', 26, { '3': 4, '4': 13, '5': 43 }),
+          _slotSym('🐗', 20, { '3': 7, '4': 21, '5': 77 }),
+          _slotSym('🏔️', 14, { '3': 10, '4': 34, '5': 128 }),
+          _slotSym('🐺', 9, { '3': 19, '4': 94, '5': 411 }, { special: { type: 'rune', value: 'Tir', need: 4 } }),
+          _slotSym('🌕', 3, { '3': 3, '4': 7, '5': 21 }, { scatter: true }),
+          _slotSym('🐾', 5, {}, { wild: true }),
+        ],
+      },
+      {
+        id: 'raging_buffalo',
+        name: 'Raging Buffalo',
+        emoji: '🦬',
+        color: '#ffb24d',
+        glowColor: 'rgba(255,178,77,0.18)',
+        bg: 'linear-gradient(160deg,#3a2008,#6b3a10)',
+        reelBg: 'linear-gradient(180deg,#241405,#000)',
+        lineBet: 60, levelReq: 18,
+        desc: 'Stampede across the canyon at sunset. Land buffalo herds for thundering wins.',
+        freeSpins: 12,
+        symbols: [
+          _slotSym('🌵', 30, { '3': 3, '4': 10, '5': 34 }),
+          _slotSym('🦅', 26, { '3': 4, '4': 13, '5': 43 }),
+          _slotSym('🐎', 20, { '3': 7, '4': 21, '5': 77 }),
+          _slotSym('🦊', 14, { '3': 10, '4': 34, '5': 128 }),
+          _slotSym('🦬', 9, { '3': 19, '4': 94, '5': 411 }, { special: { type: 'rune', value: 'Ral', need: 4 } }),
+          _slotSym('🌅', 3, { '3': 3, '4': 7, '5': 21 }, { scatter: true }),
+          _slotSym('💎', 5, {}, { wild: true }),
+        ],
+      },
+      {
+        id: 'fortune_gold',
+        name: 'Fortune Gold',
+        emoji: '🧧',
+        color: '#ff7a6b',
+        glowColor: 'rgba(255,122,107,0.20)',
+        bg: 'linear-gradient(160deg,#3a0810,#6b1018)',
+        reelBg: 'linear-gradient(180deg,#240508,#000)',
+        lineBet: 150, levelReq: 30,
+        desc: 'The God of Wealth showers blessings. Gold ingots scatter for fortune spins.',
+        freeSpins: 12,
+        symbols: [
+          _slotSym('🏮', 30, { '3': 3, '4': 10, '5': 34 }),
+          _slotSym('🪙', 26, { '3': 4, '4': 13, '5': 43 }),
+          _slotSym('🎴', 20, { '3': 7, '4': 21, '5': 77 }),
+          _slotSym('🐉', 14, { '3': 10, '4': 34, '5': 128 }),
+          _slotSym('👤', 9, { '3': 19, '4': 94, '5': 411 }, { special: { type: 'rune', value: 'Ort', need: 4 } }),
+          _slotSym('🧧', 3, { '3': 3, '4': 7, '5': 21 }, { scatter: true }),
+          _slotSym('🀄', 5, {}, { wild: true }),
+        ],
+      },
+      {
+        id: 'dragons_gold',
+        name: 'Dragon Gold',
+        emoji: '🐲',
+        color: '#ffd24d',
+        glowColor: 'rgba(255,210,77,0.22)',
+        bg: 'linear-gradient(160deg,#102a3a,#1a5a6b)',
+        reelBg: 'linear-gradient(180deg,#06222e,#000)',
+        lineBet: 600, levelReq: 45,
+        desc: 'The golden dragon coils through the reels. Stacked dragons can award real gear.',
+        freeSpins: 15,
+        symbols: [
+          _slotSym('🔵', 30, { '3': 3, '4': 10, '5': 34 }),
+          _slotSym('🟡', 26, { '3': 4, '4': 13, '5': 43 }),
+          _slotSym('🟣', 20, { '3': 7, '4': 21, '5': 77 }),
+          _slotSym('🔱', 14, { '3': 10, '4': 34, '5': 128 }),
+          _slotSym('🐲', 9, { '3': 19, '4': 94, '5': 411 }, { special: { type: 'gear', value: 'epic', need: 4 } }),
+          _slotSym('🌊', 3, { '3': 3, '4': 7, '5': 21 }, { scatter: true }),
+          _slotSym('💠', 5, {}, { wild: true }),
+        ],
+      },
+      {
+        id: 'celestial_jackpot',
+        name: 'Celestial Megaways',
+        emoji: '🌌',
+        color: '#c08bff',
+        glowColor: 'rgba(192,139,255,0.22)',
+        bg: 'linear-gradient(160deg,#1a0833,#3a1066)',
+        reelBg: 'linear-gradient(180deg,#120526,#000)',
+        lineBet: 3000, levelReq: 65,
+        desc: 'The ultimate high-roller machine. Align the cosmos for legendary gear and a colossal jackpot.',
+        freeSpins: 20,
+        symbols: [
+          _slotSym('🌙', 30, { '3': 3, '4': 10, '5': 34 }),
+          _slotSym('⭐', 26, { '3': 4, '4': 13, '5': 43 }),
+          _slotSym('☄️', 20, { '3': 7, '4': 21, '5': 77 }),
+          _slotSym('🪐', 14, { '3': 10, '4': 34, '5': 128 }),
+          _slotSym('🌌', 9, { '3': 19, '4': 94, '5': 411 }, { special: { type: 'gear', value: 'legendary', need: 4 } }),
+          _slotSym('☀️', 3, { '3': 3, '4': 7, '5': 21 }, { scatter: true }),
+          _slotSym('💫', 5, {}, { wild: true }),
+        ],
+      },
+    ];
+
+    const SLOT_REELS = 5;
+    const SLOT_ROWS = 3;
+    const SLOT_SCATTER_NEED = 3; // scatters needed to trigger free spins
+
+    function getSlotMachine(id) { return SLOT_MACHINES.find(m => m.id === id); }
+
+    function _slotPickSymbol(machine) {
+      const total = machine.symbols.reduce((s, x) => s + x.weight, 0);
+      let r = Math.random() * total;
+      for (const s of machine.symbols) { r -= s.weight; if (r <= 0) return s; }
+      return machine.symbols[machine.symbols.length - 1];
+    }
+
+    // Build a 5×3 grid of symbol objects: grid[reel][row]
+    function _slotSpinGrid(machine) {
+      const grid = [];
+      for (let r = 0; r < SLOT_REELS; r++) {
+        const col = [];
+        for (let row = 0; row < SLOT_ROWS; row++) col.push(_slotPickSymbol(machine));
+        grid.push(col);
+      }
+      return grid;
+    }
+
+    function _slotTotalBet(m) { return m.lineBet * SLOT_PAYLINES.length; }
+
+    function renderSlotsLobby(container) {
+      if (!char || !container) return;
+      const gold = char.gold || 0;
+      let html = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">Pick a machine and spin the 5-reel grid. Each spin bets across ' + SLOT_PAYLINES.length + ' paylines — land 3+ matching symbols left-to-right to win. Wilds substitute, and scatters trigger free spins!</div>';
+      SLOT_MACHINES.forEach(m => {
+        const locked = false;
+        const totalBet = _slotTotalBet(m);
+        const canAfford = gold >= totalBet;
+        // Top line win = best 5-of-a-kind paying symbol × line bet
+        const topPay = Math.max(...m.symbols.map(s => (s.pays && s.pays['5']) || 0));
+        const showcase = m.symbols.slice(0, 5).map(s => s.sym).join('');
+        html += `<div class="eq-item-card" style="position:relative;overflow:hidden;border-color:${m.color}44">
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,${m.glowColor},transparent 70%);pointer-events:none"></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <span style="font-size:30px">${m.emoji}</span>
+            <div>
+              <div class="eq-item-name" style="color:${m.color}">${m.name}</div>
+              <div style="font-size:10px;color:var(--text-secondary)">${SLOT_PAYLINES.length} lines · ${totalBet.toLocaleString()}g/spin · top line ×${topPay.toLocaleString()}</div>
+            </div>
+          </div>
+          <div class="eq-item-type">${m.desc}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;font-size:20px;letter-spacing:2px">${showcase}</div>
+          <div class="eq-item-actions">
+            <button class="btn${canAfford ? ' active' : ''}"
+              onclick="openSlotMachine('${m.id}')"
+              ${!canAfford ? 'disabled title="Not enough gold"' : ''}>
+              🎰 Play — ${totalBet.toLocaleString()}g
+            </button>
+          </div>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    let _slotSpinning = false;
+    let _slotState = null; // { machine, betMult, freeSpins, freeSpinsTotal, lastWin }
+
+    function openSlotMachine(machineId) {
+      if (!char) return;
+      const m = getSlotMachine(machineId);
+      if (!m) return;
+      _slotSpinning = false;
+      _slotState = { machine: m, betMult: 1, freeSpins: 0, freeSpinsTotal: 0, lastWin: 0 };
+      const existing = document.getElementById('slot-overlay');
+      if (existing) existing.remove();
+      const overlay = document.createElement('div');
+      overlay.id = 'slot-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:80;display:flex;align-items:center;justify-content:center;padding:10px;animation:fadeIn 0.2s ease';
+
+      // Build empty 5×3 grid cells
+      const start = m.symbols[0].sym;
+      let gridCells = '';
+      for (let r = 0; r < SLOT_REELS; r++) {
+        gridCells += `<div class="slot-reel-col" id="slot-col-${r}" style="display:flex;flex-direction:column;gap:4px;flex:1">`;
+        for (let row = 0; row < SLOT_ROWS; row++) {
+          gridCells += `<div class="slot-cell" id="slot-cell-${r}-${row}" style="
+            aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+            font-size:clamp(22px,7vw,40px);background:${m.reelBg};
+            border:1px solid ${m.color}33;border-radius:8px;
+            box-shadow:inset 0 0 10px rgba(0,0,0,0.85);transition:transform .08s">${start}</div>`;
+        }
+        gridCells += `</div>`;
+      }
+
+      overlay.innerHTML = `
+        <div id="slot-modal" style="
+          background:${m.bg};
+          border:2px solid ${m.color}66;
+          border-radius:14px;
+          padding:14px;
+          width:min(560px,100%);
+          max-height:94vh;
+          overflow-y:auto;
+          color:#f0e6cc;
+          font-family:var(--font,'Georgia',serif);
+          box-shadow:0 12px 48px rgba(0,0,0,0.7),inset 0 0 0 1px ${m.color}33;
+        ">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:18px;font-weight:800;color:${m.color};text-shadow:1px 1px 2px #000;letter-spacing:1px">${m.emoji} ${m.name}</span>
+            <button class="btn" onclick="closeSlotMachine()" style="font-size:11px;padding:3px 10px">✕ Close</button>
+          </div>
+
+          <div id="slot-freespin-banner" style="display:none;text-align:center;font-weight:800;font-size:13px;color:#ffe27a;background:rgba(255,210,77,0.12);border:1px solid ${m.color}66;border-radius:8px;padding:4px;margin-bottom:8px"></div>
+
+          <div id="slot-grid" style="display:flex;gap:4px;padding:8px;background:rgba(0,0,0,0.45);border-radius:10px;border:1px solid ${m.color}44;margin-bottom:8px">
+            ${gridCells}
+          </div>
+
+          <div id="slot-result" style="font-size:13px;font-weight:700;color:${m.color};min-height:20px;text-align:center;margin-bottom:8px"></div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(0,0,0,0.35);border-radius:8px;padding:8px 10px;margin-bottom:10px;flex-wrap:wrap">
+            <div style="font-size:11px;color:#d8cfa8">Gold<br><strong id="slot-gold-disp" style="color:${m.color};font-size:13px">${(char.gold||0).toLocaleString()}</strong></div>
+            <div style="font-size:11px;color:#d8cfa8;text-align:center">Bet / line<br>
+              <span style="display:inline-flex;align-items:center;gap:4px;margin-top:2px">
+                <button class="btn" onclick="slotChangeBet(-1)" style="padding:1px 8px;font-size:14px">−</button>
+                <strong id="slot-linebet-disp" style="color:${m.color};font-size:13px;min-width:54px;display:inline-block">${m.lineBet.toLocaleString()}</strong>
+                <button class="btn" onclick="slotChangeBet(1)" style="padding:1px 8px;font-size:14px">+</button>
+              </span>
+            </div>
+            <div style="font-size:11px;color:#d8cfa8;text-align:center">Total bet<br><strong id="slot-totalbet-disp" style="color:${m.color};font-size:13px">${_slotTotalBet(m).toLocaleString()}</strong><br><span style="font-size:9px;opacity:.7">${SLOT_PAYLINES.length} lines</span></div>
+            <div style="font-size:11px;color:#d8cfa8;text-align:right">Last win<br><strong id="slot-win-disp" style="color:#7CFFB2;font-size:13px">0</strong></div>
+          </div>
+
+          <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px">
+            <button class="btn active" id="slot-spin-btn" onclick="slotSpin('${m.id}')" style="background:${m.color};color:#000;font-weight:800;font-size:15px;padding:10px 34px;border-radius:24px">🎰 SPIN</button>
+          </div>
+
+          <details style="font-size:11px;color:#c8c0a8">
+            <summary style="cursor:pointer;color:${m.color};font-weight:700">Paytable &amp; Rules</summary>
+            <div style="margin-top:6px;padding:8px 10px;background:rgba(0,0,0,0.3);border-radius:6px">
+              ${_slotPaytableHTML(m)}
+            </div>
+          </details>
+        </div>`;
+      document.body.appendChild(overlay);
+      _slotUpdateBetDisplays();
+    }
+
+    function _slotPaytableHTML(m) {
+      let rows = '';
+      m.symbols.forEach(s => {
+        let label = '';
+        if (s.wild) label = 'WILD — substitutes for any paying symbol';
+        else if (s.scatter) label = `SCATTER — ${SLOT_SCATTER_NEED}+ anywhere pays & awards ${m.freeSpins} free spins` + (s.pays && s.pays['3'] ? ` (×3 ${s.pays['3']} · ×4 ${s.pays['4']} · ×5 ${s.pays['5']} line bet)` : '');
+        else {
+          const p = s.pays || {};
+          const parts = [];
+          if (p['3']) parts.push(`×3 ${p['3'].toLocaleString()}`);
+          if (p['4']) parts.push(`×4 ${p['4'].toLocaleString()}`);
+          if (p['5']) parts.push(`×5 ${p['5'].toLocaleString()}`);
+          label = parts.join(' · ') + ' (× line bet)';
+          if (s.special) {
+            const sp = s.special;
+            const prize = sp.type === 'rune' ? sp.value + ' Rune' : (sp.value.charAt(0).toUpperCase() + sp.value.slice(1)) + ' Gear';
+            label += ` · ${sp.need}+ awards ${prize}`;
+          }
+        }
+        rows += `<div style="display:flex;justify-content:space-between;gap:10px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.06)"><span style="font-size:18px">${s.sym}</span><span style="font-size:10px;color:#c8c0a8;text-align:right;flex:1">${label}</span></div>`;
+      });
+      return rows + `<div style="font-size:10px;color:#9a9270;margin-top:6px">Wins pay left-to-right from reel 1 on ${SLOT_PAYLINES.length} fixed paylines. Only the highest win per line counts.</div>`;
+    }
+
+    function slotChangeBet(dir) {
+      if (!_slotState || _slotSpinning) return;
+      const m = _slotState.machine;
+      const steps = [1, 2, 5, 10, 25, 50];
+      let i = steps.indexOf(_slotState.betMult);
+      if (i < 0) i = 0;
+      i = Math.max(0, Math.min(steps.length - 1, i + dir));
+      _slotState.betMult = steps[i];
+      _slotUpdateBetDisplays();
+    }
+
+    function _slotCurLineBet() { return _slotState ? _slotState.machine.lineBet * _slotState.betMult : 0; }
+    function _slotCurTotalBet() { return _slotCurLineBet() * SLOT_PAYLINES.length; }
+
+    function _slotUpdateBetDisplays() {
+      if (!_slotState) return;
+      const lb = document.getElementById('slot-linebet-disp');
+      const tb = document.getElementById('slot-totalbet-disp');
+      const gd = document.getElementById('slot-gold-disp');
+      if (lb) lb.textContent = _slotCurLineBet().toLocaleString();
+      if (tb) tb.textContent = _slotCurTotalBet().toLocaleString();
+      if (gd) gd.textContent = (char.gold || 0).toLocaleString();
+      _slotUpdateSpinBtn();
+    }
+
+    function _slotUpdateSpinBtn() {
+      const btn = document.getElementById('slot-spin-btn');
+      if (!btn || !_slotState) return;
+      const free = _slotState.freeSpins > 0;
+      const canAfford = free || (char.gold || 0) >= _slotCurTotalBet();
+      btn.disabled = _slotSpinning || !canAfford;
+      btn.textContent = _slotSpinning ? 'Spinning…' : (free ? `🎁 FREE SPIN (${_slotState.freeSpins})` : (canAfford ? '🎰 SPIN' : 'Not enough gold'));
+    }
+
+    // Keep legacy name for any external callers
+    function _updateSlotSpinBtn() { _slotUpdateSpinBtn(); }
+
+    // Reset every grid cell to its neutral look (clears win glow + dimming)
+    function _slotClearHighlights(m) {
+      const color = (m && m.color) || '#ffd34d';
+      for (let r = 0; r < SLOT_REELS; r++) {
+        for (let row = 0; row < SLOT_ROWS; row++) {
+          const c = document.getElementById(`slot-cell-${r}-${row}`);
+          if (!c) continue;
+          c.style.boxShadow = 'inset 0 0 10px rgba(0,0,0,0.85)';
+          c.style.border = `1px solid ${color}33`;
+          c.style.opacity = '1';
+        }
+      }
+    }
+
+    function slotSpin(machineId) {
+      if (!char || _slotSpinning || !_slotState) return;
+      const m = _slotState.machine;
+      const isFree = _slotState.freeSpins > 0;
+      const totalBet = _slotCurTotalBet();
+      if (!isFree) {
+        if ((char.gold || 0) < totalBet) { log('Not enough gold for ' + m.name + '.', 'info'); _slotUpdateSpinBtn(); return; }
+        char.gold -= totalBet;
+      } else {
+        _slotState.freeSpins--;
+      }
+      _slotSpinning = true;
+      _slotUpdateSpinBtn();
+      // Clear any highlight/dimming left over from the previous spin's win
+      _slotClearHighlights(m);
+      const resultEl = document.getElementById('slot-result');
+      if (resultEl) resultEl.textContent = '';
+      _slotUpdateBetDisplays();
+      renderCasino();
+      autoSave();
+
+      // Decide the final grid up front
+      const grid = _slotSpinGrid(m);
+
+      // Animate each reel column, stopping left to right
+      const stopTimes = [520, 680, 840, 1000, 1160];
+      let settled = 0;
+      for (let r = 0; r < SLOT_REELS; r++) {
+        const cells = [];
+        for (let row = 0; row < SLOT_ROWS; row++) cells.push(document.getElementById(`slot-cell-${r}-${row}`));
+        const spinInt = setInterval(() => {
+          cells.forEach(c => { if (c) c.textContent = m.symbols[Math.floor(Math.random() * m.symbols.length)].sym; });
+        }, 70);
+        setTimeout(() => {
+          clearInterval(spinInt);
+          cells.forEach((c, row) => {
+            if (!c) return;
+            c.textContent = grid[r][row].sym;
+            c.style.transform = 'scale(1.08)';
+            setTimeout(() => { if (c) c.style.transform = 'scale(1)'; }, 130);
+          });
+          settled++;
+          if (settled === SLOT_REELS) setTimeout(() => slotResolve(m, grid, isFree), 220);
+        }, stopTimes[r]);
+      }
+    }
+
+    // Does symbol `cell` count as `target` (handling wilds)?
+    function _slotMatches(cell, target) {
+      if (!cell || !target) return false;
+      if (target.scatter) return cell.sym === target.sym; // scatter matched by identity, not wild
+      if (cell.wild) return true;
+      if (cell.sym === target.sym) return true;
+      return false;
+    }
+
+    function slotResolve(m, grid, wasFree) {
+      _slotSpinning = false;
+      const lineBet = _slotCurLineBet();
+      let totalWin = 0;
+      const winningLines = [];     // {lineIdx, sym, count, amount}
+      const winningCells = new Set(); // "reel-row"
+
+      // Evaluate each payline left-to-right
+      SLOT_PAYLINES.forEach((line, li) => {
+        // Determine the base symbol (first non-wild on the line, else wild)
+        const first = grid[0][line[0]];
+        if (first.scatter) return; // scatters handled separately
+        let target = first.wild ? null : first;
+        if (!target) {
+          // line starts with wild — find first non-wild paying symbol
+          for (let r = 1; r < SLOT_REELS; r++) {
+            const c = grid[r][line[r]];
+            if (!c.wild && !c.scatter) { target = c; break; }
+          }
+          if (!target) target = first; // all wild → treat as the top symbol via wild chain below
+        }
+        if (target.scatter) return;
+        // Count consecutive matches from reel 0
+        let count = 0;
+        for (let r = 0; r < SLOT_REELS; r++) {
+          const c = grid[r][line[r]];
+          if (_slotMatches(c, target)) count++; else break;
+        }
+        if (count >= 3) {
+          const payTarget = target.wild ? null : target;
+          const pays = (payTarget && payTarget.pays) ? payTarget.pays : (m.symbols.find(s => !s.wild && !s.scatter && s.pays['5']) || {}).pays || {};
+          const mult = pays[String(count)] || 0;
+          if (mult > 0) {
+            const amount = mult * lineBet;
+            totalWin += amount;
+            winningLines.push({ lineIdx: li, sym: target.sym, count, amount });
+            for (let r = 0; r < count; r++) winningCells.add(r + '-' + line[r]);
+            // Special rune/gear award on big line hits
+            if (payTarget && payTarget.special && count >= (payTarget.special.need || 4)) {
+              _slotAwardSpecial(m, payTarget, count);
+            }
+          }
+        }
+      });
+
+      // Scatter pays (anywhere) + free spin trigger
+      let scatterCount = 0;
+      const scatterDef = m.symbols.find(s => s.scatter);
+      if (scatterDef) {
+        for (let r = 0; r < SLOT_REELS; r++)
+          for (let row = 0; row < SLOT_ROWS; row++)
+            if (grid[r][row].sym === scatterDef.sym) { scatterCount++; winningCells.add(r + '-' + row); }
+        if (scatterCount >= 3) {
+          const sMult = (scatterDef.pays && scatterDef.pays[String(Math.min(scatterCount, 5))]) || scatterDef.pays['3'] || 0;
+          // Scatter pays on total bet (Vegas convention) — scaled by line bet here for balance
+          const scatterWin = sMult * lineBet;
+          totalWin += scatterWin;
+        }
+      }
+
+      // Award gold winnings
+      if (totalWin > 0) char.gold = (char.gold || 0) + totalWin;
+      _slotState.lastWin = totalWin;
+
+      // Highlight winning cells
+      for (let r = 0; r < SLOT_REELS; r++) {
+        for (let row = 0; row < SLOT_ROWS; row++) {
+          const c = document.getElementById(`slot-cell-${r}-${row}`);
+          if (!c) continue;
+          if (winningCells.has(r + '-' + row)) {
+            c.style.boxShadow = `0 0 12px ${m.color}, inset 0 0 10px ${m.color}aa`;
+            c.style.border = `1px solid ${m.color}`;
+          } else {
+            c.style.boxShadow = 'inset 0 0 10px rgba(0,0,0,0.85)';
+            c.style.border = `1px solid ${m.color}33`;
+            c.style.opacity = totalWin > 0 ? '0.45' : '1';
+          }
+        }
+      }
+
+      // Trigger / extend free spins
+      let freeMsg = '';
+      if (scatterCount >= SLOT_SCATTER_NEED) {
+        const awarded = m.freeSpins;
+        _slotState.freeSpins += awarded;
+        _slotState.freeSpinsTotal += awarded;
+        freeMsg = ` · 🎁 ${scatterCount} scatters — ${awarded} FREE SPINS!`;
+        log(`🎰 Slots (${m.name}): ${scatterCount} scatters — ${awarded} free spins!`, 'loot');
+      }
+
+      // Result text
+      const resultEl = document.getElementById('slot-result');
+      const winDisp = document.getElementById('slot-win-disp');
+      if (winDisp) winDisp.textContent = totalWin.toLocaleString();
+      if (resultEl) {
+        if (totalWin > 0) {
+          const big = totalWin >= lineBet * 100;
+          const lead = big ? '💥 BIG WIN! ' : (wasFree ? '🎁 ' : '🎉 ');
+          const lineNote = winningLines.length ? ` on ${winningLines.length} line${winningLines.length > 1 ? 's' : ''}` : '';
+          resultEl.innerHTML = `<span style="color:${m.color}">${lead}Won ${totalWin.toLocaleString()}g${lineNote}${freeMsg}</span>`;
+          if (!wasFree) log(`🎰 Slots (${m.name}): won ${totalWin.toLocaleString()}g${lineNote}.`, 'loot');
+        } else if (freeMsg) {
+          resultEl.innerHTML = `<span style="color:#ffe27a">${freeMsg.replace(' · ', '')}</span>`;
+        } else {
+          resultEl.innerHTML = `<span style="color:var(--text-secondary)">No win${wasFree ? ' (free spin)' : ''} — spin again!</span>`;
+        }
+      }
+
+      // Free-spin banner
+      const banner = document.getElementById('slot-freespin-banner');
+      if (banner) {
+        if (_slotState.freeSpins > 0) {
+          banner.style.display = 'block';
+          banner.textContent = `🎁 FREE SPINS: ${_slotState.freeSpins} remaining`;
+        } else {
+          banner.style.display = 'none';
+        }
+      }
+
+      _slotUpdateBetDisplays();
+      renderCasino();
+      renderAll();
+      autoSave();
+
+      // Auto-roll the next free spin
+      if (_slotState.freeSpins > 0) {
+        setTimeout(() => {
+          // reset cell opacity before the next spin
+          for (let r = 0; r < SLOT_REELS; r++)
+            for (let row = 0; row < SLOT_ROWS; row++) {
+              const c = document.getElementById(`slot-cell-${r}-${row}`);
+              if (c) c.style.opacity = '1';
+            }
+          if (document.getElementById('slot-overlay') && _slotState && _slotState.freeSpins > 0) slotSpin(m.id);
+        }, 900);
+      }
+    }
+
+    // Award a rune or gear special prize (triggered by 4+ of a marquee symbol)
+    function _slotAwardSpecial(m, def, count) {
+      if (!char || !def.special) return;
+      const sp = def.special;
+      if (sp.type === 'rune') {
+        if (!char.runes) char.runes = {};
+        char.runes[sp.value] = (char.runes[sp.value] || 0) + 1;
+        log(`🎰 Slots (${m.name}): ${count}× ${def.sym} — won a ${sp.value} Rune!`, 'loot');
+      } else if (sp.type === 'gear') {
+        const rarity = sp.value === 'legendary' ? 'Legendary' : (sp.value === 'epic' ? 'Epic' : 'Rare');
+        const fallbackGold = sp.value === 'legendary' ? 20000 : 6000;
+        let done = false;
+        if (typeof rollItemVariant === 'function') {
+          const item = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: char.level });
+          if (item && typeof addToInventory === 'function' && addToInventory(item)) {
+            log(`🎰 Slots (${m.name}): ${count}× ${def.sym} — won ${rarity} gear: ${item.name || 'item'}!`, 'loot');
+            done = true;
+          }
+        }
+        if (!done) {
+          char.gold = (char.gold || 0) + fallbackGold;
+          log(`🎰 Slots (${m.name}): ${count}× ${def.sym} — ${rarity} gear (bags full) → ${fallbackGold.toLocaleString()}g`, 'loot');
+        }
+      }
+    }
+
+    function closeSlotMachine() {
+      _slotSpinning = false;
+      _slotState = null;
+      const ov = document.getElementById('slot-overlay');
+      if (ov) ov.remove();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // PACHINKO MACHINE — 1.3.27
+    // Physics-based canvas game: drop a ball, win prizes
+    // ═══════════════════════════════════════════════════════════
+
+    const PACHINKO_BOARDS = [
+      {
+        id: 'bronze',
+        name: 'Bronze Machine',
+        emoji: '🟤',
+        color: '#cd7f32',
+        glowColor: '#cd7f3266',
+        cost: 200,
+        levelReq: 1,
+        desc: 'A rickety old machine. Low stakes, good for beginners.',
+        buckets: [
+          { label: '50g',    mult: 0,   type: 'gold',  value: 50,    color: '#6b7280' },
+          { label: '200g',   mult: 0,   type: 'gold',  value: 200,   color: '#4ade80' },
+          { label: '500g',   mult: 0,   type: 'gold',  value: 500,   color: '#60a5fa' },
+          { label: 'El',     mult: 0,   type: 'rune',  value: 'El',  color: '#a78bfa' },
+          { label: '1,000g', mult: 0,   type: 'gold',  value: 1000,  color: '#f59e0b' },
+          { label: 'El',     mult: 0,   type: 'rune',  value: 'El',  color: '#a78bfa' },
+          { label: '500g',   mult: 0,   type: 'gold',  value: 500,   color: '#60a5fa' },
+          { label: '200g',   mult: 0,   type: 'gold',  value: 200,   color: '#4ade80' },
+          { label: '50g',    mult: 0,   type: 'gold',  value: 50,    color: '#6b7280' },
+        ],
+        pegRows: 6,
+        ballColor: '#cd7f32',
+        bgColor: '#1a0f08',
+        accentColor: '#8b5e3c',
+      },
+      {
+        id: 'silver',
+        name: 'Silver Machine',
+        emoji: '⚪',
+        color: '#c0c0c0',
+        glowColor: '#c0c0c066',
+        cost: 1500,
+        levelReq: 15,
+        desc: 'A polished silver machine with juicier middle slots.',
+        buckets: [
+          { label: '200g',   type: 'gold',  value: 200,   color: '#6b7280' },
+          { label: '1k g',   type: 'gold',  value: 1000,  color: '#4ade80' },
+          { label: '3k g',   type: 'gold',  value: 3000,  color: '#60a5fa' },
+          { label: 'Tir',    type: 'rune',  value: 'Tir', color: '#a78bfa' },
+          { label: '8k g',   type: 'gold',  value: 8000,  color: '#f59e0b' },
+          { label: 'Tir',    type: 'rune',  value: 'Tir', color: '#a78bfa' },
+          { label: '3k g',   type: 'gold',  value: 3000,  color: '#60a5fa' },
+          { label: '1k g',   type: 'gold',  value: 1000,  color: '#4ade80' },
+          { label: '200g',   type: 'gold',  value: 200,   color: '#6b7280' },
+        ],
+        pegRows: 7,
+        ballColor: '#e8e8e8',
+        bgColor: '#0d1117',
+        accentColor: '#4a4a6a',
+      },
+      {
+        id: 'gold',
+        name: 'Golden Machine',
+        emoji: '🟡',
+        color: '#ffd700',
+        glowColor: '#ffd70066',
+        cost: 6000,
+        levelReq: 30,
+        desc: 'The gilded machine. High rollers only.',
+        buckets: [
+          { label: '1k g',   type: 'gold',  value: 1000,   color: '#6b7280' },
+          { label: '5k g',   type: 'gold',  value: 5000,   color: '#4ade80' },
+          { label: '15k g',  type: 'gold',  value: 15000,  color: '#60a5fa' },
+          { label: 'Sol',    type: 'rune',  value: 'Sol',  color: '#a78bfa' },
+          { label: '40k g',  type: 'gold',  value: 40000,  color: '#f59e0b' },
+          { label: 'Sol',    type: 'rune',  value: 'Sol',  color: '#a78bfa' },
+          { label: '15k g',  type: 'gold',  value: 15000,  color: '#60a5fa' },
+          { label: '5k g',   type: 'gold',  value: 5000,   color: '#4ade80' },
+          { label: '1k g',   type: 'gold',  value: 1000,   color: '#6b7280' },
+        ],
+        pegRows: 8,
+        ballColor: '#ffd700',
+        bgColor: '#120d00',
+        accentColor: '#7a5800',
+      },
+      {
+        id: 'ember',
+        name: 'Ember Abyss',
+        emoji: '🔥',
+        color: '#ff4500',
+        glowColor: '#ff450066',
+        cost: 20000,
+        levelReq: 50,
+        desc: 'Forged in the Abyss. Runes, shards and epic gear lurk in the middle.',
+        buckets: [
+          { label: '5k g',    type: 'gold',   value: 5000,    color: '#6b7280' },
+          { label: '20k g',   type: 'gold',   value: 20000,   color: '#4ade80' },
+          { label: 'Bron',    type: 'rune',   value: 'Bron',  color: '#a78bfa' },
+          { label: '60k g',   type: 'gold',   value: 60000,   color: '#60a5fa' },
+          { label: '🌟 150k', type: 'gold',   value: 150000,  color: '#f59e0b' },
+          { label: '60k g',   type: 'gold',   value: 60000,   color: '#60a5fa' },
+          { label: 'Bron',    type: 'rune',   value: 'Bron',  color: '#a78bfa' },
+          { label: '20k g',   type: 'gold',   value: 20000,   color: '#4ade80' },
+          { label: '5k g',    type: 'gold',   value: 5000,    color: '#6b7280' },
+        ],
+        pegRows: 9,
+        ballColor: '#ff6a00',
+        bgColor: '#180500',
+        accentColor: '#7a2000',
+      },
+      {
+        id: 'mythic',
+        name: 'Mythic Void Engine',
+        emoji: '🌌',
+        color: '#9b59b6',
+        glowColor: '#9b59b666',
+        cost: 75000,
+        levelReq: 70,
+        desc: 'A machine of eldritch power. Legendary loot, high runes, and the Void Jackpot.',
+        buckets: [
+          { label: '20k g',    type: 'gold',   value: 20000,    color: '#6b7280' },
+          { label: 'Lyr',      type: 'rune',   value: 'Lyr',    color: '#60a5fa' },
+          { label: '100k g',   type: 'gold',   value: 100000,   color: '#a78bfa' },
+          { label: 'Leg Gear', type: 'gear',   value: 'legendary', color: '#fb923c' },
+          { label: '💥 500k',  type: 'gold',   value: 500000,   color: '#f59e0b' },
+          { label: 'Leg Gear', type: 'gear',   value: 'legendary', color: '#fb923c' },
+          { label: '100k g',   type: 'gold',   value: 100000,   color: '#a78bfa' },
+          { label: 'Zhar',     type: 'rune',   value: 'Zhar',   color: '#60a5fa' },
+          { label: '20k g',    type: 'gold',   value: 20000,    color: '#6b7280' },
+        ],
+        pegRows: 10,
+        ballColor: '#c084fc',
+        bgColor: '#0a0015',
+        accentColor: '#3d006a',
+      },
+    ];
+
+    // Render the lobby: pick a board
+    function renderPachinkoLobby(container) {
+      if (!char) return;
+      const gold = char.gold || 0;
+      let html = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">Select a machine and keep dropping balls as long as you can afford it. Each drop costs the listed price!</div>';
+      PACHINKO_BOARDS.forEach(board => {
+        const locked = false;
+        const canAfford = gold >= board.cost;
+        html += `<div class="eq-item-card" style="position:relative;overflow:hidden;border-color:${board.color}44">
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,${board.glowColor},transparent 70%);pointer-events:none"></div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <span style="font-size:30px">${board.emoji}</span>
+            <div>
+              <div class="eq-item-name" style="color:${board.color}">${board.name}</div>
+              <div style="font-size:10px;color:var(--text-secondary)">${board.cost.toLocaleString()}g per drop</div>
+            </div>
+          </div>
+          <div class="eq-item-type">${board.desc}</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin:8px 0">
+            ${board.buckets.map(b=>`<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${b.color}22;color:${b.color};border:1px solid ${b.color}44;font-weight:700">${b.label}</span>`).join('')}
+          </div>
+          <div class="eq-item-actions">
+            <button class="btn${canAfford ? ' active' : ''}"
+              onclick="launchPachinko('${board.id}')"
+              ${!canAfford ? 'disabled title="Not enough gold"' : ''}>
+              🎯 Play — ${board.cost.toLocaleString()}g
+            </button>
+          </div>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function launchPachinko(boardId) {
+      if (!char) return;
+      const board = PACHINKO_BOARDS.find(b => b.id === boardId);
+      if (!board) return;
+      if ((char.gold || 0) < board.cost) { log('Not enough gold for ' + board.name + '.', 'info'); return; }
+      char.gold -= board.cost;
+      _pachinkoResetSession();
+      _pachinkoRecordSpend(board.cost);
+      renderShop();
+      autoSave();
+      openPachinkoModal(board);
+    }
+
+    function openPachinkoModal(board) {
+      const existing = document.getElementById('pachinko-overlay');
+      if (existing) existing.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'pachinko-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.92);';
+
+      overlay.innerHTML = `
+        <div id="pachinko-modal" style="
+          background:${board.bgColor};
+          border:2px solid ${board.color};
+          border-radius:18px;
+          padding:18px;
+          max-width:420px;
+          width:96%;
+          box-shadow:0 0 60px ${board.glowColor}, inset 0 0 40px rgba(0,0,0,0.5);
+          display:flex;flex-direction:column;align-items:center;gap:10px;
+          font-family:inherit;
+        ">
+          <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+            <div style="font-size:15px;font-weight:700;color:${board.color}">${board.emoji} ${board.name}</div>
+            <button class="btn" onclick="closePachinkoModal()" style="font-size:11px;padding:3px 10px">✕ Close</button>
+          </div>
+          <canvas id="pachinko-canvas" width="360" height="480"
+            style="border-radius:10px;border:1px solid ${board.color}44;cursor:crosshair;display:block;touch-action:none;max-width:100%">
+          </canvas>
+          <div id="pachinko-instructions" style="font-size:11px;color:${board.color};opacity:0.8;text-align:center">
+            Click canvas or tap the button to drop — spam away!
+          </div>
+          <div id="pachinko-result" style="font-size:14px;font-weight:700;color:${board.color};min-height:22px;text-align:center"></div>
+          <div id="pachinko-stats" style="width:100%;font-size:11px;color:#d8cfa8;background:rgba(0,0,0,0.35);border:1px solid ${board.color}33;border-radius:8px;padding:6px 10px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn active" id="pachinko-drop-btn" onclick="pachinkoDrop()" style="background:${board.color};color:#000;font-weight:700">
+              🎯 Drop Ball — ${board.cost.toLocaleString()}g
+            </button>
+          </div>
+        </div>`;
+
+      document.body.appendChild(overlay);
+
+      // Init and draw the board
+      initPachinkoCanvas(board);
+      _updatePachinkoStatsDisplay();
+    }
+
+    // ── Physics engine ────────────────────────────────────────────────────────
+
+    let _pBoard = null;   // current board config
+    let _pState = null;   // simulation state (pegs, W, H, bucketW, etc.)
+    let _pBalls = [];     // array of active ball objects
+    let _pAnimFrame = null; // single shared animation frame
+    // Per-session win/loss tracking for the current Pachinko sitting.
+    let _pSession = { won: 0, lost: 0, runesWon: 0, gearWon: 0 };
+
+    function _pachinkoResetSession() {
+      _pSession = { won: 0, lost: 0, runesWon: 0, gearWon: 0 };
+    }
+
+    // Record gold spent on a drop (a loss) — updates session + lifetime.
+    function _pachinkoRecordSpend(amount) {
+      if (!char || !amount) return;
+      ensureExtendedSystems(char);
+      _pSession.lost += amount;
+      char.pachinkoStats.lifetimeLost += amount;
+      _updatePachinkoStatsDisplay();
+    }
+
+    // Record a win — gold value plus optional rune/gear counts.
+    function _pachinkoRecordWin(goldAmount, runes, gear) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (goldAmount) { _pSession.won += goldAmount; char.pachinkoStats.lifetimeWon += goldAmount; }
+      if (runes) { _pSession.runesWon += runes; char.pachinkoStats.runesWon += runes; }
+      if (gear) { _pSession.gearWon += gear; char.pachinkoStats.gearWon += gear; }
+      _updatePachinkoStatsDisplay();
+    }
+
+    function _pachinkoNetColor(net) {
+      return net > 0 ? '#7CFFB2' : (net < 0 ? '#ff7a7a' : '#d8cfa8');
+    }
+
+    function _updatePachinkoStatsDisplay() {
+      const el = document.getElementById('pachinko-stats');
+      if (!el || !char) return;
+      ensureExtendedSystems(char);
+      const ps = char.pachinkoStats;
+      const sNet = _pSession.won - _pSession.lost;
+      const lNet = ps.lifetimeWon - ps.lifetimeLost;
+      const extra = (n, label) => n > 0 ? ` · ${n} ${label}` : '';
+      el.innerHTML =
+        `<div style="display:flex;justify-content:space-between;gap:8px">
+           <span>Session</span>
+           <span>Won <b style="color:#7CFFB2">${_pSession.won.toLocaleString()}g</b> · Lost <b style="color:#ff7a7a">${_pSession.lost.toLocaleString()}g</b> · Net <b style="color:${_pachinkoNetColor(sNet)}">${sNet >= 0 ? '+' : ''}${sNet.toLocaleString()}g</b></span>
+         </div>
+         <div style="display:flex;justify-content:space-between;gap:8px;margin-top:2px">
+           <span>Lifetime</span>
+           <span>Won <b style="color:#7CFFB2">${ps.lifetimeWon.toLocaleString()}g</b> · Lost <b style="color:#ff7a7a">${ps.lifetimeLost.toLocaleString()}g</b> · Net <b style="color:${_pachinkoNetColor(lNet)}">${lNet >= 0 ? '+' : ''}${lNet.toLocaleString()}g</b></span>
+         </div>` +
+        ((_pSession.runesWon || _pSession.gearWon) ?
+          `<div style="text-align:center;margin-top:2px;opacity:0.85">This session also won${extra(_pSession.runesWon, 'rune' + (_pSession.runesWon === 1 ? '' : 's'))}${extra(_pSession.gearWon, 'gear')}</div>` : '');
+    }
+
+
+    function initPachinkoCanvas(board) {
+      _pBoard = board;
+      const canvas = document.getElementById('pachinko-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+
+      // Generate peg grid
+      const pegs = [];
+      const pegRows = board.pegRows;
+      const bucketCount = board.buckets.length;
+      const bucketW = W / bucketCount;
+      const topPad = 60, bottomPad = 70;
+      const usableH = H - topPad - bottomPad;
+      const rowSpacing = usableH / (pegRows - 1);
+
+      for (let row = 0; row < pegRows; row++) {
+        const y = topPad + row * rowSpacing;
+        const pegsInRow = (row % 2 === 0) ? bucketCount - 1 : bucketCount - 2;
+        const xOffset = (row % 2 === 0) ? bucketW : bucketW * 1.5;
+        for (let col = 0; col < pegsInRow; col++) {
+          pegs.push({ x: xOffset + col * bucketW, y });
+        }
+      }
+
+      _pState = { board, pegs, W, H, bucketW, topPad, bottomPad };
+      _pBalls = [];
+
+      drawPachinkoFrame(ctx, _pState, _pBalls);
+
+      // Allow canvas click to drop a new ball at click X
+      canvas.onclick = (e) => {
+        if (!_pState) return;
+        const rect = canvas.getBoundingClientRect();
+        const clickX = (e.clientX - rect.left) * (_pState.W / rect.width);
+        _spawnAndDropBall(board, clickX);
+      };
+
+      // Start the shared physics loop
+      if (_pAnimFrame) cancelAnimationFrame(_pAnimFrame);
+      _runPachinkoLoop();
+    }
+
+    // Spawn a ball and immediately begin physics (deducts cost)
+    function _spawnAndDropBall(board, startX) {
+      if (!char || !_pState) return;
+      if ((char.gold || 0) < board.cost) {
+        const resultEl = document.getElementById('pachinko-result');
+        if (resultEl) { resultEl.textContent = 'Not enough gold!'; }
+        return;
+      }
+      char.gold -= board.cost;
+      _pachinkoRecordSpend(board.cost);
+      renderShop();
+      autoSave();
+
+      const r = 9;
+      const W = _pState.W;
+      const x = startX !== undefined
+        ? Math.max(r + 5, Math.min(W - r - 5, startX))
+        : W * 0.2 + Math.random() * W * 0.6;
+
+      const ball = {
+        x, y: 20,
+        vx: (Math.random() - 0.5) * 2,
+        vy: 0,
+        r,
+        trail: [],
+        landed: false,
+        landedBucket: -1,
+        awarded: false,
+      };
+      _pBalls.push(ball);
+
+      // Update instructions
+      const instrEl = document.getElementById('pachinko-instructions');
+      if (instrEl) instrEl.textContent = `${_pBalls.length} ball${_pBalls.length > 1 ? 's' : ''} in play…`;
+
+      // Update drop button label
+      _updateDropBtn(board);
+    }
+
+    function _updateDropBtn(board) {
+      const dropBtn = document.getElementById('pachinko-drop-btn');
+      if (!dropBtn || !char) return;
+      const canAfford = (char.gold || 0) >= board.cost;
+      dropBtn.disabled = !canAfford;
+      dropBtn.textContent = `🎯 Drop Ball — ${board.cost.toLocaleString()}g`;
+    }
+
+    // Shared physics + render loop for all active balls
+    function _runPachinkoLoop() {
+      function step() {
+        if (!document.getElementById('pachinko-overlay')) return; // modal closed
+        const s = _pState;
+        if (!s) return;
+
+        const canvas = document.getElementById('pachinko-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        const GRAVITY = 0.32, BOUNCE = 0.55, FRICTION = 0.98, PEG_R = 5;
+        const bucketY = s.H - s.bottomPad;
+
+        for (const ball of _pBalls) {
+          if (ball.landed) continue;
+
+          ball.vy += GRAVITY;
+          ball.vx *= FRICTION;
+          ball.x += ball.vx;
+          ball.y += ball.vy;
+
+          // Wall bounce
+          if (ball.x - ball.r < 0) { ball.x = ball.r; ball.vx = Math.abs(ball.vx) * BOUNCE; }
+          if (ball.x + ball.r > s.W) { ball.x = s.W - ball.r; ball.vx = -Math.abs(ball.vx) * BOUNCE; }
+
+          // Peg collisions
+          s.pegs.forEach(peg => {
+            const dx = ball.x - peg.x, dy = ball.y - peg.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const minDist = ball.r + PEG_R;
+            if (dist < minDist && dist > 0) {
+              const nx = dx / dist, ny = dy / dist;
+              ball.x = peg.x + nx * (minDist + 0.5);
+              ball.y = peg.y + ny * (minDist + 0.5);
+              const dot = ball.vx * nx + ball.vy * ny;
+              ball.vx = (ball.vx - 2 * dot * nx) * BOUNCE;
+              ball.vy = (ball.vy - 2 * dot * ny) * BOUNCE;
+              ball.vx += (Math.random() - 0.5) * 0.8;
+              if (ball.vy < 1) ball.vy = 1;
+            }
+          });
+
+          // Trail
+          ball.trail.push({ x: ball.x, y: ball.y });
+          if (ball.trail.length > 18) ball.trail.shift();
+
+          // Bucket landing
+          if (ball.y + ball.r >= bucketY) {
+            const bucketIdx = Math.min(s.board.buckets.length - 1, Math.max(0, Math.floor(ball.x / s.bucketW)));
+            ball.landed = true;
+            ball.landedBucket = bucketIdx;
+            if (!ball.awarded) {
+              ball.awarded = true;
+              awardPachinkoPrize(s.board, bucketIdx);
+            }
+          }
+        }
+
+        // Remove balls that have fully settled (landed + trail faded)
+        _pBalls = _pBalls.filter(b => !b.landed || b.trail.length > 0);
+        // Trim trails of landed balls
+        for (const ball of _pBalls) {
+          if (ball.landed && ball.trail.length > 0) ball.trail.shift();
+        }
+
+        drawPachinkoFrame(ctx, s, _pBalls);
+
+        // Update instructions
+        const instrEl = document.getElementById('pachinko-instructions');
+        const activeBalls = _pBalls.filter(b => !b.landed);
+        if (instrEl) {
+          if (activeBalls.length > 0) {
+            instrEl.textContent = `${activeBalls.length} ball${activeBalls.length > 1 ? 's' : ''} in play…`;
+          } else if (_pBalls.length === 0) {
+            const canAfford = char && (char.gold || 0) >= s.board.cost;
+            instrEl.textContent = canAfford
+              ? 'Click canvas or Drop Ball button to play!'
+              : 'Not enough gold to play.';
+          }
+        }
+
+        _pAnimFrame = requestAnimationFrame(step);
+      }
+      _pAnimFrame = requestAnimationFrame(step);
+    }
+
+    function drawPachinkoFrame(ctx, s, balls) {
+      const { board, pegs, W, H, bucketW } = s;
+      ctx.clearRect(0, 0, W, H);
+
+      // Background gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+      bgGrad.addColorStop(0, board.bgColor);
+      bgGrad.addColorStop(1, '#000');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Grid scanlines for retro feel
+      ctx.save();
+      ctx.globalAlpha = 0.04;
+      ctx.strokeStyle = board.color;
+      ctx.lineWidth = 1;
+      for (let y = 0; y < H; y += 8) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      ctx.restore();
+
+      // Bucket dividers and labels
+      const bucketY = H - s.bottomPad;
+      for (let i = 0; i <= board.buckets.length; i++) {
+        const x = i * bucketW;
+        ctx.strokeStyle = board.accentColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x, bucketY - 10); ctx.lineTo(x, H); ctx.stroke();
+      }
+
+      board.buckets.forEach((bkt, i) => {
+        const bx = i * bucketW;
+        // Bucket fill
+        ctx.fillStyle = bkt.color + '18';
+        ctx.fillRect(bx + 1, bucketY - 10, bucketW - 2, s.bottomPad + 10);
+
+        // Label
+        ctx.save();
+        ctx.font = 'bold 9px monospace';
+        ctx.fillStyle = bkt.color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const labelY = bucketY + (s.bottomPad - 10) / 2;
+        // Wrap long labels
+        const words = bkt.label.split(' ');
+        if (words.length > 1) {
+          ctx.fillText(words[0], bx + bucketW / 2, labelY - 7);
+          ctx.fillText(words[1], bx + bucketW / 2, labelY + 7);
+        } else {
+          ctx.fillText(bkt.label, bx + bucketW / 2, labelY);
+        }
+        ctx.restore();
+      });
+
+      // Pegs
+      pegs.forEach(peg => {
+        ctx.beginPath();
+        ctx.arc(peg.x, peg.y, 5, 0, Math.PI * 2);
+        const grad = ctx.createRadialGradient(peg.x - 1, peg.y - 1, 1, peg.x, peg.y, 5);
+        grad.addColorStop(0, '#fff');
+        grad.addColorStop(1, board.color);
+        ctx.fillStyle = grad;
+        ctx.fill();
+        // Glow
+        ctx.save();
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = board.color;
+        ctx.fillStyle = board.color + '80';
+        ctx.beginPath();
+        ctx.arc(peg.x, peg.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Draw all balls (trails first, then balls on top)
+      for (const ball of balls) {
+        // Trail
+        if (ball.trail.length > 1) {
+          for (let i = 1; i < ball.trail.length; i++) {
+            const alpha = i / ball.trail.length * 0.5;
+            ctx.beginPath();
+            ctx.arc(ball.trail[i].x, ball.trail[i].y, ball.r * (i / ball.trail.length), 0, Math.PI * 2);
+            ctx.fillStyle = board.ballColor + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+            ctx.fill();
+          }
+        }
+        // Ball body
+        if (!ball.landed || ball.trail.length) {
+          ctx.save();
+          ctx.shadowBlur = 18;
+          ctx.shadowColor = board.ballColor;
+          const ballGrad = ctx.createRadialGradient(ball.x - 3, ball.y - 3, 1, ball.x, ball.y, ball.r);
+          ballGrad.addColorStop(0, '#fff');
+          ballGrad.addColorStop(0.5, board.ballColor);
+          ballGrad.addColorStop(1, board.ballColor + 'aa');
+          ctx.fillStyle = ballGrad;
+          ctx.beginPath();
+          ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        // Landing highlight
+        if (ball.landed && ball.landedBucket >= 0) {
+          const bkt = board.buckets[ball.landedBucket];
+          const bx = ball.landedBucket * bucketW;
+          ctx.save();
+          ctx.shadowBlur = 30;
+          ctx.shadowColor = bkt.color;
+          ctx.strokeStyle = bkt.color;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(bx + 2, bucketY - 8, bucketW - 4, s.bottomPad + 6);
+          ctx.restore();
+        }
+      }
+    }
+
+    // Legacy stub — kept so any old call paths don't crash
+    function pachinkoDrop() {
+      if (!_pState || !_pBoard) return;
+      _spawnAndDropBall(_pBoard);
+    }
+
+    // DEAD CODE preserved below as reference — replaced by _runPachinkoLoop above
+    function runPachinkoPhysics() {
+      // no-op: physics now handled by _runPachinkoLoop
+    }
+    // Dummy so old references don't throw
+    const _GRAVITY_UNUSED = 0.32;
+    const _BOUNCE_UNUSED = 0.55;
+
+    function awardPachinkoPrize(board, bucketIdx) {
+      if (!char) return;
+      const bkt = board.buckets[bucketIdx];
+      const resultEl = document.getElementById('pachinko-result');
+
+      let resultText = '';
+
+      if (bkt.type === 'gold') {
+        char.gold = (char.gold || 0) + bkt.value;
+        _pachinkoRecordWin(bkt.value, 0, 0);
+        resultText = `🏆 Won ${bkt.value.toLocaleString()} gold!`;
+        log(`🔮 Pachinko (${board.name}): Won ${bkt.value.toLocaleString()}g!`, 'loot');
+      } else if (bkt.type === 'rune') {
+        if (!char.runes) char.runes = {};
+        char.runes[bkt.value] = (char.runes[bkt.value] || 0) + 1;
+        _pachinkoRecordWin(0, 1, 0);
+        resultText = `🔷 Won a ${bkt.value} Rune!`;
+        log(`🔮 Pachinko (${board.name}): Won ${bkt.value} Rune!`, 'loot');
+      } else if (bkt.type === 'gear') {
+        const rarityMap = { epic: 'Epic', legendary: 'Legendary' };
+        const rarity = rarityMap[bkt.value] || 'Rare';
+        if (typeof rollItemVariant === 'function') {
+          const item = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: char.level });
+          if (item) {
+            const added = addToInventory(item);
+            if (added) {
+              _pachinkoRecordWin(0, 0, 1);
+              resultText = `⚔️ Won ${rarity} gear: ${item.name || 'item'}!`;
+            } else {
+              const conv = bkt.value === 'legendary' ? 8000 : 2000;
+              char.gold = (char.gold || 0) + conv;
+              _pachinkoRecordWin(conv, 0, 0);
+              resultText = `⚔️ ${rarity} gear (bags full) — converted to ${conv.toLocaleString()}g`;
+            }
+          } else {
+            resultText = `⚔️ ${rarity} item! (bags full)`;
+          }
+        } else {
+          const gv = bkt.value === 'legendary' ? 8000 : 2000;
+          char.gold = (char.gold || 0) + gv;
+          _pachinkoRecordWin(gv, 0, 0);
+          resultText = `⚔️ ${rarity} gear prize: ${gv.toLocaleString()}g`;
+        }
+        log(`🔮 Pachinko (${board.name}): ${resultText}`, 'loot');
+      }
+
+      // Show last result (brief flash)
+      if (resultEl) {
+        resultEl.innerHTML = `<span style="color:${bkt.color}">${resultText}</span>`;
+      }
+
+      // Update drop button affordability
+      _updateDropBtn(board);
+
+      renderShop();
+      renderAll();
+      autoSave();
+    }
+
+    // Legacy compat — now just spawns a new ball
+    function _pachinkoStartNewDrop(board, startX) {
+      _spawnAndDropBall(board, startX);
+    }
+
+    function pachinkoAgain() {
+      if (!char || !_pBoard) return;
+      _spawnAndDropBall(_pBoard);
+    }
+
+    function closePachinkoModal() {
+      if (_pAnimFrame) cancelAnimationFrame(_pAnimFrame);
+      _pAnimFrame = null;
+      _pState = null;
+      _pBoard = null;
+      _pBalls = [];
+      const overlay = document.getElementById('pachinko-overlay');
+      if (overlay) overlay.remove();
+    }
+
+
+    // ══════════════════════════════════════════════
+    //  TEXAS HOLD'EM POKER
+    // ══════════════════════════════════════════════
+    const POKER_MIN_BET = 10;
+    const POKER_BLIND_MULT = 5; // big blind = bet * this
+
+    let _pokerState = null;
+
+    function openPokerGame() {
+      if (!char) return;
+      const existing = document.getElementById('poker-overlay');
+      if (existing) existing.remove();
+
+      _pokerState = null;
+
+      const overlay = document.createElement('div');
+      overlay.id = 'poker-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:80;display:flex;align-items:center;justify-content:center;padding:12px';
+      overlay.innerHTML = `
+        <div id="poker-modal" style="
+          background:linear-gradient(180deg,#1a2e1a 0%,#0e1e0e 100%);
+          border:2px solid #2d5a2d;
+          border-radius:10px;
+          padding:18px;
+          width:min(560px,100%);
+          max-height:90vh;
+          overflow-y:auto;
+          color:#e8dfc4;
+          font-family:'Georgia','Times New Roman',serif;
+          box-shadow:0 10px 40px rgba(0,0,0,0.7),inset 0 0 0 1px #3d7a3d;
+        ">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <span style="font-size:17px;font-weight:700;color:#f0d060;text-shadow:1px 1px 2px #000">🃏 Texas Hold'em</span>
+            <button onclick="closePokerGame()" style="background:none;border:1px solid #5a607a;color:#c8c0a8;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit">✕ Close</button>
+          </div>
+          <div style="font-size:11px;color:#a0a870;margin-bottom:12px">
+            Your gold: <strong id="poker-gold-disp" style="color:#f0d060">${fmt(char.gold)}g</strong>
+          </div>
+          <div id="poker-bet-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+            <label style="font-size:12px;color:#c8c0a8">Bet:</label>
+            <input type="number" id="poker-bet-input" min="${POKER_MIN_BET}" step="${POKER_MIN_BET}" value="${Math.min(100, Math.floor((char.gold || 100) / 10 / POKER_MIN_BET) * POKER_MIN_BET || POKER_MIN_BET)}"
+              style="width:90px;background:#08080c;color:#e8dfc4;border:1px solid #3a3f55;border-radius:3px;padding:4px 8px;font-size:13px;font-family:inherit">
+            <button onclick="pokerDeal()" id="poker-deal-btn" style="background:linear-gradient(180deg,#2a6a2a,#1a4a1a);border:1px solid #3d7a3d;color:#a8e8a8;padding:6px 18px;border-radius:4px;cursor:pointer;font-weight:700;font-family:inherit">Deal Hand</button>
+            <button onclick="closePokerGame()" style="background:linear-gradient(180deg,#5a3a1a,#3a2010);border:1px solid #8a5a2a;color:#e8c888;padding:6px 14px;border-radius:4px;cursor:pointer;font-family:inherit">Leave Table</button>
+          </div>
+          <div id="poker-game-area" style="display:none">
+            <div style="margin-bottom:10px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8a9060;margin-bottom:5px">Community Cards</div>
+              <div id="poker-community" style="display:flex;gap:6px;min-height:80px;align-items:center;flex-wrap:wrap"></div>
+            </div>
+            <div id="poker-pot-row" style="font-size:12px;color:#f0d060;margin-bottom:10px;font-weight:600"></div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8a9060;margin-bottom:5px">Your Hand</div>
+              <div id="poker-player-cards" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            </div>
+            <div id="poker-dealer-area" style="display:none;margin-bottom:10px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#8a9060;margin-bottom:5px">Dealer's Hand</div>
+              <div id="poker-dealer-cards" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+              <div id="poker-dealer-hand-name" style="font-size:11px;color:#c8c0a8;margin-top:4px"></div>
+            </div>
+            <div id="poker-result-msg" style="font-size:14px;font-weight:700;text-align:center;min-height:24px;margin-bottom:10px"></div>
+            <div id="poker-action-row" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"></div>
+          </div>
+          <div id="poker-hand-log" style="margin-top:12px;font-size:11px;color:#8a9060;max-height:100px;overflow-y:auto"></div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    function closePokerGame() {
+      _pokerState = null;
+      const ov = document.getElementById('poker-overlay');
+      if (ov) ov.remove();
+    }
+
+    function _pokerNewDeck() {
+      const suits = ['♠','♥','♦','♣'];
+      const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+      const deck = [];
+      for (const s of suits) for (const r of ranks) deck.push({ rank: r, suit: s });
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+      return deck;
+    }
+
+    function _pokerCardHTML(card, faceDown = false) {
+      if (faceDown) return `<div style="width:48px;height:72px;background:linear-gradient(135deg,#1a2a6a,#0a1040);border:1px solid #4a5a8a;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#4a5a8a">🂠</div>`;
+      const red = card.suit === '♥' || card.suit === '♦';
+      const color = red ? '#e84040' : '#1a1a1a';
+      return `<div style="width:48px;height:72px;background:linear-gradient(180deg,#e8e0d0,#d0c8b8);border:1px solid #8a7a5a;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:${color};line-height:1.1;box-shadow:0 2px 4px rgba(0,0,0,0.4)">
+        <span>${card.rank}</span><span style="font-size:17px">${card.suit}</span>
+      </div>`;
+    }
+
+    function _pokerRankValue(rank) {
+      const map = { '2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14 };
+      return map[rank] || 0;
+    }
+
+    // Evaluate best 5-card hand from up to 7 cards (Texas Hold'em rules)
+    function _pokerEvaluate(cards) {
+      const all = cards.filter(Boolean);
+      if (all.length < 5) return { name: 'High Card', numScore: 0 };
+
+      const combinations = (arr, k) => {
+        if (k === 0) return [[]];
+        if (arr.length < k) return [];
+        const [first, ...rest] = arr;
+        return [...combinations(rest, k - 1).map(c => [first, ...c]), ...combinations(rest, k)];
+      };
+
+      const fives = all.length === 5 ? [all] : combinations(all, 5);
+      let best = null;
+
+      for (const hand of fives) {
+        const score = _pokerScore5(hand);
+        if (!best || score.numScore > best.numScore) best = score;
+      }
+      return best || { name: 'High Card', numScore: 0 };
+    }
+
+    function _pokerScore5(cards) {
+      // Sort values descending
+      const vals = cards.map(c => _pokerRankValue(c.rank)).sort((a, b) => b - a);
+      const suits = cards.map(c => c.suit);
+      const isFlush = suits.every(s => s === suits[0]);
+
+      // Straight detection (including ace-low A-2-3-4-5)
+      const isAceLow = vals[0] === 14 && vals[1] === 5 && vals[2] === 4 && vals[3] === 3 && vals[4] === 2;
+      const isStraight = isAceLow || (vals[0] - vals[4] === 4 && new Set(vals).size === 5);
+
+      // Count occurrences of each value
+      const counts = {};
+      for (const v of vals) counts[v] = (counts[v] || 0) + 1;
+
+      // Sort groups: first by count desc, then by card value desc (so pair of Aces beats pair of 2s)
+      const sorted = Object.entries(counts)
+        .map(([v, c]) => ({ v: +v, c }))
+        .sort((a, b) => b.c - a.c || b.v - a.v);
+      const groups = sorted.map(x => x.c);
+      // Build ordered kicker list: primary group cards first, then secondary, then remaining high to low
+      const orderedVals = sorted.map(x => x.v);
+
+      // Score encoding: tier * 1e9 + kicker encoding (each val 0–14 fits in 4 bits, 5 positions)
+      const encodeKickers = (vs) => {
+        let s = 0;
+        for (let i = 0; i < 5; i++) s = s * 16 + (vs[i] || 0);
+        return s;
+      };
+
+      let name, tier, kickerVals;
+      if (isStraight && isFlush) {
+        name = vals[0] === 14 && !isAceLow ? 'Royal Flush' : 'Straight Flush';
+        tier = 8;
+        kickerVals = isAceLow ? [5, 4, 3, 2, 1] : vals;
+      } else if (groups[0] === 4) {
+        name = 'Four of a Kind'; tier = 7; kickerVals = orderedVals;
+      } else if (groups[0] === 3 && groups[1] === 2) {
+        name = 'Full House'; tier = 6; kickerVals = orderedVals;
+      } else if (isFlush) {
+        name = 'Flush'; tier = 5; kickerVals = vals;
+      } else if (isStraight) {
+        name = 'Straight'; tier = 4; kickerVals = isAceLow ? [5, 4, 3, 2, 1] : vals;
+      } else if (groups[0] === 3) {
+        name = 'Three of a Kind'; tier = 3; kickerVals = orderedVals;
+      } else if (groups[0] === 2 && groups[1] === 2) {
+        name = 'Two Pair'; tier = 2; kickerVals = orderedVals;
+      } else if (groups[0] === 2) {
+        name = 'One Pair'; tier = 1; kickerVals = orderedVals;
+      } else {
+        name = 'High Card'; tier = 0; kickerVals = vals;
+      }
+
+      const numScore = tier * 1048576 + encodeKickers(kickerVals); // 16^5 = 1048576
+      return { name, numScore };
+    }
+
+    function pokerDeal() {
+      if (!char) return;
+      const betInput = document.getElementById('poker-bet-input');
+      const bet = Math.max(POKER_MIN_BET, parseInt(betInput?.value) || POKER_MIN_BET);
+      if (char.gold < bet) {
+        _pokerLog('Not enough gold to place that bet.'); return;
+      }
+
+      char.gold -= bet;
+      _pokerUpdateGoldDisp();
+
+      const deck = _pokerNewDeck();
+      const playerCards = [deck.pop(), deck.pop()];
+      const dealerCards = [deck.pop(), deck.pop()];
+      const community = [];
+      // pre-deal flop/turn/river into deck remainder order
+      const flop = [deck.pop(), deck.pop(), deck.pop()];
+      const turn = deck.pop();
+      const river = deck.pop();
+
+      _pokerState = {
+        bet, pot: bet * 2, // player ante + dealer ante
+        playerCards, dealerCards, community,
+        flop, turn, river,
+        stage: 'preflop', // preflop → flop → turn → river → showdown
+        playerFolded: false
+      };
+
+      // Show game area
+      document.getElementById('poker-bet-row').style.display = 'none';
+      document.getElementById('poker-game-area').style.display = 'block';
+      document.getElementById('poker-dealer-area').style.display = 'block';
+      document.getElementById('poker-result-msg').textContent = '';
+
+      _pokerRender();
+      _pokerSetActions(['check','raise','fold']);
+      _pokerLog('New hand dealt. Pot: ' + bet*2 + 'g (your ante + dealer ante).');
+    }
+
+    function _pokerLog(msg) {
+      const log = document.getElementById('poker-hand-log');
+      if (!log) return;
+      const p = document.createElement('div');
+      p.textContent = msg;
+      log.prepend(p);
+      while (log.children.length > 12) log.removeChild(log.lastChild);
+    }
+
+    function _pokerUpdateGoldDisp() {
+      const el = document.getElementById('poker-gold-disp');
+      if (el && char) el.textContent = fmt(char.gold) + 'g';
+    }
+
+    function _pokerRender() {
+      if (!_pokerState) return;
+      const s = _pokerState;
+      // Show revealed community cards + face-down placeholders for unrevealed ones
+      const revealed = s.community.length;
+      const total = 5;
+      let communityHTML = '';
+      for (let i = 0; i < total; i++) {
+        if (i < revealed) {
+          communityHTML += _pokerCardHTML(s.community[i]);
+        } else {
+          communityHTML += _pokerCardHTML(null, true); // face-down placeholder
+        }
+      }
+      document.getElementById('poker-community').innerHTML = communityHTML;
+      document.getElementById('poker-player-cards').innerHTML = s.playerCards.map(c => _pokerCardHTML(c)).join('');
+      // Dealer: show first hole card, keep second face-down until showdown
+      const dealerEl = document.getElementById('poker-dealer-cards');
+      if (dealerEl) {
+        if (s.stage === 'showdown') {
+          dealerEl.innerHTML = s.dealerCards.map(c => _pokerCardHTML(c)).join('');
+        } else {
+          dealerEl.innerHTML = _pokerCardHTML(s.dealerCards[0]) + _pokerCardHTML(null, true);
+        }
+      }
+      document.getElementById('poker-pot-row').textContent = 'Pot: ' + fmt(s.pot) + 'g';
+    }
+
+    function pokerAction(action) {
+      if (!_pokerState || !char) return;
+      const s = _pokerState;
+
+      if (action === 'fold') {
+        s.playerFolded = true;
+        // Always reveal all 5 community cards before showdown
+        s.community = [...s.flop, s.turn, s.river];
+        _pokerLog('You folded. Dealer wins the pot (' + s.pot + 'g).');
+        _pokerShowdown();
+        return;
+      }
+
+      if (action === 'raise') {
+        const raiseAmt = s.bet;
+        if (char.gold < raiseAmt) { _pokerLog('Not enough gold to raise.'); return; }
+        char.gold -= raiseAmt;
+        s.pot += raiseAmt * 2; // player raises, dealer calls
+        _pokerUpdateGoldDisp();
+        _pokerLog('You raised ' + raiseAmt + 'g. Dealer calls. Pot: ' + s.pot + 'g.');
+      } else {
+        _pokerLog('You checked.');
+      }
+
+      // Advance stage — after river is revealed, go straight to showdown
+      if (s.stage === 'preflop') {
+        s.community.push(...s.flop);
+        s.stage = 'flop';
+        _pokerRender();
+        _pokerSetActions(['check','raise','fold']);
+        _pokerLog('Flop revealed.');
+      } else if (s.stage === 'flop') {
+        s.community.push(s.turn);
+        s.stage = 'turn';
+        _pokerRender();
+        _pokerSetActions(['check','raise','fold']);
+        _pokerLog('Turn revealed.');
+      } else if (s.stage === 'turn') {
+        s.community.push(s.river);
+        s.stage = 'river';
+        _pokerRender();
+        _pokerLog('River revealed — going to showdown...');
+        // Brief pause so player can see the river card, then auto-showdown
+        setTimeout(function() { if (_pokerState && _pokerState.stage === 'river') { _pokerState.stage = 'showdown'; _pokerShowdown(); } }, 800);
+      } else if (s.stage === 'river') {
+        s.stage = 'showdown';
+        _pokerShowdown();
+      }
+    }
+
+    function _pokerShowdown() {
+      if (!_pokerState) return;
+      const s = _pokerState;
+      s.stage = 'showdown';
+
+      // ALWAYS reveal all 5 community cards regardless of how showdown was triggered
+      s.community = [...s.flop, s.turn, s.river];
+      _pokerRender();
+
+      // Show dealer cards
+      document.getElementById('poker-dealer-area').style.display = 'block';
+      document.getElementById('poker-dealer-cards').innerHTML = s.dealerCards.map(c => _pokerCardHTML(c)).join('');
+
+      let resultMsg = '';
+      let payout = 0;
+      let resultColor = '#c8c0a8';
+
+      if (s.playerFolded) {
+        resultMsg = '😞 You folded. Dealer takes the pot.';
+        document.getElementById('poker-dealer-hand-name').textContent = 'Dealer wins by fold.';
+        resultColor = '#c8c0a8';
+      } else {
+        // Evaluate best 5-card hand from each player's 2 hole cards + all 5 community cards
+        const playerBest = _pokerEvaluate([...s.playerCards, ...s.community]);
+        const dealerBest = _pokerEvaluate([...s.dealerCards, ...s.community]);
+        document.getElementById('poker-dealer-hand-name').textContent = 'Dealer: ' + dealerBest.name;
+
+        if (playerBest.numScore > dealerBest.numScore) {
+          // Player wins
+          payout = s.pot;
+          char.gold += payout;
+          resultMsg = '🏆 You win! Your ' + playerBest.name + ' beats dealer\'s ' + dealerBest.name + '. +' + fmt(payout) + 'g!';
+          resultColor = '#6fdc6f';
+          _pokerLog('WIN: ' + playerBest.name + ' vs ' + dealerBest.name + '. +' + payout + 'g');
+        } else if (playerBest.numScore === dealerBest.numScore) {
+          // Tie — split pot
+          payout = Math.floor(s.pot / 2);
+          char.gold += payout;
+          resultMsg = '🤝 Tie! Both have ' + playerBest.name + '. Pot split: +' + fmt(payout) + 'g';
+          resultColor = '#e8c860';
+          _pokerLog('TIE: ' + playerBest.name + '. Returned ' + payout + 'g');
+        } else {
+          // Dealer wins
+          resultMsg = '💀 Dealer wins with ' + dealerBest.name + '. You had ' + playerBest.name + '.';
+          resultColor = '#e84040';
+          _pokerLog('LOSS: ' + playerBest.name + ' vs ' + dealerBest.name);
+        }
+      }
+
+      _pokerUpdateGoldDisp();
+      const resultEl = document.getElementById('poker-result-msg');
+      resultEl.textContent = resultMsg;
+      resultEl.style.color = resultColor;
+
+      _pokerSetActions(['deal_again', 'leave']);
+      renderAll();
+      autoSave();
+    }
+
+    function _pokerSetActions(actions) {
+      const row = document.getElementById('poker-action-row');
+      if (!row) return;
+      const btnDefs = {
+        check:      { label: '✋ Check',      style: 'background:linear-gradient(180deg,#2a4a6a,#1a2a4a);border:1px solid #3a5a8a;color:#a8c8e8;', fn: "pokerAction('check')" },
+        raise:      { label: '📈 Raise',      style: 'background:linear-gradient(180deg,#6a4a1a,#3a2a0a);border:1px solid #8a6a2a;color:#e8c888;', fn: "pokerAction('raise')" },
+        fold:       { label: '🏳 Fold',        style: 'background:linear-gradient(180deg,#5a1a1a,#3a0a0a);border:1px solid #8a2a2a;color:#e88888;', fn: "pokerAction('fold')" },
+        deal_again: { label: '🃏 Deal Again',  style: 'background:linear-gradient(180deg,#2a6a2a,#1a4a1a);border:1px solid #3d7a3d;color:#a8e8a8;font-weight:700;', fn: 'pokerDealAgain()' },
+        leave:      { label: '🚪 Leave Table', style: 'background:linear-gradient(180deg,#3a3a3a,#1a1a1a);border:1px solid #5a5a5a;color:#c0c0c0;', fn: 'closePokerGame()' }
+      };
+      row.innerHTML = actions.map(a => {
+        const d = btnDefs[a];
+        return `<button onclick="${d.fn}" style="${d.style}padding:7px 16px;border-radius:4px;cursor:pointer;font-family:'Georgia','Times New Roman',serif;font-size:12px;font-weight:600">${d.label}</button>`;
+      }).join('');
+    }
+
+    function pokerDealAgain() {
+      if (!_pokerState || !char) return;
+      // Reset to bet selection
+      document.getElementById('poker-bet-row').style.display = 'flex';
+      document.getElementById('poker-game-area').style.display = 'none';
+      document.getElementById('poker-result-msg').textContent = '';
+      _pokerState = null;
     }
 
     function renderLootTab() {
@@ -18117,7 +20281,7 @@
     function switchTab(tab) {
       if (POPUP_PANEL_IDS.has(tab)) { openPopup(tab); return; }
       try { sessionStorage.setItem('EQ_lastTab', tab); } catch(e) {}
-      const mainTabs = ['combat', 'zone', 'inv', 'shop'];
+      const mainTabs = ['combat', 'zone', 'inv', 'shop', 'casino'];
       mainTabs.forEach(t => {
         document.getElementById('tab-' + t).style.display = t === tab ? (t === 'combat' ? 'flex' : 'block') : 'none';
       });
@@ -18130,6 +20294,7 @@
       if (tab === 'zone') renderZones();
       if (tab === 'inv') renderInv();
       if (tab === 'shop') renderShop();
+      if (tab === 'casino') renderCasino();
     }
 
     function setupDrag() {
