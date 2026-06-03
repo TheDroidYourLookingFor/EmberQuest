@@ -7984,6 +7984,15 @@
         ps.runesWon = Math.max(0, Number(ps.runesWon) || 0);
         ps.gearWon = Math.max(0, Number(ps.gearWon) || 0);
       }
+      // Other casino games — lifetime gold won vs gold spent
+      ['slotsStats', 'scratchStats', 'pokerStats'].forEach(k => {
+        if (!targetChar[k] || typeof targetChar[k] !== 'object') {
+          targetChar[k] = { lifetimeWon: 0, lifetimeLost: 0 };
+        } else {
+          targetChar[k].lifetimeWon = Math.max(0, Number(targetChar[k].lifetimeWon) || 0);
+          targetChar[k].lifetimeLost = Math.max(0, Number(targetChar[k].lifetimeLost) || 0);
+        }
+      });
       if (typeof targetChar.hardcore !== 'boolean') targetChar.hardcore = false;
       // LFG (Looking For Group): borrowed heroes pulled from other players.
       // Stored as read-only stat snapshots; they never modify the source save.
@@ -11653,7 +11662,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.42';
+    const CURRENT_VERSION = '1.3.43';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -14475,6 +14484,7 @@
     function renderLotterySection(container) {
       if (!char) return;
       let html = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">Buy a ticket, then scratch the foil to reveal your prizes. Match symbols to win!</div>';
+      html += `<div id="scratch-stats" style="font-size:11px;color:#d8cfa8;background:rgba(0,0,0,0.35);border:1px solid rgba(255,220,160,0.25);border-radius:8px;padding:6px 10px;margin-bottom:10px">${_casinoStatsHTML('scratch')}</div>`;
       SCRATCH_TICKETS.forEach(ticket => {
         const locked = false;
         const canAfford = (char.gold || 0) >= ticket.cost;
@@ -14507,6 +14517,7 @@
       if (!ticket) return;
       if ((char.gold || 0) < ticket.cost) { log('Not enough gold for a ' + ticket.name + '.', 'info'); return; }
       char.gold -= ticket.cost;
+      _casinoRecordSpend('scratch', ticket.cost);
 
       // Generate the ticket squares
       const totalSquares = ticket.squares;
@@ -14636,6 +14647,7 @@
         for (let i = 0; i < times; i++) {
           if (prize.type === 'gold') {
             char.gold = (char.gold || 0) + prize.value;
+            _casinoRecordWin('scratch', prize.value);
             winLines.push('🏆 Won ' + prize.value.toLocaleString() + ' gold!');
             log('🎟 Scratch Ticket: Won ' + prize.value.toLocaleString() + 'g from ' + ticket.name + '!', 'loot');
           } else if (prize.type === 'rune') {
@@ -14669,6 +14681,7 @@
               // Fallback: give gold equivalent
               const goldVal = rarity === 'Legendary' ? 10000 : 2500;
               char.gold = (char.gold || 0) + goldVal;
+              _casinoRecordWin('scratch', goldVal);
               winLines.push('⚔️ Gear prize: ' + goldVal.toLocaleString() + 'g (bags full)!');
             }
           }
@@ -14725,6 +14738,7 @@
       document.querySelectorAll('.shop-section-btn').forEach(b => b.classList.remove('active'));
       const activeBtn = document.getElementById('csbtn-' + section);
       if (activeBtn) activeBtn.classList.add('active');
+      if (section === 'lottery') _casinoResetSession('scratch');
       const body = document.getElementById('popup-body');
       const pool = document.getElementById('popup-pool');
       if (body.firstElementChild && pool) { body.firstElementChild.style.display = 'none'; pool.appendChild(body.firstElementChild); }
@@ -14989,6 +15003,7 @@
       if (!m) return;
       _slotSpinning = false;
       _slotState = { machine: m, betMult: 1, freeSpins: 0, freeSpinsTotal: 0, lastWin: 0 };
+      _casinoResetSession('slots');
       const existing = document.getElementById('slot-overlay');
       if (existing) existing.remove();
       const overlay = document.createElement('div');
@@ -15035,6 +15050,8 @@
           </div>
 
           <div id="slot-result" style="font-size:13px;font-weight:700;color:${m.color};min-height:20px;text-align:center;margin-bottom:8px"></div>
+
+          <div id="slots-stats" style="font-size:11px;color:#d8cfa8;background:rgba(0,0,0,0.35);border:1px solid ${m.color}33;border-radius:8px;padding:6px 10px;margin-bottom:8px">${_casinoStatsHTML('slots')}</div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(0,0,0,0.35);border-radius:8px;padding:8px 10px;margin-bottom:10px;flex-wrap:wrap">
             <div style="font-size:11px;color:#d8cfa8">Gold<br><strong id="slot-gold-disp" style="color:${m.color};font-size:13px">${(char.gold||0).toLocaleString()}</strong></div>
@@ -15147,6 +15164,7 @@
       if (!isFree) {
         if ((char.gold || 0) < totalBet) { log('Not enough gold for ' + m.name + '.', 'info'); _slotUpdateSpinBtn(); return; }
         char.gold -= totalBet;
+        _casinoRecordSpend('slots', totalBet);
       } else {
         _slotState.freeSpins--;
       }
@@ -15256,7 +15274,7 @@
       }
 
       // Award gold winnings
-      if (totalWin > 0) char.gold = (char.gold || 0) + totalWin;
+      if (totalWin > 0) { char.gold = (char.gold || 0) + totalWin; _casinoRecordWin('slots', totalWin); }
       _slotState.lastWin = totalWin;
 
       // Highlight winning cells
@@ -15354,6 +15372,7 @@
         }
         if (!done) {
           char.gold = (char.gold || 0) + fallbackGold;
+          _casinoRecordWin('slots', fallbackGold);
           log(`🎰 Slots (${m.name}): ${count}× ${def.sym} — ${rarity} gear (bags full) → ${fallbackGold.toLocaleString()}g`, 'loot');
         }
       }
@@ -15646,6 +15665,63 @@
          </div>` +
         ((_pSession.runesWon || _pSession.gearWon) ?
           `<div style="text-align:center;margin-top:2px;opacity:0.85">This session also won${extra(_pSession.runesWon, 'rune' + (_pSession.runesWon === 1 ? '' : 's'))}${extra(_pSession.gearWon, 'gear')}</div>` : '');
+    }
+
+
+    // Generic session + lifetime stats for Slots, Scratch Tickets, and Poker.
+    // Pachinko keeps its own helpers above because it also tracks runes/gear.
+    const CASINO_STAT_KEYS = { slots: 'slotsStats', scratch: 'scratchStats', poker: 'pokerStats' };
+    let _slotSession = { won: 0, lost: 0 };
+    let _scratchSession = { won: 0, lost: 0 };
+    let _pokerSession = { won: 0, lost: 0 };
+    function _casinoSessionFor(key) {
+      if (key === 'slots') return _slotSession;
+      if (key === 'scratch') return _scratchSession;
+      if (key === 'poker') return _pokerSession;
+      return null;
+    }
+    function _casinoResetSession(key) {
+      const s = _casinoSessionFor(key);
+      if (s) { s.won = 0; s.lost = 0; }
+    }
+    function _casinoRecordSpend(key, amount) {
+      if (!char || !amount) return;
+      ensureExtendedSystems(char);
+      const s = _casinoSessionFor(key); if (s) s.lost += amount;
+      const statKey = CASINO_STAT_KEYS[key];
+      if (statKey && char[statKey]) char[statKey].lifetimeLost += amount;
+      _casinoUpdateStatsDisplay(key);
+    }
+    function _casinoRecordWin(key, amount) {
+      if (!char || !amount) return;
+      ensureExtendedSystems(char);
+      const s = _casinoSessionFor(key); if (s) s.won += amount;
+      const statKey = CASINO_STAT_KEYS[key];
+      if (statKey && char[statKey]) char[statKey].lifetimeWon += amount;
+      _casinoUpdateStatsDisplay(key);
+    }
+    function _casinoNetColor(net) { return net > 0 ? '#7CFFB2' : (net < 0 ? '#ff7a7a' : '#d8cfa8'); }
+    function _casinoStatsHTML(key) {
+      if (!char) return '';
+      ensureExtendedSystems(char);
+      const s = _casinoSessionFor(key);
+      const ps = char[CASINO_STAT_KEYS[key]];
+      if (!s || !ps) return '';
+      const sNet = s.won - s.lost;
+      const lNet = ps.lifetimeWon - ps.lifetimeLost;
+      return `<div style="display:flex;justify-content:space-between;gap:8px">
+           <span>Session</span>
+           <span>Won <b style="color:#7CFFB2">${s.won.toLocaleString()}g</b> · Lost <b style="color:#ff7a7a">${s.lost.toLocaleString()}g</b> · Net <b style="color:${_casinoNetColor(sNet)}">${sNet >= 0 ? '+' : ''}${sNet.toLocaleString()}g</b></span>
+         </div>
+         <div style="display:flex;justify-content:space-between;gap:8px;margin-top:2px">
+           <span>Lifetime</span>
+           <span>Won <b style="color:#7CFFB2">${ps.lifetimeWon.toLocaleString()}g</b> · Lost <b style="color:#ff7a7a">${ps.lifetimeLost.toLocaleString()}g</b> · Net <b style="color:${_casinoNetColor(lNet)}">${lNet >= 0 ? '+' : ''}${lNet.toLocaleString()}g</b></span>
+         </div>`;
+    }
+    function _casinoUpdateStatsDisplay(key) {
+      const el = document.getElementById(key + '-stats');
+      if (!el) return;
+      el.innerHTML = _casinoStatsHTML(key);
     }
 
 
@@ -16050,6 +16126,7 @@
       if (existing) existing.remove();
 
       _pokerState = null;
+      _casinoResetSession('poker');
 
       const overlay = document.createElement('div');
       overlay.id = 'poker-overlay';
@@ -16074,6 +16151,7 @@
           <div style="font-size:11px;color:#a0a870;margin-bottom:12px">
             Your gold: <strong id="poker-gold-disp" style="color:#f0d060">${fmt(char.gold)}g</strong>
           </div>
+          <div id="poker-stats" style="font-size:11px;color:#d8cfa8;background:rgba(0,0,0,0.35);border:1px solid #3d7a3d;border-radius:8px;padding:6px 10px;margin-bottom:12px">${_casinoStatsHTML('poker')}</div>
           <div id="poker-bet-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
             <label style="font-size:12px;color:#c8c0a8">Bet:</label>
             <input type="number" id="poker-bet-input" min="${POKER_MIN_BET}" step="${POKER_MIN_BET}" value="${Math.min(100, Math.floor((char.gold || 100) / 10 / POKER_MIN_BET) * POKER_MIN_BET || POKER_MIN_BET)}"
@@ -16224,6 +16302,7 @@
       }
 
       char.gold -= bet;
+      _casinoRecordSpend('poker', bet);
       _pokerUpdateGoldDisp();
 
       const deck = _pokerNewDeck();
@@ -16313,6 +16392,7 @@
         const raiseAmt = s.bet;
         if (char.gold < raiseAmt) { _pokerLog('Not enough gold to raise.'); return; }
         char.gold -= raiseAmt;
+        _casinoRecordSpend('poker', raiseAmt);
         s.pot += raiseAmt * 2; // player raises, dealer calls
         _pokerUpdateGoldDisp();
         _pokerLog('You raised ' + raiseAmt + 'g. Dealer calls. Pot: ' + s.pot + 'g.');
@@ -16377,6 +16457,7 @@
           // Player wins
           payout = s.pot;
           char.gold += payout;
+          _casinoRecordWin('poker', payout);
           resultMsg = '🏆 You win! Your ' + playerBest.name + ' beats dealer\'s ' + dealerBest.name + '. +' + fmt(payout) + 'g!';
           resultColor = '#6fdc6f';
           _pokerLog('WIN: ' + playerBest.name + ' vs ' + dealerBest.name + '. +' + payout + 'g');
@@ -16384,6 +16465,7 @@
           // Tie — split pot
           payout = Math.floor(s.pot / 2);
           char.gold += payout;
+          _casinoRecordWin('poker', payout);
           resultMsg = '🤝 Tie! Both have ' + playerBest.name + '. Pot split: +' + fmt(payout) + 'g';
           resultColor = '#e8c860';
           _pokerLog('TIE: ' + playerBest.name + '. Returned ' + payout + 'g');
