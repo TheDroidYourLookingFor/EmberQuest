@@ -14653,26 +14653,32 @@
           } else if (prize.type === 'rune') {
             if (!char.runes) char.runes = {};
             char.runes[prize.value] = (char.runes[prize.value] || 0) + 1;
+            _casinoRecordWin('scratch', 1500);
             winLines.push('🔷 Won a ' + prize.value + ' Rune!');
             log('🎟 Scratch Ticket: Won ' + prize.value + ' Rune from ' + ticket.name + '!', 'loot');
           } else if (prize.type === 'hppot') {
             char.healpotions = (char.healpotions || 0) + prize.value;
+            _casinoRecordWin('scratch', prize.value * 30);
             winLines.push('🧪 Won ' + prize.value + 'x Minor HP Potion!');
             log('🎟 Scratch Ticket: Won ' + prize.value + ' potions from ' + ticket.name + '!', 'loot');
           } else if (prize.type === 'shards') {
             if (!char.crafting) char.crafting = { shards: { common: 0, magic: 0, rare: 0, epic: 0 } };
             const amount = prize.value === 'epic' ? 2 : 5;
             char.crafting.shards[prize.value] = (char.crafting.shards[prize.value] || 0) + amount;
+            const shardGold = { common: 25, magic: 100, rare: 400, epic: 1500 }[prize.value] || 50;
+            _casinoRecordWin('scratch', amount * shardGold);
             winLines.push('💎 Won ' + amount + 'x ' + prize.value.charAt(0).toUpperCase() + prize.value.slice(1) + ' Shards!');
             log('🎟 Scratch Ticket: Won ' + amount + ' ' + prize.value + ' shards from ' + ticket.name + '!', 'loot');
           } else if (prize.type === 'gear') {
             const rarityMap = { epic: 'Epic', legendary: 'Legendary' };
             const rarity = rarityMap[prize.value] || 'Rare';
+            const gearGold = rarity === 'Legendary' ? 10000 : (rarity === 'Epic' ? 5000 : 2500);
             if (typeof rollItemVariant === 'function') {
               const gearItem = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: char.level });
               if (gearItem) {
                 const added = addToInventory(gearItem);
                 if (added) {
+                  _casinoRecordWin('scratch', gearGold);
                   winLines.push('⚔️ Won ' + rarity + ' gear: ' + (gearItem.name || 'item') + '!');
                   log('🎟 Scratch Ticket: Won ' + rarity + ' gear from ' + ticket.name + '!', 'loot');
                 }
@@ -15358,6 +15364,7 @@
       if (sp.type === 'rune') {
         if (!char.runes) char.runes = {};
         char.runes[sp.value] = (char.runes[sp.value] || 0) + 1;
+        _casinoRecordWin('slots', 1500);
         log(`🎰 Slots (${m.name}): ${count}× ${def.sym} — won a ${sp.value} Rune!`, 'loot');
       } else if (sp.type === 'gear') {
         const rarity = sp.value === 'legendary' ? 'Legendary' : (sp.value === 'epic' ? 'Epic' : 'Rare');
@@ -15366,6 +15373,8 @@
         if (typeof rollItemVariant === 'function') {
           const item = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: char.level });
           if (item && typeof addToInventory === 'function' && addToInventory(item)) {
+            const gearGold = rarity === 'Legendary' ? 20000 : (rarity === 'Epic' ? 8000 : 3000);
+            _casinoRecordWin('slots', gearGold);
             log(`🎰 Slots (${m.name}): ${count}× ${def.sym} — won ${rarity} gear: ${item.name || 'item'}!`, 'loot');
             done = true;
           }
@@ -16122,8 +16131,8 @@
 
     function openPokerGame() {
       if (!char) return;
-      const existing = document.getElementById('poker-overlay');
-      if (existing) existing.remove();
+      // If overlay already open, just focus it (don't reset session)
+      if (document.getElementById('poker-overlay')) return;
 
       _pokerState = null;
       _casinoResetSession('poker');
@@ -16417,6 +16426,7 @@
         s.community.push(s.river);
         s.stage = 'river';
         _pokerRender();
+        _pokerSetActions([]);
         _pokerLog('River revealed — going to showdown...');
         // Brief pause so player can see the river card, then auto-showdown
         setTimeout(function() { if (_pokerState && _pokerState.stage === 'river') { _pokerState.stage = 'showdown'; _pokerShowdown(); } }, 800);
@@ -16465,7 +16475,12 @@
           // Tie — split pot
           payout = Math.floor(s.pot / 2);
           char.gold += payout;
-          _casinoRecordWin('poker', payout);
+          // Tie: payout is just a refund of the player's own contribution.
+          // Roll back the matching spend so session/lifetime totals show no activity.
+          ensureExtendedSystems(char);
+          _pokerSession.lost = Math.max(0, _pokerSession.lost - payout);
+          char.pokerStats.lifetimeLost = Math.max(0, char.pokerStats.lifetimeLost - payout);
+          _casinoUpdateStatsDisplay('poker');
           resultMsg = '🤝 Tie! Both have ' + playerBest.name + '. Pot split: +' + fmt(payout) + 'g';
           resultColor = '#e8c860';
           _pokerLog('TIE: ' + playerBest.name + '. Returned ' + payout + 'g');
