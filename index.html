@@ -4621,6 +4621,13 @@
         }
         try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
         this.publishLeaderboard(); // seed public leaderboard with this account's characters
+        // Collect any LFG rewards this account's heroes earned while away.
+        try {
+          const earned = await this.collectLfgRewards();
+          if (Array.isArray(earned) && earned.length && typeof showLfgRewardSummary === 'function') {
+            showLfgRewardSummary(earned);
+          }
+        } catch (e) { /* non-fatal */ }
         const badge = document.getElementById('cs-user-email');
         if (badge && currentUser) badge.textContent = currentUser.email || '';
         showScreen('screen-charselect');
@@ -4656,7 +4663,19 @@
             await sb.from('saves').delete().eq('user_id', currentUser.id).in('slot', deletes);
           }
           this.publishLeaderboard(); // keep public leaderboard summaries in sync (fire-and-forget)
+          this.refreshSharedLfg();   // keep any LFG-shared heroes' snapshots fresh
         } catch (e) { console.warn('cloud sync error', e); }
+      },
+      // Re-publish the LFG snapshot for any of this account's characters that
+      // currently have their LFG flag on, so borrowers see up-to-date stats.
+      async refreshSharedLfg() {
+        if (!sb || !currentUser) return;
+        try {
+          for (let i = 0; i < MAX_SLOTS; i++) {
+            const c = (i === activeSlot && char) ? char : slots[i];
+            if (c && c.lfg) { await this.setLfg(i, true); }
+          }
+        } catch (e) { /* non-fatal */ }
       },
       // Read the global leaderboard (everyone's published character summaries).
       // Returns an array of rows, or null if unavailable (table missing / offline).
@@ -4730,8 +4749,144 @@
             await sb.from('leaderboard').delete().eq('user_id', currentUser.id).in('char_key', empties);
           }
         } catch (e) { console.warn('leaderboard publish error', e); }
+      },
+      // ── LFG (Looking For Group) ───────────────────────────────────────────
+      // Publish or clear this character's LFG availability. When `on` is true
+      // we upsert a public summary into lfg_pool so other players can borrow
+      // this hero. When false we flip lfg=false (kept so reward ledgers, added
+      // later, can still reference the row).
+      async setLfg(charKey, on) {
+        if (!sb || !currentUser) return { ok: false, offline: true };
+        try {
+          const c = (charKey === activeSlot && char) ? char : slots[charKey];
+          if (!c) return { ok: false };
+          const s = computeLeaderboardStats(c);
+          const known = Array.isArray(c.knownSpells) ? c.knownSpells.slice(0, 60) : [];
+          const row = {
+            user_id: currentUser.id, char_key: charKey,
+            name: s.name, class: s.cls, race: s.race, level: s.level,
+            atk: s.atk, def: s.def, hp: s.maxHp, mp: s.maxMp, power: s.power,
+            hardcore: s.hardcore, known_spells: known,
+            lfg: !!on, updated_at: new Date().toISOString()
+          };
+          const { error } = await sb.from('lfg_pool').upsert(row, { onConflict: 'user_id,char_key' });
+          if (error) { console.warn('lfg publish failed', error); return { ok: false, error }; }
+          return { ok: true };
+        } catch (e) { console.warn('lfg publish error', e); return { ok: false, error: e }; }
+      },
+      // Read available LFG heroes (excluding the current user), filtered to the
+      // player's own Hardcore mode and to recently-active heroes.
+      async fetchLfgPool(hardcore, limit = 100) {
+        if (!sb) return null;
+        try {
+          const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+          let q = sb.from('lfg_pool')
+            .select('user_id,char_key,name,class,race,level,atk,def,hp,mp,power,hardcore,known_spells,updated_at')
+            .eq('lfg', true)
+            .eq('hardcore', !!hardcore)
+            .gt('updated_at', cutoff)
+            .order('power', { ascending: false })
+            .limit(limit);
+          const { data, error } = await q;
+          if (error) { console.warn('lfg fetch failed', error); return null; }
+          let rows = data || [];
+          if (currentUser) rows = rows.filter(r => r.user_id !== currentUser.id);
+          return rows;
+        } catch (e) { console.warn('lfg fetch error', e); return null; }
+      },
+      // ── LFG rewards (Phase 2) ─────────────────────────────────────────────
+      // Credit a borrowed hero's owner with pending XP/gold for fighting in
+      // your group. We batch credits locally (see _lfgRewardQueue below) and
+      // flush them through a SECURITY DEFINER RPC (add_lfg_reward) so the
+      // increment is atomic and validated server-side. The RPC also enforces
+      // a daily per-character cap so this can't be abused.
+      async addLfgReward(ownerId, charKey, xp, gold) {
+        if (!sb || !currentUser) return { ok: false };
+        if (!ownerId || (!xp && !gold)) return { ok: false };
+        try {
+          const { error } = await sb.rpc('add_lfg_reward', {
+            p_owner: ownerId,
+            p_char_key: charKey,
+            p_xp: Math.max(0, Math.floor(xp || 0)),
+            p_gold: Math.max(0, Math.floor(gold || 0))
+          });
+          if (error) { console.warn('lfg reward credit failed', error); return { ok: false, error }; }
+          return { ok: true };
+        } catch (e) { console.warn('lfg reward error', e); return { ok: false, error: e }; }
+      },
+      // On login: read this account's pending LFG rewards, grant them to the
+      // matching characters, then reset the ledger. Returns a summary array.
+      async collectLfgRewards() {
+        if (!sb || !currentUser) return null;
+        try {
+          const { data, error } = await sb.from('lfg_rewards')
+            .select('char_key,pending_xp,pending_gold,times_used')
+            .eq('user_id', currentUser.id);
+          if (error) { console.warn('lfg rewards fetch failed', error); return null; }
+          const pending = (data || []).filter(r => (Number(r.pending_xp) || 0) > 0 || (Number(r.pending_gold) || 0) > 0);
+          if (!pending.length) return [];
+          const summary = [];
+          const clearedKeys = [];
+          for (const r of pending) {
+            const key = r.char_key;
+            const xp = Math.max(0, Math.floor(Number(r.pending_xp) || 0));
+            const gold = Math.max(0, Math.floor(Number(r.pending_gold) || 0));
+            const used = Math.max(0, Math.floor(Number(r.times_used) || 0));
+            const target = slots[key];
+            if (target && typeof target === 'object') {
+              if (gold) target.gold = (Number(target.gold) || 0) + gold;
+              let lvls = 0;
+              if (xp && typeof applyXpToSlotChar === 'function') lvls = applyXpToSlotChar(target, xp);
+              summary.push({ name: target.name || ('Slot ' + key), xp, gold, used, levels: lvls });
+              clearedKeys.push(key);
+            }
+          }
+          // Reset the collected ledgers to zero (owner can write own rows).
+          if (clearedKeys.length) {
+            const resets = clearedKeys.map(k => ({
+              user_id: currentUser.id, char_key: k,
+              pending_xp: 0, pending_gold: 0, updated_at: new Date().toISOString()
+            }));
+            const { error: upErr } = await sb.from('lfg_rewards').upsert(resets, { onConflict: 'user_id,char_key' });
+            if (upErr) console.warn('lfg rewards reset failed', upErr);
+            // Persist the granted XP/gold to the cloud saves.
+            try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
+            this.queueSync();
+          }
+          return summary;
+        } catch (e) { console.warn('lfg rewards collect error', e); return null; }
       }
     };
+
+    // ── LFG reward batching (client-side) ──────────────────────────────────
+    // Credits accumulate here per borrowed hero and flush every few seconds so
+    // we don't issue a network write on every single kill.
+    const _lfgRewardQueue = new Map(); // key "owner:charKey" -> {ownerId,charKey,xp,gold}
+    let _lfgRewardTimer = null;
+
+    function queueLfgReward(ownerId, charKey, xp, gold) {
+      if (!ownerId || (charKey == null)) return;
+      const key = ownerId + ':' + charKey;
+      const cur = _lfgRewardQueue.get(key) || { ownerId, charKey, xp: 0, gold: 0 };
+      cur.xp += Math.max(0, Math.floor(xp || 0));
+      cur.gold += Math.max(0, Math.floor(gold || 0));
+      _lfgRewardQueue.set(key, cur);
+      if (!_lfgRewardTimer) {
+        _lfgRewardTimer = setTimeout(flushLfgRewardQueue, 5000);
+      }
+    }
+
+    async function flushLfgRewardQueue() {
+      _lfgRewardTimer = null;
+      if (!(typeof Cloud !== 'undefined' && Cloud.ready) || !_lfgRewardQueue.size) { _lfgRewardQueue.clear(); return; }
+      const batch = Array.from(_lfgRewardQueue.values());
+      _lfgRewardQueue.clear();
+      for (const r of batch) {
+        if (r.xp > 0 || r.gold > 0) {
+          try { await Cloud.addLfgReward(r.ownerId, r.charKey, r.xp, r.gold); } catch (e) { /* non-fatal */ }
+        }
+      }
+    }
 
     const CLASSES = {
       Warrior: { hp: 160, mp: 40, atk: 18, def: 12, mpRegen: 2, skill: 'Taunt', skillMp: 10, skillEffect: 'taunt' },
@@ -7800,6 +7955,14 @@
         ps.gearWon = Math.max(0, Number(ps.gearWon) || 0);
       }
       if (typeof targetChar.hardcore !== 'boolean') targetChar.hardcore = false;
+      // LFG (Looking For Group): borrowed heroes pulled from other players.
+      // Stored as read-only stat snapshots; they never modify the source save.
+      if (!Array.isArray(targetChar.lfgParty)) targetChar.lfgParty = [];
+      targetChar.lfgParty = targetChar.lfgParty
+        .filter(h => h && typeof h === 'object' && h.name)
+        .slice(0, MAX_GROUP_SIZE - 1);
+      // Per-character LFG availability flag (whether THIS hero is shared).
+      if (typeof targetChar.lfg !== 'boolean') targetChar.lfg = false;
       if (!Array.isArray(targetChar.group)) targetChar.group = [];
       if (typeof targetChar.groupSplitGold !== 'boolean') targetChar.groupSplitGold = false;
       if (!Array.isArray(targetChar.groupMercs)) targetChar.groupMercs = [];
@@ -8274,6 +8437,9 @@
 
     // ── Group system ─────────────────────────────
     const MAX_GROUP_SIZE = 6;
+    // Fraction of a kill's XP/gold each borrowed LFG hero earns for its owner
+    // (a "finder's fee"). Does not reduce the borrowing player's own rewards.
+    const LFG_REWARD_FEE = 0.25;
     // Mercenaries can fill the whole group (every slot except the player).
     const MAX_GROUP_MERCS = MAX_GROUP_SIZE - 1;
     // Group XP multiplier by size. Divide by size to get per-player share.
@@ -8313,17 +8479,25 @@
       );
     }
 
+    function getLfgParty(targetChar = char) {
+      if (!targetChar || !Array.isArray(targetChar.lfgParty)) return [];
+      // Only borrowed heroes matching the player's Hardcore mode are active,
+      // mirroring the rule for local grouped characters.
+      return targetChar.lfgParty.filter(h => h && typeof h === 'object' && (!!h.hardcore === !!targetChar.hardcore));
+    }
+
     function getGroupSize() {
       if (!char) return 0;
-      return 1 + getActiveMercenaryCount(char) + getGroupMemberSlotIndices().length;
+      return 1 + getActiveMercenaryCount(char) + getGroupMemberSlotIndices().length + getLfgParty(char).length;
     }
 
     // Members that count for the XP divisor. Mercenaries occupy a body in
     // the group and reduce XP per kill the same as another character, but
-    // they do not receive any XP themselves.
+    // they do not receive any XP themselves. Borrowed LFG heroes likewise
+    // occupy a slot and reduce the per-character share.
     function getXpShareSize() {
       if (!char) return 1;
-      return 1 + getActiveMercenaryCount(char) + getGroupMemberSlotIndices().length;
+      return 1 + getActiveMercenaryCount(char) + getGroupMemberSlotIndices().length + getLfgParty(char).length;
     }
 
     function getGroupXpBonus(size) {
@@ -8385,18 +8559,22 @@
     function triggerGroupAttacks(source = 'attack') {
       if (!char || !mob) return false;
       const members = getGroupMemberSlotIndices();
-      if (!members.length) return false;
+      const lfg = getLfgParty(char);
+      if (!members.length && !lfg.length) return false;
 
-      for (let m = 0; m < members.length; m++) {
-        if (!mob || mob.hp <= 0) break;
-        const slotChar = slots[members[m]];
-        if (!slotChar) continue;
-        if (Math.random() > 0.7) continue; // 70% chance to act this swing
+      // Run one ally's action. `slotChar` is any object with the combat
+      // summary fields (name, cls, level, atk, knownSpells). Works for both
+      // local grouped characters and borrowed LFG hero snapshots.
+      // Returns 'killed' if the mob died, 'acted'/'skipped' otherwise.
+      function runAllyAction(slotChar, badge) {
+        if (!mob || mob.hp <= 0) return 'killed';
+        if (!slotChar) return 'skipped';
+        if (Math.random() > 0.7) return 'skipped'; // 70% chance to act this swing
 
-        const memberName = slotChar.name || (slotChar.cls || 'Ally');
+        const baseName = slotChar.name || (slotChar.cls || 'Ally');
+        const memberName = badge ? (baseName + badge) : baseName;
         const level = Math.max(1, Number(slotChar.level || 1));
         const atk = Math.max(0, Number(slotChar.atk || 0));
-        const maxMp = Math.max(0, Number(slotChar.maxMp || 0));
 
         const known = getKnownSpellsForSlotChar(slotChar);
         const damageSpells = known.filter(sp => sp.kind === 'damage' || sp.kind === 'damage_weaken');
@@ -8415,7 +8593,7 @@
               { text: fmt(healAmt), cls: 'combat-log-heal-amt' },
               ' hit points.'
             ], 'heal');
-            continue;
+            return 'acted';
           }
         }
 
@@ -8446,10 +8624,19 @@
           ' points of damage.'
         ], 'dmg');
 
-        if (mob.hp <= 0) {
-          killMob();
-          return true;
-        }
+        if (mob.hp <= 0) { killMob(); return 'killed'; }
+        return 'acted';
+      }
+
+      // Local grouped characters first.
+      for (let m = 0; m < members.length; m++) {
+        if (!mob || mob.hp <= 0) break;
+        if (runAllyAction(slots[members[m]], '') === 'killed') return true;
+      }
+      // Then borrowed LFG heroes (tagged so the combat log identifies them).
+      for (let m = 0; m < lfg.length; m++) {
+        if (!mob || mob.hp <= 0) break;
+        if (runAllyAction(lfg[m], ' (LFG)') === 'killed') return true;
       }
       return false;
     }
@@ -8482,6 +8669,214 @@
       log('Removed ' + name + ' from your group.', 'info');
       saveSlots();
       renderGroupTab(); renderCompactGroup();
+    }
+
+    // ══════════════════════════════════════════════
+    //  LFG (Looking For Group) — Phase 1
+    //  Toggle this hero as available, and borrow other players' heroes
+    //  (read-only stat snapshots) into your group.
+    // ══════════════════════════════════════════════
+    let _lfgBrowserRows = null;   // last fetched pool (or null = not yet loaded)
+    let _lfgBrowserLoading = false;
+    let _lfgBusy = false;
+
+    function lfgHeroKey(h) { return (h.user_id || h.userId || '') + ':' + (h.char_key != null ? h.char_key : h.charKey); }
+
+    function isHeroBorrowed(h) {
+      if (!char || !Array.isArray(char.lfgParty)) return false;
+      const k = lfgHeroKey(h);
+      return char.lfgParty.some(x => lfgHeroKey(x) === k);
+    }
+
+    // Normalize a raw lfg_pool row into the snapshot we store/use in combat.
+    function normalizeLfgRow(r) {
+      return {
+        user_id: r.user_id, char_key: r.char_key,
+        name: r.name || 'Hero', cls: r.class || r.cls || '', race: r.race || '',
+        level: Math.max(1, Math.floor(Number(r.level || 1))),
+        atk: Math.max(0, Math.floor(Number(r.atk || 0))),
+        def: Math.max(0, Math.floor(Number(r.def || 0))),
+        maxHp: Math.max(0, Math.floor(Number(r.hp ?? r.maxHp ?? 0))),
+        maxMp: Math.max(0, Math.floor(Number(r.mp ?? r.maxMp ?? 0))),
+        power: Math.max(0, Math.floor(Number(r.power || 0))),
+        hardcore: !!r.hardcore,
+        knownSpells: Array.isArray(r.known_spells) ? r.known_spells : (Array.isArray(r.knownSpells) ? r.knownSpells : [])
+      };
+    }
+
+    function renderLfgSectionHtml() {
+      if (!char) return '';
+      const on = !!char.lfg;
+      const borrowed = Array.isArray(char.lfgParty) ? char.lfgParty : [];
+      const cloudOk = !!(typeof Cloud !== 'undefined' && Cloud.ready);
+      let html = '<div style="font-weight:600;margin-bottom:6px">🌐 Looking For Group</div>';
+
+      // Availability toggle for THIS hero
+      html += '<div style="padding:10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:10px">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+          + '<div>'
+            + '<div style="font-weight:600;font-size:13px">Share ' + escapeHtml(char.name) + ' for LFG '
+              + (on ? '<span style="font-size:10px;color:#22c55e;font-weight:700;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);border-radius:3px;padding:1px 6px">ON</span>'
+                    : '<span style="font-size:10px;color:var(--text-secondary);font-weight:700;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:3px;padding:1px 6px">OFF</span>')
+            + '</div>'
+            + '<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">When on, other players can add this hero to their group. There is no limit on how many groups can use you at once. You earn XP &amp; gold whenever a borrower\'s group makes a kill — collect it next time you log in.</div>'
+          + '</div>'
+          + '<button class="btn' + (on ? ' active' : '') + '" onclick="toggleLfgAvailability()"' + (cloudOk ? '' : ' disabled title="Cloud unavailable — sign in to use LFG"') + ' style="white-space:nowrap">'
+            + (on ? '🌐 LFG: On' : '🔌 LFG: Off')
+          + '</button>'
+        + '</div></div>';
+
+      // Borrowed heroes currently in the group
+      html += '<div style="font-weight:600;margin:8px 0 6px 0">Borrowed Heroes (' + borrowed.length + ')</div>';
+      if (!borrowed.length) {
+        html += '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">None yet. Find allies below and add them to your group.</div>';
+      } else {
+        borrowed.forEach((h, i) => {
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px">'
+            + '<div><div style="font-weight:600">' + escapeHtml(h.name)
+              + ' <span style="color:#7cc6ff;font-size:9px;border:1px solid #7cc6ff;border-radius:3px;padding:0 4px;vertical-align:middle">LFG</span></div>'
+              + '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(h.cls || '') + ' · Level ' + (h.level || 1)
+              + ' · ATK ' + (h.atk || 0) + ' · DEF ' + (h.def || 0) + '</div></div>'
+            + '<button class="btn danger" onclick="removeLfgHero(' + i + ')">Remove</button>'
+          + '</div>';
+        });
+      }
+
+      // Find Allies browser
+      const canAdd = getGroupSize() < MAX_GROUP_SIZE;
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 6px 0">'
+        + '<div style="font-weight:600">Find Allies</div>'
+        + '<button class="btn" onclick="refreshLfgBrowser(true)">↻ Refresh</button>'
+      + '</div>';
+      if (!canAdd) {
+        html += '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">Your group is full — remove a member to borrow a hero.</div>';
+      }
+      html += '<div id="lfg-browser-list"><div style="font-size:11px;color:var(--text-secondary)">Loading available heroes…</div></div>';
+      return html;
+    }
+
+    function renderLfgBrowserList() {
+      const box = document.getElementById('lfg-browser-list');
+      if (!box) return;
+      if (_lfgBrowserLoading) { box.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">Loading available heroes…</div>'; return; }
+      if (_lfgBrowserRows === null) { box.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">LFG is unavailable (offline or not signed in).</div>'; return; }
+      if (!_lfgBrowserRows.length) { box.innerHTML = '<div style="font-size:11px;color:var(--text-secondary)">No heroes are currently looking for group in your mode. Check back later!</div>'; return; }
+      const canAdd = getGroupSize() < MAX_GROUP_SIZE;
+      let html = '';
+      _lfgBrowserRows.forEach((h, i) => {
+        const borrowed = isHeroBorrowed(h);
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:6px">'
+          + '<div><div style="font-weight:600">' + escapeHtml(h.name)
+            + (h.hardcore ? ' <span style="color:#f4a87a;font-size:10px;border:1px solid #f4a87a;border-radius:3px;padding:0 4px;vertical-align:middle">HARDCORE</span>' : '') + '</div>'
+            + '<div style="font-size:11px;color:var(--text-secondary)">' + escapeHtml(h.cls || '') + ' · Level ' + (h.level || 1)
+            + ' · ATK ' + (h.atk || 0) + ' · DEF ' + (h.def || 0) + ' · ⚡' + (h.power || 0).toLocaleString() + '</div></div>';
+        if (borrowed) {
+          html += '<button class="btn" disabled>In Group</button>';
+        } else {
+          html += '<button class="btn' + (canAdd ? '' : '') + '" onclick="addLfgHero(' + i + ')"' + (canAdd ? '' : ' disabled title="Group full"') + '>' + (canAdd ? 'Add to Group' : 'Group Full') + '</button>';
+        }
+        html += '</div>';
+      });
+      box.innerHTML = html;
+    }
+
+    async function refreshLfgBrowser(force) {
+      const box = document.getElementById('lfg-browser-list');
+      if (!char) return;
+      if (!(typeof Cloud !== 'undefined' && Cloud.ready)) { _lfgBrowserRows = null; renderLfgBrowserList(); return; }
+      if (_lfgBrowserLoading) return;
+      // Use cache unless forced or empty
+      if (!force && Array.isArray(_lfgBrowserRows)) { renderLfgBrowserList(); return; }
+      _lfgBrowserLoading = true;
+      renderLfgBrowserList();
+      try {
+        const rows = await Cloud.fetchLfgPool(!!char.hardcore, 100);
+        _lfgBrowserRows = rows === null ? null : rows.map(normalizeLfgRow);
+      } catch (e) {
+        _lfgBrowserRows = null;
+      }
+      _lfgBrowserLoading = false;
+      renderLfgBrowserList();
+    }
+
+    async function toggleLfgAvailability() {
+      if (!char || _lfgBusy) return;
+      if (!(typeof Cloud !== 'undefined' && Cloud.ready)) { log('LFG needs a cloud connection — sign in to use it.', 'info'); return; }
+      _lfgBusy = true;
+      const next = !char.lfg;
+      const res = await Cloud.setLfg(activeSlot, next);
+      _lfgBusy = false;
+      if (res && res.ok) {
+        char.lfg = next;
+        log(next ? '🌐 ' + char.name + ' is now Looking For Group — other players can add you.' : '🔌 ' + char.name + ' is no longer shared for LFG.', 'info');
+        saveSlots();
+      } else {
+        log('Could not update LFG status. Please try again.', 'info');
+      }
+      renderGroupTab();
+    }
+
+    function addLfgHero(browserIdx) {
+      if (!char || !Array.isArray(_lfgBrowserRows)) return;
+      const raw = _lfgBrowserRows[browserIdx];
+      if (!raw) return;
+      const hero = normalizeLfgRow(raw);
+      if (!Array.isArray(char.lfgParty)) char.lfgParty = [];
+      if (isHeroBorrowed(hero)) { log('That hero is already in your group.', 'info'); return; }
+      if (!!hero.hardcore !== !!char.hardcore) {
+        log(char.hardcore ? 'Hardcore characters can only group with other Hardcore heroes.' : 'You cannot group with a Hardcore hero.', 'info');
+        return;
+      }
+      if (getGroupSize() >= MAX_GROUP_SIZE) { log('Group is full (max ' + MAX_GROUP_SIZE + ').', 'info'); return; }
+      char.lfgParty.push(hero);
+      log('Added ' + hero.name + ' (LFG) to your group.', 'info');
+      saveSlots();
+      renderGroupTab(); renderCompactGroup();
+    }
+
+    function removeLfgHero(idx) {
+      if (!char || !Array.isArray(char.lfgParty)) return;
+      const hero = char.lfgParty[idx];
+      if (!hero) return;
+      char.lfgParty.splice(idx, 1);
+      log('Removed ' + hero.name + ' (LFG) from your group.', 'info');
+      saveSlots();
+      renderGroupTab(); renderCompactGroup();
+    }
+
+    // Shown on login when this account's shared heroes earned LFG rewards
+    // while the player was away.
+    function showLfgRewardSummary(earned) {
+      if (!Array.isArray(earned) || !earned.length) return;
+      const existing = document.getElementById('lfg-reward-overlay');
+      if (existing) existing.remove();
+      let totalXp = 0, totalGold = 0;
+      const rows = earned.map(e => {
+        totalXp += (e.xp || 0); totalGold += (e.gold || 0);
+        return '<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08)">'
+          + '<span style="font-weight:600;color:#f4d68a">' + escapeHtml(e.name)
+            + (e.levels > 0 ? ' <span style="color:#7CFFB2;font-size:11px">+' + e.levels + ' lvl</span>' : '') + '</span>'
+          + '<span style="font-size:12px;color:#d8cfa8;text-align:right">'
+            + (e.xp ? '<span style="color:#a7f3d0">' + e.xp.toLocaleString() + ' XP</span>' : '')
+            + (e.xp && e.gold ? ' · ' : '')
+            + (e.gold ? '<span style="color:#f4d68a">' + e.gold.toLocaleString() + 'g</span>' : '')
+          + '</span></div>';
+      }).join('');
+      const overlay = document.createElement('div');
+      overlay.id = 'lfg-reward-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.78);padding:14px;animation:fadeIn 0.2s ease';
+      overlay.innerHTML =
+        '<div style="background:linear-gradient(160deg,#2a2418,#4a3a22);border:2px solid #f4d68a66;border-radius:14px;padding:20px;width:min(420px,100%);max-height:88vh;overflow-y:auto;color:#f0e6cc;box-shadow:0 12px 48px rgba(0,0,0,0.7)">'
+        + '<div style="font-size:18px;font-weight:800;color:#f4d68a;text-align:center;margin-bottom:6px">🌐 Your Heroes Were Adventuring!</div>'
+        + '<div style="font-size:12px;color:#d8cfa8;text-align:center;margin-bottom:12px">While you were away, other players borrowed your LFG heroes. They earned:</div>'
+        + '<div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:8px 12px;margin-bottom:12px">' + rows + '</div>'
+        + '<div style="text-align:center;font-size:13px;font-weight:700;margin-bottom:14px">Total: '
+          + '<span style="color:#a7f3d0">' + totalXp.toLocaleString() + ' XP</span> · '
+          + '<span style="color:#f4d68a">' + totalGold.toLocaleString() + ' gold</span></div>'
+        + '<div style="display:flex;justify-content:center">'
+          + '<button class="btn active" onclick="(function(){var o=document.getElementById(\'lfg-reward-overlay\');if(o)o.remove();})()" style="background:#f4d68a;color:#000;font-weight:700;padding:8px 28px;border-radius:20px">Collect</button>'
+        + '</div></div>';
+      document.body.appendChild(overlay);
     }
 
     function getGroupMercDisplayName(targetChar, idx) {
@@ -8693,7 +9088,8 @@
 
       const mercCount = getActiveMercenaryCount(char);
       const groupSlots = getGroupMemberSlotIndices();
-      const total = 1 + mercCount + groupSlots.length;
+      const lfgHeroes = getLfgParty(char);
+      const total = 1 + mercCount + groupSlots.length + lfgHeroes.length;
 
       function makeBar(pct, color) {
         return '<div style="height:3px;background:var(--bg-tertiary);border-radius:2px;overflow:hidden;margin-top:2px">' +
@@ -8757,6 +9153,17 @@
         list.appendChild(makeRow(escapeHtml(member.name), hpPct, mpPct));
       });
 
+      // Borrowed LFG heroes — read-only snapshots from other players. Their
+      // HP/MP bars are simulated for immersion (we never have their live state).
+      lfgHeroes.forEach((hero, i) => {
+        const seed = (Date.now() / 9000) + i * 23;
+        const hpPct = Math.max(35, Math.min(100, 100 - (seed % 45)));
+        const mpPct = Math.max(20, Math.min(100, 90 - ((seed * 1.7) % 60)));
+        list.appendChild(makeRow(
+          escapeHtml(hero.name) + ' <span style="color:#7cc6ff;font-size:9px;border:1px solid #7cc6ff;border-radius:3px;padding:0 3px;vertical-align:middle">LFG</span>',
+          hpPct, mpPct));
+      });
+
       if (total <= 1) {
         const empty = document.createElement('div');
         empty.style.cssText = 'font-size:11px;color:var(--text-secondary);font-style:italic';
@@ -8783,7 +9190,8 @@
 
       const mercCount = getActiveMercenaryCount(char);
       const groupCount = getGroupMemberSlotIndices().length;
-      const total = 1 + mercCount + groupCount;
+      const lfgCount = getLfgParty(char).length;
+      const total = 1 + mercCount + groupCount + lfgCount;
       const xpShareSize = getXpShareSize();
       const bonus = getGroupXpBonus(xpShareSize);
       const sharePct = Math.round((bonus / xpShareSize) * 100);
@@ -8794,7 +9202,8 @@
       const splitOn = !!char.groupSplitGold;
       summary.innerHTML =
         '<div><strong>Group size:</strong> ' + total + ' / ' + MAX_GROUP_SIZE +
-        ' &nbsp;·&nbsp; You (1) + Mercenaries (' + mercCount + ') + Characters (' + groupCount + ')</div>' +
+        ' &nbsp;·&nbsp; You (1) + Mercenaries (' + mercCount + ') + Characters (' + groupCount + ')' +
+        (lfgCount ? ' + LFG Heroes (' + lfgCount + ')' : '') + '</div>' +
         '<div style="margin-top:4px"><strong>XP per kill (each character):</strong> ' + sharePct + '%' +
         (xpShareSize > 1 ? (' &nbsp;·&nbsp; Total awarded: ' + totalPct + '%' + bonusNote) : ' (solo)') + '</div>' +
         '<div style="margin-top:4px;color:var(--text-secondary)">XP is split between you and your grouped characters. Mercenaries take up a group slot and reduce XP per kill the same as another character, but receive no XP themselves.</div>' +
@@ -8960,6 +9369,15 @@
         empty.textContent = 'No other characters available. Create more characters from the character select screen.';
         list.appendChild(empty);
       }
+
+      // ── LFG (Looking For Group) ──
+      const lfgSection = document.createElement('div');
+      lfgSection.id = 'lfg-section';
+      lfgSection.style.cssText = 'margin-top:16px;padding-top:12px;border-top:1px solid var(--border)';
+      lfgSection.innerHTML = renderLfgSectionHtml();
+      list.appendChild(lfgSection);
+      // Populate the browser asynchronously (network read).
+      refreshLfgBrowser();
 
       // ── Pet Stable (moved here from the Shop) ──
       ensurePetState(char);
@@ -11070,7 +11488,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.32';
+    const CURRENT_VERSION = '1.3.34';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -17543,6 +17961,21 @@
         char.gold += gold;
       }
       bumpStat('goldEarned', gold);
+      // LFG finder's fee: each borrowed hero in the group earns a small share of
+      // the kill's XP/gold for their owner, queued and flushed to the cloud.
+      // This does not reduce the player's own rewards.
+      if (typeof getLfgParty === 'function' && typeof queueLfgReward === 'function') {
+        const _lfgHeroes = getLfgParty(char);
+        if (_lfgHeroes.length) {
+          const feeXp = Math.max(1, Math.floor(xp * LFG_REWARD_FEE));
+          const feeGold = Math.max(0, Math.floor(gold * LFG_REWARD_FEE));
+          _lfgHeroes.forEach(h => {
+            if (h && h.user_id != null && h.char_key != null) {
+              queueLfgReward(h.user_id, h.char_key, feeXp, feeGold);
+            }
+          });
+        }
+      }
       adjustFaction(mob.named ? 4 : (mob.elite ? 2 : 1), 'local victories');
       if (typeof tickDailyQuestProgress === 'function') tickDailyQuestProgress(mob.baseName);
       log([
