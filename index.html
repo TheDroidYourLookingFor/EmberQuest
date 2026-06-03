@@ -4794,28 +4794,39 @@
           return rows;
         } catch (e) { console.warn('lfg fetch error', e); return null; }
       },
-      // ── LFG rewards (Phase 2) ─────────────────────────────────────────────
-      // Credit a borrowed hero's owner with pending XP/gold for fighting in
-      // your group. We batch credits locally (see _lfgRewardQueue below) and
-      // flush them through a SECURITY DEFINER RPC (add_lfg_reward) so the
-      // increment is atomic and validated server-side. The RPC also enforces
-      // a daily per-character cap so this can't be abused.
-      async addLfgReward(ownerId, charKey, xp, gold) {
-        if (!sb || !currentUser) return { ok: false };
-        if (!ownerId || (!xp && !gold)) return { ok: false };
+      // ── LFG rewards (Phase 3) ─────────────────────────────────────────────
+      // Submit a batch of kill events for borrowed heroes to the lfg-reward
+      // Edge Function. The function authenticates the caller, verifies each
+      // hero is actually shared in lfg_pool and isn't the caller's own, derives
+      // the reward server-side from the kill context (never trusting a
+      // client-supplied XP/gold figure), and applies daily-capped credits with
+      // the service role. The client never holds write access to other players'
+      // reward rows.
+      async submitLfgRewardBatch(events) {
+        if (!sb || !currentUser || !Array.isArray(events) || !events.length) return { ok: false };
         try {
-          const { error } = await sb.rpc('add_lfg_reward', {
-            p_owner: ownerId,
-            p_char_key: charKey,
-            p_xp: Math.max(0, Math.floor(xp || 0)),
-            p_gold: Math.max(0, Math.floor(gold || 0))
-          });
-          if (error) { console.warn('lfg reward credit failed', error); return { ok: false, error }; }
+          const { data: { session } } = await sb.auth.getSession();
+          const token = session?.access_token;
+          if (!token) return { ok: false };
+          const res = await fetch(
+            SUPA_URL + '/functions/v1/lfg-reward',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token,
+                'apikey': SUPA_ANON
+              },
+              body: JSON.stringify({ events })
+            }
+          );
+          if (!res.ok) { console.warn('lfg reward submit failed', await res.text()); return { ok: false }; }
           return { ok: true };
-        } catch (e) { console.warn('lfg reward error', e); return { ok: false, error: e }; }
+        } catch (e) { console.warn('lfg reward submit error', e); return { ok: false, error: e }; }
       },
       // On login: read this account's pending LFG rewards, grant them to the
-      // matching characters, then reset the ledger. Returns a summary array.
+      // matching characters, then subtract exactly what was granted (rather than
+      // zeroing) so any credits that arrive concurrently aren't lost.
       async collectLfgRewards() {
         if (!sb || !currentUser) return null;
         try {
@@ -4826,7 +4837,7 @@
           const pending = (data || []).filter(r => (Number(r.pending_xp) || 0) > 0 || (Number(r.pending_gold) || 0) > 0);
           if (!pending.length) return [];
           const summary = [];
-          const clearedKeys = [];
+          const collected = []; // { key, xp, gold }
           for (const r of pending) {
             const key = r.char_key;
             const xp = Math.max(0, Math.floor(Number(r.pending_xp) || 0));
@@ -4838,17 +4849,24 @@
               let lvls = 0;
               if (xp && typeof applyXpToSlotChar === 'function') lvls = applyXpToSlotChar(target, xp);
               summary.push({ name: target.name || ('Slot ' + key), xp, gold, used, levels: lvls });
-              clearedKeys.push(key);
+              collected.push({ key, xp, gold });
             }
           }
-          // Reset the collected ledgers to zero (owner can write own rows).
-          if (clearedKeys.length) {
-            const resets = clearedKeys.map(k => ({
-              user_id: currentUser.id, char_key: k,
-              pending_xp: 0, pending_gold: 0, updated_at: new Date().toISOString()
-            }));
-            const { error: upErr } = await sb.from('lfg_rewards').upsert(resets, { onConflict: 'user_id,char_key' });
-            if (upErr) console.warn('lfg rewards reset failed', upErr);
+          // Subtract the exact collected amounts. Re-read each row first so we
+          // only remove what we granted, preserving any concurrent credits.
+          if (collected.length) {
+            for (const c of collected) {
+              try {
+                const { data: cur } = await sb.from('lfg_rewards')
+                  .select('pending_xp,pending_gold')
+                  .eq('user_id', currentUser.id).eq('char_key', c.key).single();
+                const newXp = Math.max(0, (Number(cur && cur.pending_xp) || 0) - c.xp);
+                const newGold = Math.max(0, (Number(cur && cur.pending_gold) || 0) - c.gold);
+                await sb.from('lfg_rewards').update({
+                  pending_xp: newXp, pending_gold: newGold, updated_at: new Date().toISOString()
+                }).eq('user_id', currentUser.id).eq('char_key', c.key);
+              } catch (e) { /* non-fatal per-row */ }
+            }
             // Persist the granted XP/gold to the cloud saves.
             try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
             this.queueSync();
@@ -4858,18 +4876,24 @@
       }
     };
 
-    // ── LFG reward batching (client-side) ──────────────────────────────────
-    // Credits accumulate here per borrowed hero and flush every few seconds so
-    // we don't issue a network write on every single kill.
-    const _lfgRewardQueue = new Map(); // key "owner:charKey" -> {ownerId,charKey,xp,gold}
+    // ── LFG reward batching (client-side, Phase 3) ─────────────────────────
+    // We accumulate KILL EVENTS per borrowed hero (count + kill context) and
+    // flush them to the lfg-reward Edge Function every few seconds. The client
+    // never computes the reward value — it only reports what was killed, and
+    // the server derives and applies the credit. This keeps the reward amount
+    // out of the client's control.
+    const _lfgRewardQueue = new Map(); // key "owner:charKey" -> {ownerId,charKey,kills,levelSum,boss,elite,named}
     let _lfgRewardTimer = null;
 
-    function queueLfgReward(ownerId, charKey, xp, gold) {
-      if (!ownerId || (charKey == null)) return;
+    function queueLfgReward(ownerId, charKey, killCtx) {
+      if (!ownerId || (charKey == null) || !killCtx) return;
       const key = ownerId + ':' + charKey;
-      const cur = _lfgRewardQueue.get(key) || { ownerId, charKey, xp: 0, gold: 0 };
-      cur.xp += Math.max(0, Math.floor(xp || 0));
-      cur.gold += Math.max(0, Math.floor(gold || 0));
+      const cur = _lfgRewardQueue.get(key) || { ownerId, charKey, kills: 0, levelSum: 0, boss: 0, elite: 0, named: 0 };
+      cur.kills += 1;
+      cur.levelSum += Math.max(1, Math.floor(Number(killCtx.mobLevel || 1)));
+      if (killCtx.boss) cur.boss += 1;
+      if (killCtx.elite) cur.elite += 1;
+      if (killCtx.named) cur.named += 1;
       _lfgRewardQueue.set(key, cur);
       if (!_lfgRewardTimer) {
         _lfgRewardTimer = setTimeout(flushLfgRewardQueue, 5000);
@@ -4879,13 +4903,16 @@
     async function flushLfgRewardQueue() {
       _lfgRewardTimer = null;
       if (!(typeof Cloud !== 'undefined' && Cloud.ready) || !_lfgRewardQueue.size) { _lfgRewardQueue.clear(); return; }
-      const batch = Array.from(_lfgRewardQueue.values());
+      const events = Array.from(_lfgRewardQueue.values())
+        .filter(e => e.kills > 0)
+        .map(e => ({
+          owner: e.ownerId, char_key: e.charKey,
+          kills: e.kills, avg_level: Math.max(1, Math.round(e.levelSum / e.kills)),
+          boss: e.boss, elite: e.elite, named: e.named
+        }));
       _lfgRewardQueue.clear();
-      for (const r of batch) {
-        if (r.xp > 0 || r.gold > 0) {
-          try { await Cloud.addLfgReward(r.ownerId, r.charKey, r.xp, r.gold); } catch (e) { /* non-fatal */ }
-        }
-      }
+      if (!events.length) return;
+      try { await Cloud.submitLfgRewardBatch(events); } catch (e) { /* non-fatal */ }
     }
 
     const CLASSES = {
@@ -8437,9 +8464,8 @@
 
     // ── Group system ─────────────────────────────
     const MAX_GROUP_SIZE = 6;
-    // Fraction of a kill's XP/gold each borrowed LFG hero earns for its owner
-    // (a "finder's fee"). Does not reduce the borrowing player's own rewards.
-    const LFG_REWARD_FEE = 0.25;
+    // The LFG "finder's fee" rate is now defined server-side in the lfg-reward
+    // Edge Function, so the client never computes or controls reward amounts.
     // Mercenaries can fill the whole group (every slot except the player).
     const MAX_GROUP_MERCS = MAX_GROUP_SIZE - 1;
     // Group XP multiplier by size. Divide by size to get per-player share.
@@ -11488,7 +11514,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.34';
+    const CURRENT_VERSION = '1.3.35';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -17961,17 +17987,18 @@
         char.gold += gold;
       }
       bumpStat('goldEarned', gold);
-      // LFG finder's fee: each borrowed hero in the group earns a small share of
-      // the kill's XP/gold for their owner, queued and flushed to the cloud.
+      // LFG finder's fee: each borrowed hero in the group earns a share of the
+      // kill for their owner. We report only the KILL CONTEXT (mob level, boss/
+      // elite flags) to the server — the Edge Function computes the actual
+      // reward, so a tampered client can't claim arbitrary XP/gold.
       // This does not reduce the player's own rewards.
       if (typeof getLfgParty === 'function' && typeof queueLfgReward === 'function') {
         const _lfgHeroes = getLfgParty(char);
         if (_lfgHeroes.length) {
-          const feeXp = Math.max(1, Math.floor(xp * LFG_REWARD_FEE));
-          const feeGold = Math.max(0, Math.floor(gold * LFG_REWARD_FEE));
+          const killCtx = { mobLevel: Math.max(1, Math.floor(Number(mob.level || 1))), boss: !!mob.boss, elite: !!mob.elite, named: !!mob.named };
           _lfgHeroes.forEach(h => {
             if (h && h.user_id != null && h.char_key != null) {
-              queueLfgReward(h.user_id, h.char_key, feeXp, feeGold);
+              queueLfgReward(h.user_id, h.char_key, killCtx);
             }
           });
         }
