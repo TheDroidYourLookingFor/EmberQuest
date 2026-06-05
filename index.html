@@ -5197,6 +5197,71 @@
       'Steel Longsword': { slot: 'weapon', atk: 12, type: 'Sword' }
     };
 
+    // ── Expanded item roster (v1.3.58) ─────────────────────────────────────
+    // The zone list runs to L250 but the original base items topped out around
+    // atk 14 / def 18, so even after level-scaling a drop, high zones had only a
+    // handful of bases to roll and they felt flat. These new bases give each
+    // level band its own recognizable gear with higher native stat budgets, so
+    // a kill in a late zone can roll a base that is meaningful before affixes,
+    // runes, and quality even apply. Merged into ITEM_DATA after declaration to
+    // keep the original block intact.
+    const ITEM_DATA_EXPANSION = {
+      // ---- Weapons (native atk kept in the same band as originals; the ilvl
+      //      curve does the scaling, so these stay competitive without runaway
+      //      numbers. Higher-tier weapons carry a small native edge + utility) ----
+      'Hunter Spear':       { slot: 'weapon', atk: 13, type: 'Polearm' },
+      'Warded Warblade':    { slot: 'weapon', atk: 14, def: 2, type: 'Sword' },
+      'Obsidian Cleaver':   { slot: 'weapon', atk: 16, type: 'Axe' },
+      'Stormcaller Staff':  { slot: 'weapon', atk: 13, mp: 40, type: 'Staff' },
+      'Wyrmbone Greatbow':  { slot: 'weapon', atk: 17, type: 'Bow' },
+      'Dread Halberd':      { slot: 'weapon', atk: 18, hp: 20, type: 'Polearm' },
+      'Runescribed Maul':   { slot: 'weapon', atk: 19, mp: 30, type: 'Mace' },
+      'Tempest Glaive':     { slot: 'weapon', atk: 20, type: 'Polearm' },
+      'Ashen Warbrand':     { slot: 'weapon', atk: 21, def: 4, type: 'Sword' },
+      'Voidpiercer Lance':  { slot: 'weapon', atk: 23, type: 'Polearm' },
+      'Godshard Edge':      { slot: 'weapon', atk: 25, hp: 30, type: 'Sword' },
+      'Worldspine Reaver':  { slot: 'weapon', atk: 27, type: 'Polearm' },
+      'Veilrender Scythe':  { slot: 'weapon', atk: 30, def: 6, type: 'Scythe' },
+
+      // ---- Chest ----
+      'Ironscale Hauberk':  { slot: 'chest', def: 19, hp: 70, type: 'Scale Armor' },
+      'Warden Plate':       { slot: 'chest', def: 22, hp: 90, type: 'Plate Armor' },
+      'Stormforged Cuirass':{ slot: 'chest', def: 25, hp: 105, mp: 24, type: 'Plate Armor' },
+      'Dragonbone Carapace':{ slot: 'chest', def: 28, hp: 125, type: 'Dragonscale Armor' },
+      'Godshard Plate':     { slot: 'chest', def: 32, hp: 150, type: 'Plate Armor' },
+      'Worldspine Aegis':   { slot: 'chest', def: 38, hp: 185, type: 'Titanplate Armor' },
+
+      // ---- Legs ----
+      'Ironscale Greaves':  { slot: 'legs', def: 14, hp: 48, type: 'Scale Legguards' },
+      'Warden Legplates':   { slot: 'legs', def: 16, hp: 62, type: 'Plate Legguards' },
+      'Stormforged Tassets':{ slot: 'legs', def: 19, hp: 78, mp: 18, type: 'Plate Legguards' },
+      'Dragonbone Legguards':{ slot: 'legs', def: 22, hp: 95, type: 'Dragonscale Legguards' },
+      'Godshard Legplates': { slot: 'legs', def: 26, hp: 118, type: 'Plate Legguards' },
+
+      // ---- Feet ----
+      'Ironshod Greaves':   { slot: 'feet', def: 12, hp: 42, type: 'Plate Boots' },
+      'Warden Sabatons':    { slot: 'feet', def: 14, hp: 56, type: 'Plate Boots' },
+      'Stormstride Boots':  { slot: 'feet', def: 16, hp: 70, mp: 16, type: 'Plate Boots' },
+      'Dragonbone Treads':  { slot: 'feet', def: 19, hp: 88, type: 'Dragonscale Boots' },
+      'Godshard Striders':  { slot: 'feet', def: 23, hp: 108, type: 'Plate Boots' },
+
+      // ---- Offhand ----
+      'Tower Shield':       { slot: 'offhand', def: 14, hp: 50, type: 'Shield' },
+      'Aether Codex':       { slot: 'offhand', atk: 7, mp: 60, type: 'Tome' },
+      'Bulwark Shield':     { slot: 'offhand', def: 17, hp: 66, type: 'Shield' },
+      'Tempest Sigil':      { slot: 'offhand', atk: 9, mp: 80, type: 'Focus Item' },
+      'Dragonbone Bulwark': { slot: 'offhand', def: 21, hp: 84, type: 'Dragonscale Shield' },
+      'Godshard Ward':      { slot: 'offhand', def: 26, hp: 105, mp: 40, type: 'Aegis' },
+
+      // ---- Charm ----
+      'Bloodforged Charm':  { slot: 'charm', atk: 5, hp: 26, type: 'Charm' },
+      'Wardstone Amulet':   { slot: 'charm', def: 6, hp: 34, type: 'Charm' },
+      'Arcane Lodestone':   { slot: 'charm', atk: 4, mp: 50, type: 'Charm' },
+      'Godshard Talisman':  { slot: 'charm', atk: 7, def: 7, hp: 50, type: 'Charm' }
+    };
+    Object.assign(ITEM_DATA, ITEM_DATA_EXPANSION);
+
+
     const WEAPON_PROCS = {
       'Rusty Dagger': { name: 'Jagged Wound', chance: 0.12, type: 'poison', min: 4, max: 9 },
       'Worn Shortsword': { name: 'Sundering Slash', chance: 0.1, type: 'damage', min: 6, max: 12, weaken: 1 },
@@ -5207,6 +5272,23 @@
       'Glacite Spear': { name: 'Piercing Gale', chance: 0.13, type: 'damage', min: 11, max: 20, weaken: 2 },
       'Steel Longsword': { name: 'Steel Tempest', chance: 0.14, type: 'damage', min: 12, max: 22, weaken: 2 }
     };
+
+    // Procs for the v1.3.58 expansion weapons so they feel as alive as the originals.
+    Object.assign(WEAPON_PROCS, {
+      'Hunter Spear':      { name: 'Hamstring', chance: 0.13, type: 'damage', min: 14, max: 26, weaken: 2 },
+      'Warded Warblade':   { name: 'Riposte', chance: 0.13, type: 'damage', min: 18, max: 32, weaken: 2 },
+      'Obsidian Cleaver':  { name: 'Obsidian Rend', chance: 0.14, type: 'damage', min: 24, max: 44, weaken: 3 },
+      'Stormcaller Staff': { name: 'Chain Lightning', chance: 0.14, type: 'mana', min: 30, max: 60 },
+      'Wyrmbone Greatbow': { name: 'Piercing Shot', chance: 0.13, type: 'damage', min: 34, max: 60, weaken: 3 },
+      'Dread Halberd':     { name: 'Dread Sweep', chance: 0.15, type: 'damage', min: 42, max: 74, weaken: 4 },
+      'Runescribed Maul':  { name: 'Glyph Detonation', chance: 0.14, type: 'mana', min: 44, max: 80 },
+      'Tempest Glaive':    { name: 'Tempest Arc', chance: 0.16, type: 'damage', min: 56, max: 96, weaken: 4 },
+      'Ashen Warbrand':    { name: 'Cinderburst', chance: 0.16, type: 'poison', min: 60, max: 105 },
+      'Voidpiercer Lance': { name: 'Void Lance', chance: 0.17, type: 'damage', min: 78, max: 134, weaken: 5 },
+      'Godshard Edge':     { name: 'Shatterlight', chance: 0.18, type: 'damage', min: 96, max: 168, weaken: 6 },
+      'Worldspine Reaver': { name: 'Spinebreaker', chance: 0.18, type: 'damage', min: 120, max: 210, weaken: 7 },
+      'Veilrender Scythe': { name: 'Veil Reap', chance: 0.2, type: 'damage', min: 150, max: 270, weaken: 8 }
+    });
 
     const ITEM_SETS = {
       'Crypt Stalker': {
@@ -5232,6 +5314,22 @@
       'Ashen Seer': {
         pieces: ['Runed Mace', 'Frostwoven Mantle', 'Astral Loop'],
         bonus2: { atk: 3, def: 2, procChance: 0.03 }
+      },
+      // ── v1.3.58 high-level sets ──
+      'Dragonbone Warden': {
+        pieces: ['Dragonbone Carapace', 'Dragonbone Legguards', 'Dragonbone Treads', 'Dragonbone Bulwark'],
+        bonus2: { atk: 6, def: 14, procChance: 0.03 },
+        bonus3: { atk: 14, def: 30, procChance: 0.05 }
+      },
+      'Tempest Regalia': {
+        pieces: ['Tempest Glaive', 'Stormforged Cuirass', 'Stormstride Boots', 'Tempest Sigil'],
+        bonus2: { atk: 14, def: 6, procChance: 0.04 },
+        bonus3: { atk: 30, def: 14, procChance: 0.06 }
+      },
+      'Fallen God': {
+        pieces: ['Godshard Edge', 'Godshard Plate', 'Godshard Legplates', 'Godshard Ward', 'Godshard Talisman'],
+        bonus2: { atk: 18, def: 18, procChance: 0.04 },
+        bonus3: { atk: 44, def: 44, procChance: 0.08 }
       }
     };
 
@@ -5243,7 +5341,16 @@
       'Steel Longsword', 'Knight Chestplate', 'Chain Legguards', 'Iron Sabatons', 'Mirror Shield', 'Warden Idol',
       'Runed Mace', 'Glacite Spear', 'Scaled Cuirass', 'Frostwoven Mantle', 'Runed Greaves', 'Glacier Treads', 'Storm Orb', 'Astral Loop',
       'Ghoul-Touched Cloak', 'Hate Infused Plate', 'Dread Quill',
-      'Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot'
+      'Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot',
+      // v1.3.58 expansion bases
+      'Hunter Spear', 'Warded Warblade', 'Obsidian Cleaver', 'Stormcaller Staff', 'Wyrmbone Greatbow',
+      'Dread Halberd', 'Runescribed Maul', 'Tempest Glaive', 'Ashen Warbrand', 'Voidpiercer Lance',
+      'Godshard Edge', 'Worldspine Reaver', 'Veilrender Scythe',
+      'Ironscale Hauberk', 'Warden Plate', 'Stormforged Cuirass', 'Dragonbone Carapace', 'Godshard Plate', 'Worldspine Aegis',
+      'Ironscale Greaves', 'Warden Legplates', 'Stormforged Tassets', 'Dragonbone Legguards', 'Godshard Legplates',
+      'Ironshod Greaves', 'Warden Sabatons', 'Stormstride Boots', 'Dragonbone Treads', 'Godshard Striders',
+      'Tower Shield', 'Aether Codex', 'Bulwark Shield', 'Tempest Sigil', 'Dragonbone Bulwark', 'Godshard Ward',
+      'Bloodforged Charm', 'Wardstone Amulet', 'Arcane Lodestone', 'Godshard Talisman'
     ];
     const LOOT_TIER_STARTER = [
       'Rusty Dagger', 'Worn Shortsword', 'Cracked Staff', 'Bronze Hatchet',
@@ -5251,13 +5358,26 @@
       'Gnoll Fang Earring', 'Ember Sigil', 'Bone Ward Totem'
     ];
     const LOOT_TIER_MID = [
-      'Ashen Longbow', 'Steel Longsword', 'Runed Mace',
-      'Scaled Cuirass', 'Ghoul-Touched Cloak', 'Chain Legguards', 'Iron Sabatons',
-      'Dread Quill', 'Mirror Shield', 'Warden Idol', 'Astral Loop'
+      'Ashen Longbow', 'Steel Longsword', 'Runed Mace', 'Hunter Spear', 'Warded Warblade',
+      'Scaled Cuirass', 'Ghoul-Touched Cloak', 'Chain Legguards', 'Iron Sabatons', 'Ironscale Hauberk', 'Ironscale Greaves', 'Ironshod Greaves',
+      'Dread Quill', 'Mirror Shield', 'Warden Idol', 'Astral Loop', 'Tower Shield', 'Bloodforged Charm', 'Wardstone Amulet'
     ];
     const LOOT_TIER_ADVANCED = [
       'Glacite Spear', 'Knight Chestplate', 'Hate Infused Plate', 'Frostwoven Mantle',
-      'Runed Greaves', 'Glacier Treads', 'Storm Orb'
+      'Runed Greaves', 'Glacier Treads', 'Storm Orb',
+      'Obsidian Cleaver', 'Stormcaller Staff', 'Wyrmbone Greatbow', 'Dread Halberd',
+      'Warden Plate', 'Warden Legplates', 'Warden Sabatons', 'Aether Codex', 'Bulwark Shield', 'Arcane Lodestone'
+    ];
+    // ── v1.3.58: two new high-end tiers so L60-130 and L130+ zones pull from
+    // gear authored for that range instead of recycling mid-tier bases. ──
+    const LOOT_TIER_EPIC = [
+      'Runescribed Maul', 'Tempest Glaive', 'Ashen Warbrand', 'Voidpiercer Lance',
+      'Stormforged Cuirass', 'Dragonbone Carapace', 'Stormforged Tassets', 'Dragonbone Legguards',
+      'Stormstride Boots', 'Dragonbone Treads', 'Tempest Sigil', 'Dragonbone Bulwark', 'Godshard Talisman'
+    ];
+    const LOOT_TIER_MYTHIC = [
+      'Godshard Edge', 'Worldspine Reaver', 'Veilrender Scythe',
+      'Godshard Plate', 'Worldspine Aegis', 'Godshard Legplates', 'Godshard Striders', 'Godshard Ward'
     ];
     const LOOT_MISC_BASES = ['Bone Chip', 'Animal Pelt', 'Orc Tooth', 'Spider Silk', 'Giant Snake Fang', 'Mithril Ingot'];
     const ITEM_AFFIX_POOL = {
@@ -5411,7 +5531,53 @@
       ],
       'Knight Chestplate': [
         { id: 'bulwark_of_ember', name: 'Bulwark of Ember', rolls: { def: 12, hp: 48 } }
-      ]
+      ],
+      // ── v1.3.58 expansion epics (rolls sized to match the rescaled bases;
+      //    the ilvl roll-scale factor amplifies these at high levels) ──
+      'Hunter Spear': [ { id: 'wolfmaw_pike', name: 'Wolfmaw Pike', rolls: { atk: 16, hp: 22 } } ],
+      'Warded Warblade': [ { id: 'oathwarden', name: 'Oathwarden', rolls: { atk: 17, def: 6 } } ],
+      'Obsidian Cleaver': [ { id: 'nightfall_cleaver', name: 'Nightfall Cleaver', rolls: { atk: 20, hp: 28 } } ],
+      'Stormcaller Staff': [ { id: 'tempest_branch', name: 'Tempest Branch', rolls: { atk: 16, mp: 56 } } ],
+      'Wyrmbone Greatbow': [ { id: 'dragonsong_bow', name: 'Dragonsong Bow', rolls: { atk: 22, mp: 22 } } ],
+      'Dread Halberd': [ { id: 'gravemaker', name: 'Gravemaker', rolls: { atk: 23, hp: 36 } } ],
+      'Runescribed Maul': [ { id: 'glyphshatter_maul', name: 'Glyphshatter Maul', rolls: { atk: 24, mp: 48 } } ],
+      'Tempest Glaive': [ { id: 'skyrender_glaive', name: 'Skyrender Glaive', rolls: { atk: 26, def: 8 } } ],
+      'Ashen Warbrand': [ { id: 'cinderking_brand', name: "Cinderking's Brand", rolls: { atk: 27, hp: 44 } } ],
+      'Voidpiercer Lance': [ { id: 'starfall_lance', name: 'Starfall Lance', rolls: { atk: 30, def: 10 } } ],
+      'Godshard Edge': [ { id: 'edge_of_a_dead_god', name: 'Edge of a Dead God', rolls: { atk: 33, hp: 54 } } ],
+      'Worldspine Reaver': [ { id: 'titanbane', name: 'Titanbane', rolls: { atk: 36, def: 14 } } ],
+      'Veilrender Scythe': [ { id: 'last_harvest', name: 'The Last Harvest', rolls: { atk: 42, hp: 70 } } ],
+
+      'Ironscale Hauberk': [ { id: 'scalelord_hauberk', name: "Scalelord's Hauberk", rolls: { def: 22, hp: 90 } } ],
+      'Warden Plate': [ { id: 'aegis_warplate', name: 'Aegis Warplate', rolls: { def: 26, hp: 115 } } ],
+      'Stormforged Cuirass': [ { id: 'thundercore_cuirass', name: 'Thundercore Cuirass', rolls: { def: 30, hp: 135, mp: 30 } } ],
+      'Dragonbone Carapace': [ { id: 'wyrmscale_carapace', name: 'Wyrmscale Carapace', rolls: { def: 34, hp: 160 } } ],
+      'Godshard Plate': [ { id: 'plate_of_the_fallen', name: 'Plate of the Fallen', rolls: { def: 40, hp: 195 } } ],
+      'Worldspine Aegis': [ { id: 'titanheart_aegis', name: 'Titanheart Aegis', rolls: { def: 48, hp: 240 } } ],
+
+      'Ironscale Greaves': [ { id: 'scalelord_greaves', name: "Scalelord's Greaves", rolls: { def: 17, hp: 60 } } ],
+      'Warden Legplates': [ { id: 'aegis_legplates', name: 'Aegis Legplates', rolls: { def: 20, hp: 78 } } ],
+      'Stormforged Tassets': [ { id: 'thundercore_tassets', name: 'Thundercore Tassets', rolls: { def: 24, hp: 100, mp: 22 } } ],
+      'Dragonbone Legguards': [ { id: 'wyrmscale_legguards', name: 'Wyrmscale Legguards', rolls: { def: 28, hp: 120 } } ],
+      'Godshard Legplates': [ { id: 'legplates_of_the_fallen', name: 'Legplates of the Fallen', rolls: { def: 33, hp: 150 } } ],
+
+      'Ironshod Greaves': [ { id: 'trailbreaker_greaves', name: 'Trailbreaker Greaves', rolls: { def: 15, hp: 54 } } ],
+      'Warden Sabatons': [ { id: 'aegis_sabatons', name: 'Aegis Sabatons', rolls: { def: 18, hp: 72 } } ],
+      'Stormstride Boots': [ { id: 'thunderstep', name: 'Thunderstep', rolls: { def: 21, hp: 90, mp: 20 } } ],
+      'Dragonbone Treads': [ { id: 'wyrmscale_treads', name: 'Wyrmscale Treads', rolls: { def: 24, hp: 112 } } ],
+      'Godshard Striders': [ { id: 'striders_of_the_fallen', name: 'Striders of the Fallen', rolls: { def: 29, hp: 138 } } ],
+
+      'Tower Shield': [ { id: 'bulwark_tower', name: 'Bastion Tower Shield', rolls: { def: 18, hp: 64 } } ],
+      'Aether Codex': [ { id: 'codex_of_storms', name: 'Codex of Storms', rolls: { atk: 10, mp: 78 } } ],
+      'Bulwark Shield': [ { id: 'unbreaking_bulwark', name: 'Unbreaking Bulwark', rolls: { def: 22, hp: 86 } } ],
+      'Tempest Sigil': [ { id: 'eye_of_the_storm', name: 'Eye of the Storm', rolls: { atk: 13, mp: 104 } } ],
+      'Dragonbone Bulwark': [ { id: 'wyrmguard_bulwark', name: 'Wyrmguard Bulwark', rolls: { def: 27, hp: 110 } } ],
+      'Godshard Ward': [ { id: 'ward_of_the_fallen', name: 'Ward of the Fallen', rolls: { def: 33, hp: 135, mp: 52 } } ],
+
+      'Bloodforged Charm': [ { id: 'heart_of_carnage', name: 'Heart of Carnage', rolls: { atk: 7, hp: 36 } } ],
+      'Wardstone Amulet': [ { id: 'unyielding_wardstone', name: 'Unyielding Wardstone', rolls: { def: 8, hp: 46 } } ],
+      'Arcane Lodestone': [ { id: 'singularity_stone', name: 'Singularity Stone', rolls: { atk: 6, mp: 70 } } ],
+      'Godshard Talisman': [ { id: 'talisman_of_the_fallen', name: 'Talisman of the Fallen', rolls: { atk: 10, def: 10, hp: 70 } } ]
     };
     const RUNE_DATA = {
       // Tier 1-3 (original) — flat stat runes
@@ -6629,9 +6795,11 @@
       Object.entries(ITEM_SETS).forEach(([setName, setData]) => {
         const count = setData.pieces.filter(piece => equippedBases.includes(piece)).length;
         if (count >= 2) {
-          result.atk += setData.bonus2.atk || 0;
-          result.def += setData.bonus2.def || 0;
-          result.procChance += setData.bonus2.procChance || 0;
+          // Apply the highest qualifying tier (bonus3 supersedes bonus2).
+          const tier = (count >= 3 && setData.bonus3) ? setData.bonus3 : setData.bonus2;
+          result.atk += tier.atk || 0;
+          result.def += tier.def || 0;
+          result.procChance += tier.procChance || 0;
           result.names.push(setName);
         }
       });
@@ -6873,27 +7041,71 @@
       }
     }
 
+    // Base item stats are authored as flat values (e.g. Mirror Shield def 9 / hp 26)
+    // and historically did not scale with level, so an endgame drop had the same
+    // stat block as an early-game one. This factor scales the *base* stats by the
+    // item's level so a drop is useful at the level it dropped at. ilvl 1 = factor 1
+    // (designed values preserved); higher ilvls ramp linearly. Rolls, quality
+    // boosts, sockets, and runewords are applied on top and are NOT scaled here.
+    function getItemLevelStatFactor(entry) {
+      let ilvl = 1;
+      if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.ilvl))) {
+        ilvl = Math.max(1, Math.floor(Number(entry.ilvl)));
+      }
+      // Smoother progression than the old flat 6%/level. Early levels ramp
+      // gently so a fresh character isn't flooded with overpowered drops, then
+      // the curve continues steadily through the late game so a drop off a
+      // high-level monster is competitive with built gear — strong enough to
+      // tempt an upgrade, not so strong it trivializes a tuned loadout.
+      //   ilvl  1  -> ~1.0x   (designed base values preserved)
+      //   ilvl 20  -> ~2.3x
+      //   ilvl 50  -> ~4.5x
+      //   ilvl 100 -> ~8.4x
+      //   ilvl 160 -> ~13.4x
+      //   ilvl 250 -> ~21.5x
+      const l = ilvl - 1;
+      return 1 + l * 0.07 + (l * l) * 0.00015;
+    }
+
+    // Affixes, quality boosts, and epic rolls were authored as flat values
+    // (e.g. a +5 ATK affix) and never scaled, so a Rare looted off a level-160
+    // monster carried the same tiny affixes as one from level 5. This factor
+    // scales those rolls by item level on a gentler curve than the base-stat
+    // factor (affixes are bonuses on top of an already-scaled base), so high
+    // level magic/rare/epic gear feels distinctly better without exploding.
+    //   ilvl 1 -> 1.0x, 20 -> ~1.7x, 50 -> ~3.0x, 100 -> ~5.5x, 160 -> ~8.4x
+    function getItemRollScaleFactor(entry) {
+      let ilvl = 1;
+      if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.ilvl))) {
+        ilvl = Math.max(1, Math.floor(Number(entry.ilvl)));
+      }
+      return 1 + (ilvl - 1) * 0.046;
+    }
+
     function getItemEffectiveStats(entry) {
       const base = getItemData(entry);
       if (!base) return null;
+      const lvlFactor = getItemLevelStatFactor(entry);
+      const rollScale = getItemRollScaleFactor(entry);
 
       const quality = getItemQuality(entry);
       const epicRollMult = quality === 'Epic' ? 1.75 : (quality === 'Mythic' ? 1.6 : (quality === 'Legendary' ? 1.4 : 1));
 
       const stats = {
-        atk: base.atk || 0,
-        def: base.def || 0,
-        hp: base.hp || 0,
-        mp: base.mp || 0,
+        atk: Math.floor((base.atk || 0) * lvlFactor),
+        def: Math.floor((base.def || 0) * lvlFactor),
+        hp: Math.floor((base.hp || 0) * lvlFactor),
+        mp: Math.floor((base.mp || 0) * lvlFactor),
         str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0
       };
 
       if (entry && typeof entry === 'object' && entry.rolls && typeof entry.rolls === 'object') {
         ['atk', 'def', 'hp', 'mp'].forEach(stat => {
           const rolled = Number(entry.rolls[stat] || 0);
-          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * epicRollMult);
+          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * epicRollMult * rollScale);
         });
-        // Apply ability-score rolls (str/dex/con/int/wis/cha)
+        // Apply ability-score rolls (str/dex/con/int/wis/cha). Ability scores
+        // are intentionally NOT ilvl-scaled — they stay meaningful as flat picks.
         ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
           const rolled = Number(entry.rolls[stat] || 0);
           if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * epicRollMult);
@@ -6901,20 +7113,20 @@
       }
 
       if (quality === 'Epic') {
-        stats.atk += 2;
-        stats.def += 2;
-        stats.hp += 12;
-        stats.mp += 12;
+        stats.atk += Math.floor(2 * rollScale);
+        stats.def += Math.floor(2 * rollScale);
+        stats.hp += Math.floor(12 * rollScale);
+        stats.mp += Math.floor(12 * rollScale);
       } else if (quality === 'Legendary') {
-        stats.atk += PHASE2.legendaryStatBoost.atk;
-        stats.def += PHASE2.legendaryStatBoost.def;
-        stats.hp += PHASE2.legendaryStatBoost.hp;
-        stats.mp += PHASE2.legendaryStatBoost.mp;
+        stats.atk += Math.floor(PHASE2.legendaryStatBoost.atk * rollScale);
+        stats.def += Math.floor(PHASE2.legendaryStatBoost.def * rollScale);
+        stats.hp += Math.floor(PHASE2.legendaryStatBoost.hp * rollScale);
+        stats.mp += Math.floor(PHASE2.legendaryStatBoost.mp * rollScale);
       } else if (quality === 'Mythic') {
-        stats.atk += PHASE2.mythicStatBoost.atk;
-        stats.def += PHASE2.mythicStatBoost.def;
-        stats.hp += PHASE2.mythicStatBoost.hp;
-        stats.mp += PHASE2.mythicStatBoost.mp;
+        stats.atk += Math.floor(PHASE2.mythicStatBoost.atk * rollScale);
+        stats.def += Math.floor(PHASE2.mythicStatBoost.def * rollScale);
+        stats.hp += Math.floor(PHASE2.mythicStatBoost.hp * rollScale);
+        stats.mp += Math.floor(PHASE2.mythicStatBoost.mp * rollScale);
       }
 
       if (entry && typeof entry === 'object' && Array.isArray(entry.sockets)) {
@@ -6942,22 +7154,24 @@
     function getItemBaseStats(entry) {
       const base = getItemData(entry);
       if (!base) return null;
+      const lvlFactor = getItemLevelStatFactor(entry);
+      const rollScale = getItemRollScaleFactor(entry);
 
       const quality = getItemQuality(entry);
       const epicRollMult = quality === 'Epic' ? 1.75 : (quality === 'Mythic' ? 1.6 : (quality === 'Legendary' ? 1.4 : 1));
 
       const stats = {
-        atk: base.atk || 0,
-        def: base.def || 0,
-        hp: base.hp || 0,
-        mp: base.mp || 0,
+        atk: Math.floor((base.atk || 0) * lvlFactor),
+        def: Math.floor((base.def || 0) * lvlFactor),
+        hp: Math.floor((base.hp || 0) * lvlFactor),
+        mp: Math.floor((base.mp || 0) * lvlFactor),
         str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0
       };
 
       if (entry && typeof entry === 'object' && entry.rolls && typeof entry.rolls === 'object') {
         ['atk', 'def', 'hp', 'mp'].forEach(stat => {
           const rolled = Number(entry.rolls[stat] || 0);
-          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * epicRollMult);
+          if (Number.isFinite(rolled) && rolled > 0) stats[stat] += Math.floor(rolled * epicRollMult * rollScale);
         });
         ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
           const rolled = Number(entry.rolls[stat] || 0);
@@ -6966,13 +7180,14 @@
       }
 
       if (quality === 'Epic') {
-        stats.atk += 2; stats.def += 2; stats.hp += 12; stats.mp += 12;
+        stats.atk += Math.floor(2 * rollScale); stats.def += Math.floor(2 * rollScale);
+        stats.hp += Math.floor(12 * rollScale); stats.mp += Math.floor(12 * rollScale);
       } else if (quality === 'Legendary') {
-        stats.atk += PHASE2.legendaryStatBoost.atk; stats.def += PHASE2.legendaryStatBoost.def;
-        stats.hp += PHASE2.legendaryStatBoost.hp; stats.mp += PHASE2.legendaryStatBoost.mp;
+        stats.atk += Math.floor(PHASE2.legendaryStatBoost.atk * rollScale); stats.def += Math.floor(PHASE2.legendaryStatBoost.def * rollScale);
+        stats.hp += Math.floor(PHASE2.legendaryStatBoost.hp * rollScale); stats.mp += Math.floor(PHASE2.legendaryStatBoost.mp * rollScale);
       } else if (quality === 'Mythic') {
-        stats.atk += PHASE2.mythicStatBoost.atk; stats.def += PHASE2.mythicStatBoost.def;
-        stats.hp += PHASE2.mythicStatBoost.hp; stats.mp += PHASE2.mythicStatBoost.mp;
+        stats.atk += Math.floor(PHASE2.mythicStatBoost.atk * rollScale); stats.def += Math.floor(PHASE2.mythicStatBoost.def * rollScale);
+        stats.hp += Math.floor(PHASE2.mythicStatBoost.hp * rollScale); stats.mp += Math.floor(PHASE2.mythicStatBoost.mp * rollScale);
       }
 
       // Intentionally omits sockets and runeword bonuses — base item only.
@@ -7065,42 +7280,46 @@
       const zi = Math.max(0, Math.min(ZONES.length - 1, Number.isFinite(ziRaw) ? Math.floor(ziRaw) : 0));
       const zoneMinLvl = Number(ZONES[zi]?.minLvl || 1);
 
-      let starterWeight = 0.7;
-      let midWeight = 0.2;
-      let advancedWeight = 0.1;
-      let miscWeight = 0.15;
-
-      if (zoneMinLvl >= 65) {
-        starterWeight = 0.1; midWeight = 0.33; advancedWeight = 0.57; miscWeight = 0.06;
-      } else if (zoneMinLvl >= 45) {
-        starterWeight = 0.18; midWeight = 0.42; advancedWeight = 0.4; miscWeight = 0.08;
-      } else if (zoneMinLvl >= 25) {
-        starterWeight = 0.34; midWeight = 0.43; advancedWeight = 0.23; miscWeight = 0.11;
-      } else if (zoneMinLvl >= 12) {
-        starterWeight = 0.52; midWeight = 0.32; advancedWeight = 0.16; miscWeight = 0.13;
-      }
+      // Five level-banded equipment tiers (v1.3.58). Each zone band leans on the
+      // gear authored for its range, with a little spillover into the bands on
+      // either side so loot feels smooth rather than snapping between tiers.
+      // Weights are [starter, mid, advanced, epic-tier, mythic-tier].
+      let w, miscWeight;
+      if (zoneMinLvl >= 160)      { w = [0,    0,    0.10, 0.45, 0.45]; miscWeight = 0.02; }
+      else if (zoneMinLvl >= 130) { w = [0,    0,    0.22, 0.50, 0.28]; miscWeight = 0.02; }
+      else if (zoneMinLvl >= 100) { w = [0,    0.08, 0.42, 0.40, 0.10]; miscWeight = 0.03; }
+      else if (zoneMinLvl >= 80)  { w = [0,    0.16, 0.46, 0.33, 0.05]; miscWeight = 0.04; }
+      else if (zoneMinLvl >= 60)  { w = [0.05, 0.26, 0.49, 0.20, 0   ]; miscWeight = 0.05; }
+      else if (zoneMinLvl >= 45)  { w = [0.14, 0.40, 0.38, 0.08, 0   ]; miscWeight = 0.07; }
+      else if (zoneMinLvl >= 25)  { w = [0.30, 0.44, 0.24, 0.02, 0   ]; miscWeight = 0.10; }
+      else if (zoneMinLvl >= 12)  { w = [0.50, 0.34, 0.16, 0,    0   ]; miscWeight = 0.12; }
+      else                        { w = [0.70, 0.22, 0.08, 0,    0   ]; miscWeight = 0.15; }
 
       if (source === 'mystic') {
-        starterWeight *= 0.45;
-        midWeight *= 1.05;
-        advancedWeight *= 1.5;
+        // Mystic source biases toward the rarer, higher tiers.
+        w = [w[0] * 0.4, w[1] * 0.9, w[2] * 1.3, w[3] * 1.6, w[4] * 1.8];
         miscWeight *= 0.5;
       }
 
-      const roll = Math.random();
-      const weightedEquipPools = [
-        { weight: starterWeight, pool: LOOT_TIER_STARTER },
-        { weight: midWeight, pool: LOOT_TIER_MID },
-        { weight: advancedWeight, pool: LOOT_TIER_ADVANCED }
-      ];
-
-      let acc = 0;
-      for (const entry of weightedEquipPools) {
-        acc += entry.weight;
-        if (roll <= acc) {
-          const validPool = entry.pool.filter(name => LOOT.includes(name));
+      const pools = [LOOT_TIER_STARTER, LOOT_TIER_MID, LOOT_TIER_ADVANCED, LOOT_TIER_EPIC, LOOT_TIER_MYTHIC];
+      const total = w.reduce((a, b) => a + b, 0) || 1;
+      let roll = Math.random() * total;
+      for (let i = 0; i < pools.length; i++) {
+        roll -= w[i];
+        if (roll <= 0) {
+          const validPool = pools[i].filter(name => LOOT.includes(name));
           if (validPool.length) return validPool[Math.floor(Math.random() * validPool.length)];
           break;
+        }
+      }
+
+      // Fallback: in higher-level zones, prefer the best available equip tier
+      // rather than dropping to misc or a random base, so endgame kills never
+      // serve starter-tier trash.
+      if (zoneMinLvl >= 60) {
+        for (const pool of [LOOT_TIER_MYTHIC, LOOT_TIER_EPIC, LOOT_TIER_ADVANCED, LOOT_TIER_MID, LOOT_TIER_STARTER]) {
+          const valid = pool.filter(name => LOOT.includes(name));
+          if (valid.length) return valid[Math.floor(Math.random() * valid.length)];
         }
       }
 
@@ -7112,14 +7331,124 @@
       return LOOT[Math.floor(Math.random() * LOOT.length)];
     }
 
-    function rollItemVariant(baseName, source = 'loot') {
+    // ── v1.3.59: level-aware affix density ──────────────────────────────────
+    // The player observed that as zones climb, items still carried only one or
+    // two stats (usually a big ATK/DEF plus, at most, one tiny ability score).
+    // These helpers make the NUMBER and VARIETY of stats grow with item level
+    // and quality — so higher zones produce items covered in more stats — while
+    // keeping the magnitudes modest (no runaway numbers).
+
+    // How many "regular" affixes (atk/def/hp/mp/ability from the slot pool) a
+    // magic/rare drop rolls, by item level. Higher ilvl = more lines.
+    function getLevelScaledAffixCount(ilvl, isRare) {
+      const lvl = Math.max(1, Number(ilvl) || 1);
+      // Base grows roughly one extra affix per ~45 levels.
+      let n = 1 + Math.floor(lvl / 45); // 1 at L1, 2 at L45, 3 at L90, 4 at L135, 5 at L180...
+      if (isRare) n += 1;               // Rares always carry one more than a Magic of the same level.
+      // A little randomness so items aren't all identical in line count.
+      if (Math.random() < 0.35) n += 1;
+      return Math.max(isRare ? 2 : 1, Math.min(n, 7));
+    }
+
+    // How many distinct ability-score lines (STR/DEX/CON/INT/WIS/CHA) an item
+    // of a given level + quality should guarantee. This is what makes those
+    // secondary stats COMMON at high levels instead of a rare single +1. The
+    // ramp is gradual so low zones stay sparse (1-2 lines) and variety keeps
+    // climbing toward the full spread only deep into the endgame.
+    function getLevelScaledAbilityCount(ilvl, quality) {
+      const lvl = Math.max(1, Number(ilvl) || 1);
+      const base = Math.floor(lvl / 55); // 0 at L1, 1 at L55, 2 at L110, 3 at L165, 4 at L220...
+      const qBonus = quality === 'Mythic' ? 2
+                   : quality === 'Legendary' ? 1
+                   : quality === 'Epic' ? 1
+                   : 0;
+      // Magic/Rare get a small chance at one extra line so they're not all identical.
+      const jitter = (Math.random() < 0.35) ? 1 : 0;
+      return Math.max(0, Math.min(base + qBonus + jitter, 6));
+    }
+
+    // The per-line value range for ability scores, scaled gently by item level.
+    // Kept deliberately small so a fully-rolled endgame item shows, say, +6 STR
+    // rather than +60. Returns {min,max}.
+    function getAbilityValueRange(ilvl) {
+      const lvl = Math.max(1, Number(ilvl) || 1);
+      const min = 1 + Math.floor(lvl / 60);  // 1 early, 2 by L60, 3 by L120, 4 by L180...
+      const max = 3 + Math.floor(lvl / 22);  // 3 early, grows ~1 per 22 levels
+      return { min, max: Math.max(min + 1, max) };
+    }
+
+    function rollItemVariant(baseName, source = 'loot', opts = {}) {
+      // Casino prizes (slots, scratch tickets, pachinko) call this with a null
+      // baseName plus { forceRarity, forceLevel } to request a guaranteed-rarity
+      // item that behaves exactly like a monster drop. Resolve those here so the
+      // item flows through the normal loot pipeline instead of falling back to gold.
+      const forceRarity = opts && opts.forceRarity ? String(opts.forceRarity) : null;
+      const forceLevel = opts && Number.isFinite(Number(opts.forceLevel)) ? Math.max(1, Math.floor(Number(opts.forceLevel))) : null;
+
+      // If no base item was supplied (casino prize), pick one the same way a
+      // mob drop would, so the dropped item is a real, zone-appropriate piece.
+      if (!baseName) {
+        baseName = pickWeightedLootBase(char?.zone ?? null, source === 'drop' ? 'loot' : source);
+      }
+
       const data = ITEM_DATA[baseName];
       if (!data) return baseName;
 
-      // Item level: scales with mob/zone level (cap close to player level for sanity)
-      const mobLvl = (typeof mob === 'object' && mob && Number.isFinite(Number(mob.level))) ? Number(mob.level) : (char?.level || 1);
+      // Item level: scales with mob/zone level (cap close to player level for sanity).
+      // A forced level (casino prizes pass the player's level) overrides the mob scaling.
+      const mobLvl = forceLevel !== null
+        ? forceLevel
+        : ((typeof mob === 'object' && mob && Number.isFinite(Number(mob.level))) ? Number(mob.level) : (char?.level || 1));
       const ilvl = Math.max(1, Math.floor(mobLvl + Math.floor(Math.random() * 3) - 1));
       const levelReq = Math.max(1, ilvl - PHASE2.levelReqOffset);
+
+      // Honor a forced rarity (casino prizes) by building that exact variant.
+      if (forceRarity) {
+        const r = forceRarity.toLowerCase();
+        if (r === 'mythic') {
+          const it = rollMythicVariant(baseName, data, ilvl); it.ilvl = ilvl; it.levelReq = levelReq; return it;
+        }
+        if (r === 'legendary') {
+          const it = rollLegendaryVariant(baseName, data, ilvl); it.ilvl = ilvl; it.levelReq = levelReq; return it;
+        }
+        if (r === 'epic') {
+          const epicPoolForced = EPIC_ITEM_BY_BASE[baseName] || [];
+          if (epicPoolForced.length) {
+            const chosen = epicPoolForced[Math.floor(Math.random() * epicPoolForced.length)];
+            const epicRolls = Object.assign({}, chosen.rolls);
+            addScaledAbilityBonuses(epicRolls, Math.max(1, getLevelScaledAbilityCount(ilvl, 'Epic')), ilvl);
+            return { base: baseName, name: chosen.name, rolls: epicRolls, quality: 'Epic', epicId: chosen.id, ilvl, levelReq };
+          }
+          // Fall through to a Legendary if this base has no epic version.
+          const it = rollLegendaryVariant(baseName, data, ilvl); it.ilvl = ilvl; it.levelReq = levelReq; return it;
+        }
+        if (r === 'rare' || r === 'magic') {
+          const poolF = ITEM_AFFIX_POOL[data.slot] || [];
+          if (poolF.length) {
+            const isRareF = r === 'rare';
+            const want = getLevelScaledAffixCount(ilvl, isRareF);
+            const picksF = [];
+            const usedF = new Set();
+            while (picksF.length < want && usedF.size < poolF.length) {
+              const idx = Math.floor(Math.random() * poolF.length);
+              if (usedF.has(idx)) continue;
+              usedF.add(idx);
+              picksF.push(poolF[idx]);
+            }
+            const rollsF = {};
+            picksF.forEach(affix => {
+              const value = affix.min + Math.floor(Math.random() * (affix.max - affix.min + 1));
+              rollsF[affix.stat] = (rollsF[affix.stat] || 0) + value;
+            });
+            const abilityCountF = getLevelScaledAbilityCount(ilvl, isRareF ? 'Rare' : 'Magic');
+            if (abilityCountF > 0) addScaledAbilityBonuses(rollsF, abilityCountF, ilvl);
+            const prefixF = picksF[0]?.prefix || '';
+            const suffixF = picksF[1]?.suffix || '';
+            const nameF = (prefixF ? (prefixF + ' ') : '') + baseName + (suffixF ? (' of ' + suffixF) : '');
+            return { base: baseName, name: nameF, rolls: rollsF, quality: isRareF ? 'Rare' : 'Magic', ilvl, levelReq };
+          }
+        }
+      }
 
       const epicPool = EPIC_ITEM_BY_BASE[baseName] || [];
       let epicChance = 0;
@@ -7130,7 +7459,7 @@
       // Mythic chance — the rarest tier, checked first
       const mythicChance = source === 'loot_named' ? PHASE2.mythicChanceNamed : (source === 'loot' ? PHASE2.mythicChanceRegular : 0);
       if (mythicChance > 0 && Math.random() < mythicChance) {
-        const mythic = rollMythicVariant(baseName, data);
+        const mythic = rollMythicVariant(baseName, data, ilvl);
         mythic.ilvl = ilvl;
         mythic.levelReq = levelReq;
         return mythic;
@@ -7139,7 +7468,7 @@
       // Legendary chance — much rarer than unique
       const legendaryChance = source === 'loot_named' ? PHASE2.legendaryChanceNamed : (source === 'loot' ? PHASE2.legendaryChanceRegular : 0);
       if (legendaryChance > 0 && Math.random() < legendaryChance) {
-        const legendary = rollLegendaryVariant(baseName, data);
+        const legendary = rollLegendaryVariant(baseName, data, ilvl);
         legendary.ilvl = ilvl;
         legendary.levelReq = levelReq;
         return legendary;
@@ -7148,7 +7477,8 @@
       if (epicPool.length && epicChance > 0 && Math.random() < epicChance) {
         const chosen = epicPool[Math.floor(Math.random() * epicPool.length)];
         const epicRolls = Object.assign({}, chosen.rolls);
-        addAbilityRollBonuses(epicRolls, 1, 2, 4); // Epic drops carry an ability bonus
+        // Epics carry a level-scaled spread of ability scores (min 1 line).
+        addScaledAbilityBonuses(epicRolls, Math.max(1, getLevelScaledAbilityCount(ilvl, 'Epic')), ilvl);
         return {
           base: baseName,
           name: chosen.name,
@@ -7166,7 +7496,13 @@
       const pool = ITEM_AFFIX_POOL[data.slot] || [];
       if (!pool.length) return baseName;
 
-      const affixCount = Math.random() < (source === 'reroll' ? 0.35 : (source === 'shop' ? 0.3 : 0.18)) ? 2 : 1;
+      // Quality: a drop is Rare (vs Magic) more often at higher levels, so deep
+      // zones lean toward multi-stat Rares rather than single-stat Magics.
+      const rareChance = (source === 'reroll' ? 0.35 : (source === 'shop' ? 0.3 : 0.18)) + Math.min(0.4, ilvl / 300);
+      const isRare = Math.random() < rareChance;
+
+      // Number of "regular" affixes scales with level (more stats in higher zones).
+      const affixCount = getLevelScaledAffixCount(ilvl, isRare);
       const picks = [];
       const used = new Set();
 
@@ -7185,6 +7521,11 @@
         rolls[affix.stat] = (rolls[affix.stat] || 0) + value;
       });
 
+      // Guarantee a level-scaled spread of ability-score stats so STR/DEX/CON/
+      // INT/WIS/CHA become common on higher-level gear instead of a rare +1.
+      const abilityCount = getLevelScaledAbilityCount(ilvl, isRare ? 'Rare' : 'Magic');
+      if (abilityCount > 0) addScaledAbilityBonuses(rolls, abilityCount, ilvl);
+
       const prefix = picks[0]?.prefix || '';
       const suffix = picks[1]?.suffix || '';
       const name = (prefix ? (prefix + ' ') : '') + baseName + (suffix ? (' of ' + suffix) : '');
@@ -7193,7 +7534,7 @@
         base: baseName,
         name,
         rolls,
-        quality: picks.length > 1 ? 'Rare' : 'Magic',
+        quality: isRare ? 'Rare' : 'Magic',
         ilvl,
         levelReq
       };
@@ -8665,7 +9006,7 @@
         names.push(sc.name + (lvls > 0 ? ' (+' + lvls + ' lvl)' : ''));
       });
       if (names.length) {
-        log('Group XP shared (' + totalXp + ' from ' + source + '): ' + names.join(', '), 'info');
+        log('Group XP shared (' + fmt(totalXp) + ' from ' + source + '): ' + names.join(', '), 'info');
       }
     }
 
@@ -10366,11 +10707,35 @@
       return rolls;
     }
 
-    function rollLegendaryVariant(baseName, data) {
+    // Like addAbilityRollBonuses but the per-line value range scales gently with
+    // item level (via getAbilityValueRange), so endgame items carry several
+    // meaningful — but not enormous — ability-score lines. Skips ability stats
+    // already present so each line is a distinct stat where possible.
+    function addScaledAbilityBonuses(rolls, count, ilvl) {
+      const range = (typeof getAbilityValueRange === 'function') ? getAbilityValueRange(ilvl) : { min: 1, max: 3 };
+      const pool = ABILITIES.slice();
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      // Prefer stats not already on the item so we add variety, not stacks.
+      pool.sort((a, b) => (rolls[a] ? 1 : 0) - (rolls[b] ? 1 : 0));
+      const n = Math.max(0, Math.min(count, pool.length));
+      for (let i = 0; i < n; i++) {
+        const stat = pool[i];
+        const val = range.min + Math.floor(Math.random() * Math.max(1, range.max - range.min + 1));
+        rolls[stat] = (rolls[stat] || 0) + val;
+      }
+      return rolls;
+    }
+
+    function rollLegendaryVariant(baseName, data, ilvl) {
+      const lvl = Math.max(1, Number(ilvl) || (char && char.level) || 1);
       const pool = ITEM_AFFIX_POOL[data.slot] || [];
       const picks = [];
       const used = new Set();
-      const want = Math.min(PHASE2.legendaryAffixCount, pool.length);
+      // Legendaries roll the base count plus extra lines at higher levels.
+      const want = Math.min(PHASE2.legendaryAffixCount + Math.floor(lvl / 50), pool.length);
       while (picks.length < want && used.size < pool.length) {
         const idx = Math.floor(Math.random() * pool.length);
         if (used.has(idx)) continue;
@@ -10385,8 +10750,8 @@
         const value = mid + Math.floor(Math.random() * Math.max(1, affix.max - mid + 1));
         rolls[affix.stat] = (rolls[affix.stat] || 0) + Math.floor(value * 1.3);
       });
-      // Legendaries always carry a couple of ability-score bonuses
-      addAbilityRollBonuses(rolls, 2, 2, 4);
+      // Legendaries carry a level-scaled spread of ability scores (min 2 lines).
+      addScaledAbilityBonuses(rolls, Math.max(2, getLevelScaledAbilityCount(lvl, 'Legendary')), lvl);
       const prefix = picks[0]?.prefix || 'Exalted';
       const suffix = picks[1]?.suffix || 'Legends';
       return {
@@ -10397,11 +10762,12 @@
       };
     }
 
-    function rollMythicVariant(baseName, data) {
+    function rollMythicVariant(baseName, data, ilvl) {
+      const lvl = Math.max(1, Number(ilvl) || (char && char.level) || 1);
       const pool = ITEM_AFFIX_POOL[data.slot] || [];
       const picks = [];
       const used = new Set();
-      const want = Math.min(PHASE2.mythicAffixCount, pool.length);
+      const want = Math.min(PHASE2.mythicAffixCount + Math.floor(lvl / 45), pool.length);
       while (picks.length < want && used.size < pool.length) {
         const idx = Math.floor(Math.random() * pool.length);
         if (used.has(idx)) continue;
@@ -10414,8 +10780,8 @@
         const value = affix.max;
         rolls[affix.stat] = (rolls[affix.stat] || 0) + Math.floor(value * 1.6);
       });
-      // Mythics carry a generous spread of ability-score bonuses
-      addAbilityRollBonuses(rolls, 3, 3, 6);
+      // Mythics carry the most generous spread of ability scores (min 3 lines).
+      addScaledAbilityBonuses(rolls, Math.max(3, getLevelScaledAbilityCount(lvl, 'Mythic')), lvl);
       const prefix = picks[0]?.prefix || 'Mythic';
       const suffix = picks[1]?.suffix || 'the Ancients';
       return {
@@ -10892,8 +11258,9 @@
       if (Math.random() < PHASE4.bossLegendaryChance && typeof rollLegendaryVariant === 'function') {
         const data = ITEM_DATA[zone.rare] || ITEM_DATA[boss?.mob];
         if (data) {
-          const legendary = rollLegendaryVariant(zone.rare, data);
-          legendary.ilvl = Math.max(1, mob.level + 1);
+          const bossIlvl = Math.max(1, mob.level + 1);
+          const legendary = rollLegendaryVariant(zone.rare, data, bossIlvl);
+          legendary.ilvl = bossIlvl;
           legendary.levelReq = Math.max(1, legendary.ilvl - PHASE2.levelReqOffset);
           processLootDrop(legendary, 'Boss Loot');
         }
@@ -10982,7 +11349,7 @@
       const xpAward = awardExperience(q.xp, 'quest');
       const goldAward = Math.floor(q.gold * prestige.goldMult);
       char.gold += goldAward;
-      log('Daily quest claimed: ' + q.name + '! +' + xpAward.regularXp + ' XP, +' + goldAward + 'g', 'loot');
+      log('Daily quest claimed: ' + q.name + '! +' + fmt(xpAward.regularXp) + ' XP, +' + fmt(goldAward) + 'g', 'loot');
       bumpStat('dailiesClaimed', 1);
       checkAchievements();
       renderAll();
@@ -11674,9 +12041,9 @@
         }
       }
       const xpSplit = awardExperience(baseXpReward + bonusXp + chainBonusXp, 'contract');
-      log('Elite contract step complete! +' + xpSplit.regularXp + ' XP' + (xpSplit.aaXp > 0 ? (' (+' + xpSplit.aaXp + ' AA XP)') : '') + ', +' + baseGoldReward + 'g' +
-        (bonusXp > 0 ? (' + streak bonus +' + bonusXp + ' XP, +' + bonusGold + 'g') : '') +
-        (chainBonusXp > 0 ? (' + chain bonus +' + chainBonusXp + ' XP, +' + chainBonusGold + 'g') : '') + '.', 'loot');
+      log('Elite contract step complete! +' + fmt(xpSplit.regularXp) + ' XP' + (xpSplit.aaXp > 0 ? (' (+' + fmt(xpSplit.aaXp) + ' AA XP)') : '') + ', +' + fmt(baseGoldReward) + 'g' +
+        (bonusXp > 0 ? (' + streak bonus +' + fmt(bonusXp) + ' XP, +' + fmt(bonusGold) + 'g') : '') +
+        (chainBonusXp > 0 ? (' + chain bonus +' + fmt(chainBonusXp) + ' XP, +' + fmt(chainBonusGold) + 'g') : '') + '.', 'loot');
 
       if (!isFinalStep) {
         char.eliteContracts[char.contractPrimaryIdx] = generateEliteContract(c.zone, char.contractTierPref || c.tier || 'normal', step + 1, totalSteps);
@@ -11777,7 +12144,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.54';
+    const CURRENT_VERSION = '1.3.60';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -13263,6 +13630,31 @@
         if (!silent) log('Upgraded save data to v1.3.13 (audit, scaling, tribute)' + (auditFixes ? ' — ' + auditFixes + ' issues fixed.' : '.'), 'info');
       }
 
+      if (oldChar.version === '1.3.13' || oldChar.version === '1.3.57') {
+        // v1.3.58 reworks drops (smoother level scaling, scaled affixes, an
+        // expanded item roster). No new per-character fields are required —
+        // the change lives entirely in loot generation — so this is just a
+        // friendly version stamp.
+        oldChar.version = '1.3.58';
+        if (!silent) log('Upgraded save data to v1.3.58 (expanded items, smoother drop scaling).', 'info');
+      }
+
+      if (oldChar.version === '1.3.58') {
+        // v1.3.59 makes affix density scale with level: higher zones roll more
+        // stats and more ability-score (STR/DEX/CON/INT/WIS/CHA) lines, with
+        // modest magnitudes. Loot-generation only — no per-character migration.
+        oldChar.version = '1.3.59';
+        if (!silent) log('Upgraded save data to v1.3.59 (more stats on higher-level items).', 'info');
+      }
+
+      if (oldChar.version === '1.3.59') {
+        // v1.3.60 is a display-only fix: gold and experience amounts in the
+        // combat log now use thousands separators consistently. Nothing in the
+        // save needs migrating.
+        oldChar.version = '1.3.60';
+        if (!silent) log('Upgraded save data to v1.3.60 (cleaner gold/XP number formatting).', 'info');
+      }
+
       if (oldChar.version != CURRENT_VERSION) {
         oldChar.version = CURRENT_VERSION;
         if (!silent) log('Upgraded save data to v' + CURRENT_VERSION + '.', 'info');
@@ -13868,8 +14260,8 @@
       char.gold += goldRecovered;
       char.corpse = null;
 
-      log('You recover your corpse and reclaim ' + goldRecovered + ' gold.', 'loot');
-      showToast('Corpse recovered: +' + goldRecovered + 'g', 'success');
+      log('You recover your corpse and reclaim ' + fmt(goldRecovered) + ' gold.', 'loot');
+      showToast('Corpse recovered: +' + fmt(goldRecovered) + 'g', 'success');
       renderAll();
       renderZones();
       autoSave();
@@ -14197,7 +14589,7 @@
           const rwTier = getRunewordTierByXp(rwXp);
           const nextIdx = Math.min(RUNEWORD_EVOLUTION_THRESHOLDS.length - 1, rwTier);
           const nextAt = RUNEWORD_EVOLUTION_THRESHOLDS[nextIdx] || RUNEWORD_EVOLUTION_THRESHOLDS[RUNEWORD_EVOLUTION_THRESHOLDS.length - 1];
-          itemType = itemType + ' · Tier ' + rwTier + (rwTier < RUNEWORD_EVOLUTION_THRESHOLDS.length ? (' (' + rwXp + '/' + nextAt + ' XP)') : (' (' + rwXp + ' XP)'));
+          itemType = itemType + ' · Tier ' + rwTier + (rwTier < RUNEWORD_EVOLUTION_THRESHOLDS.length ? (' (' + fmt(rwXp) + '/' + fmt(nextAt) + ' XP)') : (' (' + fmt(rwXp) + ' XP)'));
         }
 
         if (isRune) {
@@ -14790,7 +15182,7 @@
             const gearGold = rarity === 'Legendary' ? 10000 : (rarity === 'Epic' ? 5000 : 2500);
             if (typeof rollItemVariant === 'function') {
               const gearItem = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: char.level });
-              if (gearItem) {
+              if (gearItem && typeof gearItem === 'object') {
                 const added = addToInventory(gearItem);
                 if (added) {
                   _casinoRecordWin('scratch', gearGold);
@@ -15487,7 +15879,7 @@
         let done = false;
         if (typeof rollItemVariant === 'function') {
           const item = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: char.level });
-          if (item && typeof addToInventory === 'function' && addToInventory(item)) {
+          if (item && typeof item === 'object' && typeof addToInventory === 'function' && addToInventory(item)) {
             const gearGold = rarity === 'Legendary' ? 20000 : (rarity === 'Epic' ? 8000 : 3000);
             _casinoRecordWin('slots', gearGold);
             log(`🎰 Slots (${m.name}): ${count}× ${def.sym} — won ${rarity} gear: ${item.name || 'item'}!`, 'loot');
@@ -16179,7 +16571,7 @@
         const rarity = rarityMap[bkt.value] || 'Rare';
         if (typeof rollItemVariant === 'function') {
           const item = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: char.level });
-          if (item) {
+          if (item && typeof item === 'object') {
             // Route through the normal loot pipeline so the player's loot filter
             // (auto-sell/keep/auto-equip) handles it exactly like a mob drop.
             processLootDrop(item, `🔮 Pachinko (${board.name})`);
@@ -16583,7 +16975,7 @@
           _casinoRecordWin('poker', payout);
           resultMsg = '🏆 You win! Your ' + playerBest.name + ' beats dealer\'s ' + dealerBest.name + '. +' + fmt(payout) + 'g!';
           resultColor = '#6fdc6f';
-          _pokerLog('WIN: ' + playerBest.name + ' vs ' + dealerBest.name + '. +' + payout + 'g');
+          _pokerLog('WIN: ' + playerBest.name + ' vs ' + dealerBest.name + '. +' + fmt(payout) + 'g');
         } else if (playerBest.numScore === dealerBest.numScore) {
           // Tie — split pot
           payout = Math.floor(s.pot / 2);
@@ -16596,7 +16988,7 @@
           _casinoUpdateStatsDisplay('poker');
           resultMsg = '🤝 Tie! Both have ' + playerBest.name + '. Pot split: +' + fmt(payout) + 'g';
           resultColor = '#e8c860';
-          _pokerLog('TIE: ' + playerBest.name + '. Returned ' + payout + 'g');
+          _pokerLog('TIE: ' + playerBest.name + '. Returned ' + fmt(payout) + 'g');
         } else {
           // Dealer wins
           resultMsg = '💀 Dealer wins with ' + dealerBest.name + '. You had ' + playerBest.name + '.';
@@ -17333,7 +17725,7 @@
         const gainedLightMp = Math.max(0, char.manapotions_lmp - prevLightMp);
 
         const grantParts = [];
-        if (gainedGold > 0) grantParts.push('+' + gainedGold + 'g');
+        if (gainedGold > 0) grantParts.push('+' + fmt(gainedGold) + 'g');
         if (gainedMinorHp > 0) grantParts.push('+' + gainedMinorHp + ' Minor HP');
         if (gainedMinorMp > 0) grantParts.push('+' + gainedMinorMp + ' Minor MP');
         if (gainedLightHp > 0) grantParts.push('+' + gainedLightHp + ' Light HP');
@@ -18401,16 +18793,16 @@
       ], 'dmg');
       log([
         'You gain ',
-        { text: String(killXp.regularXp), cls: 'combat-log-xp' },
+        { text: fmt(killXp.regularXp), cls: 'combat-log-xp' },
         ' experience!' + (killXp.aaXp > 0 ? ' ' : '')
       ].concat(killXp.aaXp > 0 ? [
         '(',
-        { text: String(killXp.aaXp), cls: 'combat-log-xp' },
+        { text: fmt(killXp.aaXp), cls: 'combat-log-xp' },
         ' AA experience)'
       ] : []), 'lvl');
       log([
         'You receive ',
-        { text: String(gold), cls: 'combat-log-gold' },
+        { text: fmt(gold), cls: 'combat-log-gold' },
         ' gold from the corpse.'
       ], 'loot');
 
@@ -18464,7 +18856,7 @@
             const questXp = awardExperience(q.xp, 'quest');
             const qGold = Math.floor(q.gold * prestige.goldMult);
             char.gold += qGold;
-            log('Quest complete: ' + q.name + '! +' + questXp.regularXp + ' XP' + (questXp.aaXp > 0 ? (' (+' + questXp.aaXp + ' AA XP)') : '') + ', +' + qGold + 'g', 'lvl');
+            log('Quest complete: ' + q.name + '! +' + fmt(questXp.regularXp) + ' XP' + (questXp.aaXp > 0 ? (' (+' + fmt(questXp.aaXp) + ' AA XP)') : '') + ', +' + fmt(qGold) + 'g', 'lvl');
           }
         }
       });
@@ -18731,7 +19123,7 @@
 
       log([
         'You receive ',
-        { text: String(value), cls: 'combat-log-gold' },
+        { text: fmt(value), cls: 'combat-log-gold' },
         ' gold for the ',
         { text: getItemDisplayName(item), cls: 'combat-log-loot-item ' + getItemRarityClass(item) },
         '.'
@@ -18855,7 +19247,7 @@
             sourceLabel + ': ',
             { text: getItemDisplayName(item), cls: 'combat-log-loot-item ' + getItemRarityClass(item) },
             ' auto-sold by rule for ',
-            { text: String(value), cls: 'combat-log-gold' },
+            { text: fmt(value), cls: 'combat-log-gold' },
             ' gold.'
           ], 'loot');
           return;
@@ -18883,7 +19275,7 @@
           sourceLabel + ': ',
           { text: getItemDisplayName(item), cls: 'combat-log-loot-item ' + getItemRarityClass(item) },
           ' auto-sold for ',
-          { text: String(value), cls: 'combat-log-gold' },
+          { text: fmt(value), cls: 'combat-log-gold' },
           ' gold.'
         ], 'loot');
       } else if (tryAutoEquipLootItem(item, sourceLabel)) {
@@ -18975,8 +19367,8 @@
       const bagCount = getBagLayout(char).length;
       if (activeBagIndex >= bagCount) activeBagIndex = bagCount - 1;
 
-      log('Sold ' + soldCount + ' junk items for ' + totalGold + ' gold.', 'loot');
-      showToast('Sold junk: +' + totalGold + 'g', 'success');
+      log('Sold ' + fmt(soldCount) + ' junk items for ' + fmt(totalGold) + ' gold.', 'loot');
+      showToast('Sold junk: +' + fmt(totalGold) + 'g', 'success');
       renderAll();
       autoSave();
     }
@@ -19004,8 +19396,8 @@
       activeBagIndex = 0;
       bagInstallTargetIndex = 0;
 
-      log('Sold ' + (soldCount - kept) + ' inventory items for ' + totalGold + ' gold. Protected items kept: ' + kept + '.', 'loot');
-      showToast('Sold all inventory: +' + totalGold + 'g', 'success');
+      log('Sold ' + fmt(soldCount - kept) + ' inventory items for ' + fmt(totalGold) + ' gold. Protected items kept: ' + fmt(kept) + '.', 'loot');
+      showToast('Sold all inventory: +' + fmt(totalGold) + 'g', 'success');
       renderAll();
       autoSave();
     }
@@ -20079,7 +20471,9 @@
         if (goal === 'contract' && contract && contract.active && !contract.complete && !contract.bossStep && Number(contract.zone) === simZoneIdx && Math.random() < 0.65) {
           mobName = contract.target;
         }
-        const lvl = Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
+        const lvl = (typeof getZoneMobLevel === 'function')
+          ? getZoneMobLevel(zone, char.level)
+          : Math.max(1, char.level + Math.floor(Math.random() * 3) - 1);
         const elite = Math.random() < ((goal === 'contract' && contract && contract.bossStep) ? 0.28 : 0.1);
 
         const xp = Math.floor((20 + lvl * 15) * zone.xpMult * (elite ? 3 : 1) * (1 + (getEquippedRunewordEffects(char).xpFind || 0)));
@@ -20113,7 +20507,7 @@
 
         if (Math.random() < 0.4) {
           const lootBase = Math.random() < 0.05 ? zone.rare : pickWeightedLootBase(simZoneIdx, 'afk');
-          const loot = rollItemVariant(lootBase, 'afk');
+          const loot = rollItemVariant(lootBase, 'afk', { forceLevel: lvl });
           if (shouldAutoSellLootItem(loot)) {
             const value = getItemSellValue(loot);
             totalGold += value;
@@ -20144,13 +20538,13 @@
       const awayLabel = minutes > 0 ? (minutes + 'm ' + seconds + 's') : (seconds + 's');
 
       const sourcePrefix = opts.source === 'resume' ? 'AFK resume' : 'AFK return';
-      log(sourcePrefix + ' (' + awayLabel + '): simulated ' + fights + ' fights, +' + afkXp.regularXp + ' XP' + (afkXp.aaXp > 0 ? (' (+' + afkXp.aaXp + ' AA XP)') : '') + ', +' + totalGold + 'g, ' + totalLoot + ' items, ' + totalRunes + ' runes, +' + factionGain + ' faction.', 'loot');
+      log(sourcePrefix + ' (' + awayLabel + '): simulated ' + fmt(fights) + ' fights, +' + fmt(afkXp.regularXp) + ' XP' + (afkXp.aaXp > 0 ? (' (+' + fmt(afkXp.aaXp) + ' AA XP)') : '') + ', +' + fmt(totalGold) + 'g, ' + fmt(totalLoot) + ' items, ' + fmt(totalRunes) + ' runes, +' + fmt(factionGain) + ' faction.', 'loot');
       if (questCompletions > 0) log('AFK quests completed: ' + questCompletions + '.', 'lvl');
       if (elapsedTicks > simTicks) {
         log('AFK simulation capped at ' + maxTicks + ' ticks for performance.', 'info');
       }
 
-      showToast('AFK rewards: +' + afkXp.regularXp + ' XP' + (afkXp.aaXp > 0 ? (' (+' + afkXp.aaXp + ' AA XP)') : '') + ', +' + totalGold + 'g, ' + totalLoot + ' items, ' + totalRunes + ' runes, +' + factionGain + ' faction', 'success', 4200);
+      showToast('AFK rewards: +' + fmt(afkXp.regularXp) + ' XP' + (afkXp.aaXp > 0 ? (' (+' + fmt(afkXp.aaXp) + ' AA XP)') : '') + ', +' + fmt(totalGold) + 'g, ' + fmt(totalLoot) + ' items, ' + fmt(totalRunes) + ' runes, +' + fmt(factionGain) + ' faction', 'success', 4200);
 
       char.lastAfkAt = Date.now();
       renderQuests();
@@ -20210,7 +20604,7 @@
       char[potionKey] = owned - quantity;
       char.gold += totalGold;
 
-      log('Sold ' + quantity + ' ' + potionName.toLowerCase() + (quantity === 1 ? '' : 's') + ' for ' + totalGold + ' gold.', 'loot');
+      log('Sold ' + fmt(quantity) + ' ' + potionName.toLowerCase() + (quantity === 1 ? '' : 's') + ' for ' + fmt(totalGold) + ' gold.', 'loot');
 
       renderAll();
       autoSave();
