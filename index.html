@@ -4686,7 +4686,7 @@
           const pageSize = 1000;
           let from = 0;
           while (true) {
-            let query = sb.from('leaderboard_clean')
+            let query = sb.from('leaderboard')
               .select('user_id,name,race,class,level,prestige,power,hardcore,atk,def,hp,mp,aa,gold,kills,named_kills,elite_kills,boss_kills,deaths,gold_earned')
               .order('power', { ascending: false })
               .range(from, from + pageSize - 1);
@@ -4725,25 +4725,13 @@
           }
         }
         try {
-          // Route through the anti-cheat Edge Function instead of direct upsert.
-          // The function validates stats server-side and stamps flagged = true on
-          // suspicious rows before they reach the leaderboard table.
+          // Publish directly to the leaderboard table (pre-Edge-Function behavior).
+          // The anti-cheat validator was producing false positives and silently
+          // hiding legitimate characters, so we upsert summaries straight in.
           if (rows.length) {
-            const { data: { session } } = await sb.auth.getSession();
-            const token = session?.access_token;
-            const res = await fetch(
-              SUPA_URL + '/functions/v1/validate-leaderboard',
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Bearer ' + token,
-                  'apikey': SUPA_ANON
-                },
-                body: JSON.stringify({ rows })
-              }
-            );
-            if (!res.ok) { console.warn('leaderboard publish failed', await res.text()); return; }
+            const { error } = await sb.from('leaderboard')
+              .upsert(rows, { onConflict: 'user_id,char_key' });
+            if (error) { console.warn('leaderboard publish failed', error); return; }
           }
           if (empties.length) {
             await sb.from('leaderboard').delete().eq('user_id', currentUser.id).in('char_key', empties);
@@ -12163,7 +12151,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.61';
+    const CURRENT_VERSION = '1.3.62';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
