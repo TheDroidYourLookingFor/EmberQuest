@@ -7067,6 +7067,23 @@
       return 1 + l * 0.07 + (l * l) * 0.00015;
     }
 
+    // v1.3.61: DEF/HP/MP get a GENTLER curve than ATK. Defensive stats had been
+    // sharing ATK's steep curve, which inflated them to the point where a single
+    // high-ilvl piece showed 600+ DEF or HP in the thousands. Because incoming
+    // damage uses diminishing returns (mobAtk*(mobAtk/(mobAtk+def))) and mob ATK
+    // is anchored to a fraction of player max HP, that surplus DEF/HP/MP was
+    // largely cosmetic bloat rather than real power. This curve is mostly linear
+    // (no quadratic term) and shallower, roughly halving these stats at the top
+    // end while leaving low-level values untouched.
+    //   ilvl 1 -> 1.0x, 20 -> ~1.9x, 50 -> ~3.2x, 100 -> ~5.5x, 160 -> ~8.2x, 250 -> ~12.2x
+    function getItemDefensiveStatFactor(entry) {
+      let ilvl = 1;
+      if (entry && typeof entry === 'object' && Number.isFinite(Number(entry.ilvl))) {
+        ilvl = Math.max(1, Math.floor(Number(entry.ilvl)));
+      }
+      return 1 + (ilvl - 1) * 0.045;
+    }
+
     // Affixes, quality boosts, and epic rolls were authored as flat values
     // (e.g. a +5 ATK affix) and never scaled, so a Rare looted off a level-160
     // monster carried the same tiny affixes as one from level 5. This factor
@@ -7086,6 +7103,7 @@
       const base = getItemData(entry);
       if (!base) return null;
       const lvlFactor = getItemLevelStatFactor(entry);
+      const defFactor = getItemDefensiveStatFactor(entry);
       const rollScale = getItemRollScaleFactor(entry);
 
       const quality = getItemQuality(entry);
@@ -7093,9 +7111,9 @@
 
       const stats = {
         atk: Math.floor((base.atk || 0) * lvlFactor),
-        def: Math.floor((base.def || 0) * lvlFactor),
-        hp: Math.floor((base.hp || 0) * lvlFactor),
-        mp: Math.floor((base.mp || 0) * lvlFactor),
+        def: Math.floor((base.def || 0) * defFactor),
+        hp: Math.floor((base.hp || 0) * defFactor),
+        mp: Math.floor((base.mp || 0) * defFactor),
         str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0
       };
 
@@ -7155,6 +7173,7 @@
       const base = getItemData(entry);
       if (!base) return null;
       const lvlFactor = getItemLevelStatFactor(entry);
+      const defFactor = getItemDefensiveStatFactor(entry);
       const rollScale = getItemRollScaleFactor(entry);
 
       const quality = getItemQuality(entry);
@@ -7162,9 +7181,9 @@
 
       const stats = {
         atk: Math.floor((base.atk || 0) * lvlFactor),
-        def: Math.floor((base.def || 0) * lvlFactor),
-        hp: Math.floor((base.hp || 0) * lvlFactor),
-        mp: Math.floor((base.mp || 0) * lvlFactor),
+        def: Math.floor((base.def || 0) * defFactor),
+        hp: Math.floor((base.hp || 0) * defFactor),
+        mp: Math.floor((base.mp || 0) * defFactor),
         str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0
       };
 
@@ -12144,7 +12163,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.60';
+    const CURRENT_VERSION = '1.3.61';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -13653,6 +13672,15 @@
         // save needs migrating.
         oldChar.version = '1.3.60';
         if (!silent) log('Upgraded save data to v1.3.60 (cleaner gold/XP number formatting).', 'info');
+      }
+
+      if (oldChar.version === '1.3.60') {
+        // v1.3.61 puts DEF/HP/MP on a gentler scaling curve than ATK so they no
+        // longer balloon at high levels. Stats are recomputed live from each
+        // item's ilvl, so equipped/stored gear updates automatically — no
+        // per-character migration needed.
+        oldChar.version = '1.3.61';
+        if (!silent) log('Upgraded save data to v1.3.61 (rebalanced DEF/HP/MP scaling).', 'info');
       }
 
       if (oldChar.version != CURRENT_VERSION) {
