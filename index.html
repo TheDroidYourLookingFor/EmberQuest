@@ -1362,6 +1362,11 @@
       transition: border-color .15s;
     }
 
+    /* Compact slots must not clip their action popover, and the open one sits
+       above its neighbours so the menu is fully visible. */
+    .eq-slot.is-compact { overflow: visible; }
+    .eq-slot.is-open { overflow: visible; z-index: 20; }
+
     .eq-slot:has(.eq-item-name) {
       border-color: var(--border-md);
     }
@@ -1416,8 +1421,8 @@
 
     .eq-total-stats {
       display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
+      gap: 4px;
+      flex-wrap: nowrap;
       margin-top: 8px;
       padding-top: 7px;
       border-top: 1px solid var(--border);
@@ -1427,15 +1432,21 @@
     .eq-total-chip {
       display: flex;
       align-items: center;
-      gap: 3px;
-      padding: 2px 6px;
+      justify-content: center;
+      gap: 2px;
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 2px 4px;
       border-radius: var(--radius-md);
       background: var(--bg-primary);
       border: 0.5px solid var(--border);
       font-size: 10px;
       font-weight: 500;
       color: var(--text-secondary);
+      white-space: nowrap;
     }
+    .eq-total-chip i { flex: 0 0 auto; }
+    .eq-total-chip > span { overflow: hidden; text-overflow: ellipsis; }
 
     .shop-section-btn {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1520,6 +1531,240 @@
       gap: 8px;
       min-width: 0;
     }
+
+    /* ── Compact EverQuest-style item tiles (v1.3.63) ──
+       Items in the backpack now render as small icon slots. Stats are hidden
+       and only revealed in the hover tooltip, saving a lot of vertical space.
+       Clicking a tile opens its action menu. */
+    #inv-list.eq-bag-grid {
+      grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+      gap: 6px;
+    }
+
+    .eq-item-tile {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 5px 4px 4px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color .12s, box-shadow .12s, transform .08s;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
+    }
+    .eq-item-tile:hover {
+      border-color: var(--border-md);
+      box-shadow: 0 2px 12px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,0.04);
+      transform: translateY(-1px);
+      z-index: 2;
+    }
+    .eq-item-tile.is-open {
+      border-color: var(--border-md);
+      box-shadow: 0 0 0 2px var(--border-md);
+      z-index: 5;
+      overflow: visible;
+    }
+
+    /* Rarity accent: glowing border colour per rarity */
+    .eq-item-tile.rarity-border-magic,
+    .eq-item-tile.rarity-border-uncommon { border-color: #22C55E; }
+    .eq-item-tile.rarity-border-rare     { border-color: #3B82F6; }
+    .eq-item-tile.rarity-border-epic     { border-color: #A855F7; }
+    .eq-item-tile.rarity-border-legendary{ border-color: #F97316; }
+    .eq-item-tile.rarity-border-mythic   { border-color: #EF4444; }
+    .eq-item-tile.rarity-border-runeword { border-color: #EAB308; }
+
+    .eq-tile-icon {
+      font-size: 28px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+      /* emoji carry their own colour; keep a neutral fallback for any text glyph */
+      color: var(--text-primary);
+    }
+
+    .eq-tile-name {
+      font-size: 9px;
+      line-height: 1.15;
+      text-align: center;
+      width: 100%;
+      max-height: 22px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
+      color: var(--text-secondary);
+    }
+
+    /* Badges in the corners of a tile */
+    .eq-tile-badges {
+      position: absolute;
+      top: 2px;
+      right: 3px;
+      display: flex;
+      gap: 2px;
+      font-size: 9px;
+      pointer-events: none;
+    }
+    .eq-tile-qty {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: rgba(0,0,0,0.55);
+      border-radius: 3px;
+      padding: 0 3px;
+      pointer-events: none;
+    }
+    .eq-tile-socket-dot {
+      position: absolute;
+      bottom: 3px;
+      left: 4px;
+      display: flex;
+      gap: 2px;
+      pointer-events: none;
+    }
+    .eq-tile-socket-dot i {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+      background: #888;
+      box-shadow: 0 0 2px rgba(0,0,0,0.6);
+    }
+    .eq-tile-socket-dot i.filled { background: #EAB308; }
+
+    /* Per-tile action popover (opens on click) */
+    .eq-tile-actions {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 4px);
+      transform: translateX(-50%);
+      min-width: 150px;
+      max-width: 210px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-md);
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+      padding: 8px;
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 30;
+    }
+    .eq-item-tile.is-open .eq-tile-actions,
+    .eq-slot.is-open .eq-tile-actions { display: flex; }
+    .eq-tile-actions .eq-tile-act-name {
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 1px;
+    }
+    .eq-tile-actions .eq-tile-act-type {
+      font-size: 9px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .eq-tile-act-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--border);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    /* Reuse the clean tooltip stat layout inside the click menu. */
+    .eq-tile-act-stats .tt-stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .eq-tile-act-stats .tt-up { color: #1D9E75; }
+    .eq-tile-act-stats .tt-down { color: #c44; }
+    .eq-tile-act-stats .tt-section {
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border);
+    }
+    .eq-tile-actions .btn { width: 100%; font-size: 11px; padding: 5px 8px; }
+    .eq-tile-actions select { width: 100%; font-size: 11px; padding: 4px 7px; border:0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--bg-primary); color: var(--text-primary); }
+
+    #screen-game.ui-layout-mobile #inv-list.eq-bag-grid {
+      grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)) !important;
+    }
+
+    /* Empty slots match the compact tile footprint in the backpack grid */
+    #inv-list .eq-empty-slot {
+      min-height: 0;
+      aspect-ratio: 1 / 1;
+      font-size: 8px;
+      text-indent: -9999px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+    }
+
+    /* ── Compact equipped paperdoll tiles (v1.3.63) ──
+       Equipped slots now mirror the backpack: an emoji icon + small name,
+       with stats on hover and actions in a click-to-open popover. */
+    .eq-slot.is-compact {
+      position: relative;
+      padding: 5px 5px 4px;
+      align-items: center;
+      gap: 3px;
+      cursor: default;
+    }
+    .eq-slot .eq-slot-name {
+      width: 100%;
+      justify-content: center;
+    }
+    .eq-slot-tile {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 4px 2px 2px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .eq-slot-tile:hover { background: rgba(255,255,255,0.04); }
+    .eq-slot-tile.is-empty { cursor: default; opacity: .5; }
+    .eq-slot-tile .eq-tile-icon { font-size: 26px; }
+    .eq-slot-tile .eq-tile-name {
+      font-size: 9px;
+      line-height: 1.15;
+      text-align: center;
+      max-height: 22px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
+    }
+    /* The slot itself carries the rarity-coloured border when filled */
+    .eq-slot.rarity-border-magic, .eq-slot.rarity-border-uncommon { border-color: #22C55E; }
+    .eq-slot.rarity-border-rare      { border-color: #3B82F6; }
+    .eq-slot.rarity-border-epic      { border-color: #A855F7; }
+    .eq-slot.rarity-border-legendary { border-color: #F97316; }
+    .eq-slot.rarity-border-mythic    { border-color: #EF4444; }
+    .eq-slot.rarity-border-runeword  { border-color: #EAB308; }
+    .eq-slot.is-open { box-shadow: 0 0 0 2px var(--border-md); z-index: 5; }
+    .eq-slot-tile .eq-tile-socket-dot { position: static; margin-top: 1px; }
 
     /* Item cards */
     .eq-item-card {
@@ -3140,6 +3385,46 @@
       </div>
     </div>
     <div
+      id="reforge-modal"
+      class="modal-backdrop"
+      onclick="if(event.target===this)closeReforgeModal()">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reforge-title">
+        <div
+          class="modal-title"
+          id="reforge-title">
+          Mystic Reforge
+        </div>
+        <div
+          class="modal-subtitle"
+          id="reforge-subtitle">
+          Select an item to reforge.
+        </div>
+        <div
+          id="reforge-body"
+          style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:340px;overflow-y:auto">
+        </div>
+        <div
+          class="modal-actions">
+          <button
+            class="btn"
+            id="reforge-back-btn"
+            style="display:none"
+            onclick="reforgeBack()">
+            Back
+          </button>
+          <button
+            class="btn"
+            onclick="closeReforgeModal()">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
       id="game-grid">
       <!-- Left: Character + Quests -->
       <div
@@ -4010,36 +4295,36 @@
               <h3>Equipped</h3>
 
               <div class="eq-total-stats" id="eq-total-stats-bar">
-                <span class="eq-total-chip" id="eq-total-atk" title="Total ATK from gear"><i class="ti ti-sword" style="font-size:10px;color:#F97316"></i> <span>—</span></span>
-                <span class="eq-total-chip" id="eq-total-def" title="Total DEF from gear"><i class="ti ti-shield" style="font-size:10px;color:#3B82F6"></i> <span>—</span></span>
-                <span class="eq-total-chip" id="eq-total-hp" title="Total HP from gear"><i class="ti ti-heart" style="font-size:10px;color:#22C55E"></i> <span>—</span></span>
-                <span class="eq-total-chip" id="eq-total-mp" title="Total MP from gear"><i class="ti ti-droplet" style="font-size:10px;color:#A855F7"></i> <span>—</span></span>
+                <span class="eq-total-chip" id="eq-total-atk" title="Total ATK from gear"><span style="font-size:10px">⚔️</span> <span>—</span></span>
+                <span class="eq-total-chip" id="eq-total-def" title="Total DEF from gear"><span style="font-size:10px">🛡️</span> <span>—</span></span>
+                <span class="eq-total-chip" id="eq-total-hp" title="Total HP from gear"><span style="font-size:10px">❤️</span> <span>—</span></span>
+                <span class="eq-total-chip" id="eq-total-mp" title="Total MP from gear"><span style="font-size:10px">💧</span> <span>—</span></span>
               </div>
 
               <div
                 class="eq-paperdoll-grid">
                 <div class="eq-slot">
-                  <div class="eq-slot-name"><i class="ti ti-sword" style="font-size:10px"></i> Weapon</div>
+                  <div class="eq-slot-name">⚔️ Weapon</div>
                   <div id="slot-weapon" class="eq-slot-item">Empty</div>
                 </div>
                 <div class="eq-slot">
-                  <div class="eq-slot-name"><i class="ti ti-shield" style="font-size:10px"></i> Offhand</div>
+                  <div class="eq-slot-name">🛡️ Offhand</div>
                   <div id="slot-offhand" class="eq-slot-item">Empty</div>
                 </div>
                 <div class="eq-slot">
-                  <div class="eq-slot-name"><i class="ti ti-shirt" style="font-size:10px"></i> Chest</div>
+                  <div class="eq-slot-name">🥋 Chest</div>
                   <div id="slot-chest" class="eq-slot-item">Empty</div>
                 </div>
                 <div class="eq-slot">
-                  <div class="eq-slot-name"><i class="ti ti-shoe" style="font-size:10px"></i> Legs</div>
+                  <div class="eq-slot-name">👖 Legs</div>
                   <div id="slot-legs" class="eq-slot-item">Empty</div>
                 </div>
                 <div class="eq-slot">
-                  <div class="eq-slot-name"><i class="ti ti-sneaker" style="font-size:10px"></i> Feet</div>
+                  <div class="eq-slot-name">🥾 Feet</div>
                   <div id="slot-feet" class="eq-slot-item">Empty</div>
                 </div>
                 <div class="eq-slot">
-                  <div class="eq-slot-name"><i class="ti ti-sparkles" style="font-size:10px"></i> Charm</div>
+                  <div class="eq-slot-name">💎 Charm</div>
                   <div id="slot-charm" class="eq-slot-item">Empty</div>
                 </div>
               </div>
@@ -8253,7 +8538,7 @@
       if (!obj.favorite) delete obj.favorite;
       char.inventory[index] = collapseMetaEntry(obj);
       log(getItemDisplayName(char.inventory[index]) + ': ' + flag + ' ' + (obj[flag] ? 'enabled' : 'disabled') + '.', 'info');
-      renderInv();
+      refreshInventoryKeepingMenu(index);
       autoSave();
     }
 
@@ -10836,16 +11121,10 @@
       if (!item) return '';
       const name = getItemDisplayName(item);
       const data = getItemData(item) || {};
-      const stats = getItemEffectiveStats(item) || { atk: 0, def: 0, hp: 0, mp: 0 };
       const quality = getItemQuality(item);
       const rarityClass = getItemRarityClass(item);
       const slot = data.slot || '';
       const ilvl = getItemLevel(item);
-      const current = (slot && char.equipment) ? char.equipment[slot] : null;
-      // Compare base stats only (no socketed runes / runeword bonuses) so the
-      // upgrade arrows reflect the item's own merits rather than socket enhancements.
-      const itemBaseStats = getItemBaseStats(item) || { atk: 0, def: 0, hp: 0, mp: 0 };
-      const curStats = current ? (getItemBaseStats(current) || { atk: 0, def: 0, hp: 0, mp: 0 }) : null;
       const meta = [
         data.type || (isRuneEntry(item) ? 'Rune' : 'Misc'),
         slot ? ('Slot: ' + slot) : '',
@@ -10855,6 +11134,28 @@
 
       let html = '<div class="tt-name ' + rarityClass + '">' + name + '</div>';
       html += '<div class="tt-meta">' + meta + '</div>';
+      // Stats + sockets, with upgrade-arrow comparison vs the equipped item.
+      html += buildItemStatsHTML(item, { compare: true });
+      return html;
+    }
+
+    // Shared clean stat-line + socket renderer used by both the hover tooltip and
+    // the click-to-open action menu so they look identical. When opts.compare is
+    // true, ATK/DEF/HP/MP/ability rows show ▲/▼ upgrade arrows vs the equipped
+    // item in the same slot.
+    function buildItemStatsHTML(item, opts) {
+      opts = opts || {};
+      if (!item) return '';
+      const data = getItemData(item) || {};
+      const stats = getItemEffectiveStats(item) || { atk: 0, def: 0, hp: 0, mp: 0 };
+      const slot = data.slot || '';
+      const current = (opts.compare && slot && char.equipment) ? char.equipment[slot] : null;
+      // Compare base stats only (no socketed runes / runeword bonuses) so the
+      // arrows reflect the item's own merits rather than socket enhancements.
+      const itemBaseStats = getItemBaseStats(item) || { atk: 0, def: 0, hp: 0, mp: 0 };
+      const curStats = current ? (getItemBaseStats(current) || { atk: 0, def: 0, hp: 0, mp: 0 }) : null;
+
+      let html = '';
       ['atk', 'def', 'hp', 'mp'].forEach(stat => {
         const v = stats[stat] || 0;
         if (!v && !(curStats && curStats[stat])) return;
@@ -10871,8 +11172,28 @@
         const label = stat.toUpperCase() + ' <span style="font-size:9px;color:var(--text-secondary)">(' + ABILITY_EFFECT_LABELS[stat] + ')</span>';
         html += '<div class="tt-stat"><span>' + label + '</span><span>+' + (v || 0) + (diff > 0 ? ' <span class="tt-up">▲ +' + diff + '</span>' : diff < 0 ? ' <span class="tt-down">▼ ' + diff + '</span>' : '') + '</span></div>';
       });
-      if (current) {
+      if (current && current !== item) {
         html += '<div class="tt-section" style="font-size:10px;color:var(--text-secondary)">vs equipped: ' + getItemDisplayName(current) + '</div>';
+      }
+      // Socket / rune section — shows each socket and any rune inserted in it.
+      const _sock = (item && typeof item === 'object') ? toSocketableItem(item) : null;
+      if (_sock && Number(_sock.maxSockets) > 0) {
+        const maxSock = Number(_sock.maxSockets);
+        const sockArr = Array.isArray(_sock.sockets) ? _sock.sockets.slice(0, maxSock) : [];
+        while (sockArr.length < maxSock) sockArr.push(null);
+        const RUNE_TT_COLOR = { atk: '#F97316', def: '#3B82F6', hp: '#22C55E', mp: '#A855F7' };
+        let rows = '';
+        sockArr.forEach(r => {
+          const rune = r && RUNE_DATA[r];
+          if (rune) {
+            const col = RUNE_TT_COLOR[rune.stat] || '#999';
+            const val = (typeof getRuneSocketValue === 'function') ? getRuneSocketValue(rune) : (rune.value || 0);
+            rows += '<div class="tt-stat"><span style="color:' + col + '">◈ ' + r + '</span><span style="color:' + col + '">+' + val + ' ' + rune.stat.toUpperCase() + '</span></div>';
+          } else {
+            rows += '<div class="tt-stat"><span style="color:var(--text-secondary);opacity:.7">◇ Empty socket</span><span></span></div>';
+          }
+        });
+        html += '<div class="tt-section"><div style="font-size:10px;color:var(--text-secondary);margin-bottom:2px">Sockets (' + maxSock + ')</div>' + rows + '</div>';
       }
       const sets = getItemSetName(item);
       if (sets) html += '<div class="tt-section" style="font-size:10px;color:#8a7;">Set: ' + sets + '</div>';
@@ -10897,7 +11218,111 @@
     document.addEventListener('scroll', hideItemTooltip, true);
     window.addEventListener('blur', hideItemTooltip);
 
-    // ── Inventory sort/filter ──
+    // ── Compact item-tile helpers (v1.3.63) ──
+    // Map an inventory item to a glyph based on its slot / type so the backpack
+    // can show small icon slots instead of full stat cards. We use plain Unicode
+    // emoji here (not the Tabler webfont) so icons always render even if the
+    // icon font fails to load.
+    function getItemTileIcon(item) {
+      if (isRuneEntry(item)) return '🔣';
+      if (isContainerEntry(item)) return '🎒';
+      const data = getItemData(item) || {};
+      const slot = data.slot || '';
+      const type = (data.type || '').toLowerCase();
+      if (slot === 'weapon') {
+        if (type.includes('staff')) return '🪄';
+        if (type.includes('bow')) return '🏹';
+        if (type.includes('mace') || type.includes('maul')) return '🔨';
+        if (type.includes('axe') || type.includes('cleaver')) return '🪓';
+        if (type.includes('polearm') || type.includes('spear') || type.includes('glaive') || type.includes('halberd') || type.includes('trident')) return '🔱';
+        if (type.includes('dagger') || type.includes('piercing')) return '🗡️';
+        return '⚔️';
+      }
+      if (slot === 'chest') return '🥋';
+      if (slot === 'legs') return '👖';
+      if (slot === 'feet') return '🥾';
+      if (slot === 'offhand') {
+        if (type.includes('shield')) return '🛡️';
+        if (type.includes('orb') || type.includes('focus')) return '🔮';
+        if (type.includes('totem')) return '⛩️';
+        return '✨';
+      }
+      if (slot === 'charm') return '💎';
+      return '📦';
+    }
+
+    // Open/close a tile's action popover. Closes any other open tile first.
+    function toggleItemTile(tileEl, evt) {
+      if (evt) evt.stopPropagation();
+      if (!tileEl) return;
+      const already = tileEl.classList.contains('is-open');
+      document.querySelectorAll('.eq-item-tile.is-open, .eq-slot.is-open').forEach(t => t.classList.remove('is-open'));
+      if (!already) {
+        tileEl.classList.add('is-open');
+        hideItemTooltip();
+        // Flip the popover upward if it would overflow the bottom of the screen.
+        const menu = tileEl.querySelector('.eq-tile-actions');
+        if (menu) {
+          menu.style.top = 'calc(100% + 4px)';
+          menu.style.bottom = 'auto';
+          const r = menu.getBoundingClientRect();
+          if (r.bottom > window.innerHeight - 8) {
+            menu.style.top = 'auto';
+            menu.style.bottom = 'calc(100% + 4px)';
+          }
+        }
+      }
+    }
+    // Click anywhere else closes open tile menus.
+    document.addEventListener('click', (e) => {
+      if (e.target.closest && (e.target.closest('.eq-item-tile') || e.target.closest('.eq-slot.is-compact'))) return;
+      document.querySelectorAll('.eq-item-tile.is-open, .eq-slot.is-open').forEach(t => t.classList.remove('is-open'));
+    });
+
+    // True while any backpack/equipped action popover is open, so the periodic
+    // game-loop re-render can skip rebuilding the inventory and avoid wiping it.
+    function isItemTileOpen() {
+      return !!document.querySelector('.eq-item-tile.is-open, .eq-slot.is-open');
+    }
+
+    // Re-open the action menu for a given target after a re-render that
+    // rebuilt the tiles. `target` is either an equip slot name (string like
+    // 'weapon') or an inventory index (number).
+    function reopenTileMenu(target) {
+      let tileEl = null;
+      if (typeof target === 'number') {
+        const inner = document.querySelector('.eq-item-tile[data-inv-index="' + target + '"]');
+        tileEl = inner;
+      } else if (typeof target === 'string') {
+        const slotInner = document.getElementById('slot-' + target);
+        tileEl = slotInner ? slotInner.closest('.eq-slot') : null;
+      }
+      if (tileEl) toggleItemTile(tileEl);
+    }
+
+    // Used by in-menu actions (add socket, insert rune, favorite, lock) so the
+    // open menu refreshes to reflect the change instead of going stale. We close
+    // menus first (so the periodic-render guard won't block), re-render, then
+    // re-open the same item's menu.
+    function refreshInventoryKeepingMenu(target) {
+      document.querySelectorAll('.eq-item-tile.is-open, .eq-slot.is-open').forEach(t => t.classList.remove('is-open'));
+      renderInv();
+      reopenTileMenu(target);
+    }
+
+    // Touch / tap support for the hover tooltip on the equipped paperdoll and tiles.
+    function showItemTooltipForInventoryIndexTouch(idx, el) {
+      if (!char || idx < 0 || idx >= char.inventory.length) return;
+      const item = char.inventory[idx];
+      if (!item) return;
+      const tt = ensureItemTooltip();
+      tt.innerHTML = buildItemTooltipHTML(item);
+      tt.style.display = 'block';
+      const r = el.getBoundingClientRect();
+      positionItemTooltip({ clientX: r.left + r.width / 2, clientY: r.top });
+    }
+
+
     function setInventorySort(sort) {
       invView.sort = sort || 'default';
       renderInv();
@@ -12151,7 +12576,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.62';
+    const CURRENT_VERSION = '1.3.68';
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -12517,16 +12942,19 @@
       const importModal = document.getElementById('import-preview-modal');
       const transmuteModal = document.getElementById('transmute-confirm-modal');
       const runeInsertModal = document.getElementById('rune-insert-modal');
+      const reforgeModal = document.getElementById('reforge-modal');
       const importOpen = importModal && importModal.classList.contains('open');
       const transmuteOpen = transmuteModal && transmuteModal.classList.contains('open');
       const runeInsertOpen = runeInsertModal && runeInsertModal.classList.contains('open');
-      if (!importOpen && !transmuteOpen && !runeInsertOpen) return;
+      const reforgeOpen = reforgeModal && reforgeModal.classList.contains('open');
+      if (!importOpen && !transmuteOpen && !runeInsertOpen && !reforgeOpen) return;
 
       if (event.key === 'Escape') {
         event.preventDefault();
         if (importOpen) closeImportPreview();
         if (transmuteOpen) closeTransmuteConfirm();
         if (runeInsertOpen) closeRuneInsertModal();
+        if (reforgeOpen) closeReforgeModal();
         return;
       }
 
@@ -13924,8 +14352,8 @@
       renderMob();
       // Re-render visible main tabs and any open popup panel
       const _visibleTab = (id) => document.getElementById('tab-' + id)?.style.display !== 'none';
-      if (_visibleTab('inv') && !isBagInstallSelectorActive()) renderInv();
-      if (_visibleTab('runes') && !isBagInstallSelectorActive()) renderInv();
+      if (_visibleTab('inv') && !isBagInstallSelectorActive() && !isItemTileOpen()) renderInv();
+      if (_visibleTab('runes') && !isBagInstallSelectorActive() && !isItemTileOpen()) renderInv();
       if (_visibleTab('shop')) renderShop();
       if (_visibleTab('loot')) renderLootTab();
       if (_visibleTab('spells') && !isSpellbookInteracting()) renderSpellbook();
@@ -14289,37 +14717,37 @@
 
       slots.forEach(slot => {
         const el = document.getElementById('slot-' + slot);
+        const parent = el.closest('.eq-slot') || el.parentElement;
         const item = char.equipment[slot];
         el.onmouseenter = null;
         el.onmousemove = null;
         el.onmouseleave = null;
+        el.onclick = null;
+        // Reset parent slot state each render.
+        if (parent) {
+          parent.classList.add('is-compact');
+          parent.classList.remove('is-open',
+            'rarity-border-magic','rarity-border-uncommon','rarity-border-rare',
+            'rarity-border-epic','rarity-border-legendary','rarity-border-mythic','rarity-border-runeword');
+        }
 
         if (!item) {
-          el.innerHTML = 'Empty';
+          el.innerHTML = '<div class="eq-slot-tile is-empty"><div class="eq-tile-icon" style="opacity:.4">＋</div><div class="eq-tile-name" style="opacity:.5">Empty</div></div>';
           return;
         }
 
-        const data = getItemEffectiveStats(item) || {};
-        let stats = [];
-
-        if (data.atk) stats.push('+' + fmt(data.atk) + ' ATK');
-        if (data.def) stats.push('+' + fmt(data.def) + ' DEF');
-        if (data.hp)  stats.push('+' + fmt(data.hp)  + ' HP');
-        if (data.mp)  stats.push('+' + fmt(data.mp)  + ' MP');
-        ['str','dex','con','int','wis','cha'].forEach(k => {
-          if (data[k]) stats.push('+' + data[k] + ' ' + ABILITY_LABELS[k]);
-        });
-
         const label = getItemDisplayName(item);
         const rarityClass = getItemRarityClass(item);
-        const setName = getItemSetName(item);
-        const setLine = setName ? `<div class="eq-slot-stats">Set: ${setName}</div>` : '';
         const quality = getItemQuality(item);
         const locked = isItemLocked(item);
+        const ilvl = getItemLevel(item);
+        const itemType = (getItemData(item) || {}).type || 'Item';
+        const setName = getItemSetName(item);
         const socketable = quality !== 'Runeword';
         const socketObj = socketable ? toSocketableItem(item) : null;
         const hasSocketRoom = socketObj ? socketObj.maxSockets < getSocketCapacityForBase(socketObj.base) : false;
         const hasEmptySocket = socketObj ? (socketObj.maxSockets > 0 && socketObj.sockets.some(s => !s)) : false;
+        const hasFilledSocket = socketObj ? (socketObj.maxSockets > 0 && socketObj.sockets.some(s => s && RUNE_DATA[s])) : false;
         const hasRuneInBag = hasAnyRuneAvailable();
         const socketCost = socketable ? getSocketCost(item) : 0;
         const socketBtn = socketable && hasSocketRoom
@@ -14328,40 +14756,63 @@
         const insertRuneBtn = socketable && hasEmptySocket
           ? `<button class="btn" onclick="insertRuneIntoItem('${slot}')" ${(locked || !hasRuneInBag) ? 'disabled' : ''}>Insert Rune</button>`
           : '';
+        const destroyRuneBtn = socketable && hasFilledSocket
+          ? `<button class="btn" onclick="destroyRuneFromItem('${slot}')" ${locked ? 'disabled' : ''}>Destroy Rune</button>`
+          : '';
 
-        const rarityBorder = {
-          'rarity-legendary': '#F97316', 'rarity-mythic': '#EF4444',
-          'rarity-epic': '#A855F7',      'rarity-runeword': '#EAB308',
-          'rarity-rare': '#3B82F6',      'rarity-magic': '#22C55E',
-          'rarity-uncommon': '#22C55E'
-        }[rarityClass] || 'var(--border)';
-        const statChips = stats.map(s => `<span class="eq-stat-chip">${s}</span>`).join('');
+        const rarityBorderClass = ({
+          'rarity-legendary': 'rarity-border-legendary',
+          'rarity-mythic': 'rarity-border-mythic',
+          'rarity-epic': 'rarity-border-epic',
+          'rarity-runeword': 'rarity-border-runeword',
+          'rarity-rare': 'rarity-border-rare',
+          'rarity-magic': 'rarity-border-magic',
+          'rarity-uncommon': 'rarity-border-uncommon'
+        })[rarityClass] || '';
+        if (parent && rarityBorderClass) parent.classList.add(rarityBorderClass);
 
-        // Build socket row for equipped items
-        const RUNE_STAT_COLOR_EQ = { atk: '#F97316', def: '#3B82F6', hp: '#22C55E', mp: '#A855F7' };
-        let eqSocketRowHtml = '';
-        // Use normalised socket obj so plain-string items don't break
+        const tileIcon = getItemTileIcon(item);
+
+        // Socket dots (filled = has rune).
+        let socketDotsHtml = '';
         const _sockObj = (item && typeof item === 'object') ? toSocketableItem(item) : null;
         if (_sockObj && _sockObj.maxSockets > 0) {
           const maxSock = _sockObj.maxSockets;
           const sockArr = Array.isArray(_sockObj.sockets) ? _sockObj.sockets.slice(0, maxSock) : [];
-          while (sockArr.length < maxSock) sockArr.push(null);
-          const sockChips = sockArr.map(r => {
-            if (r && RUNE_DATA[r]) {
-              const rd = RUNE_DATA[r];
-              const col = RUNE_STAT_COLOR_EQ[rd.stat] || '#999';
-              return '<span class="eq-rune-chip eq-rune-filled" style="border-color:' + col + ';color:' + col + '" title="' + r + '">'
-                + rd.id + ' <span style="opacity:.75">+' + getRuneSocketValue(rd) + ' ' + rd.stat.toUpperCase() + '</span></span>';
-            }
-            return '<span class="eq-rune-chip eq-rune-empty" title="Empty socket">◇ Empty</span>';
-          }).join('');
-          eqSocketRowHtml = '<div class="eq-socket-row">' + sockChips + '</div>';
+          let dots = '';
+          for (let s = 0; s < maxSock; s++) dots += '<i class="' + (sockArr[s] ? 'filled' : '') + '"></i>';
+          socketDotsHtml = '<span class="eq-tile-socket-dot">' + dots + '</span>';
         }
 
-        el.innerHTML = `<div style="border-left:3px solid ${rarityBorder};padding-left:6px"><div class="eq-item-name ${rarityClass}" style="font-size:11px">${label}</div><div class="eq-item-stats-grid">${statChips || '<span style="color:var(--text-secondary);font-size:10px;opacity:.6">No stats</span>'}</div>${eqSocketRowHtml}${setLine}</div><div class="eq-slot-actions"><button class="btn" onclick="unequipItem('${slot}')">Unequip</button>${socketBtn}${insertRuneBtn}</div>`;
+        const lockBadge = locked ? '<div class="eq-tile-badges"><span title="Locked">🔒</span></div>' : '';
+
+        // Stats shown inside the menu, matching the clean hover-tooltip layout.
+        // No comparison arrows here since the item is already equipped.
+        const popStats = '<div class="eq-tile-act-stats">' + buildItemStatsHTML(item, { compare: false }) + '</div>';
+
+        const actionsHtml =
+          '<div class="eq-tile-actions" onclick="event.stopPropagation()">' +
+            '<div class="eq-tile-act-name ' + rarityClass + '">' + label + '</div>' +
+            '<div class="eq-tile-act-type">' + itemType + (quality !== 'Normal' ? ' • ' + getItemQualityLabel(item) : '') + (ilvl ? ' · iLvl ' + ilvl : '') + (setName ? ' · Set: ' + setName : '') + '</div>' +
+            popStats +
+            '<button class="btn" onclick="unequipItem(\'' + slot + '\')">Unequip</button>' +
+            socketBtn + insertRuneBtn + destroyRuneBtn +
+          '</div>';
+
+        el.innerHTML =
+          '<div class="eq-slot-tile">' +
+            lockBadge +
+            '<div class="eq-tile-icon">' + tileIcon + '</div>' +
+            '<div class="eq-tile-name ' + rarityClass + '">' + label + '</div>' +
+            socketDotsHtml +
+            actionsHtml +
+          '</div>';
+
+        // Hover = stats tooltip; click = open the action popover (on the slot).
         el.onmouseenter = (e) => showItemTooltipForEquippedSlot(slot, e);
         el.onmousemove = positionItemTooltip;
         el.onmouseleave = hideItemTooltip;
+        el.onclick = (e) => toggleItemTile(parent, e);
       });
       // Update total gear stats bar
       if (char && char.equipment) {
@@ -14375,7 +14826,7 @@
           totals.mp  += Number(s.mp  || 0);
         });
         const fmtStat = v => v > 0 ? '+' + fmt(v) : '—';
-        const upd = (id, val) => { const el = document.getElementById(id); if (el) { const sp = el.querySelector('span'); if (sp) sp.textContent = fmtStat(val); } };
+        const upd = (id, val) => { const el = document.getElementById(id); if (el) { const sp = el.querySelector('span:last-child'); if (sp) sp.textContent = fmtStat(val); } };
         upd('eq-total-atk', totals.atk);
         upd('eq-total-def', totals.def);
         upd('eq-total-hp',  totals.hp);
@@ -14582,6 +15033,7 @@
         const socketObj = socketable ? toSocketableItem(item) : null;
         const hasSocketRoom = socketObj ? socketObj.maxSockets < getSocketCapacityForBase(socketObj.base) : false;
         const hasEmptySocket = socketObj ? (socketObj.maxSockets > 0 && socketObj.sockets.some(s => !s)) : false;
+        const hasFilledSocket = socketObj ? (socketObj.maxSockets > 0 && socketObj.sockets.some(s => s && RUNE_DATA[s])) : false;
         const hasRuneInBag = hasAnyRuneAvailable();
         const socketCost = socketable ? getSocketCost(item) : 0;
         const rerollCost = isEquip ? getRerollCost(item) : 0;
@@ -14593,6 +15045,9 @@
           : '';
         const insertRuneBtn = socketable && hasEmptySocket
           ? `<button class="btn" onclick="insertRuneIntoItem(${absoluteIndex})" ${hasRuneInBag ? '' : 'disabled'}>Insert Rune</button>`
+          : '';
+        const destroyRuneBtn = socketable && hasFilledSocket
+          ? `<button class="btn" onclick="destroyRuneFromItem(${absoluteIndex})" ${locked ? 'disabled' : ''}>Destroy Rune</button>`
           : '';
 
         let itemType = data.type || 'Misc Item';
@@ -14623,79 +15078,83 @@
           }).join('')
           : '';
 
-        const card = document.createElement('div');
-        card.className = 'eq-item-card';
-        if (isEquip) {
-          card.dataset.invIndex = String(absoluteIndex);
-          card.addEventListener('mouseenter', (e) => showItemTooltipForInventoryIndex(absoluteIndex, e));
-          card.addEventListener('mousemove', positionItemTooltip);
-          card.addEventListener('mouseleave', hideItemTooltip);
-        }
-
-        // locked/favorite shown as badge icons in card header
-
+        // ── Compact tile (v1.3.63) ──
+        // Stats are intentionally NOT shown on the tile; they appear in the
+        // hover tooltip. Action buttons live in a click-to-open popover so the
+        // grid stays dense like a classic EverQuest bag window.
         const ilvl = getItemLevel(item);
-        const lvlBadge = ilvl ? `<div class="eq-item-type">iLvl ${ilvl}</div>` : '';
+        const rarityBorderClass = ({
+          'rarity-legendary': 'rarity-border-legendary',
+          'rarity-mythic': 'rarity-border-mythic',
+          'rarity-epic': 'rarity-border-epic',
+          'rarity-runeword': 'rarity-border-runeword',
+          'rarity-rare': 'rarity-border-rare',
+          'rarity-magic': 'rarity-border-magic',
+          'rarity-uncommon': 'rarity-border-uncommon'
+        })[rarityClass] || '';
 
-        // Rarity border accent colour
-        const rarityBorderColor = {
-          'rarity-legendary': '#F97316', 'rarity-mythic': '#EF4444',
-          'rarity-epic': '#A855F7',      'rarity-runeword': '#EAB308',
-          'rarity-rare': '#3B82F6',      'rarity-magic': '#22C55E',
-          'rarity-uncommon': '#22C55E'
-        }[rarityClass] || 'transparent';
+        const tileIcon = getItemTileIcon(item);
 
-        const statChipsHtml = bonus
-          ? bonus.trim().split(/(?=\+)/).filter(Boolean).map(chip => '<span class="eq-stat-chip">' + chip.trim() + '</span>').join('')
-          : '<span style="color:var(--text-secondary);font-size:10px;opacity:.6">No stats</span>';
+        // Quantity badge for stacked entries (e.g. runes / consumables).
+        const qty = (item && typeof item === 'object' && Number(item.qty) > 1) ? Number(item.qty) : 0;
+        const qtyBadge = qty ? '<span class="eq-tile-qty">×' + qty + '</span>' : '';
 
-        // Socket row — one chip per socket slot
-        const RUNE_STAT_COLOR = { atk: '#F97316', def: '#3B82F6', hp: '#22C55E', mp: '#A855F7' };
-        let socketRowHtml = '';
+        // Socket dots (filled = has rune) shown small in the corner.
+        let socketDotsHtml = '';
         if (item && typeof item === 'object' && Number(item.maxSockets) > 0) {
           const maxSock = Number(item.maxSockets);
           const sockArr = Array.isArray(item.sockets) ? item.sockets.slice(0, maxSock) : [];
-          while (sockArr.length < maxSock) sockArr.push(null);
-          const sockChips = sockArr.map(r => {
-            if (r && RUNE_DATA[r]) {
-              const rd = RUNE_DATA[r];
-              const col = RUNE_STAT_COLOR[rd.stat] || '#999';
-              return '<span class="eq-rune-chip eq-rune-filled" style="border-color:' + col + ';color:' + col + '" title="' + r + '">'
-                + rd.id + ' <span style="opacity:.75">+' + getRuneSocketValue(rd) + ' ' + rd.stat.toUpperCase() + '</span></span>';
-            }
-            return '<span class="eq-rune-chip eq-rune-empty" title="Empty socket">◇ Empty</span>';
-          }).join('');
-          socketRowHtml = '<div class="eq-socket-row">' + sockChips + '</div>';
+          let dots = '';
+          for (let s = 0; s < maxSock; s++) dots += '<i class="' + (sockArr[s] ? 'filled' : '') + '"></i>';
+          socketDotsHtml = '<span class="eq-tile-socket-dot">' + dots + '</span>';
         }
 
         const flagBadges = (locked || favorite)
-          ? '<div style="display:flex;gap:3px;flex-shrink:0">' + (favorite ? '<span style="font-size:10px" title="Favorite">⭐</span>' : '') + (locked ? '<span style="font-size:10px" title="Locked">🔒</span>' : '') + '</div>'
+          ? '<div class="eq-tile-badges">' + (favorite ? '<span title="Favorite">⭐</span>' : '') + (locked ? '<span title="Locked">🔒</span>' : '') + '</div>'
           : '';
+
+        // Build the action popover (all interactions live here).
         const containerBtn = isContainer
-          ? '<select id="bag-install-target-' + absoluteIndex + '" onchange="setPendingBagInstallTarget(' + absoluteIndex + ', this.value)" style="font-size:11px;padding:3px 7px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + installTargetOptions + '</select><button class=\"btn\" onclick=\"installContainerFromInventory(' + absoluteIndex + ', getPendingBagInstallTarget(' + absoluteIndex + ', ' + realBagCount + '))\">Install</button>'
-          : (isEquip ? '<button class=\"btn\" onclick=\"equipItem(' + absoluteIndex + ')\">Equip</button>' : '');
-        card.innerHTML =
-          '<div class="eq-item-inner" style="border-left:3px solid ' + rarityBorderColor + ';padding-left:9px">' +
-            '<div class="eq-item-top">' +
-              '<div style="min-width:0;flex:1">' +
-                '<div class="eq-item-name ' + rarityClass + '" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + itemName + '</div>' +
-                '<div class="eq-item-type">' + itemType + qualityTag + '</div>' +
-                lvlBadge +
-              '</div>' +
-              flagBadges +
-            '</div>' +
-            '<div class="eq-item-stats-grid">' + statChipsHtml + '</div>' +
-            socketRowHtml +
-          '</div>' +
-          '<div class="eq-item-actions compact">' +
+          ? '<select onchange="setPendingBagInstallTarget(' + absoluteIndex + ', this.value)">' + installTargetOptions + '</select><button class="btn" onclick="installContainerFromInventory(' + absoluteIndex + ', getPendingBagInstallTarget(' + absoluteIndex + ', ' + realBagCount + '))">Install</button>'
+          : (isEquip ? '<button class="btn" onclick="equipItem(' + absoluteIndex + ')">Equip</button>' : '');
+
+        // Stats shown inside the menu, matching the clean hover-tooltip layout
+        // (aligned rows + socket section), with upgrade arrows vs equipped gear.
+        const popStats = isEquip
+          ? '<div class="eq-tile-act-stats">' + buildItemStatsHTML(item, { compare: true }) + '</div>'
+          : '';
+
+        const actionsHtml =
+          '<div class="eq-tile-actions" onclick="event.stopPropagation()">' +
+            '<div class="eq-tile-act-name ' + rarityClass + '">' + itemName + '</div>' +
+            '<div class="eq-tile-act-type">' + itemType + qualityTag + (ilvl ? ' · iLvl ' + ilvl : '') + '</div>' +
+            popStats +
             containerBtn +
-            socketBtn + insertRuneBtn + rerollBtn +
-            '<button class="btn" onclick="toggleInventoryItemFlag(' + absoluteIndex + ', \'favorite\')">' + (favorite ? '★ Unfav' : '☆ Fav') + '</button>' +
+            socketBtn + insertRuneBtn + destroyRuneBtn + rerollBtn +
+            '<button class="btn" onclick="toggleInventoryItemFlag(' + absoluteIndex + ', \'favorite\')">' + (favorite ? '★ Unfavorite' : '☆ Favorite') + '</button>' +
             '<button class="btn" onclick="toggleInventoryItemFlag(' + absoluteIndex + ', \'locked\')">' + (locked ? '🔓 Unlock' : '🔒 Lock') + '</button>' +
             '<button class="btn" onclick="sellItem(' + absoluteIndex + ')"' + (locked ? ' disabled' : '') + '>Sell</button>' +
           '</div>';
 
-        el.appendChild(card);
+        const tile = document.createElement('div');
+        tile.className = 'eq-item-tile ' + rarityBorderClass;
+        tile.dataset.invIndex = String(absoluteIndex);
+        tile.innerHTML =
+          flagBadges +
+          '<div class="eq-tile-icon">' + tileIcon + '</div>' +
+          '<div class="eq-tile-name ' + rarityClass + '">' + itemName + '</div>' +
+          socketDotsHtml +
+          qtyBadge +
+          actionsHtml;
+
+        // Hover = stats tooltip (works for all items, not just equippables).
+        tile.addEventListener('mouseenter', (e) => showItemTooltipForInventoryIndex(absoluteIndex, e));
+        tile.addEventListener('mousemove', positionItemTooltip);
+        tile.addEventListener('mouseleave', hideItemTooltip);
+        // Click = open the action menu.
+        tile.addEventListener('click', (e) => toggleItemTile(tile, e));
+
+        el.appendChild(tile);
       });
 
       const emptyCount = (invView.filter === 'all' && invView.sort === 'default' && activeBag)
@@ -14827,7 +15286,7 @@
         const tributeLeft = (typeof getTributeRemainingToday==='function') ? getTributeRemainingToday() : PHASE6.tributeDailyCap;
         const tributeAtMax = Number(char.faction||0)>=PHASE6.tributeFactionMax;
         const tributeDisabled = (tributeLeft<=0)||tributeAtMax||(char.gold||0)<tributeCost;
-        container.innerHTML = `<div class="eq-item-card"><div class="eq-item-name">Crafting Bench</div><div class="eq-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Epic ${char.crafting.shards.epic}</div><div class="eq-item-bonus">Salvage gear &amp; reroll target slot using shards.</div><div class="eq-item-actions"><button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button></div><div class="eq-item-actions compact" style="margin-top:6px"><select id="craft-reroll-slot" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)"><option value="weapon">Weapon</option><option value="chest">Chest</option><option value="legs">Legs</option><option value="feet">Feet</option><option value="offhand">Offhand</option><option value="charm">Charm</option></select><button class="btn" onclick="craftTargetedRerollFromUI()">Targeted Reroll</button></div><div class="eq-item-bonus" style="margin-top:6px">Cost: 10 Common + 6 Magic + 2 Rare + 120g</div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Occultist Reforge</div><div class="eq-item-type">Rerolls one random non-epic gear piece in your inventory.</div><div class="eq-item-bonus">${occultistPrice}g</div><div class="eq-item-actions"><button class="btn" onclick="rerollRandomInventoryItem()">Reforge</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-epic">Mystic Chest</div><div class="eq-item-type">Pay to open a mysterious chest — chance for runes, shards, or gear.</div><div class="eq-item-bonus">${mysticCost}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseMysticChest()">Open</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Faction Tribute</div><div class="eq-item-type">Offer gold for +${PHASE6.tributeFactionPerDonation} faction (daily cap ${PHASE6.tributeDailyCap}).</div><div class="eq-item-bonus">${tributeCost}g · Remaining today: ${tributeLeft}${tributeAtMax?' · MAXED':''}</div><div class="eq-item-actions"><button class="btn${tributeDisabled?'':' active'}" onclick="donateFactionTribute()" ${tributeDisabled?'disabled':''}>Donate</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Name Change Token</div><div class="eq-item-type">Permanently change your character's name. Current: ${char.name}</div><div class="eq-item-bonus">${nameTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseNameChangeToken()" ${(char.gold||0)>=nameTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Race Change Token</div><div class="eq-item-type">Change your race. Must be compatible with ${char.cls}. Current: ${char.race}</div><div class="eq-item-bonus">${raceTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseRaceChangeToken()" ${(char.gold||0)>=raceTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div>`;
+        container.innerHTML = `<div class="eq-item-card"><div class="eq-item-name">Crafting Bench</div><div class="eq-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Epic ${char.crafting.shards.epic}</div><div class="eq-item-bonus">Salvage gear &amp; reroll target slot using shards.</div><div class="eq-item-actions"><button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button></div><div class="eq-item-actions compact" style="margin-top:6px"><select id="craft-reroll-slot" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)"><option value="weapon">Weapon</option><option value="chest">Chest</option><option value="legs">Legs</option><option value="feet">Feet</option><option value="offhand">Offhand</option><option value="charm">Charm</option></select><button class="btn" onclick="craftTargetedRerollFromUI()">Targeted Reroll</button></div><div class="eq-item-bonus" style="margin-top:6px">Cost: 10 Common + 6 Magic + 2 Rare + 120g</div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Occultist Reforge</div><div class="eq-item-type">Rerolls one random non-epic gear piece in your inventory.</div><div class="eq-item-bonus">${occultistPrice}g</div><div class="eq-item-actions"><button class="btn" onclick="rerollRandomInventoryItem()">Reforge</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-rare">Mystic Reforge</div><div class="eq-item-type">Pick one stat on an item and reroll just that stat — as many times as you like. Cost climbs per reroll, then caps.</div><div class="eq-item-bonus">From ${getMerchantPrice(REFORGE_CONFIG.base + Math.floor((char.level||1)*REFORGE_CONFIG.levelPerPoint)).toLocaleString()}g</div><div class="eq-item-actions"><button class="btn active" onclick="openReforgeModal()">Reforge a Stat</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-epic">Mystic Chest</div><div class="eq-item-type">Pay to open a mysterious chest — chance for runes, shards, or gear.</div><div class="eq-item-bonus">${mysticCost}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseMysticChest()">Open</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Faction Tribute</div><div class="eq-item-type">Offer gold for +${PHASE6.tributeFactionPerDonation} faction (daily cap ${PHASE6.tributeDailyCap}).</div><div class="eq-item-bonus">${tributeCost}g · Remaining today: ${tributeLeft}${tributeAtMax?' · MAXED':''}</div><div class="eq-item-actions"><button class="btn${tributeDisabled?'':' active'}" onclick="donateFactionTribute()" ${tributeDisabled?'disabled':''}>Donate</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Name Change Token</div><div class="eq-item-type">Permanently change your character's name. Current: ${char.name}</div><div class="eq-item-bonus">${nameTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseNameChangeToken()" ${(char.gold||0)>=nameTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Race Change Token</div><div class="eq-item-type">Change your race. Must be compatible with ${char.cls}. Current: ${char.race}</div><div class="eq-item-bonus">${raceTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseRaceChangeToken()" ${(char.gold||0)>=raceTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div>`;
       } else if (section === 'lottery') {
         container.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:4px 0';
         renderLotterySection(container);
@@ -19587,6 +20046,252 @@
       autoSave();
     }
 
+    // ── Mystic Reforge (Diablo 3 style, v1.3.68) ──
+    // Pick a single stat on an item and reroll just that stat's value as many
+    // times as you like. Each reroll on the same item costs more gold, climbing
+    // until it caps. The new value is rolled within the stat's normal range for
+    // that slot/level, so reforging can land anywhere from the floor to the cap.
+    const REFORGE_CONFIG = {
+      base: 250,            // first reroll cost (before faction/level scaling)
+      growth: 1.5,          // multiplier applied per prior reforge on the item
+      maxRerolls: 12,       // cost stops climbing after this many rerolls
+      levelPerPoint: 40     // adds level*this to the base, so deep gear costs more
+    };
+
+    let reforgeState = { index: -1, stat: null };
+
+    function getReforgeCost(entry) {
+      const count = Math.max(0, Math.floor(Number(entry && entry.reforgeCount) || 0));
+      const steps = Math.min(count, REFORGE_CONFIG.maxRerolls);
+      const levelBase = REFORGE_CONFIG.base + Math.floor((char.level || 1) * REFORGE_CONFIG.levelPerPoint);
+      const raw = Math.floor(levelBase * Math.pow(REFORGE_CONFIG.growth, steps));
+      return getMerchantPrice(raw);
+    }
+
+    // Items eligible for reforge: equippable gear with at least one rolled stat,
+    // not locked, and not a fixed-roll quality (Epic/Legendary/Mythic/Runeword
+    // have curated stats that shouldn't be tampered with).
+    function isReforgeableEntry(entry) {
+      if (!entry || typeof entry !== 'object') return false;
+      if (!getItemData(entry)) return false;
+      if (isItemLocked(entry)) return false;
+      const q = getItemQuality(entry);
+      if (q === 'Epic' || q === 'Legendary' || q === 'Mythic' || q === 'Runeword') return false;
+      const rolls = entry.rolls || {};
+      return Object.keys(rolls).some(k => Number(rolls[k]) > 0);
+    }
+
+    function getReforgeableStats(entry) {
+      const rolls = (entry && entry.rolls) || {};
+      const order = ['atk', 'def', 'hp', 'mp', 'str', 'dex', 'con', 'int', 'wis', 'cha'];
+      return order.filter(k => Number(rolls[k]) > 0);
+    }
+
+    // Resolve the legal min/max for a given stat on this item, mirroring how the
+    // loot pipeline rolls values so reforged values stay in-band.
+    function getReforgeStatRange(entry, stat) {
+      if (ABILITIES.indexOf(stat) >= 0) {
+        const ilvl = getItemLevel(entry) || (char.level || 1);
+        const r = (typeof getAbilityValueRange === 'function') ? getAbilityValueRange(ilvl) : { min: 1, max: 3 };
+        return { min: Math.max(1, r.min), max: Math.max(r.min, r.max) };
+      }
+      const data = getItemData(entry) || {};
+      const pool = ITEM_AFFIX_POOL[data.slot] || [];
+      let min = Infinity, max = -Infinity;
+      pool.forEach(a => { if (a.stat === stat) { min = Math.min(min, a.min); max = Math.max(max, a.max); } });
+      if (!Number.isFinite(min)) {
+        // Stat isn't in this slot's affix pool (e.g. atk on some bases) — fall
+        // back to a sensible band around the existing value.
+        const cur = Number((entry.rolls || {})[stat] || 1);
+        return { min: Math.max(1, Math.floor(cur * 0.5)), max: Math.max(2, Math.ceil(cur * 1.5)) };
+      }
+      return { min, max };
+    }
+
+    function rollReforgeValue(entry, stat) {
+      const r = getReforgeStatRange(entry, stat);
+      return r.min + Math.floor(Math.random() * Math.max(1, r.max - r.min + 1));
+    }
+
+    function openReforgeModal() {
+      reforgeState = { index: -1, stat: null };
+      const modal = document.getElementById('reforge-modal');
+      if (!modal) return;
+      modal.classList.add('open');
+      renderReforgeItemList();
+    }
+
+    function closeReforgeModal() {
+      reforgeState = { index: -1, stat: null };
+      const modal = document.getElementById('reforge-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function reforgeBack() {
+      if (reforgeState.stat) { reforgeState.stat = null; renderReforgeStatList(); return; }
+      if (reforgeState.index >= 0) { reforgeState.index = -1; renderReforgeItemList(); return; }
+    }
+
+    function setReforgeBackVisible(visible) {
+      const b = document.getElementById('reforge-back-btn');
+      if (b) b.style.display = visible ? '' : 'none';
+    }
+
+    function statDisplayLabel(stat) {
+      const up = stat.toUpperCase();
+      return ABILITY_LABELS[stat] || up;
+    }
+
+    function renderReforgeItemList() {
+      const body = document.getElementById('reforge-body');
+      const sub = document.getElementById('reforge-subtitle');
+      if (!body) return;
+      setReforgeBackVisible(false);
+      if (sub) sub.textContent = 'Select an item to reforge. Equipped gear and bag gear both qualify.';
+
+      // Build a combined list: equipped slots first, then bag items.
+      const entries = [];
+      const slots = ['weapon', 'offhand', 'chest', 'legs', 'feet', 'charm'];
+      slots.forEach(slot => {
+        const it = char.equipment && char.equipment[slot];
+        if (it && isReforgeableEntry(it)) entries.push({ kind: 'equip', slot, entry: it, label: '[Equipped] ' + getItemDisplayName(it) });
+      });
+      (char.inventory || []).forEach((it, idx) => {
+        if (isReforgeableEntry(it)) entries.push({ kind: 'inv', index: idx, entry: it, label: getItemDisplayName(it) });
+      });
+
+      body.innerHTML = '';
+      if (!entries.length) {
+        body.innerHTML = '<div style="font-size:12px;color:var(--text-secondary)">No reforgeable gear found. You need Magic or Rare gear with at least one stat (unlocked).</div>';
+        return;
+      }
+      entries.forEach(e => {
+        const rarityClass = getItemRarityClass(e.entry);
+        const statCount = getReforgeableStats(e.entry).length;
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;width:100%';
+        btn.innerHTML = '<span class="' + rarityClass + '" style="font-weight:600">' + e.label + '</span>'
+          + '<span style="font-size:10px;opacity:0.85">' + statCount + ' stat' + (statCount === 1 ? '' : 's') + '</span>';
+        btn.onclick = () => reforgeSelectTarget(e);
+        body.appendChild(btn);
+      });
+    }
+
+    // Stash the chosen target as either an equip slot or a bag index.
+    function reforgeSelectTarget(e) {
+      reforgeState.target = (e.kind === 'equip') ? e.slot : e.index;
+      reforgeState.index = (e.kind === 'inv') ? e.index : -1;
+      reforgeState.stat = null;
+      renderReforgeStatList();
+    }
+
+    function reforgeResolveEntry() {
+      const t = reforgeState.target;
+      if (typeof t === 'string') return (char.equipment && char.equipment[t]) || null;
+      if (typeof t === 'number' && t >= 0 && t < char.inventory.length) return char.inventory[t];
+      return null;
+    }
+
+    function renderReforgeStatList() {
+      const body = document.getElementById('reforge-body');
+      const sub = document.getElementById('reforge-subtitle');
+      if (!body) return;
+      const entry = reforgeResolveEntry();
+      if (!entry) { renderReforgeItemList(); return; }
+      setReforgeBackVisible(true);
+      if (sub) sub.textContent = getItemDisplayName(entry) + ' · pick a stat to reroll.';
+
+      const stats = getReforgeableStats(entry);
+      body.innerHTML = '';
+      if (!stats.length) {
+        body.innerHTML = '<div style="font-size:12px;color:var(--text-secondary)">This item has no rerollable stats.</div>';
+        return;
+      }
+      const eff = getItemEffectiveStats(entry) || {};
+      stats.forEach(stat => {
+        const range = getReforgeStatRange(entry, stat);
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;width:100%';
+        btn.innerHTML = '<span style="font-weight:600">' + statDisplayLabel(stat) + ': +' + fmt(eff[stat] || 0) + '</span>'
+          + '<span style="font-size:10px;opacity:0.85">rolls ' + range.min + '–' + range.max + '</span>';
+        btn.onclick = () => { reforgeState.stat = stat; renderReforgePanel(); };
+        body.appendChild(btn);
+      });
+    }
+
+    function renderReforgePanel() {
+      const body = document.getElementById('reforge-body');
+      const sub = document.getElementById('reforge-subtitle');
+      if (!body) return;
+      const entry = reforgeResolveEntry();
+      if (!entry || !reforgeState.stat) { renderReforgeStatList(); return; }
+      setReforgeBackVisible(true);
+
+      const stat = reforgeState.stat;
+      const rolls = entry.rolls || {};
+      const range = getReforgeStatRange(entry, stat);
+      const cost = getReforgeCost(entry);
+      const count = Math.max(0, Math.floor(Number(entry.reforgeCount) || 0));
+      const capped = count >= REFORGE_CONFIG.maxRerolls;
+      const canAfford = (char.gold || 0) >= cost;
+      if (sub) sub.textContent = getItemDisplayName(entry) + ' · reforging ' + statDisplayLabel(stat) + '.';
+
+      const curRaw = Number(rolls[stat] || 0);
+      const atMax = curRaw >= range.max;
+      const atMin = curRaw <= range.min;
+      const quality = (atMax ? 'at max' : (atMin ? 'at min' : 'mid-range'));
+
+      body.innerHTML =
+        '<div style="font-size:12px;line-height:1.6">' +
+          '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-secondary)">Current ' + statDisplayLabel(stat) + ' roll</span><span style="font-weight:700">' + fmt(curRaw) + ' <span style="font-size:10px;color:var(--text-secondary)">(' + quality + ')</span></span></div>' +
+          '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-secondary)">Possible range</span><span>' + range.min + ' – ' + range.max + '</span></div>' +
+          '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-secondary)">Rerolls done</span><span>' + count + '</span></div>' +
+          '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-secondary)">Next reroll cost</span><span style="font-weight:700;color:' + (canAfford ? '#EAB308' : '#c44') + '">' + fmt(cost) + 'g' + (capped ? ' (max)' : '') + '</span></div>' +
+        '</div>' +
+        '<div id="reforge-result" style="min-height:18px;font-size:12px;margin-top:2px"></div>' +
+        '<button class="btn active" style="width:100%;margin-top:4px" ' + (canAfford ? '' : 'disabled') + ' onclick="doReforge()">Reroll ' + statDisplayLabel(stat) + ' (' + fmt(cost) + 'g)</button>' +
+        (canAfford ? '' : '<div style="font-size:10px;color:#c44;margin-top:4px">Not enough gold.</div>');
+    }
+
+    function doReforge() {
+      const entry = reforgeResolveEntry();
+      if (!entry || !reforgeState.stat) return;
+      if (isItemLocked(entry)) { log('Item is locked. Unlock it before reforging.', 'info'); return; }
+      const stat = reforgeState.stat;
+      if (!(Number((entry.rolls || {})[stat]) > 0)) { renderReforgeStatList(); return; }
+
+      const cost = getReforgeCost(entry);
+      if ((char.gold || 0) < cost) { log('Not enough gold to reforge (' + fmt(cost) + 'g).', 'info'); return; }
+
+      // For equipped items, stats are applied to the character — recompute by
+      // unequipping the old stats, mutating, then re-applying.
+      const isEquipped = (typeof reforgeState.target === 'string');
+      if (isEquipped) unequipStats(entry);
+
+      const oldVal = Number(entry.rolls[stat] || 0);
+      const newVal = rollReforgeValue(entry, stat);
+      entry.rolls[stat] = newVal;
+      entry.reforgeCount = (Math.max(0, Math.floor(Number(entry.reforgeCount) || 0))) + 1;
+      char.gold -= cost;
+
+      if (isEquipped) applyItemStats(entry);
+
+      const delta = newVal - oldVal;
+      const arrow = delta > 0 ? '▲ +' + delta : (delta < 0 ? '▼ ' + delta : '= no change');
+      const color = delta > 0 ? '#1D9E75' : (delta < 0 ? '#c44' : 'var(--text-secondary)');
+      log('Mystic reforged ' + statDisplayLabel(stat) + ' on ' + getItemDisplayName(entry) + ': ' + oldVal + ' → ' + newVal + ' for ' + fmt(cost) + 'g.', 'loot');
+
+      renderAll();
+      // renderAll() rebuilt the inventory list; the modal body is separate, so
+      // re-render the panel to show the new value + next cost.
+      renderReforgePanel();
+      const res = document.getElementById('reforge-result');
+      if (res) res.innerHTML = '<span style="color:' + color + ';font-weight:700">' + statDisplayLabel(stat) + ': ' + oldVal + ' → ' + newVal + ' (' + arrow + ')</span>';
+      autoSave();
+    }
+
     function getCraftShardYieldByQuality(entry) {
       const quality = getItemQuality(entry);
       if (quality === 'Epic') return { epic: 1 };
@@ -19762,6 +20467,7 @@
 
       log('Occultist added a socket to ' + getItemDisplayName(obj) + ' for ' + fmt(cost) + 'g.', 'loot');
       renderAll();
+      refreshInventoryKeepingMenu(target);
       autoSave();
     }
 
@@ -19854,7 +20560,10 @@
 
     function closeRuneInsertModal() {
       pendingRuneInsertTarget = null;
+      pendingRuneDestroyTarget = null;
       const modal = document.getElementById('rune-insert-modal');
+      const title = document.getElementById('rune-insert-title');
+      if (title) title.textContent = 'Insert a Rune';
       if (modal) modal.classList.remove('open');
     }
 
@@ -19931,6 +20640,135 @@
       log('Inserted ' + runeName + ' into ' + getItemDisplayName(obj) + '.', 'loot');
       closeRuneInsertModal();
       renderAll();
+      // Re-resolve a stable target for re-opening the menu (inventory indices may
+      // have shifted while consuming the rune).
+      let reopenTarget = target;
+      if (typeof target !== 'string') {
+        const idx = char.inventory.indexOf(writeInfo.entry);
+        reopenTarget = idx >= 0 ? idx : null;
+      }
+      if (reopenTarget !== null && reopenTarget !== undefined) refreshInventoryKeepingMenu(reopenTarget);
+      autoSave();
+    }
+
+    // ── Destroy a socketed rune (v1.3.66) ──
+    // Lets the player remove the rune currently in a socket so a different one
+    // can be inserted. The removed rune is destroyed (not returned), freeing the
+    // socket. Sealed runeword items can't have their runes pulled.
+    let pendingRuneDestroyTarget = null;
+
+    function destroyRuneFromItem(target) {
+      const targetInfo = getGearTarget(target);
+      if (!targetInfo) return;
+      const entry = targetInfo.entry;
+      if (isItemLocked(entry)) {
+        log('Item is locked. Unlock it before socket changes.', 'info');
+        return;
+      }
+      if (getItemQuality(entry) === 'Runeword') {
+        log('Runes are sealed into a runeword and cannot be removed.', 'info');
+        return;
+      }
+      const obj = toSocketableItem(entry);
+      if (!obj || obj.maxSockets <= 0) {
+        log('This item has no sockets.', 'info');
+        return;
+      }
+      const filled = obj.sockets
+        .map((r, i) => ({ r, i }))
+        .filter(s => s.r && RUNE_DATA[s.r]);
+      if (filled.length === 0) {
+        log('There are no runes to remove.', 'info');
+        return;
+      }
+      if (filled.length === 1) {
+        confirmDestroyRune(target, filled[0].i);
+        return;
+      }
+      openRuneDestroyModal(target);
+    }
+
+    // Picker shown when more than one socket is filled — choose which rune to
+    // destroy. Reuses the rune-insert modal shell.
+    function openRuneDestroyModal(target) {
+      pendingRuneDestroyTarget = target;
+      const modal = document.getElementById('rune-insert-modal');
+      const list = document.getElementById('rune-insert-list');
+      const subtitle = document.getElementById('rune-insert-subtitle');
+      const title = document.getElementById('rune-insert-title');
+      if (!modal || !list) return;
+
+      const targetInfo = getGearTarget(target);
+      const obj = targetInfo ? toSocketableItem(targetInfo.entry) : null;
+      if (title) title.textContent = 'Remove a Rune';
+      if (subtitle) subtitle.textContent = obj
+        ? (getItemDisplayName(obj) + ' · pick a rune to destroy and free its socket. This cannot be undone.')
+        : 'Pick a rune to destroy.';
+
+      list.innerHTML = '';
+      if (obj) {
+        obj.sockets.forEach((r, i) => {
+          const rune = r && RUNE_DATA[r];
+          if (!rune) return;
+          const socketVal = (typeof getRuneSocketValue === 'function') ? getRuneSocketValue(rune) : rune.value;
+          const btn = document.createElement('button');
+          btn.className = 'btn';
+          btn.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;width:100%';
+          btn.innerHTML = '<span style="font-weight:600">Socket ' + (i + 1) + ': ' + r + '</span>'
+            + '<span style="font-size:10px;opacity:0.85">+' + socketVal + ' ' + rune.stat.toUpperCase() + ' · T' + rune.tier + '</span>';
+          btn.onclick = () => { confirmDestroyRune(target, i); };
+          list.appendChild(btn);
+        });
+      }
+      modal.classList.add('open');
+    }
+
+    function closeRuneDestroyModal() {
+      pendingRuneDestroyTarget = null;
+      const modal = document.getElementById('rune-insert-modal');
+      const title = document.getElementById('rune-insert-title');
+      if (title) title.textContent = 'Insert a Rune';
+      if (modal) modal.classList.remove('open');
+    }
+
+    function confirmDestroyRune(target, socketIndex) {
+      const targetInfo = getGearTarget(target);
+      if (!targetInfo) { closeRuneDestroyModal(); return; }
+      const entry = targetInfo.entry;
+      if (isItemLocked(entry)) {
+        log('Item is locked. Unlock it before socket changes.', 'info');
+        closeRuneDestroyModal();
+        return;
+      }
+      if (getItemQuality(entry) === 'Runeword') {
+        log('Runes are sealed into a runeword and cannot be removed.', 'info');
+        closeRuneDestroyModal();
+        return;
+      }
+      const obj = toSocketableItem(entry);
+      if (!obj || socketIndex < 0 || socketIndex >= obj.sockets.length) { closeRuneDestroyModal(); return; }
+      const runeName = obj.sockets[socketIndex];
+      if (!runeName || !RUNE_DATA[runeName]) {
+        log('That socket is already empty.', 'info');
+        closeRuneDestroyModal();
+        return;
+      }
+
+      if (!window.confirm('Destroy the ' + runeName + ' rune in this item? The rune is lost and the socket becomes empty.')) {
+        return;
+      }
+
+      obj.sockets[socketIndex] = null;
+      replaceGearTarget(targetInfo, obj, true);
+
+      log('Destroyed ' + runeName + ' rune and freed a socket on ' + getItemDisplayName(obj) + '.', 'info');
+      closeRuneDestroyModal();
+      renderAll();
+
+      // Re-open the same item's menu so the freed socket / Insert Rune button
+      // show. Destroying a rune doesn't consume anything from the bag, so the
+      // inventory index (or equip slot) for `target` stays valid.
+      refreshInventoryKeepingMenu(target);
       autoSave();
     }
 
