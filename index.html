@@ -1570,6 +1570,15 @@
       z-index: 5;
       overflow: visible;
     }
+    /* An open tile must NOT carry a transform: a transformed ancestor becomes
+       the containing block for its position:fixed action menu, which threw the
+       menu to the bottom-right whenever the cursor was still hovering the tile.
+       Force transform:none while open (overriding :hover) so the fixed menu is
+       positioned relative to the viewport as intended. */
+    .eq-item-tile.is-open,
+    .eq-item-tile.is-open:hover {
+      transform: none;
+    }
 
     /* Rarity accent: glowing border colour per rarity */
     .eq-item-tile.rarity-border-magic,
@@ -1645,14 +1654,26 @@
     }
     .eq-tile-socket-dot i.filled { background: #EAB308; }
 
+    .eq-tile-compare {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .eq-tile-compare.upgrade { color: #22C55E; }
+    .eq-tile-compare.downgrade { color: #EF4444; }
+    .eq-tile-compare.equal { color: #999; }
+
     /* Per-tile action popover (opens on click) */
     .eq-tile-actions {
       position: absolute;
       left: 50%;
       top: calc(100% + 4px);
       transform: translateX(-50%);
-      min-width: 150px;
-      max-width: 210px;
+      min-width: 160px;
+      max-width: 240px;
       background: var(--bg-primary);
       border: 1px solid var(--border-md);
       border-radius: var(--radius-md);
@@ -1687,11 +1708,24 @@
       font-size: 11px;
       line-height: 1.45;
     }
-    /* Reuse the clean tooltip stat layout inside the click menu. */
+    /* Reuse the clean tooltip stat layout inside the click menu. The popover is
+       narrower than the hover tooltip, so long labels (e.g. "DEX (Crit & dodge)")
+       wrap. Align the value to the first line and keep it in a tight, non-wrapping
+       right-hand column so rows line up cleanly like the hover tooltip. */
     .eq-tile-act-stats .tt-stat {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .eq-tile-act-stats .tt-stat > span:first-child {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .eq-tile-act-stats .tt-stat > span:last-child {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      text-align: right;
     }
     .eq-tile-act-stats .tt-up { color: #1D9E75; }
     .eq-tile-act-stats .tt-down { color: #c44; }
@@ -1873,6 +1907,70 @@
       display: block;
       animation: levelup-flash 1.2s ease-out forwards;
     }
+
+    /* AFK Return Summary */
+    @keyframes summary-slide-up {
+      0%   { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes summary-stat-bounce {
+      0%   { opacity: 0; transform: scale(0.8); }
+      50%  { transform: scale(1.05); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    #afk-return-modal {
+      z-index: 65;
+    }
+    .afk-summary-card {
+      animation: summary-slide-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .summary-header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .summary-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text-primary);
+    }
+    .summary-duration {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .summary-stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--border);
+    }
+    .summary-stat-row.xp { border-left-color: #f4a87a; }
+    .summary-stat-row.gold { border-left-color: #f4d68a; }
+    .summary-stat-row.loot { border-left-color: #a8d68a; }
+    .summary-stat-row.runes { border-left-color: #a8d6f4; }
+    .summary-stat-row.kills { border-left-color: #d68af4; }
+    .summary-stat-row.faction { border-left-color: #8ad6a8; }
+    .summary-stat-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .summary-stat-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      animation: summary-stat-bounce 0.5s ease-out;
+    }
+    .summary-stat-value.xp { color: #f4a87a; }
+    .summary-stat-value.gold { color: #f4d68a; }
+    .summary-stat-value.loot { color: #a8d68a; }
+    .summary-stat-value.runes { color: #a8d6f4; }
+    .summary-stat-value.kills { color: #d68af4; }
+    .summary-stat-value.faction { color: #8ad6a8; }
 
     /* Item tooltip */
     #item-tooltip {
@@ -2584,257 +2682,161 @@
       color: #b8b0a0 !important;
     }
 
+    /* ════════════════════════════════════════════════════════════
+       MOBILE LAYOUT — 3-column desktop-style layout, scaled for phones.
+
+       The previous mobile mode collapsed the whole UI into one tall
+       single column, which felt disconnected from the desktop game.
+       Modern large phones (e.g. iPhone 17 Pro Max, ~440 CSS px portrait /
+       ~956 px landscape) have plenty of room for the same
+       Character | Combat | Auto-Battle three-column grid the desktop
+       uses, just with tighter spacing and slightly smaller type.
+
+       Strategy: keep the desktop grid model on mobile, but make the
+       columns fluid + compact so all three fit side-by-side. Each
+       column scrolls vertically on its own; the grid only scrolls
+       horizontally as a safety valve on very narrow / older phones.
+       ════════════════════════════════════════════════════════════ */
+
     /* Manual layout mode toggle: desktop stays default; mobile is opt-in. */
     #screen-game.ui-layout-mobile #game-grid {
-      grid-template-columns: 1fr;
+      display: grid;
+      grid-template-columns:
+        minmax(118px, 0.78fr)
+        minmax(0, 1.55fr)
+        minmax(132px, 0.95fr);
+      gap: 6px;
       min-height: 0;
+      align-items: stretch;
     }
 
-    #screen-game.ui-layout-mobile #game-grid>div:last-child {
+    #screen-game.ui-layout-mobile #game-grid > div:last-child {
       grid-column: auto;
     }
 
-    #screen-game.ui-layout-mobile #game-topbar {
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    #screen-game.ui-layout-mobile #game-topbar .title {
-      width: 100%;
-    }
-
-    #screen-game.ui-layout-mobile #game-topbar .btn {
-      flex: 1 1 calc(50% - 8px);
-      justify-content: center;
-      min-height: 40px;
-    }
-
-    #screen-game.ui-layout-mobile .tab-bar {
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    #screen-game.ui-layout-mobile .tab {
-      min-height: 40px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 12px;
-      font-size: 12px;
-    }
-
-    #screen-game.ui-layout-mobile .queue-item {
-      min-height: 40px;
-    }
-
-    #screen-game.ui-layout-mobile #combat-log {
-      min-height: 120px;
-    }
-
-    #screen-game.ui-layout-mobile .eq-inventory-layout,
-    #screen-game.ui-layout-mobile .eq-bag-grid {
-      grid-template-columns: 1fr;
-    }
-
-    /* Allow forcing the original desktop grid even on narrow devices. */
-    #screen-game.ui-layout-desktop {
-      overflow-x: auto;
-    }
-
-    #screen-game.ui-layout-desktop #game-topbar {
-      flex-wrap: nowrap !important;
-    }
-
-    #screen-game.ui-layout-desktop #game-topbar .title {
-      width: auto !important;
-    }
-
-    #screen-game.ui-layout-desktop #game-topbar .btn {
-      flex: 0 0 auto !important;
-      min-height: 0 !important;
-    }
-
-    #screen-game.ui-layout-desktop #game-grid {
-      grid-template-columns: 210px minmax(0, 1fr) 280px !important;
-      min-height: 560px !important;
-      min-width: 980px;
-    }
-
-    #screen-game.ui-layout-desktop #game-grid>div:last-child {
-      grid-column: auto !important;
-    }
-
-    /* ════════════════════════════════════════════════════════════
-       MOBILE LAYOUT — full rebuild (mobile mode only).
-       Scoped to #screen-game.ui-layout-mobile (plus a narrow-viewport guard
-       for page-level horizontal scroll). The desktop UI is left untouched.
-
-       The desktop layout uses a fixed-height 3-column grid with
-       flex:1 / height:100% / overflow:hidden panels. That model collapses and
-       overlaps in a scrolling phone column, so on mobile we replace it with
-       plain block flow (which cannot overlap): one clean vertical stack of
-       top bar → character → tabs + content → controls.
-       ════════════════════════════════════════════════════════════ */
-
-    @media (max-width: 820px) {
-      html, body { overflow-x: hidden; max-width: 100%; }
-      body { padding: 0; }
-    }
-
-    /* Full-bleed dark background; content inset clear of the Dynamic Island /
-       home indicator. No overflow set here, so the screen never becomes a
-       nested scroll container and normal page scrolling is preserved. */
-    #screen-game.ui-layout-mobile {
-      margin: 0;
-      max-width: 100%;
-      min-height: 100vh;
-      min-height: 100dvh;
-      padding:
-        calc(env(safe-area-inset-top) + 8px)
-        calc(env(safe-area-inset-right) + 8px)
-        calc(env(safe-area-inset-bottom) + 14px)
-        calc(env(safe-area-inset-left) + 8px);
-    }
-
-    /* Grid → single-column block stack. Column wrappers keep their flex-column
-       (clean vertical stack with a gap) but get full width and spacing. */
-    #screen-game.ui-layout-mobile #game-grid {
-      display: block;
-      min-width: 0;
-      min-height: 0;
-    }
-
+    /* Each of the three columns becomes its own vertically-scrolling pane,
+       sized to the viewport so the trio fills the screen like on desktop. */
     #screen-game.ui-layout-mobile #game-grid > div {
       width: 100%;
       max-width: 100%;
       min-width: 0;
-      margin-bottom: 8px;
-    }
-
-    #screen-game.ui-layout-mobile #game-grid > div:last-child {
-      margin-bottom: 0;
+      height: calc(100dvh - 150px);
+      max-height: calc(100dvh - 150px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
     }
 
     #screen-game.ui-layout-mobile .panel {
       width: 100%;
       max-width: 100%;
       min-width: 0;
+      padding: 7px;
     }
 
-    /* The center column + combat tab use desktop fixed-height flex mechanics
-       that overlap on mobile. Force plain block flow so every child — mob card,
-       combat log, action buttons — stacks in document order with no overlap. */
+    /* Center column keeps the desktop flex mechanics but is allowed to size
+       to the column height so its combat log / actions don't overlap. */
     #screen-game.ui-layout-mobile #center-panel {
-      height: auto;
-      overflow: visible;
-    }
-
-    #screen-game.ui-layout-mobile #tab-combat {
-      display: block;
-      /* switchTab() sets an inline display:flex on the combat tab, and the
-         base rule gives it flex:1 1 0. As a flex item in an auto-height
-         parent that collapses to ~0 height, so its content spilled over the
-         auto-battle panel below. Force it to size to its content instead. */
-      flex: 0 0 auto !important;
       height: auto;
       min-height: 0;
       overflow: visible;
     }
 
-    #screen-game.ui-layout-mobile #tab-combat > * {
-      display: block;
-      flex: none;
-      margin-bottom: 8px;
+    /* Compact type + tighter density so three columns read cleanly on a phone.
+       Scoped to the mobile layout only, so desktop is untouched. */
+    #screen-game.ui-layout-mobile {
+      margin: 0;
+      max-width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      font-size: 11px;
+      padding:
+        calc(env(safe-area-inset-top) + 6px)
+        calc(env(safe-area-inset-right) + 6px)
+        calc(env(safe-area-inset-bottom) + 10px)
+        calc(env(safe-area-inset-left) + 6px);
     }
 
-    /* Combat log: a real, self-contained scroll box with a capped height so it
-       can neither grow without bound nor collapse onto the controls below. */
+    #screen-game.ui-layout-mobile h3 { font-size: 10px; }
+
+    /* Top bar: title row + utility buttons wrap onto a compact band. */
+    #screen-game.ui-layout-mobile #game-topbar {
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 6px 8px;
+    }
+
+    #screen-game.ui-layout-mobile #game-topbar .title {
+      width: 100%;
+      font-size: 14px;
+    }
+
+    #screen-game.ui-layout-mobile #game-topbar .save-indicator {
+      order: 99;
+    }
+
+    #screen-game.ui-layout-mobile #game-topbar .btn {
+      flex: 0 0 auto;
+      justify-content: center;
+      min-height: 30px;
+      font-size: 11px !important;
+      padding: 5px 8px !important;
+    }
+
+    /* Tab bar inside the center column wraps into small tappable tabs. */
+    #screen-game.ui-layout-mobile .tab-bar {
+      flex-wrap: wrap;
+      gap: 3px;
+      padding: 4px;
+    }
+
+    #screen-game.ui-layout-mobile .tab {
+      flex: 1 1 auto;
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 7px;
+      font-size: 11px;
+    }
+
+    #screen-game.ui-layout-mobile .btn {
+      min-height: 30px;
+    }
+
+    #screen-game.ui-layout-mobile .queue-item {
+      min-height: 32px;
+    }
+
+    /* Combat log: a self-contained scroll box capped relative to the column. */
     #screen-game.ui-layout-mobile #combat-log,
     #screen-game.ui-layout-mobile #tab-combat > #combat-log {
       display: block;
       flex: none;
       height: auto;
-      min-height: 180px;
-      max-height: 42vh;
+      min-height: 120px;
+      max-height: 38vh;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
 
-    #screen-game.ui-layout-mobile #mob-area {
-      margin-bottom: 8px;
+    /* iOS zoom guard: inputs/selects stay >=16px even though the UI is dense.
+       Kept compact in height so they don't blow out the narrow columns. */
+    #screen-game.ui-layout-mobile input[type=text],
+    #screen-game.ui-layout-mobile input[type=number],
+    #screen-game.ui-layout-mobile select {
+      font-size: 16px;
+      min-height: 30px;
     }
 
-    /* Top bar: title on its own row; utility buttons become an even 2-up touch
-       grid; the "Saved" indicator drops to the end so it can't split the row. */
-    #screen-game.ui-layout-mobile #game-topbar {
-      flex-wrap: wrap;
-      gap: 6px;
-      padding: 8px;
-    }
-
-    #screen-game.ui-layout-mobile #game-topbar .title {
-      width: 100%;
-      font-size: 15px;
-    }
-
-    #screen-game.ui-layout-mobile #game-topbar .save-indicator {
-      order: 99;
-      width: 100%;
-      justify-content: flex-end;
-    }
-
-    #screen-game.ui-layout-mobile #game-topbar .btn {
-      flex: 1 1 calc(50% - 6px);
-      justify-content: center;
-      min-height: 44px;
-      font-size: 13px !important;
-      padding: 8px 10px !important;
-    }
-
-    /* Tab bar: wraps into even, finger-friendly tabs and sticks to the top of
-       the viewport so sections can be switched without scrolling back up. */
-    #screen-game.ui-layout-mobile .tab-bar {
-      flex-wrap: wrap;
-      gap: 4px;
-      padding: 6px;
-      position: sticky;
-      top: env(safe-area-inset-top);
-      z-index: 30;
-    }
-
-    #screen-game.ui-layout-mobile .tab {
-      flex: 1 1 auto;
-      min-height: 42px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 10px;
-      font-size: 13px;
-    }
-
-    #screen-game.ui-layout-mobile .btn {
-      min-height: 42px;
-    }
-
-    #screen-game.ui-layout-mobile .queue-item {
-      min-height: 44px;
-    }
-
+    /* Inventory / bag grids stay single-column inside the narrow center pane. */
     #screen-game.ui-layout-mobile .eq-inventory-layout,
     #screen-game.ui-layout-mobile .eq-bag-grid {
       grid-template-columns: 1fr;
     }
 
-    /* >=16px fonts so iOS doesn't zoom the page when an input gains focus. */
-    #screen-game.ui-layout-mobile input[type=text],
-    #screen-game.ui-layout-mobile input[type=number],
-    #screen-game.ui-layout-mobile select {
-      font-size: 16px;
-      min-height: 42px;
-    }
-
     /* Wide rows/tables inside a tab scroll within their own panel, not the
-       page, so the overall layout stays put. */
+       page, so the three-column layout stays put. */
     #screen-game.ui-layout-mobile #tab-zone,
     #screen-game.ui-layout-mobile #tab-inv,
     #screen-game.ui-layout-mobile #tab-runes,
@@ -2854,8 +2856,48 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
+
+    /* Safety valve: on genuinely narrow / older phones where three columns
+       can't fit even when compact, let the whole grid scroll sideways instead
+       of squashing the columns into unreadable slivers. The 3-up layout still
+       applies on roomy devices like the iPhone 17 Pro Max. */
+    @media (max-width: 380px) {
+      #screen-game.ui-layout-mobile #game-grid {
+        grid-template-columns: 150px minmax(220px, 1fr) 165px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+
+    /* Page-level horizontal-scroll guard kept from the previous build. */
+    @media (max-width: 820px) {
+      html, body { overflow-x: hidden; max-width: 100%; }
+      body { padding: 0; }
+    }
+    /* ── Onboarding tour + help overlay ─────────────── */
+    #tour-backdrop { position: fixed; inset: 0; z-index: 200; display: none; }
+    #tour-backdrop.active { display: block; }
+    #tour-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.62); transition: clip-path 0.25s ease; }
+    #tour-highlight { position: absolute; border: 2px solid #f4d68a; border-radius: 8px; box-shadow: 0 0 0 4px rgba(244,214,138,0.25), 0 0 22px rgba(244,214,138,0.45); pointer-events: none; transition: all 0.25s ease; z-index: 201; }
+    #tour-tip { position: absolute; z-index: 202; max-width: 290px; background: linear-gradient(180deg, #2a2014, #1a140c); border: 1px solid rgba(244,214,138,0.45); border-radius: 10px; padding: 14px 16px; color: #f0e6cc; box-shadow: 0 10px 40px rgba(0,0,0,0.6); font-family: var(--font, sans-serif); transition: top 0.25s ease, left 0.25s ease; }
+    #tour-tip h4 { margin: 0 0 6px; font-size: 15px; color: #f4d68a; font-family: 'Cinzel', serif; letter-spacing: 0.5px; }
+    #tour-tip p { margin: 0 0 12px; font-size: 13px; line-height: 1.45; opacity: 0.92; }
+    #tour-tip .tour-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    #tour-tip .tour-step { font-size: 11px; opacity: 0.6; }
+    #tour-tip .tour-btns { display: flex; gap: 8px; }
+    #tour-tip button { padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(244,214,138,0.4); background: linear-gradient(180deg, #6b4f28, #3a2a14); color: #f4d68a; font-weight: 600; cursor: pointer; font-size: 12px; font-family: var(--font, sans-serif); }
+    #tour-tip button:hover { background: linear-gradient(180deg, #8a6534, #4a3618); }
+    #tour-tip button.tour-skip { background: transparent; border-color: rgba(255,255,255,0.15); color: rgba(240,230,204,0.6); }
+    #tabbtn-help { cursor: pointer; }
+    #help-backdrop { position: fixed; inset: 0; z-index: 190; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); padding: 16px; }
+    #help-backdrop.active { display: flex; }
+    #help-window { width: 100%; max-width: 460px; background: linear-gradient(180deg, #241b10, #16110a); border: 1px solid rgba(244,214,138,0.35); border-radius: 12px; box-shadow: 0 14px 50px rgba(0,0,0,0.6); color: #f0e6cc; font-family: var(--font, sans-serif); overflow: hidden; }
+    #help-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(244,214,138,0.2); }
+    #help-title { font-family: 'Cinzel', serif; font-size: 16px; color: #f4d68a; letter-spacing: 0.5px; }
+    #help-close { background: transparent; border: 0; color: rgba(240,230,204,0.7); font-size: 16px; cursor: pointer; line-height: 1; }
+    #help-close:hover { color: #f4d68a; }
+    #help-body { padding: 16px; font-size: 13px; line-height: 1.55; }
   </style>
-</head>
 
 <body>
 
@@ -3224,22 +3266,16 @@
         Saved</span>
       <button
         class="btn"
+        onclick="openSettingsModal(event)"
+        style="font-size:11px;padding:4px 10px"><i
+          class="ti ti-settings"></i>
+        Settings</button>
+      <button
+        class="btn"
         onclick="manualSave()"
         style="font-size:11px;padding:4px 10px"><i
           class="ti ti-device-floppy"></i>
         Save</button>
-      <button
-        class="btn"
-        onclick="exportSlotsToFile()"
-        style="font-size:11px;padding:4px 10px"><i
-          class="ti ti-download"></i>
-        Export</button>
-      <button
-        class="btn"
-        onclick="promptImportSlots()"
-        style="font-size:11px;padding:4px 10px"><i
-          class="ti ti-upload"></i>
-        Import</button>
       <button
         class="btn"
         onclick="goToCharSelect()"
@@ -3310,6 +3346,27 @@
             Confirm
             Import
           </button>
+        </div>
+      </div>
+    </div>
+    <div
+      id="afk-return-modal"
+      class="modal-backdrop"
+      onclick="if(event.target===this)closeAfkSummary()">
+      <div
+        class="modal-card afk-summary-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="afk-summary-title">
+        <div class="summary-header">
+          <h2 id="afk-summary-title">Welcome Back!</h2>
+          <div class="summary-duration" id="afk-summary-duration"></div>
+        </div>
+        <div id="afk-summary-stats"></div>
+        <div class="modal-actions">
+          <button
+            class="btn active"
+            onclick="closeAfkSummary()">Continue</button>
         </div>
       </div>
     </div>
@@ -3421,6 +3478,43 @@
             onclick="closeReforgeModal()">
             Close
           </button>
+        </div>
+      </div>
+    </div>
+    <div
+      id="settings-modal"
+      class="modal-backdrop"
+      onclick="if(event.target===this)closeSettingsModal()">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-modal-title">
+        <div class="modal-title" id="settings-modal-title">Settings</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px;">
+            <div style="font-size:12px;font-weight:600;">🎧 Audio</div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer">
+              <input type="checkbox" id="settings-audio-mute" onchange="onAudioMuteToggle(this.checked)">
+              <span>Mute all sound</span>
+            </label>
+            <div style="font-size:11px;display:flex;justify-content:space-between;margin-bottom:4px">
+              <span>Master volume</span><span id="settings-audio-volume-readout">60%</span>
+            </div>
+            <input type="range" id="settings-audio-volume" min="0" max="100" value="60" oninput="onAudioVolumeInput(this.value)" style="width:100%">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px;">
+            <div style="font-size:12px;font-weight:600;">💾 Save Management</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn" onclick="exportSlotsToFile()" title="Download all characters as JSON backup">📥 Export Save</button>
+              <button class="btn" onclick="promptImportSlots()" title="Import previously exported characters">📤 Import Save</button>
+              <button class="btn" onclick="showBackupRecoveryOptions()" title="Recover from auto-backups (last 3 saves)">🔄 Restore Backup</button>
+            </div>
+            <div id="settings-backup-list" style="font-size:10px;color:var(--text-secondary);margin-top:4px;"></div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn active" onclick="closeSettingsModal()">Close</button>
         </div>
       </div>
     </div>
@@ -3690,11 +3784,12 @@
         class="panel"
         style="display:flex;flex-direction:column;gap:8px">
         <div class="tab-bar">
-          <div class="tab active" onclick="switchTab('combat')">⚔ Combat</div>
-          <div class="tab" onclick="switchTab('zone')">🗺 Zones</div>
-          <div class="tab" onclick="switchTab('inv')">🎒 Inventory</div>
-          <div class="tab" onclick="switchTab('shop')">🏪 Shop</div>
-          <div class="tab" onclick="switchTab('casino')">🎰 Casino</div>
+          <div class="tab active" id="tabbtn-combat" onclick="switchTab('combat')">⚔ Combat</div>
+          <div class="tab" id="tabbtn-zone" onclick="switchTab('zone')">🗺 Zones</div>
+          <div class="tab" id="tabbtn-inv" onclick="switchTab('inv')">🎒 Inventory</div>
+          <div class="tab" id="tabbtn-shop" onclick="switchTab('shop')">🏪 Shop</div>
+          <div class="tab" id="tabbtn-casino" onclick="switchTab('casino')">🎰 Casino</div>
+          <div class="tab" id="tabbtn-help" onclick="openTabHelp()" title="Help for this tab" style="margin-left:auto;min-width:30px;text-align:center;font-weight:700">?</div>
           <div class="tab" onclick="openPopup('leaderboard')">🏅 Leaderboard</div>
           <div class="tab" onclick="openPopup('about')">ℹ About</div>
         </div>
@@ -3706,6 +3801,32 @@
               <button id="popup-close" onclick="closePopup()" aria-label="Close">&#x2715;</button>
             </div>
             <div id="popup-body"></div>
+          </div>
+        </div>
+        <!-- Per-tab help modal -->
+        <div id="help-backdrop" onclick="if(event.target===this)closeTabHelp()">
+          <div id="help-window" role="dialog" aria-modal="true" aria-labelledby="help-title">
+            <div id="help-header">
+              <span id="help-title"></span>
+              <button id="help-close" onclick="closeTabHelp()" aria-label="Close">&#x2715;</button>
+            </div>
+            <div id="help-body"></div>
+          </div>
+        </div>
+        <!-- First-session guided tour overlay -->
+        <div id="tour-backdrop">
+          <div id="tour-mask"></div>
+          <div id="tour-highlight"></div>
+          <div id="tour-tip">
+            <h4 id="tour-title"></h4>
+            <p id="tour-text"></p>
+            <div class="tour-row">
+              <span class="tour-step" id="tour-step"></span>
+              <div class="tour-btns">
+                <button class="tour-skip" onclick="endTour()">Skip</button>
+                <button onclick="tourNext()" id="tour-next">Next</button>
+              </div>
+            </div>
           </div>
         </div>
         <!-- Hidden pool: popup tab content lives here when not shown -->
@@ -3821,6 +3942,10 @@
                 <option
                   value="sell">
                   SELL
+                </option>
+                <option
+                  value="salvage">
+                  SALVAGE
                 </option>
                 <option
                   value="ignore">
@@ -4172,6 +4297,7 @@
             style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
             <button
               class="btn"
+              id="attack-btn"
               onclick="attackOnce()"><i
                 class="ti ti-sword"></i>
               Attack</button>
@@ -4832,6 +4958,175 @@
     const MAX_SLOTS = 24;
     const SAVE_KEY = 'EmberQuest_slots';
     const UI_LAYOUT_KEY = 'EmberQuest_uiLayout';
+    const AUDIO_KEY = 'EmberQuest_audio';
+
+    // ══════════════════════════════════════════════
+    //  AUDIO ENGINE  (lightweight Web Audio SFX layer)
+    //  Synthesises all sounds on the fly — no asset files,
+    //  no network, keeps the single-file ethos intact.
+    // ══════════════════════════════════════════════
+    const SFX = (function () {
+      let ctx = null;
+      let master = null;
+      // Persisted settings: volume 0..1, muted bool.
+      const settings = (function () {
+        let s = { volume: 0.6, muted: false };
+        try {
+          const raw = JSON.parse(localStorage.getItem(AUDIO_KEY) || 'null');
+          if (raw && typeof raw === 'object') {
+            if (typeof raw.volume === 'number') s.volume = Math.max(0, Math.min(1, raw.volume));
+            if (typeof raw.muted === 'boolean') s.muted = raw.muted;
+          }
+        } catch (e) {}
+        return s;
+      })();
+
+      function persist() {
+        try { localStorage.setItem(AUDIO_KEY, JSON.stringify(settings)); } catch (e) {}
+      }
+
+      // Create / resume the AudioContext lazily on first sound so we don't
+      // trip browser autoplay policies before a user gesture.
+      function ensure() {
+        if (!ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return null;
+          ctx = new AC();
+          master = ctx.createGain();
+          master.gain.value = settings.muted ? 0 : settings.volume;
+          master.connect(ctx.destination);
+        }
+        if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+        return ctx;
+      }
+
+      function applyGain() {
+        if (master && ctx) {
+          master.gain.setTargetAtTime(settings.muted ? 0 : settings.volume, ctx.currentTime, 0.01);
+        }
+      }
+
+      // Core tone builder: one oscillator with an ADSR-ish envelope.
+      function tone(opts) {
+        const c = ensure();
+        if (!c || settings.muted || settings.volume <= 0) return;
+        const t0 = c.currentTime + (opts.delay || 0);
+        const dur = opts.dur != null ? opts.dur : 0.15;
+        const osc = c.createOscillator();
+        const g = c.createGain();
+        osc.type = opts.type || 'sine';
+        osc.frequency.setValueAtTime(opts.freq || 440, t0);
+        if (opts.freqTo) osc.frequency.exponentialRampToValueAtTime(Math.max(1, opts.freqTo), t0 + dur);
+        const peak = (opts.gain != null ? opts.gain : 0.5);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0001, peak), t0 + (opts.attack || 0.005));
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        osc.connect(g); g.connect(master);
+        osc.start(t0);
+        osc.stop(t0 + dur + 0.02);
+      }
+
+      // Short filtered noise burst (used for hits / clicks).
+      function noise(opts) {
+        const c = ensure();
+        if (!c || settings.muted || settings.volume <= 0) return;
+        const t0 = c.currentTime + (opts.delay || 0);
+        const dur = opts.dur != null ? opts.dur : 0.12;
+        const frames = Math.floor(c.sampleRate * dur);
+        const buf = c.createBuffer(1, frames, c.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < frames; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / frames);
+        const src = c.createBufferSource();
+        src.buffer = buf;
+        const filt = c.createBiquadFilter();
+        filt.type = opts.filter || 'bandpass';
+        filt.frequency.value = opts.freq || 1200;
+        filt.Q.value = opts.q || 1;
+        const g = c.createGain();
+        g.gain.value = (opts.gain != null ? opts.gain : 0.4);
+        src.connect(filt); filt.connect(g); g.connect(master);
+        src.start(t0);
+        src.stop(t0 + dur + 0.02);
+      }
+
+      function chord(freqs, opts) {
+        opts = opts || {};
+        freqs.forEach((f, i) => tone(Object.assign({}, opts, { freq: f, delay: (opts.delay || 0) + i * (opts.stagger || 0) })));
+      }
+
+      // ── Public sound effects ─────────────────────────
+      const api = {
+        get volume() { return settings.volume; },
+        get muted() { return settings.muted; },
+        setVolume(v) {
+          settings.volume = Math.max(0, Math.min(1, Number(v) || 0));
+          ensure(); applyGain(); persist();
+        },
+        setMuted(m) {
+          settings.muted = !!m;
+          ensure(); applyGain(); persist();
+        },
+        toggleMute() { this.setMuted(!settings.muted); return settings.muted; },
+        // Unlock audio on a user gesture (called from settings UI / first tab click).
+        unlock() { ensure(); applyGain(); },
+
+        // Loot drop chime — pitch & richness scale with rarity.
+        loot(rarity) {
+          const r = String(rarity || '').toLowerCase();
+          switch (r) {
+            case 'mythic':
+              chord([660, 990, 1320, 1760], { type: 'triangle', dur: 0.5, gain: 0.32, stagger: 0.06 });
+              tone({ type: 'sine', freq: 2640, dur: 0.6, gain: 0.18, delay: 0.24 });
+              break;
+            case 'legendary':
+              chord([523, 784, 1046, 1568], { type: 'triangle', dur: 0.45, gain: 0.3, stagger: 0.06 });
+              break;
+            case 'epic':
+              chord([494, 740, 988], { type: 'triangle', dur: 0.36, gain: 0.3, stagger: 0.05 });
+              break;
+            case 'rare':
+              chord([440, 660, 880], { type: 'sine', dur: 0.3, gain: 0.3, stagger: 0.04 });
+              break;
+            case 'runeword':
+              chord([392, 588, 784, 1176], { type: 'sawtooth', dur: 0.4, gain: 0.22, stagger: 0.05 });
+              break;
+            case 'magic':
+            case 'uncommon':
+              chord([392, 587], { type: 'sine', dur: 0.22, gain: 0.3, stagger: 0.03 });
+              break;
+            default: // common
+              tone({ type: 'sine', freq: 523, dur: 0.16, gain: 0.28 });
+          }
+        },
+        rune() { chord([330, 494, 740], { type: 'sawtooth', dur: 0.32, gain: 0.22, stagger: 0.05 }); },
+        crit() {
+          noise({ freq: 2200, q: 0.7, dur: 0.1, gain: 0.5, filter: 'highpass' });
+          tone({ type: 'square', freq: 880, freqTo: 220, dur: 0.18, gain: 0.32 });
+        },
+        hit() { noise({ freq: 900, q: 0.8, dur: 0.08, gain: 0.28 }); },
+        levelUp() {
+          const seq = [523, 659, 784, 1046];
+          seq.forEach((f, i) => tone({ type: 'triangle', freq: f, dur: 0.28, gain: 0.34, delay: i * 0.1 }));
+        },
+        slotSpin() { tone({ type: 'sawtooth', freq: 180, freqTo: 90, dur: 0.5, gain: 0.14 }); },
+        slotStop() { tone({ type: 'square', freq: 320, dur: 0.05, gain: 0.18 }); },
+        slotWin(big) {
+          if (big) {
+            [392, 523, 659, 784, 1046].forEach((f, i) => tone({ type: 'triangle', freq: f, dur: 0.26, gain: 0.32, delay: i * 0.08 }));
+          } else {
+            chord([523, 784], { type: 'sine', dur: 0.22, gain: 0.3, stagger: 0.05 });
+          }
+        },
+        slotLose() { tone({ type: 'sine', freq: 200, freqTo: 150, dur: 0.18, gain: 0.18 }); },
+        pachinkoDrop() { tone({ type: 'sine', freq: 600, freqTo: 300, dur: 0.12, gain: 0.22 }); },
+        pachinkoPeg() { tone({ type: 'square', freq: 1200 + Math.random() * 600, dur: 0.03, gain: 0.12 }); },
+        pachinkoWin() { chord([523, 659, 880], { type: 'triangle', dur: 0.3, gain: 0.3, stagger: 0.05 }); },
+        click() { tone({ type: 'square', freq: 440, dur: 0.04, gain: 0.14 }); }
+      };
+      return api;
+    })();
+    // Expose for inline handlers / debugging.
+    window.SFX = SFX;
 
     // ══════════════════════════════════════════════
     //  SUPABASE CLOUD SAVES
@@ -9867,6 +10162,12 @@
       if (!char || !MERCENARY_TYPES[type]) return;
       ensureExtendedSystems(char);
       if (!Array.isArray(char.groupMercs)) char.groupMercs = [];
+      const mainType = char.mercenary && char.mercenary.type ? char.mercenary.type : 'none';
+      const hasMain = !(mainType === 'none' || !MERCENARY_TYPES[mainType]);
+      // Mercenaries occupy any free slot in the group. Gate on whether there is
+      // a free slot at all (getGroupSize < MAX) rather than ignoring the contract
+      // slot, so a merc can always be added while the group has room — even when
+      // grouped alts or LFG heroes are present.
       if (getGroupSize() >= MAX_GROUP_SIZE) {
         log('Group is full (max ' + MAX_GROUP_SIZE + ').', 'info');
         return;
@@ -9876,9 +10177,8 @@
         log(['Not enough gold to hire ', { text: MERCENARY_TYPES[type].name, cls: 'combat-log-merc' }, ' (' + fmt(cost) + 'g).'], 'info');
         return;
       }
-      const mainType = char.mercenary && char.mercenary.type ? char.mercenary.type : 'none';
       // Fill the contracted (main) merc slot first; overflow goes to the group roster.
-      if (mainType === 'none' || !MERCENARY_TYPES[mainType]) {
+      if (!hasMain) {
         hireMercenary(type);
         return;
       }
@@ -11251,38 +11551,138 @@
       return '📦';
     }
 
+    function getCompareArrowForItem(item) {
+      if (!char || !item) return '';
+      const data = getItemData(item) || {};
+      const slot = data.slot || '';
+      if (!slot || !char.equipment) return '';
+      const current = char.equipment[slot];
+      if (!current) return '';
+      const itemBaseStats = getItemBaseStats(item) || { atk: 0, def: 0, hp: 0, mp: 0 };
+      const curStats = current ? (getItemBaseStats(current) || { atk: 0, def: 0, hp: 0, mp: 0 }) : null;
+      if (!curStats) return '';
+      let maxDiff = 0;
+      ['atk', 'def', 'hp', 'mp'].forEach(stat => {
+        const diff = (itemBaseStats[stat] || 0) - (curStats[stat] || 0);
+        if (Math.abs(diff) > Math.abs(maxDiff)) maxDiff = diff;
+      });
+      if (maxDiff > 0) return '▲';
+      if (maxDiff < 0) return '▼';
+      return '→';
+    }
+
     // Open/close a tile's action popover. Closes any other open tile first.
     function toggleItemTile(tileEl, evt) {
       if (evt) evt.stopPropagation();
       if (!tileEl) return;
       const already = tileEl.classList.contains('is-open');
-      document.querySelectorAll('.eq-item-tile.is-open, .eq-slot.is-open').forEach(t => t.classList.remove('is-open'));
+      closeItemTileMenus();
       if (!already) {
         tileEl.classList.add('is-open');
         hideItemTooltip();
-        // Flip the popover upward if it would overflow the bottom of the screen.
-        const menu = tileEl.querySelector('.eq-tile-actions');
-        if (menu) {
-          menu.style.top = 'calc(100% + 4px)';
-          menu.style.bottom = 'auto';
-          const r = menu.getBoundingClientRect();
-          if (r.bottom > window.innerHeight - 8) {
-            menu.style.top = 'auto';
-            menu.style.bottom = 'calc(100% + 4px)';
-          }
-        }
+        positionTileMenu(tileEl);
       }
+    }
+
+    // Keep the action popover fully on-screen and free of clipping. The center
+    // panel and tab containers use overflow:auto/hidden, which would clip an
+    // absolutely-positioned child popover at the panel edges (right column and
+    // bottom rows got cut off). To escape every clipping context we promote the
+    // open menu to position:fixed and compute viewport coordinates, clamped so
+    // neither edge runs off-screen. Anchored under the tile, flipped above when
+    // there isn't room below.
+    //
+    // The menu is hidden (visibility:hidden) while we set up and measure it, so
+    // there's never a frame where it appears at a stale/default location before
+    // being placed. It's revealed only once its final coordinates are set.
+    function positionTileMenu(tileEl) {
+      const menu = tileEl.querySelector('.eq-tile-actions');
+      if (!menu) return;
+      const margin = 8;
+
+      // A transform on the tile (e.g. the :hover lift) would make this tile the
+      // containing block for the menu's position:fixed, sending it off to the
+      // bottom-right while the cursor still hovers. Clear it before positioning.
+      tileEl.style.transform = 'none';
+
+      // Promote to fixed and neutralise the absolute-layout defaults so we can
+      // measure the menu's natural size, then place it by viewport coords.
+      menu.style.visibility = 'hidden';
+      menu.style.position = 'fixed';
+      menu.style.left = '0px';
+      menu.style.top = '0px';
+      menu.style.right = 'auto';
+      menu.style.bottom = 'auto';
+      menu.style.transform = 'none';
+      menu.style.margin = '0';
+      menu.style.maxHeight = (window.innerHeight - margin * 2) + 'px';
+      menu.style.overflowY = 'auto';
+      menu.style.zIndex = '9000';
+
+      // Reading layout here forces a synchronous reflow, so the freshly-shown
+      // (display:flex via .is-open) menu reports real dimensions.
+      const tileRect = tileEl.getBoundingClientRect();
+      const menuW = menu.offsetWidth;
+      const menuH = menu.offsetHeight;
+
+      // --- Horizontal: centre under the tile, then clamp to the viewport. ---
+      let left = tileRect.left + (tileRect.width / 2) - (menuW / 2);
+      left = Math.max(margin, Math.min(left, window.innerWidth - menuW - margin));
+
+      // --- Vertical: prefer below the tile; flip above if it would overflow
+      //     the bottom and there's more room above. ---
+      const gap = 4;
+      const spaceBelow = window.innerHeight - tileRect.bottom - gap;
+      const spaceAbove = tileRect.top - gap;
+      let top;
+      if (menuH <= spaceBelow || spaceBelow >= spaceAbove) {
+        top = tileRect.bottom + gap;
+      } else {
+        top = tileRect.top - gap - menuH;
+      }
+      // Final clamp so it never runs off the top/bottom even after flipping.
+      top = Math.max(margin, Math.min(top, window.innerHeight - menuH - margin));
+
+      menu.style.left = Math.round(left) + 'px';
+      menu.style.top = Math.round(top) + 'px';
+      menu.style.visibility = 'visible';
     }
     // Click anywhere else closes open tile menus.
     document.addEventListener('click', (e) => {
       if (e.target.closest && (e.target.closest('.eq-item-tile') || e.target.closest('.eq-slot.is-compact'))) return;
-      document.querySelectorAll('.eq-item-tile.is-open, .eq-slot.is-open').forEach(t => t.classList.remove('is-open'));
+      closeItemTileMenus();
     });
 
     // True while any backpack/equipped action popover is open, so the periodic
     // game-loop re-render can skip rebuilding the inventory and avoid wiping it.
     function isItemTileOpen() {
       return !!document.querySelector('.eq-item-tile.is-open, .eq-slot.is-open');
+    }
+
+    // Close any open action popover. Terminal actions (equip, unequip, sell)
+    // call this before re-rendering so the isItemTileOpen() render guard doesn't
+    // block the inventory/paperdoll from updating immediately. Also clears the
+    // inline fixed-position styles applied by positionTileMenu so a menu can
+    // never momentarily reappear at a stale location before being re-placed.
+    function closeItemTileMenus() {
+      document.querySelectorAll('.eq-item-tile.is-open, .eq-slot.is-open').forEach(t => {
+        t.classList.remove('is-open');
+        t.style.transform = '';
+        const m = t.querySelector('.eq-tile-actions');
+        if (m) {
+          m.style.position = '';
+          m.style.left = '';
+          m.style.top = '';
+          m.style.right = '';
+          m.style.bottom = '';
+          m.style.transform = '';
+          m.style.margin = '';
+          m.style.maxHeight = '';
+          m.style.overflowY = '';
+          m.style.zIndex = '';
+          m.style.visibility = '';
+        }
+      });
     }
 
     // Re-open the action menu for a given target after a re-render that
@@ -11305,7 +11705,7 @@
     // menus first (so the periodic-render guard won't block), re-render, then
     // re-open the same item's menu.
     function refreshInventoryKeepingMenu(target) {
-      document.querySelectorAll('.eq-item-tile.is-open, .eq-slot.is-open').forEach(t => t.classList.remove('is-open'));
+      closeItemTileMenus();
       renderInv();
       reopenTileMenu(target);
     }
@@ -12576,7 +12976,9 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.68';
+    const CURRENT_VERSION = '1.3.80';
+    const BACKUP_KEY = 'EmberQuest_backups';
+    const MAX_BACKUPS = 3;
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
@@ -12587,6 +12989,113 @@
       catch (e) { slots = []; }
       if (!Array.isArray(slots)) slots = [];
       while (slots.length < MAX_SLOTS) slots.push(null);
+    }
+
+    function createVersionedBackup() {
+      try {
+        const backups = JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
+        const backup = {
+          timestamp: Date.now(),
+          version: CURRENT_VERSION,
+          slots: JSON.parse(JSON.stringify(slots))
+        };
+        backups.unshift(backup);
+        if (backups.length > MAX_BACKUPS) {
+          backups.splice(MAX_BACKUPS);
+        }
+        localStorage.setItem(BACKUP_KEY, JSON.stringify(backups));
+      } catch (e) {
+        // Silently fail if backup storage is full
+      }
+    }
+
+    function getVersionedBackups() {
+      try {
+        return JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function recoverFromBackup(backupIndex) {
+      const backups = getVersionedBackups();
+      if (backupIndex < 0 || backupIndex >= backups.length) {
+        log('Invalid backup index.', 'info');
+        return;
+      }
+
+      const backup = backups[backupIndex];
+      if (!backup || !backup.slots) {
+        log('Backup data is corrupted.', 'info');
+        return;
+      }
+
+      slots = JSON.parse(JSON.stringify(backup.slots));
+      activeSlot = -1;
+      char = null;
+      mob = null;
+      if (afkOn) {
+        afkOn = false;
+        clearInterval(afkInterval);
+        afkInterval = null;
+      }
+      
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
+      Cloud.queueSync();
+      showScreen('screen-charselect');
+      renderSlots();
+      log('Restored from backup: ' + new Date(backup.timestamp).toLocaleString(), 'info');
+    }
+
+    function openSettingsModal(event) {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      const modal = document.getElementById('settings-modal');
+      if (modal) modal.classList.add('open');
+      updateSettingsDisplay();
+      _syncSettingsAudioUI();
+    }
+
+    function _syncSettingsAudioUI() {
+      const slider = document.getElementById('settings-audio-volume');
+      const readout = document.getElementById('settings-audio-volume-readout');
+      const mute = document.getElementById('settings-audio-mute');
+      const pct = Math.round((window.SFX ? SFX.volume : 0.6) * 100);
+      if (slider) slider.value = pct;
+      if (readout) readout.textContent = pct + '%';
+      if (mute) mute.checked = !!(window.SFX && SFX.muted);
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById('settings-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function updateSettingsDisplay() {
+      const backups = getVersionedBackups();
+      const listEl = document.getElementById('settings-backup-list');
+      if (listEl) {
+        if (backups.length === 0) {
+          listEl.innerHTML = 'No backups yet. Backups are created automatically on each save.';
+        } else {
+          const items = backups.map((b, i) => 
+            '<div style="padding:4px 0;border-bottom:0.5px solid var(--border)">' +
+            '<span>' + new Date(b.timestamp).toLocaleString() + ' (v' + b.version + ')</span> ' +
+            '<button class="btn" style="font-size:9px;padding:1px 6px;" onclick="recoverFromBackup(' + i + ')">Recover</button>' +
+            '</div>'
+          ).join('');
+          listEl.innerHTML = '<div style="font-size:11px;margin-bottom:6px;font-weight:600;">Recent backups (latest first):</div>' + items;
+        }
+      }
+    }
+
+    function showBackupRecoveryOptions() {
+      const backups = getVersionedBackups();
+      if (backups.length === 0) {
+        log('No backups available yet.', 'info');
+        return;
+      }
+      log('Backups available in Settings (last 3 saves). Use Restore Backup to recover.', 'info');
+      updateSettingsDisplay();
     }
 
     function saveSlots(options = {}) {
@@ -12610,6 +13119,7 @@
         slots[activeSlot] = JSON.parse(JSON.stringify(char));
       }
       try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) { }
+      createVersionedBackup();
       Cloud.queueSync();
       flashSaved();
     }
@@ -13005,6 +13515,40 @@
       el.innerHTML = '<i class="ti ti-check"></i> Saved';
       el.className = 'save-indicator saved';
       setTimeout(() => { el.innerHTML = '<i class="ti ti-device-floppy"></i> Saved'; el.className = 'save-indicator'; }, 2000);
+    }
+
+    function closeAfkSummary() {
+      const modal = document.getElementById('afk-return-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function showAfkReturnSummary(afkStats) {
+      const modal = document.getElementById('afk-return-modal');
+      if (!modal) return;
+
+      const { elapsed, fights, xp, gold, loot, runes, faction, questCompletions, zone } = afkStats;
+
+      // Format duration
+      const minutes = Math.floor(elapsed / 60000);
+      const seconds = Math.floor((elapsed % 60000) / 1000);
+      const durationText = minutes > 0 ? minutes + 'm ' + seconds + 's away' : seconds + 's away';
+      document.getElementById('afk-summary-duration').textContent = 'You were ' + durationText + ' in ' + ZONES[zone].name;
+
+      // Build stats HTML with staggered animations
+      const stats = [
+        { label: 'Fights', value: fmt(fights), key: 'kills' },
+        { label: 'Experience', value: '+' + fmt(xp), key: 'xp' },
+        { label: 'Gold', value: '+' + fmt(gold) + 'g', key: 'gold' },
+        { label: 'Items Looted', value: fmt(loot), key: 'loot' },
+        { label: 'Runes', value: '+' + fmt(runes), key: 'runes' },
+        { label: 'Faction', value: '+' + fmt(faction), key: 'faction' }
+      ];
+      if (questCompletions > 0) stats.push({ label: 'Quests', value: fmt(questCompletions), key: 'kills' });
+
+      const statsHtml = stats.map((s, i) => '\n        <div class="summary-stat-row ' + s.key + '" style="animation-delay: ' + (i * 0.08) + 's">\n          <span class="summary-stat-label">' + s.label + '</span>\n          <span class="summary-stat-value ' + s.key + '">' + s.value + '</span>\n        </div>\n      ').join('');
+
+      document.getElementById('afk-summary-stats').innerHTML = statsHtml;
+      modal.classList.add('open');
     }
 
     function showToast(message, type = 'info', duration = 2600) {
@@ -14168,6 +14712,9 @@
           simulateAfkReturn(elapsed, { source: 'resume' });
         }
       }
+
+      // First-session guided tour (only shows once, ever, per browser).
+      if (typeof maybeStartTour === 'function') maybeStartTour();
     }
 
     function deleteSlot(i) {
@@ -14313,6 +14860,10 @@
       }
       renderSpellGemButtons();
       renderCompactGroup();
+      // Keep the Group popup roster in sync while it's open, so hiring a
+      // mercenary (or other group changes) shows up immediately instead of
+      // only after closing and reopening the window.
+      if (_activePopup === 'group') renderGroupTab();
 
 
       const _hpPct = Math.max(0, Math.min(100, char.hp / char.maxHp * 100));
@@ -14480,9 +15031,11 @@
         const btn = document.createElement('button');
         const isBest = char.level >= z.minLvl && char.level <= z.maxLvl;
         const isSlightlyOver = char.level > z.maxLvl && char.level <= z.maxLvl + 4;
-        btn.className = 'btn zone-btn' + (i === char.zone ? ' current' : '');
+        const isCurrent = (i === char.zone);
+        btn.className = 'btn zone-btn' + (isCurrent ? ' current' : '');
         let zoneLabel = z.name + ' <span style="font-size:10px;opacity:.6">(Lv ' + z.minLvl + '–' + z.maxLvl + ')</span>';
-        if (isBest) zoneLabel += ` <button onclick="event.stopPropagation();travelZone(${i},true)" style="font-size:10px;padding:1px 6px;background:rgba(250,204,21,0.15);border:1px solid rgba(250,204,21,0.4);border-radius:4px;color:#facc15;cursor:pointer" title="Travel to this zone">⭐ Go Here</button>`;
+        if (isCurrent) zoneLabel += ` <span style="font-size:10px;padding:1px 6px;background:rgba(34,197,94,0.18);border:1px solid rgba(34,197,94,0.65);border-radius:4px;color:#4ade80;font-weight:600;white-space:nowrap" title="This is the zone you are currently hunting in">📍 You are here</span>`;
+        else if (isBest) zoneLabel += ` <button onclick="event.stopPropagation();travelZone(${i},true)" style="font-size:10px;padding:1px 6px;background:rgba(250,204,21,0.15);border:1px solid rgba(250,204,21,0.4);border-radius:4px;color:#facc15;cursor:pointer" title="Travel to this zone">⭐ Go Here</button>`;
         else if (isSlightlyOver) zoneLabel += ' <span style="font-size:10px;color:#94a3b8" title="Slightly underleveled zone">↓</span>';
         btn.innerHTML = (char.level < z.minLvl ? '<i class="ti ti-lock" style="font-size:12px"></i> ' : '') + zoneLabel;
         btn.disabled = char.level < z.minLvl;
@@ -15113,6 +15666,11 @@
           ? '<div class="eq-tile-badges">' + (favorite ? '<span title="Favorite">⭐</span>' : '') + (locked ? '<span title="Locked">🔒</span>' : '') + '</div>'
           : '';
 
+        // Smart compare arrow for equippable items
+        const compareArrow = isEquip ? getCompareArrowForItem(item) : '';
+        const compareClass = compareArrow === '▲' ? 'upgrade' : (compareArrow === '▼' ? 'downgrade' : 'equal');
+        const compareBadge = compareArrow ? '<span class="eq-tile-compare ' + compareClass + '" title="Compared to equipped item">' + compareArrow + '</span>' : '';
+
         // Build the action popover (all interactions live here).
         const containerBtn = isContainer
           ? '<select onchange="setPendingBagInstallTarget(' + absoluteIndex + ', this.value)">' + installTargetOptions + '</select><button class="btn" onclick="installContainerFromInventory(' + absoluteIndex + ', getPendingBagInstallTarget(' + absoluteIndex + ', ' + realBagCount + '))">Install</button>'
@@ -15140,6 +15698,7 @@
         tile.className = 'eq-item-tile ' + rarityBorderClass;
         tile.dataset.invIndex = String(absoluteIndex);
         tile.innerHTML =
+          compareBadge +
           flagBadges +
           '<div class="eq-tile-icon">' + tileIcon + '</div>' +
           '<div class="eq-tile-name ' + rarityClass + '">' + itemName + '</div>' +
@@ -16158,6 +16717,7 @@
       }
       _slotSpinning = true;
       _slotUpdateSpinBtn();
+      try { if (window.SFX) SFX.slotSpin(); } catch (e) {}
       // Clear any highlight/dimming left over from the previous spin's win
       _slotClearHighlights(m);
       const resultEl = document.getElementById('slot-result');
@@ -16180,6 +16740,7 @@
         }, 70);
         setTimeout(() => {
           clearInterval(spinInt);
+          try { if (window.SFX) SFX.slotStop(); } catch (e) {}
           cells.forEach((c, row) => {
             if (!c) return;
             c.textContent = grid[r][row].sym;
@@ -16298,6 +16859,7 @@
       if (resultEl) {
         if (totalWin > 0) {
           const big = totalWin >= lineBet * 100;
+          try { if (window.SFX) SFX.slotWin(big); } catch (e) {}
           const lead = big ? '💥 BIG WIN! ' : (wasFree ? '🎁 ' : '🎉 ');
           const lineNote = winningLines.length ? ` on ${winningLines.length} line${winningLines.length > 1 ? 's' : ''}` : '';
           resultEl.innerHTML = `<span style="color:${m.color}">${lead}Won ${totalWin.toLocaleString()}g${lineNote}${freeMsg}</span>`;
@@ -16305,6 +16867,7 @@
         } else if (freeMsg) {
           resultEl.innerHTML = `<span style="color:#ffe27a">${freeMsg.replace(' · ', '')}</span>`;
         } else {
+          try { if (window.SFX) SFX.slotLose(); } catch (e) {}
           resultEl.innerHTML = `<span style="color:var(--text-secondary)">No win${wasFree ? ' (free spin)' : ''} — spin again!</span>`;
         }
       }
@@ -16789,6 +17352,7 @@
         awarded: false,
       };
       _pBalls.push(ball);
+      try { if (window.SFX) SFX.pachinkoDrop(); } catch (e) {}
 
       // Update instructions
       const instrEl = document.getElementById('pachinko-instructions');
@@ -16846,6 +17410,12 @@
               ball.vy = (ball.vy - 2 * dot * ny) * BOUNCE;
               ball.vx += (Math.random() - 0.5) * 0.8;
               if (ball.vy < 1) ball.vy = 1;
+              // Throttle peg ticks so a busy board doesn't machine-gun audio.
+              const _now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+              if (_now - (ball._lastPeg || 0) > 45) {
+                ball._lastPeg = _now;
+                try { if (window.SFX) SFX.pachinkoPeg(); } catch (e) {}
+              }
             }
           });
 
@@ -17032,12 +17602,14 @@
 
       if (bkt.type === 'gold') {
         char.gold = (char.gold || 0) + bkt.value;
+        try { if (window.SFX) SFX.pachinkoWin(); } catch (e) {}
         _pachinkoRecordWin(bkt.value, 0, 0);
         resultText = `🏆 Won ${bkt.value.toLocaleString()} gold!`;
         log(`🔮 Pachinko (${board.name}): Won ${bkt.value.toLocaleString()}g!`, 'loot');
       } else if (bkt.type === 'rune') {
         if (!char.runes) char.runes = {};
         char.runes[bkt.value] = (char.runes[bkt.value] || 0) + 1;
+        try { if (window.SFX) SFX.pachinkoWin(); } catch (e) {}
         _pachinkoRecordWin(0, 1, 0);
         resultText = `🔷 Won a ${bkt.value} Rune!`;
         log(`🔮 Pachinko (${board.name}): Won ${bkt.value} Rune!`, 'loot');
@@ -18971,6 +19543,7 @@
         const critRoll = rollPlayerCrit(dmg);
         dmg = critRoll.dmg;
         if (critRoll.crit) {
+          try { if (window.SFX) SFX.crit(); } catch (e) {}
           addDamageMeterCrit();
           // Chance to stun on crit
           if (Math.random() < PHASE1.stunOnCritChance) {
@@ -19342,6 +19915,7 @@
       }
       const runeDrop = rollRuneDrop(char.zone, !!mob.named, 'loot');
       if (runeDrop) {
+        try { if (window.SFX) SFX.rune(); } catch (e) {}
         if (!Array.isArray(char.runeStash)) char.runeStash = [];
         char.runeStash.push(runeDrop);
         log([
@@ -19419,6 +19993,7 @@
         // every few levels). Base scores only — gear bonuses apply on top.
         char.abilities = rollClassAbilities(char.cls, char.level);
         log('*** LEVEL UP! You are now level ' + char.level + '! ***', 'lvl');
+        try { if (window.SFX) SFX.levelUp(); } catch (e) {}
         if (typeof showToast === 'function') showToast('⬆ Level ' + char.level + '! HP, MP and stats increased.', 'success', 3000);
         const _ov = document.getElementById('levelup-overlay');
         if (_ov) { _ov.classList.remove('active'); void _ov.offsetWidth; _ov.classList.add('active'); }
@@ -19607,6 +20182,7 @@
       const bagCount = getBagLayout(char).length;
       if (activeBagIndex >= bagCount) activeBagIndex = bagCount - 1;
 
+      closeItemTileMenus();
       renderAll();
       autoSave();
     }
@@ -19704,8 +20280,42 @@
       return false;
     }
 
+    function shouldAutoSalvageLootItem(item) {
+      if (!char) return false;
+      if (isItemLocked(item) || isItemFavorite(item)) return false;
+      const lf = getLootFilterState(char);
+      const quality = getItemQuality(item);
+      const isEquipment = !!getItemData(item);
+
+      if (lf.autoSalvageNormalGear && isEquipment && quality === 'Normal') {
+        return true;
+      }
+      if (lf.autoSalvageMagicGear && isEquipment && quality === 'Magic') {
+        return true;
+      }
+      if (lf.autoSalvageRareGear && isEquipment && quality === 'Rare') {
+        return true;
+      }
+      if (lf.autoSalvageLegendaryGear && isEquipment && (quality === 'Epic' || quality === 'Runeword' || quality === 'Legendary')) {
+        return true;
+      }
+      return false;
+    }
+
+    function salvageItemToShards(item) {
+      if (!char || !item) return false;
+      ensureExtendedSystems(char);
+      const yield = getCraftShardYieldByQuality(item);
+      addCraftShards(yield);
+      return true;
+    }
+
     function processLootDrop(item, sourceLabel = 'Looted') {
       if (!char) return;
+
+      // Audio: rarity-scaled loot chime (plays regardless of filter outcome
+      // so the player always hears what dropped).
+      try { if (window.SFX) SFX.loot(getItemQuality(item)); } catch (e) {}
 
       const matchedRule = getLootFilterRule(item);
 
@@ -19733,6 +20343,13 @@
           if (handleOverflowVendor(item, sourceLabel)) return;
           char.inventory.push(item);
           log(sourceLabel + ': ' + getItemDisplayName(item) + ' kept by loot filter.', 'loot');
+          return;
+        }
+
+        if (matchedRule.action === 'salvage') {
+          if (salvageItemToShards(item)) {
+            log([sourceLabel + ': ', { text: getItemDisplayName(item), cls: 'combat-log-loot-item ' + getItemRarityClass(item) }, ' salvaged by rule.'], 'loot');
+          }
           return;
         }
       }
@@ -20785,6 +21402,7 @@
 
       log('Unequipped ' + getItemDisplayName(item) + '.', 'loot');
 
+      closeItemTileMenus();
       renderAll();
       autoSave();
     }
@@ -20818,6 +21436,7 @@
       const bagCount = getBagLayout(char).length;
       if (activeBagIndex >= bagCount) activeBagIndex = bagCount - 1;
 
+      closeItemTileMenus();
       renderAll();
       autoSave();
     }
@@ -21396,6 +22015,21 @@
       if (questCompletions > 0) log('AFK quests completed: ' + questCompletions + '.', 'lvl');
       if (elapsedTicks > simTicks) {
         log('AFK simulation capped at ' + maxTicks + ' ticks for performance.', 'info');
+      }
+
+      // Show rich summary screen
+      if (typeof showAfkReturnSummary === 'function') {
+        showAfkReturnSummary({
+          elapsed: elapsedMs,
+          fights,
+          xp: afkXp.regularXp + (afkXp.aaXp || 0),
+          gold: totalGold,
+          loot: totalLoot,
+          runes: totalRunes,
+          faction: factionGain,
+          questCompletions,
+          zone: simZoneIdx
+        });
       }
 
       showToast('AFK rewards: +' + fmt(afkXp.regularXp) + ' XP' + (afkXp.aaXp > 0 ? (' (+' + fmt(afkXp.aaXp) + ' AA XP)') : '') + ', +' + fmt(totalGold) + 'g, ' + fmt(totalLoot) + ' items, ' + fmt(totalRunes) + ' runes, +' + fmt(factionGain) + ' faction', 'success', 4200);
@@ -22384,7 +23018,7 @@
       _activePopup = null;
     }
 
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopup(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePopup(); closeTabHelp(); } });
 
     function switchTab(tab) {
       if (POPUP_PANEL_IDS.has(tab)) { openPopup(tab); return; }
@@ -22403,6 +23037,135 @@
       if (tab === 'inv') renderInv();
       if (tab === 'shop') renderShop();
       if (tab === 'casino') renderCasino();
+    }
+
+    // ══════════════════════════════════════════════
+    //  ONBOARDING TOUR + PER-TAB HELP
+    // ══════════════════════════════════════════════
+    // Per-tab help text shown by the "?" button in the tab bar.
+    const TAB_HELP = {
+      combat: { title: '⚔ Combat', body: 'Fight monsters here. Press <b>Attack</b> (or Spacebar) to strike the current target, <b>Find Mob</b> to spawn an enemy, and <b>Heal</b> to recover HP. Killing mobs earns XP, gold, and loot. Use the skill slots to auto-cast spells during fights.' },
+      zone:   { title: '🗺 Zones', body: 'Travel between regions. Each zone has tougher mobs and better rewards. Click a zone to <b>Travel</b> there — the ⭐ marker points to the best zone for your level. Some zones require contracts or quest progress to unlock.' },
+      inv:    { title: '🎒 Inventory', body: 'Manage your gear. Your <b>Equipped</b> slots are at the top; your <b>Backpack</b> holds loot below. Click <b>Equip</b> on an item to wear it, or <b>Unequip</b> to remove it. Better gear raises your stats. Junk can be auto-vendored.' },
+      shop:   { title: '🏪 Shop', body: 'Buy and sell here. Spend gold on potions, gear, and upgrades from the <b>Village Merchant</b>. Sell loot you don\u2019t need for extra gold. Stock up on healing potions before heading into tougher zones.' },
+      casino: { title: '🎰 Casino', body: 'Gamble your gold in the Golden Ember Casino for a chance at big payouts and rare prizes. Risky, but rewarding. Only wager what you can afford to lose.' }
+    };
+
+    function getActiveTab() {
+      try {
+        const t = sessionStorage.getItem('EQ_lastTab');
+        if (t && TAB_HELP[t]) return t;
+      } catch(e) {}
+      const active = document.querySelector('.tab.active');
+      const m = active && (active.getAttribute('onclick') || '').match(/switchTab\('([^']+)'\)/);
+      return (m && TAB_HELP[m[1]]) ? m[1] : 'combat';
+    }
+
+    function openTabHelp() {
+      const tab = getActiveTab();
+      const h = TAB_HELP[tab] || TAB_HELP.combat;
+      document.getElementById('help-title').textContent = h.title + ' — Help';
+      document.getElementById('help-body').innerHTML =
+        '<div>' + h.body + '</div>' +
+        '<div style="margin-top:16px"><button class="btn" onclick="closeTabHelp();startTour(true)">Replay full tutorial tour</button></div>';
+      document.getElementById('help-backdrop').classList.add('active');
+    }
+
+    function closeTabHelp() {
+      document.getElementById('help-backdrop').classList.remove('active');
+    }
+
+    // ── Guided tour ──────────────────────────────────
+    const TOUR_STEPS = [
+      { tab: 'combat', sel: '#attack-btn',   title: 'Attack',      text: 'This is where the action happens. Hit <b>Attack</b> (or press Spacebar) to fight the current monster. Defeating mobs earns XP, gold, and loot.' },
+      { tab: 'inv',    sel: '#tabbtn-inv',   title: 'Equip Gear',  text: 'Open your <b>Inventory</b> to equip weapons and armor. Better gear means bigger stats — click <b>Equip</b> on any item in your backpack.' },
+      { tab: 'zone',   sel: '#tabbtn-zone',  title: 'Travel',      text: 'Use <b>Zones</b> to travel the world. Each region has stronger enemies and better rewards. Follow the ⭐ to the best zone for your level.' },
+      { tab: 'combat', sel: '#afk-btn',      title: 'AFK Mode',    text: 'Toggle <b>AFK</b> and the game fights, loots, and heals for you automatically. Set goals and rules, then come back to your progress. This is the heart of the game.' },
+      { tab: 'shop',   sel: '#tabbtn-shop',  title: 'Shop',        text: 'Visit the <b>Shop</b> to buy potions and gear and to sell loot you don\u2019t need. Stock healing potions before tackling tougher zones.' }
+    ];
+    let tourIndex = 0;
+    let tourActive = false;
+
+    function tourSeen() {
+      try { return localStorage.getItem('EQ_tourDone') === '1'; } catch(e) { return false; }
+    }
+    function markTourSeen() {
+      try { localStorage.setItem('EQ_tourDone', '1'); } catch(e) {}
+    }
+
+    function maybeStartTour() {
+      if (tourSeen()) return;
+      // Small delay so the game UI has rendered/laid out.
+      setTimeout(() => { if (!tourSeen()) startTour(false); }, 600);
+    }
+
+    function startTour(force) {
+      if (!force && tourSeen()) return;
+      tourIndex = 0;
+      tourActive = true;
+      document.getElementById('tour-backdrop').classList.add('active');
+      window.addEventListener('resize', positionTour);
+      showTourStep();
+    }
+
+    function tourNext() {
+      tourIndex++;
+      if (tourIndex >= TOUR_STEPS.length) { endTour(); return; }
+      showTourStep();
+    }
+
+    function showTourStep() {
+      const step = TOUR_STEPS[tourIndex];
+      if (!step) { endTour(); return; }
+      // Make sure the relevant tab is visible so the anchor exists on screen.
+      if (step.tab) { try { switchTab(step.tab); } catch(e) {} }
+      document.getElementById('tour-title').textContent = step.title;
+      document.getElementById('tour-text').innerHTML = step.text;
+      document.getElementById('tour-step').textContent = 'Step ' + (tourIndex + 1) + ' of ' + TOUR_STEPS.length;
+      document.getElementById('tour-next').textContent = (tourIndex === TOUR_STEPS.length - 1) ? 'Finish' : 'Next';
+      // Wait a frame for the tab switch to lay out, then position.
+      requestAnimationFrame(() => requestAnimationFrame(positionTour));
+    }
+
+    function positionTour() {
+      if (!tourActive) return;
+      const step = TOUR_STEPS[tourIndex];
+      const target = step && document.querySelector(step.sel);
+      const hi = document.getElementById('tour-highlight');
+      const tip = document.getElementById('tour-tip');
+      if (!target) {
+        // Center the tip if the anchor isn't found.
+        hi.style.display = 'none';
+        tip.style.top = '50%'; tip.style.left = '50%';
+        tip.style.transform = 'translate(-50%,-50%)';
+        return;
+      }
+      const r = target.getBoundingClientRect();
+      const pad = 6;
+      hi.style.display = 'block';
+      hi.style.transform = 'none';
+      hi.style.top = (r.top - pad) + 'px';
+      hi.style.left = (r.left - pad) + 'px';
+      hi.style.width = (r.width + pad * 2) + 'px';
+      hi.style.height = (r.height + pad * 2) + 'px';
+
+      // Place the tip below the target by default; flip above if no room.
+      const tipW = tip.offsetWidth || 290;
+      const tipH = tip.offsetHeight || 140;
+      let top = r.bottom + 14;
+      let left = r.left;
+      if (top + tipH > window.innerHeight - 10) top = Math.max(10, r.top - tipH - 14);
+      if (left + tipW > window.innerWidth - 10) left = Math.max(10, window.innerWidth - tipW - 10);
+      tip.style.transform = 'none';
+      tip.style.top = top + 'px';
+      tip.style.left = left + 'px';
+    }
+
+    function endTour() {
+      tourActive = false;
+      markTourSeen();
+      document.getElementById('tour-backdrop').classList.remove('active');
+      window.removeEventListener('resize', positionTour);
     }
 
     function setupDrag() {
@@ -23162,6 +23925,36 @@
         </div>`;
       }).join('');
     }
+
+    // ── Audio settings UI wiring ─────────────────────
+    function onAudioVolumeInput(v) {
+      if (window.SFX) SFX.setVolume(Number(v) / 100);
+      const readout = document.getElementById('audio-volume-readout');
+      if (readout) readout.textContent = Math.round(Number(v)) + '%';
+      const settingsReadout = document.getElementById('settings-audio-volume-readout');
+      if (settingsReadout) settingsReadout.textContent = Math.round(Number(v)) + '%';
+    }
+    function onAudioMuteToggle(checked) {
+      if (window.SFX) SFX.setMuted(checked);
+      const mute = document.getElementById('audio-mute-toggle');
+      if (mute) mute.checked = checked;
+      const settingsMute = document.getElementById('settings-audio-mute');
+      if (settingsMute) settingsMute.checked = checked;
+    }
+    // Close the settings modal when clicking elsewhere.
+    document.addEventListener('click', function (e) {
+      const modal = document.getElementById('settings-modal');
+      if (!modal || !modal.classList.contains('open')) return;
+      if (modal.contains(e.target) && e.target !== modal) return;
+      closeSettingsModal();
+    });
+    // Unlock audio on the first interaction anywhere (autoplay policy).
+    ['click', 'keydown', 'touchstart'].forEach(ev => {
+      window.addEventListener(ev, function _once() {
+        if (window.SFX) SFX.unlock();
+        window.removeEventListener(ev, _once);
+      }, { once: true });
+    });
 
     Cloud.start();
 
