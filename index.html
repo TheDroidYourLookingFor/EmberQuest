@@ -869,6 +869,10 @@
       animation: pulse 1.2s infinite;
     }
 
+    @keyframes snapspin {
+      to { transform: rotate(360deg); }
+    }
+
     @keyframes pulse {
 
       0%,
@@ -1971,6 +1975,38 @@
     .summary-stat-value.runes { color: #a8d6f4; }
     .summary-stat-value.kills { color: #d68af4; }
     .summary-stat-value.faction { color: #8ad6a8; }
+
+    /* AFK return summary — offline progress graph */
+    .afk-summary-graph {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 8px 6px;
+      margin-bottom: 10px;
+      animation: summary-stat-bounce 0.5s ease-out;
+    }
+    .afk-graph-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .afk-summary-graph svg { display: block; }
+    .afk-graph-legend {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+    .afk-graph-legend span { display: inline-flex; align-items: center; gap: 4px; }
+    .afk-graph-swatch {
+      width: 10px;
+      height: 3px;
+      border-radius: 2px;
+      display: inline-block;
+    }
 
     /* Item tooltip */
     #item-tooltip {
@@ -3134,6 +3170,7 @@
 
     <!-- Account / logout badge -->
     <div id="cs-account">
+      <span id="cs-snapshot-status" style="display:none;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid rgba(255,220,160,0.2);background:rgba(0,0,0,0.3);"></span>
       <span id="cs-user-email"></span>
       <button type="button" onclick="Cloud.signOut()">Log Out</button>
     </div>
@@ -3512,6 +3549,15 @@
             </div>
             <div id="settings-backup-list" style="font-size:10px;color:var(--text-secondary);margin-top:4px;"></div>
           </div>
+          <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px;">
+            <div style="font-size:12px;font-weight:600;">☁️ Cloud Version History</div>
+            <div style="font-size:10px;color:var(--text-secondary);">Full-account snapshots stored in the cloud. Roll back even after a bad save has synced. Newest 20 are kept.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn" onclick="snapshotCloudVersionNow()" title="Save a labeled cloud snapshot of all characters right now">📸 Snapshot Now</button>
+              <button class="btn" onclick="renderCloudVersionList()" title="Refresh the list of cloud versions">↻ Refresh</button>
+            </div>
+            <div id="settings-cloud-version-list" style="font-size:10px;color:var(--text-secondary);margin-top:4px;"></div>
+          </div>
         </div>
         <div class="modal-actions">
           <button class="btn active" onclick="closeSettingsModal()">Close</button>
@@ -3791,6 +3837,8 @@
           <div class="tab" id="tabbtn-casino" onclick="switchTab('casino')">🎰 Casino</div>
           <div class="tab" id="tabbtn-help" onclick="openTabHelp()" title="Help for this tab" style="margin-left:auto;min-width:30px;text-align:center;font-weight:700">?</div>
           <div class="tab" onclick="openPopup('leaderboard')">🏅 Leaderboard</div>
+          <div class="tab" onclick="openPopup('arena')">⚔ Arena</div>
+          <div class="tab" onclick="openPopup('guild')">🛡 Guild</div>
           <div class="tab" onclick="openPopup('about')">ℹ About</div>
         </div>
         <!-- Shared popup modal -->
@@ -3961,6 +4009,28 @@
               id="loot-filter-rule-list"
               style="display:flex;flex-direction:column;gap:4px;">
             </div>
+            <div
+              style="font-size:11px;font-weight:600;">
+              Share
+              Filter
+              (Import
+              /
+              Export)
+            </div>
+            <div
+              style="display:flex;gap:6px;flex-wrap:wrap;">
+              <input
+                id="loot-filter-code"
+                type="text"
+                placeholder="Paste a filter code here to import"
+                style="flex:1;min-width:140px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);font-family:monospace;">
+              <button
+                class="btn"
+                onclick="exportLootFilterCode()">Export</button>
+              <button
+                class="btn"
+                onclick="importLootFilterCode()">Import</button>
+            </div>
           </div>
         </div>
 <div
@@ -4060,6 +4130,16 @@
           </div>
         </div>
 <div
+          id="tab-loadouts"
+          style="display:none">
+          <h3>
+            Combat Loadouts
+          </h3>
+          <div
+            id="loadouts-list">
+          </div>
+        </div>
+<div
           id="tab-bank"
           style="display:none">
           <h3 style="margin-bottom:6px">Shared Bank</h3>
@@ -4098,6 +4178,24 @@
             Characters ranked by overall power. When you're signed in, this shows players across the whole cloud; offline, it shows the characters on this device.
           </div>
           <div id="leaderboard-list"></div>
+        </div>
+<div
+          id="tab-arena"
+          style="display:none">
+          <h3 style="margin-bottom:4px">⚔ Arena — Asynchronous PvP</h3>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Challenge other players' heroes. You fight an AI-controlled copy of their build — no live opponent needed. Win to climb the rating ladder. Your own heroes are published as challengeable opponents automatically. Hardcore characters only face other Hardcore builds.
+          </div>
+          <div id="arena-content"></div>
+        </div>
+<div
+          id="tab-guild"
+          style="display:none">
+          <h3 style="margin-bottom:4px">🛡 Guild</h3>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+            Band together toward shared goals. Slay monsters for the weekly objective, take on guild quests, pool gold and gear in the shared vault, climb the contribution leaderboard, and run asynchronous co-op dungeons with your guildmates' heroes. Create or join a guild below.
+          </div>
+          <div id="guild-content"></div>
         </div>
 <div
           id="tab-tradeskill"
@@ -4616,6 +4714,21 @@
               onchange="setAfkGoalFromUI()"
               style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
             </select>
+            <span
+              id="afk-goal-target-wrap"
+              style="display:none;align-items:center;gap:4px">
+              <label
+                id="afk-goal-target-label"
+                for="afk-goal-target"
+                style="font-size:11px;color:var(--text-secondary)">Target:</label>
+              <input
+                id="afk-goal-target"
+                type="number"
+                min="1"
+                step="1"
+                onchange="setAfkGoalTargetFromUI()"
+                style="width:84px;font-size:11px;padding:4px 6px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+            </span>
           </div>
           <div
             style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 8px 0">
@@ -4678,6 +4791,12 @@
               onclick="toggleAfkRule('autoAdvanceContract')">Auto-Advance
               Contract:
               On</button>
+            <button
+              class="popup-btn"
+              id="pbtn-loadouts"
+              style="font-size:10px;padding:2px 8px"
+              onclick="openPopup('loadouts')"
+              title="Combat Loadouts">🎛 Combat Loadouts</button>
           </div>
           <div
             style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">
@@ -5201,6 +5320,7 @@
         }
         try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
         this.publishLeaderboard(); // seed public leaderboard with this account's characters
+        this.publishPvpSnapshots(); // seed the PvP arena with challengeable snapshots
         // Collect any LFG rewards this account's heroes earned while away.
         try {
           const earned = await this.collectLfgRewards();
@@ -5212,6 +5332,12 @@
         if (badge && currentUser) badge.textContent = currentUser.email || '';
         showScreen('screen-charselect');
         renderSlots();
+        // Seed the snapshot status pill from the newest cloud version (non-fatal).
+        try {
+          this.fetchVersions().then(() => {
+            if (typeof setSnapshotStatus === 'function') setSnapshotStatus('idle');
+          });
+        } catch (e) { /* non-fatal */ }
       },
       async fetchAllSlots() {
         const out = new Array(MAX_SLOTS).fill(null);
@@ -5243,9 +5369,142 @@
             await sb.from('saves').delete().eq('user_id', currentUser.id).in('slot', deletes);
           }
           this.publishLeaderboard(); // keep public leaderboard summaries in sync (fire-and-forget)
+          this.publishPvpSnapshots(); // keep arena opponent snapshots in sync
           this.refreshSharedLfg();   // keep any LFG-shared heroes' snapshots fresh
+          this.maybeAutoVersion();   // periodically archive a full cloud snapshot for recovery
         } catch (e) { console.warn('cloud sync error', e); }
       },
+
+      // ── Cloud Version History ───────────────────────────────
+      // Stores periodic full-account snapshots in a separate `save_versions`
+      // table so a bad save can be rolled back even after it has synced to the
+      // cloud. Degrades silently if the table has not been created yet, so the
+      // game keeps working without the migration.
+      _versionsUnavailable: false,      // set true if the table is missing (42P01)
+      _lastAutoVersionAt: 0,
+      _lastSnapshotAt: 0,               // ms timestamp of newest known cloud snapshot
+      AUTO_VERSION_INTERVAL_MS: 30 * 60 * 1000, // at most one auto-snapshot per 30 min
+      MAX_CLOUD_VERSIONS: 20,
+
+      _slotSummary() {
+        // Compact descriptor of what's in the current slots, stored alongside
+        // each version so the UI can preview without unpacking full save data.
+        const chars = [];
+        for (let i = 0; i < MAX_SLOTS; i++) {
+          const s = slots[i];
+          if (s) chars.push({ slot: i, name: s.name || '?', cls: s.cls || '', level: Number(s.level) || 1 });
+        }
+        return chars;
+      },
+
+      async pushVersion(label, kind) {
+        if (!sb || !currentUser || this._versionsUnavailable) return { ok: false };
+        const summary = this._slotSummary();
+        if (!summary.length) return { ok: false }; // nothing worth snapshotting
+        const row = {
+          user_id: currentUser.id,
+          label: (label || '').toString().slice(0, 40) || null,
+          kind: kind || 'manual',
+          version: (typeof CURRENT_VERSION === 'string') ? CURRENT_VERSION : '',
+          char_count: summary.length,
+          summary: summary,
+          data: JSON.parse(JSON.stringify(slots)),
+          created_at: new Date().toISOString()
+        };
+        try {
+          const { error } = await sb.from('save_versions').insert(row);
+          if (error) {
+            if (error.code === '42P01') { this._versionsUnavailable = true; } // table missing
+            else console.warn('cloud version insert failed', error);
+            return { ok: false };
+          }
+          this._lastAutoVersionAt = Date.now();
+          this._lastSnapshotAt = Date.now();
+          if (typeof setSnapshotStatus === 'function') setSnapshotStatus('idle');
+          this.pruneVersions(); // fire-and-forget
+          return { ok: true };
+        } catch (e) {
+          console.warn('cloud version error', e);
+          return { ok: false };
+        }
+      },
+
+      async maybeAutoVersion() {
+        if (this._versionsUnavailable) return;
+        if (Date.now() - this._lastAutoVersionAt < this.AUTO_VERSION_INTERVAL_MS) return;
+        await this.pushVersion(null, 'auto');
+      },
+
+      async fetchVersions() {
+        if (!sb || !currentUser || this._versionsUnavailable) return [];
+        try {
+          const { data, error } = await sb.from('save_versions')
+            .select('id, label, kind, version, char_count, summary, created_at')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false })
+            .limit(this.MAX_CLOUD_VERSIONS);
+          if (error) {
+            if (error.code === '42P01') this._versionsUnavailable = true;
+            else console.warn('cloud version list failed', error);
+            return [];
+          }
+          const list = data || [];
+          if (list.length) {
+            const newest = new Date(list[0].created_at).getTime();
+            if (Number.isFinite(newest) && newest > (this._lastSnapshotAt || 0)) {
+              this._lastSnapshotAt = newest;
+            }
+          }
+          return list;
+        } catch (e) {
+          console.warn('cloud version list error', e);
+          return [];
+        }
+      },
+
+      async restoreVersion(id) {
+        if (!sb || !currentUser || this._versionsUnavailable) return { ok: false };
+        try {
+          const { data, error } = await sb.from('save_versions')
+            .select('data, created_at')
+            .eq('user_id', currentUser.id).eq('id', id).single();
+          if (error || !data || !data.data) {
+            console.warn('cloud version fetch failed', error);
+            return { ok: false };
+          }
+          // Safety: snapshot the CURRENT state before overwriting, so a mistaken
+          // restore is itself recoverable.
+          await this.pushVersion('Before restore', 'pre-restore');
+          const restored = Array.isArray(data.data) ? data.data.slice() : [];
+          while (restored.length < MAX_SLOTS) restored.push(null);
+          slots = restored.slice(0, MAX_SLOTS);
+          activeSlot = -1; char = null; mob = null;
+          if (afkOn) { afkOn = false; clearInterval(afkInterval); afkInterval = null; }
+          try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
+          await this.pushAll(); // make the cloud `saves` reflect the restored state
+          return { ok: true, created_at: data.created_at };
+        } catch (e) {
+          console.warn('cloud version restore error', e);
+          return { ok: false };
+        }
+      },
+
+      async pruneVersions() {
+        if (!sb || !currentUser || this._versionsUnavailable) return;
+        try {
+          // Keep the newest MAX_CLOUD_VERSIONS rows; delete anything older.
+          const { data } = await sb.from('save_versions')
+            .select('id')
+            .eq('user_id', currentUser.id)
+            .order('created_at', { ascending: false })
+            .range(this.MAX_CLOUD_VERSIONS, this.MAX_CLOUD_VERSIONS + 200);
+          const stale = (data || []).map(r => r.id);
+          if (stale.length) {
+            await sb.from('save_versions').delete().eq('user_id', currentUser.id).in('id', stale);
+          }
+        } catch (e) { /* non-fatal */ }
+      },
+
       // Re-publish the LFG snapshot for any of this account's characters that
       // currently have their LFG flag on, so borrowers see up-to-date stats.
       async refreshSharedLfg() {
@@ -5443,6 +5702,488 @@
           }
           return summary;
         } catch (e) { console.warn('lfg rewards collect error', e); return null; }
+      },
+      // ══ ASYNCHRONOUS PvP ARENA ════════════════════════════════════════════
+      // Players publish a combat snapshot of a character (derived, safe stats
+      // only). Other players fight that snapshot against an AI-controlled copy
+      // of the owner's hero — no live connection required. Results are written
+      // to a shared pvp_ratings ledger so an Elo-style ladder can form.
+      //
+      // Tables (create in Supabase):
+      //   pvp_snapshots(user_id uuid, char_key int2, name text, race text,
+      //     class text, level int4, power int8, atk int4, def int4, hp int4,
+      //     mp int4, hardcore bool, rating int4 default 1000, wins int4 default 0,
+      //     losses int4 default 0, updated_at timestamptz,
+      //     primary key (user_id,char_key))
+      //   RLS: anyone authenticated may SELECT; a user may upsert/delete only
+      //   rows where user_id = auth.uid().
+      //
+      // Rating updates for the *defender* are applied best-effort from the
+      // challenger's client. This is intentionally lightweight; a hardened
+      // build would move rating writes into an Edge Function so neither side
+      // can forge a result. See submitPvpResult().
+      async publishPvpSnapshots() {
+        if (!sb || !currentUser || typeof computeLeaderboardStats !== 'function') return;
+        const rows = [];
+        const empties = [];
+        for (let i = 0; i < MAX_SLOTS; i++) {
+          let c = slots[i];
+          if (i === activeSlot && char && typeof char === 'object') c = char;
+          if (c && typeof c === 'object') {
+            const s = computeLeaderboardStats(c);
+            rows.push({
+              user_id: currentUser.id, char_key: i,
+              name: s.name, race: s.race, class: s.cls, level: s.level,
+              power: s.power, atk: s.atk, def: s.def, hp: s.maxHp, mp: s.maxMp,
+              hardcore: s.hardcore, updated_at: new Date().toISOString()
+            });
+          } else { empties.push(i); }
+        }
+        try {
+          if (rows.length) {
+            // Do not clobber an existing rating/win/loss tally on re-publish.
+            const { error } = await sb.from('pvp_snapshots')
+              .upsert(rows, { onConflict: 'user_id,char_key', ignoreDuplicates: false });
+            if (error) { console.warn('pvp publish failed', error); return; }
+          }
+          if (empties.length) {
+            await sb.from('pvp_snapshots').delete().eq('user_id', currentUser.id).in('char_key', empties);
+          }
+        } catch (e) { console.warn('pvp publish error', e); }
+      },
+      // Fetch potential opponents (everyone but the current user), matched to
+      // the player's Hardcore mode, ordered by rating.
+      async fetchArenaOpponents(hardcore, limit = 60) {
+        if (!sb) return null;
+        try {
+          const { data, error } = await sb.from('pvp_snapshots')
+            .select('user_id,char_key,name,race,class,level,power,atk,def,hp,mp,hardcore,rating,wins,losses')
+            .eq('hardcore', !!hardcore)
+            .order('rating', { ascending: false })
+            .limit(limit);
+          if (error) { console.warn('arena fetch failed', error); return null; }
+          let rows = data || [];
+          if (currentUser) rows = rows.filter(r => r.user_id !== currentUser.id);
+          return rows;
+        } catch (e) { console.warn('arena fetch error', e); return null; }
+      },
+      // Read this account's own snapshot rating rows (to show your ladder spot).
+      async fetchMyPvpRatings() {
+        if (!sb || !currentUser) return null;
+        try {
+          const { data, error } = await sb.from('pvp_snapshots')
+            .select('char_key,name,rating,wins,losses')
+            .eq('user_id', currentUser.id);
+          if (error) { return null; }
+          return data || [];
+        } catch (e) { return null; }
+      },
+      // Apply an Elo result. `mine` is {char_key} of the attacker's hero;
+      // `opp` is the opponent row. `iWon` true if the challenger won.
+      // Best-effort: updates both rows. Failures are non-fatal.
+      async submitPvpResult(myCharKey, opp, iWon) {
+        if (!sb || !currentUser || !opp) return { ok: false, offline: true };
+        const K = 24;
+        try {
+          // Re-read my current rating for this slot.
+          let myRating = 1000, myWins = 0, myLosses = 0;
+          try {
+            const { data } = await sb.from('pvp_snapshots')
+              .select('rating,wins,losses').eq('user_id', currentUser.id).eq('char_key', myCharKey).single();
+            if (data) { myRating = Number(data.rating) || 1000; myWins = Number(data.wins) || 0; myLosses = Number(data.losses) || 0; }
+          } catch (e) {}
+          const oppRating = Number(opp.rating) || 1000;
+          const expMe = 1 / (1 + Math.pow(10, (oppRating - myRating) / 400));
+          const expOpp = 1 - expMe;
+          const scoreMe = iWon ? 1 : 0;
+          const newMine = Math.round(myRating + K * (scoreMe - expMe));
+          const newOpp = Math.round(oppRating + K * ((1 - scoreMe) - expOpp));
+          // Update my row.
+          await sb.from('pvp_snapshots').update({
+            rating: newMine,
+            wins: myWins + (iWon ? 1 : 0),
+            losses: myLosses + (iWon ? 0 : 1),
+            updated_at: new Date().toISOString()
+          }).eq('user_id', currentUser.id).eq('char_key', myCharKey);
+          // Update opponent row (best-effort; RLS may block in a hardened setup,
+          // in which case the defender's rating only moves when *they* play).
+          try {
+            await sb.from('pvp_snapshots').update({
+              rating: newOpp,
+              wins: (Number(opp.wins) || 0) + (iWon ? 0 : 1),
+              losses: (Number(opp.losses) || 0) + (iWon ? 1 : 0),
+              updated_at: new Date().toISOString()
+            }).eq('user_id', opp.user_id).eq('char_key', opp.char_key);
+          } catch (e) {}
+          return { ok: true, myRating: newMine, delta: newMine - myRating };
+        } catch (e) { console.warn('pvp result error', e); return { ok: false, error: e }; }
+      },
+
+      // ══ GUILDS / CLANS ════════════════════════════════════════════════════
+      // A guild groups players around a shared, rotating weekly goal (currently
+      // cumulative monster kills contributed by members). Contributions are
+      // logged per member so a roster + leaderboard can be shown.
+      //
+      // Tables (create in Supabase):
+      //   guilds(id uuid default gen_random_uuid() primary key, name text unique,
+      //     tag text, owner_id uuid, created_at timestamptz default now(),
+      //     goal_kind text default 'kills', goal_target int8 default 50000,
+      //     goal_progress int8 default 0, week_start date)
+      //   guild_members(guild_id uuid, user_id uuid, display text, role text
+      //     default 'member', contribution int8 default 0, joined_at timestamptz
+      //     default now(), primary key (guild_id,user_id))
+      //   RLS: authenticated may SELECT guilds + guild_members; a user may
+      //   INSERT/UPDATE/DELETE only their own membership row; guild owner may
+      //   update the guild row. goal_progress is incremented via an RPC
+      //   (increment_guild_goal) running as security definer so members can
+      //   contribute without write access to the whole guild row.
+      async fetchMyGuild() {
+        if (!sb || !currentUser) return null;
+        try {
+          const { data: mem, error: mErr } = await sb.from('guild_members')
+            .select('guild_id,role,contribution,display').eq('user_id', currentUser.id).maybeSingle();
+          if (mErr || !mem) return null;
+          const { data: g } = await sb.from('guilds')
+            .select('id,name,tag,owner_id,goal_kind,goal_target,goal_progress,week_start').eq('id', mem.guild_id).single();
+          if (!g) return null;
+          const { data: roster } = await sb.from('guild_members')
+            .select('user_id,display,role,contribution').eq('guild_id', g.id)
+            .order('contribution', { ascending: false }).limit(100);
+          return { guild: g, me: mem, roster: roster || [] };
+        } catch (e) { console.warn('fetchMyGuild error', e); return null; }
+      },
+      async listGuilds(limit = 50) {
+        if (!sb) return null;
+        try {
+          const { data, error } = await sb.from('guilds')
+            .select('id,name,tag,owner_id,goal_kind,goal_target,goal_progress')
+            .order('goal_progress', { ascending: false }).limit(limit);
+          if (error) { console.warn('listGuilds failed', error); return null; }
+          // Member counts (best-effort, one grouped query).
+          return data || [];
+        } catch (e) { console.warn('listGuilds error', e); return null; }
+      },
+      async createGuild(name, tag) {
+        if (!sb || !currentUser) return { ok: false, offline: true };
+        name = String(name || '').trim().slice(0, 32);
+        tag = String(tag || '').trim().slice(0, 5).toUpperCase();
+        if (!name) return { ok: false, error: 'Name required' };
+        try {
+          const weekStart = new Date(); weekStart.setUTCHours(0, 0, 0, 0);
+          const { data: g, error } = await sb.from('guilds').insert({
+            name, tag, owner_id: currentUser.id,
+            goal_kind: 'kills', goal_target: 50000, goal_progress: 0,
+            week_start: weekStart.toISOString().slice(0, 10)
+          }).select().single();
+          if (error) { return { ok: false, error: error.message || 'Could not create (name taken?)' }; }
+          await sb.from('guild_members').insert({
+            guild_id: g.id, user_id: currentUser.id,
+            display: this._guildDisplayName(), role: 'owner', contribution: 0
+          });
+          return { ok: true, guild: g };
+        } catch (e) { return { ok: false, error: e.message || 'create failed' }; }
+      },
+      async joinGuild(guildId) {
+        if (!sb || !currentUser) return { ok: false, offline: true };
+        try {
+          // Leave any current guild first (single-guild membership).
+          await this.leaveGuild(true);
+          const { error } = await sb.from('guild_members').insert({
+            guild_id: guildId, user_id: currentUser.id,
+            display: this._guildDisplayName(), role: 'member', contribution: 0
+          });
+          if (error) { return { ok: false, error: error.message }; }
+          return { ok: true };
+        } catch (e) { return { ok: false, error: e.message }; }
+      },
+      async leaveGuild(silent) {
+        if (!sb || !currentUser) return { ok: false };
+        try {
+          await sb.from('guild_members').delete().eq('user_id', currentUser.id);
+          return { ok: true };
+        } catch (e) { return { ok: false, error: e.message }; }
+      },
+      // Contribute kills toward the guild's shared goal. Uses an RPC so the
+      // member never needs write access to the guild row directly. Falls back
+      // to a direct update if the RPC is absent (looser RLS dev setups).
+      async contributeGuildKills(n) {
+        if (!sb || !currentUser || !(n > 0)) return;
+        try {
+          const { data: mem } = await sb.from('guild_members')
+            .select('guild_id,contribution').eq('user_id', currentUser.id).maybeSingle();
+          if (!mem) return;
+          // Bump my personal contribution.
+          await sb.from('guild_members').update({ contribution: (Number(mem.contribution) || 0) + n })
+            .eq('guild_id', mem.guild_id).eq('user_id', currentUser.id);
+          // Bump the shared goal via RPC (preferred) or direct update (fallback).
+          let rpcOk = false;
+          try {
+            const { error } = await sb.rpc('increment_guild_goal', { p_guild: mem.guild_id, p_amount: n });
+            rpcOk = !error;
+          } catch (e) { rpcOk = false; }
+          if (!rpcOk) {
+            try {
+              const { data: g } = await sb.from('guilds').select('goal_progress').eq('id', mem.guild_id).single();
+              if (g) await sb.from('guilds').update({ goal_progress: (Number(g.goal_progress) || 0) + n }).eq('id', mem.guild_id);
+            } catch (e) {}
+          }
+        } catch (e) { /* non-fatal */ }
+      },
+      _guildDisplayName() {
+        // Prefer the active character's name, else email local-part.
+        try {
+          if (char && char.name) return String(char.name).slice(0, 24);
+          for (let i = 0; i < MAX_SLOTS; i++) { if (slots[i] && slots[i].name) return String(slots[i].name).slice(0, 24); }
+        } catch (e) {}
+        return (currentUser && currentUser.email ? currentUser.email.split('@')[0] : 'Adventurer').slice(0, 24);
+      },
+
+      // ══ GUILD SHARED BANK ═════════════════════════════════════════════════
+      // A guild-wide gold pool plus a small shared stash of deposited items.
+      // Any member may deposit; gold is added via an RPC so members never need
+      // write access to the guild row, and withdrawals are owner/officer-gated
+      // client-side (and ideally enforced by RLS/RPC in a hardened build).
+      //
+      // Tables (create in Supabase):
+      //   guild_bank(guild_id uuid primary key references guilds(id),
+      //     gold int8 default 0, updated_at timestamptz default now())
+      //   guild_bank_items(id uuid default gen_random_uuid() primary key,
+      //     guild_id uuid, depositor uuid, display text, item jsonb,
+      //     created_at timestamptz default now())
+      //   RLS: authenticated members may SELECT rows for their guild; a member
+      //   may INSERT item rows (depositor = auth.uid()); deposits to the gold
+      //   pool go through RPC deposit_guild_gold(p_guild, p_amount) running
+      //   security definer. Withdrawals (delete item / subtract gold) are
+      //   permitted to the guild owner. Falls back to direct writes where the
+      //   RPCs are absent (looser dev RLS).
+      async fetchGuildBank(guildId) {
+        if (!sb || !currentUser || !guildId) return null;
+        try {
+          let gold = 0;
+          try {
+            const { data: g } = await sb.from('guild_bank').select('gold').eq('guild_id', guildId).maybeSingle();
+            gold = Number(g && g.gold) || 0;
+          } catch (e) { /* table may be missing */ }
+          let items = [];
+          try {
+            const { data } = await sb.from('guild_bank_items')
+              .select('id,depositor,display,item,created_at')
+              .eq('guild_id', guildId)
+              .order('created_at', { ascending: false }).limit(100);
+            items = data || [];
+          } catch (e) { /* table may be missing */ }
+          return { gold, items };
+        } catch (e) { console.warn('fetchGuildBank error', e); return null; }
+      },
+      async depositGuildGold(guildId, amount) {
+        if (!sb || !currentUser || !guildId || !(amount > 0)) return { ok: false };
+        amount = Math.floor(amount);
+        try {
+          let rpcOk = false;
+          try {
+            const { error } = await sb.rpc('deposit_guild_gold', { p_guild: guildId, p_amount: amount });
+            rpcOk = !error;
+          } catch (e) { rpcOk = false; }
+          if (!rpcOk) {
+            const { data: cur } = await sb.from('guild_bank').select('gold').eq('guild_id', guildId).maybeSingle();
+            if (cur) {
+              await sb.from('guild_bank').update({ gold: (Number(cur.gold) || 0) + amount, updated_at: new Date().toISOString() }).eq('guild_id', guildId);
+            } else {
+              await sb.from('guild_bank').insert({ guild_id: guildId, gold: amount });
+            }
+          }
+          return { ok: true };
+        } catch (e) { console.warn('depositGuildGold error', e); return { ok: false, error: e.message }; }
+      },
+      async withdrawGuildGold(guildId, amount) {
+        if (!sb || !currentUser || !guildId || !(amount > 0)) return { ok: false };
+        amount = Math.floor(amount);
+        try {
+          const { data: cur } = await sb.from('guild_bank').select('gold').eq('guild_id', guildId).maybeSingle();
+          const have = Number(cur && cur.gold) || 0;
+          if (have < amount) return { ok: false, error: 'Not enough gold in the vault.' };
+          const { error } = await sb.from('guild_bank').update({ gold: have - amount, updated_at: new Date().toISOString() }).eq('guild_id', guildId);
+          if (error) return { ok: false, error: error.message };
+          return { ok: true, withdrawn: amount };
+        } catch (e) { console.warn('withdrawGuildGold error', e); return { ok: false, error: e.message }; }
+      },
+      async depositGuildItem(guildId, item) {
+        if (!sb || !currentUser || !guildId || !item) return { ok: false };
+        try {
+          const { error } = await sb.from('guild_bank_items').insert({
+            guild_id: guildId, depositor: currentUser.id,
+            display: this._guildDisplayName(), item
+          });
+          if (error) return { ok: false, error: error.message };
+          return { ok: true };
+        } catch (e) { console.warn('depositGuildItem error', e); return { ok: false, error: e.message }; }
+      },
+      async withdrawGuildItem(rowId) {
+        if (!sb || !currentUser || !rowId) return { ok: false };
+        try {
+          const { data, error } = await sb.from('guild_bank_items').delete().eq('id', rowId).select('item').maybeSingle();
+          if (error) return { ok: false, error: error.message };
+          return { ok: true, item: data && data.item };
+        } catch (e) { console.warn('withdrawGuildItem error', e); return { ok: false, error: e.message }; }
+      },
+
+      // ══ GUILD QUESTS ══════════════════════════════════════════════════════
+      // Beyond the always-on weekly kill goal, a guild can take on a discrete,
+      // higher-stakes objective (e.g. "slay 300 elites", "defeat 40 bosses").
+      // The active quest lives on the guild row; progress accrues via the same
+      // increment RPC pattern as the weekly goal. Completing a quest pays a
+      // gold reward into the guild bank and rotates to the next quest tier.
+      //
+      // Columns added to guilds():
+      //   quest_id text, quest_kind text, quest_target int8 default 0,
+      //   quest_progress int8 default 0, quest_reward int8 default 0,
+      //   quest_started_at timestamptz
+      // RPC: increment_guild_quest(p_guild uuid, p_amount int8) security definer.
+      async startGuildQuest(guildId, quest) {
+        if (!sb || !currentUser || !guildId || !quest) return { ok: false };
+        try {
+          const { error } = await sb.from('guilds').update({
+            quest_id: quest.id, quest_kind: quest.kind,
+            quest_target: quest.target, quest_progress: 0,
+            quest_reward: quest.reward, quest_started_at: new Date().toISOString()
+          }).eq('id', guildId);
+          if (error) return { ok: false, error: error.message };
+          return { ok: true };
+        } catch (e) { console.warn('startGuildQuest error', e); return { ok: false, error: e.message }; }
+      },
+      async contributeGuildQuest(kind, n) {
+        if (!sb || !currentUser || !(n > 0)) return;
+        try {
+          const { data: mem } = await sb.from('guild_members')
+            .select('guild_id').eq('user_id', currentUser.id).maybeSingle();
+          if (!mem) return;
+          const { data: g } = await sb.from('guilds')
+            .select('quest_kind,quest_target,quest_progress,quest_reward').eq('id', mem.guild_id).maybeSingle();
+          if (!g || !g.quest_kind || g.quest_kind !== kind) return; // only count matching active quest
+          let rpcOk = false;
+          try {
+            const { error } = await sb.rpc('increment_guild_quest', { p_guild: mem.guild_id, p_amount: n });
+            rpcOk = !error;
+          } catch (e) { rpcOk = false; }
+          if (!rpcOk) {
+            const newProg = (Number(g.quest_progress) || 0) + n;
+            await sb.from('guilds').update({ quest_progress: newProg }).eq('id', mem.guild_id);
+          }
+          // Completion check + payout into the bank (best-effort, idempotent-ish:
+          // only the writer who crosses the line pays out, then clears the quest).
+          const after = (Number(g.quest_progress) || 0) + n;
+          if (Number(g.quest_target) > 0 && after >= Number(g.quest_target)) {
+            try {
+              const reward = Number(g.quest_reward) || 0;
+              if (reward > 0) await this.depositGuildGold(mem.guild_id, reward);
+              await sb.from('guilds').update({
+                quest_kind: null, quest_id: null, quest_target: 0, quest_progress: 0, quest_reward: 0
+              }).eq('id', mem.guild_id).eq('quest_kind', kind);
+            } catch (e) { /* non-fatal */ }
+          }
+        } catch (e) { /* non-fatal */ }
+      },
+
+      // ══ ASYNC CO-OP DUNGEONS ══════════════════════════════════════════════
+      // A member opens a dungeon "run" seeded with a borrowed-hero snapshot of
+      // their own active character (the same derived, safe stat shape used by
+      // LFG / PvP). Other members "join" the run with their own snapshot; once
+      // a party has formed the run is resolved asynchronously against scaled
+      // encounters — no live session needed. Completed runs pay each
+      // participant gold/XP via the existing lfg_rewards ledger so payouts flow
+      // through the same trusted path.
+      //
+      // Tables (create in Supabase):
+      //   coop_runs(id uuid default gen_random_uuid() primary key,
+      //     guild_id uuid, host uuid, tier int4, status text default 'forming',
+      //     party jsonb default '[]', created_at timestamptz default now(),
+      //     resolved_at timestamptz)
+      //   RLS: members of the guild may SELECT/UPDATE runs for their guild;
+      //   a member appends their own snapshot to party (jsonb) when joining.
+      async listCoopRuns(guildId) {
+        if (!sb || !currentUser || !guildId) return null;
+        try {
+          const { data, error } = await sb.from('coop_runs')
+            .select('id,host,tier,status,party,created_at,resolved_at')
+            .eq('guild_id', guildId)
+            .order('created_at', { ascending: false }).limit(30);
+          if (error) { console.warn('listCoopRuns failed', error); return null; }
+          return data || [];
+        } catch (e) { console.warn('listCoopRuns error', e); return null; }
+      },
+      async createCoopRun(guildId, tier, snapshot) {
+        if (!sb || !currentUser || !guildId || !snapshot) return { ok: false };
+        try {
+          const party = [snapshot];
+          const { data, error } = await sb.from('coop_runs').insert({
+            guild_id: guildId, host: currentUser.id, tier: Math.max(1, Math.floor(tier || 1)),
+            status: 'forming', party
+          }).select().single();
+          if (error) return { ok: false, error: error.message };
+          return { ok: true, run: data };
+        } catch (e) { console.warn('createCoopRun error', e); return { ok: false, error: e.message }; }
+      },
+      async joinCoopRun(runId, snapshot) {
+        if (!sb || !currentUser || !runId || !snapshot) return { ok: false };
+        try {
+          const { data: run } = await sb.from('coop_runs').select('party,status').eq('id', runId).single();
+          if (!run) return { ok: false, error: 'Run not found.' };
+          if (run.status !== 'forming') return { ok: false, error: 'This run has already started.' };
+          const party = Array.isArray(run.party) ? run.party : [];
+          if (party.some(p => p && p.user_id === snapshot.user_id && p.char_key === snapshot.char_key)) {
+            return { ok: false, error: 'That hero is already in this run.' };
+          }
+          if (party.length >= 6) return { ok: false, error: 'This run is full (6).' };
+          party.push(snapshot);
+          const { error } = await sb.from('coop_runs').update({ party }).eq('id', runId).eq('status', 'forming');
+          if (error) return { ok: false, error: error.message };
+          return { ok: true, party };
+        } catch (e) { console.warn('joinCoopRun error', e); return { ok: false, error: e.message }; }
+      },
+      // Mark a run resolved and credit each participant through lfg_rewards.
+      // The reward figures are derived from the run tier + party size here for
+      // a lightweight build; a hardened version would compute them in an Edge
+      // Function the way LFG kill rewards already are.
+      async resolveCoopRun(runId, payouts) {
+        if (!sb || !currentUser || !runId) return { ok: false };
+        try {
+          const { error } = await sb.from('coop_runs').update({
+            status: 'cleared', resolved_at: new Date().toISOString()
+          }).eq('id', runId).eq('status', 'forming');
+          if (error) return { ok: false, error: error.message };
+          // Credit each participant's lfg_rewards row (additive). Best-effort.
+          if (Array.isArray(payouts)) {
+            for (const p of payouts) {
+              try {
+                const { data: cur } = await sb.from('lfg_rewards')
+                  .select('pending_xp,pending_gold,times_used')
+                  .eq('user_id', p.user_id).eq('char_key', p.char_key).maybeSingle();
+                if (cur) {
+                  await sb.from('lfg_rewards').update({
+                    pending_xp: (Number(cur.pending_xp) || 0) + (p.xp || 0),
+                    pending_gold: (Number(cur.pending_gold) || 0) + (p.gold || 0),
+                    times_used: (Number(cur.times_used) || 0) + 1,
+                    updated_at: new Date().toISOString()
+                  }).eq('user_id', p.user_id).eq('char_key', p.char_key);
+                } else {
+                  await sb.from('lfg_rewards').insert({
+                    user_id: p.user_id, char_key: p.char_key,
+                    pending_xp: p.xp || 0, pending_gold: p.gold || 0, times_used: 1,
+                    updated_at: new Date().toISOString()
+                  });
+                }
+              } catch (e) { /* per-row non-fatal */ }
+            }
+          }
+          return { ok: true };
+        } catch (e) { console.warn('resolveCoopRun error', e); return { ok: false, error: e.message }; }
+      },
+      async deleteCoopRun(runId) {
+        if (!sb || !currentUser || !runId) return { ok: false };
+        try {
+          await sb.from('coop_runs').delete().eq('id', runId).eq('host', currentUser.id);
+          return { ok: true };
+        } catch (e) { return { ok: false, error: e.message }; }
       }
     };
 
@@ -5483,6 +6224,52 @@
       _lfgRewardQueue.clear();
       if (!events.length) return;
       try { await Cloud.submitLfgRewardBatch(events); } catch (e) { /* non-fatal */ }
+    }
+
+    // ── Guild goal contribution batching ──────────────────────────────────
+    // Accumulate kills locally and flush to the guild goal every ~8s, so we
+    // contribute to the shared weekly objective without a write per kill.
+    let _guildKillBuffer = 0;
+    let _guildKillTimer = null;
+    function queueGuildKill(n) {
+      if (!(typeof Cloud !== 'undefined' && Cloud.ready && currentUser)) return;
+      _guildKillBuffer += (n || 0);
+      if (!_guildKillTimer) _guildKillTimer = setTimeout(flushGuildKills, 8000);
+    }
+    async function flushGuildKills() {
+      _guildKillTimer = null;
+      const n = _guildKillBuffer; _guildKillBuffer = 0;
+      if (n <= 0) return;
+      try { await Cloud.contributeGuildKills(n); } catch (e) { /* non-fatal */ }
+      // Refresh the guild panel if it's open so progress visibly ticks up.
+      if (_activePopup === 'guild' && typeof renderGuildTab === 'function') {
+        try { renderGuildTab(); } catch (e) {}
+      }
+    }
+
+    // ── Guild quest contribution batching ─────────────────────────────────
+    // Accumulate per-kind kill events (kills / elites / bosses / named) and
+    // flush them toward the guild's active discrete quest every ~8s.
+    const _guildQuestBuffer = { kills: 0, elite: 0, boss: 0, named: 0 };
+    let _guildQuestTimer = null;
+    function queueGuildQuest(kind, n) {
+      if (!(typeof Cloud !== 'undefined' && Cloud.ready && currentUser)) return;
+      if (!(kind in _guildQuestBuffer)) return;
+      _guildQuestBuffer[kind] += (n || 0);
+      if (!_guildQuestTimer) _guildQuestTimer = setTimeout(flushGuildQuest, 8000);
+    }
+    async function flushGuildQuest() {
+      _guildQuestTimer = null;
+      const pending = { ..._guildQuestBuffer };
+      _guildQuestBuffer.kills = _guildQuestBuffer.elite = _guildQuestBuffer.boss = _guildQuestBuffer.named = 0;
+      try {
+        for (const kind of ['kills', 'elite', 'boss', 'named']) {
+          if (pending[kind] > 0) await Cloud.contributeGuildQuest(kind, pending[kind]);
+        }
+      } catch (e) { /* non-fatal */ }
+      if (_activePopup === 'guild' && typeof renderGuildTab === 'function') {
+        try { renderGuildTab(); } catch (e) {}
+      }
     }
 
     const CLASSES = {
@@ -8267,7 +9054,11 @@
       balanced: { label: 'Balanced' },
       level: { label: 'Level Push' },
       contract: { label: 'Finish Contract' },
-      gold: { label: 'Gold Farm' }
+      gold: { label: 'Gold Farm' },
+      // Smart goal automation — these carry a numeric target stored on
+      // char.afkGoalTargets and auto-stop AFK (or switch alts) on completion.
+      farm_until_gold: { label: 'Farm Until X Gold', smart: true, target: 'gold', targetLabel: 'Target gold', defaultTarget: 100000 },
+      level_alts_to: { label: 'Level Alts to N', smart: true, target: 'level', targetLabel: 'Target level', defaultTarget: 20 }
     };
 
     const DUNGEON_MODIFIERS = {
@@ -8723,6 +9514,134 @@
       autoSave();
     }
 
+    // Loot-filter import/export codes. Serializes the current loot filter
+    // (toggles, auto-equip criteria, and keyword rules) into a compact,
+    // shareable string the community can trade.
+    var LOOT_FILTER_CODE_PREFIX = 'LF1:';
+
+    function serializeLootFilter(targetChar) {
+      const lf = getLootFilterState(targetChar);
+      const payload = {
+        v: 1,
+        s: {
+          j: lf.autoSellJunk ? 1 : 0,
+          n: lf.autoSellNormalGear ? 1 : 0,
+          b: lf.autoSellBlueMagicGear ? 1 : 0,
+          r: lf.autoSellRareGear ? 1 : 0,
+          l: lf.autoSellLegendaryGear ? 1 : 0,
+          p: lf.protectRarePlus ? 1 : 0,
+          ee: lf.autoEquipEmptySlots ? 1 : 0,
+          eu: lf.autoEquipUpgradedEquipment ? 1 : 0,
+          em: lf.autoEquipUpgradeMetric || 'score',
+          et: Number(lf.autoEquipUpgradeThreshold ?? 1),
+          vo: lf.autoVendorOverflow ? 1 : 0,
+          sd: lf.autoSellDisplacedGear ? 1 : 0,
+          eb: lf.autoEquipBeforeAutoSell ? 1 : 0
+        },
+        k: (Array.isArray(lf.keywordRules) ? lf.keywordRules : [])
+          .filter(function (rule) { return rule && rule.match; })
+          .map(function (rule) {
+            return { m: String(rule.match), a: String(rule.action || 'keep') };
+          })
+      };
+      const json = JSON.stringify(payload);
+      let encoded;
+      try {
+        encoded = btoa(unescape(encodeURIComponent(json)));
+      } catch (e) {
+        encoded = btoa(json);
+      }
+      return LOOT_FILTER_CODE_PREFIX + encoded;
+    }
+
+    function exportLootFilterCode() {
+      if (!char) return;
+      const code = serializeLootFilter(char);
+      const input = document.getElementById('loot-filter-code');
+      if (input) {
+        input.value = code;
+        input.focus();
+        input.select();
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(function () {
+          log('Loot filter code copied to clipboard.', 'loot');
+        }, function () {
+          log('Loot filter code generated. Copy it from the field.', 'loot');
+        });
+      } else {
+        log('Loot filter code generated. Copy it from the field.', 'loot');
+      }
+    }
+
+    function importLootFilterCode() {
+      if (!char) return;
+      const input = document.getElementById('loot-filter-code');
+      if (!input) return;
+
+      let raw = String(input.value || '').trim();
+      if (!raw) {
+        log('Paste a filter code to import.', 'info');
+        return;
+      }
+      if (raw.indexOf(LOOT_FILTER_CODE_PREFIX) === 0) {
+        raw = raw.slice(LOOT_FILTER_CODE_PREFIX.length);
+      }
+
+      let payload;
+      try {
+        let json;
+        try {
+          json = decodeURIComponent(escape(atob(raw)));
+        } catch (e) {
+          json = atob(raw);
+        }
+        payload = JSON.parse(json);
+      } catch (e) {
+        log('Invalid loot filter code.', 'info');
+        return;
+      }
+
+      if (!payload || typeof payload !== 'object' || !payload.s) {
+        log('Invalid loot filter code.', 'info');
+        return;
+      }
+
+      const s = payload.s || {};
+      if (!char.lootFilter || typeof char.lootFilter !== 'object' || Array.isArray(char.lootFilter)) {
+        char.lootFilter = {};
+      }
+      const lf = char.lootFilter;
+      lf.autoSellJunk = !!s.j;
+      lf.autoSellNormalGear = !!s.n;
+      lf.autoSellBlueMagicGear = !!s.b;
+      lf.autoSellRareGear = !!s.r;
+      lf.autoSellLegendaryGear = !!s.l;
+      lf.protectRarePlus = s.p !== 0;
+      lf.autoEquipEmptySlots = !!s.ee;
+      lf.autoEquipUpgradedEquipment = !!s.eu;
+      lf.autoEquipUpgradeMetric = (s.em === 'dps' || s.em === 'score') ? s.em : 'score';
+      lf.autoEquipUpgradeThreshold = Math.max(0, Number(s.et) || 0);
+      lf.autoVendorOverflow = !!s.vo;
+      lf.autoSellDisplacedGear = !!s.sd;
+      lf.autoEquipBeforeAutoSell = !!s.eb;
+
+      const validActions = { keep: 1, sell: 1, salvage: 1, ignore: 1 };
+      const rules = Array.isArray(payload.k) ? payload.k : [];
+      lf.keywordRules = rules
+        .filter(function (rule) { return rule && rule.m; })
+        .map(function (rule) {
+          const action = validActions[rule.a] ? rule.a : 'keep';
+          return { match: String(rule.m).slice(0, 64), action: action };
+        });
+
+      input.value = '';
+      log('Imported loot filter: ' + lf.keywordRules.length + ' keyword rule(s).', 'loot');
+      renderShop();
+      renderLootTab();
+      autoSave();
+    }
+
     function getContractMasteryState(targetChar) {
       if (!targetChar || !targetChar.contractMastery || typeof targetChar.contractMastery !== 'object') {
         return { level: 0, xp: 0, totalChains: 0 };
@@ -8752,6 +9671,54 @@
     function getAfkGoalState(targetChar) {
       const id = targetChar && targetChar.afkGoal;
       return AFK_GOALS[id] ? id : 'balanced';
+    }
+
+    // ── Smart goal automation helpers ───────────────────────────────
+    // Smart goals carry a numeric target (gold amount or alt level). These
+    // helpers read the target and decide when a goal is complete so AFK can
+    // auto-stop the current character or hand off to the next alt.
+    function getAfkGoalTarget(targetChar, goalId) {
+      if (!targetChar || !AFK_GOALS[goalId] || !AFK_GOALS[goalId].smart) return 0;
+      ensureExtendedSystems(targetChar);
+      const raw = Number(targetChar.afkGoalTargets && targetChar.afkGoalTargets[goalId]);
+      return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : AFK_GOALS[goalId].defaultTarget;
+    }
+
+    function setAfkGoalTarget(targetChar, goalId, value) {
+      if (!targetChar || !AFK_GOALS[goalId] || !AFK_GOALS[goalId].smart) return;
+      ensureExtendedSystems(targetChar);
+      const v = Math.max(1, Math.floor(Number(value) || AFK_GOALS[goalId].defaultTarget));
+      targetChar.afkGoalTargets[goalId] = v;
+    }
+
+    // Returns true when the active smart goal's condition is satisfied.
+    function isSmartGoalComplete(targetChar, goalId) {
+      const def = AFK_GOALS[goalId];
+      if (!targetChar || !def || !def.smart) return false;
+      const target = getAfkGoalTarget(targetChar, goalId);
+      if (def.target === 'gold') return Number(targetChar.gold || 0) >= target;
+      if (def.target === 'level') return Number(targetChar.level || 0) >= target;
+      return false;
+    }
+
+    function getSmartGoalProgress(targetChar, goalId) {
+      const def = AFK_GOALS[goalId];
+      if (!targetChar || !def || !def.smart) return null;
+      const target = getAfkGoalTarget(targetChar, goalId);
+      const current = def.target === 'gold' ? Number(targetChar.gold || 0) : Number(targetChar.level || 0);
+      return { current, target, pct: Math.max(0, Math.min(100, target > 0 ? (current / target) * 100 : 0)) };
+    }
+
+    // For "level alts to N": find the next saved character (by slot order,
+    // skipping the active one) whose level is below the target. Returns the
+    // slot index or -1 if every alt has reached the goal.
+    function findNextAltBelowLevel(targetLevel) {
+      for (let i = 0; i < slots.length; i++) {
+        if (i === activeSlot) continue;
+        const c = slots[i];
+        if (c && typeof c === 'object' && Number(c.level || 0) < targetLevel) return i;
+      }
+      return -1;
     }
 
     function getCombatLogFilterState(targetChar) {
@@ -8940,6 +9907,8 @@
     function ensureExtendedSystems(targetChar) {
       if (typeof ensureStatsState === 'function') ensureStatsState(targetChar);
       if (typeof ensureDailyQuestState === 'function') ensureDailyQuestState(targetChar);
+      if (typeof ensureLoginStreakState === 'function') ensureLoginStreakState(targetChar);
+      if (typeof ensureWeeklyContractState === 'function') ensureWeeklyContractState(targetChar);
       if (typeof ensurePetState === 'function') ensurePetState(targetChar);
       if (typeof ensureAuditState === 'function') ensureAuditState(targetChar);
       // D&D ability scores: backfill from class+level for saves made before
@@ -9169,6 +10138,18 @@
         targetChar.afkGoal = 'balanced';
       }
 
+      // Smart-goal numeric targets (farm-until-gold, level-alts-to-N).
+      if (!targetChar.afkGoalTargets || typeof targetChar.afkGoalTargets !== 'object' || Array.isArray(targetChar.afkGoalTargets)) {
+        targetChar.afkGoalTargets = {};
+      }
+      Object.entries(AFK_GOALS).forEach(([id, def]) => {
+        if (!def.smart) return;
+        const raw = Number(targetChar.afkGoalTargets[id]);
+        targetChar.afkGoalTargets[id] = Number.isFinite(raw) && raw > 0
+          ? Math.floor(raw)
+          : def.defaultTarget;
+      });
+
       targetChar.autoUseSkills = targetChar.autoUseSkills !== false;
       if (!Array.isArray(targetChar.autoSkillSlots) || targetChar.autoSkillSlots.length !== 6) {
         targetChar.autoSkillSlots = [true, true, true, true, true, true];
@@ -9195,6 +10176,7 @@
       targetChar.mercenary.lastUpkeepPaidAt = Math.max(0, Math.floor(Number(targetChar.mercenary.lastUpkeepPaidAt || 0)));
       targetChar.mercenary.actionReadyAt = Math.max(0, Math.floor(Number(targetChar.mercenary.actionReadyAt || 0)));
 
+      if (typeof ensureLoadoutState === 'function') ensureLoadoutState(targetChar);
       if (!targetChar.afkProfiles || typeof targetChar.afkProfiles !== 'object' || Array.isArray(targetChar.afkProfiles)) {
         targetChar.afkProfiles = { slot1: null, slot2: null, slot3: null };
       }
@@ -11034,6 +12016,169 @@
       autoSave();
     }
 
+    // ── Combat Loadouts (PHASE: one-click build swap) ──
+    // A loadout bundles three things that define how a character plays:
+    //   1. AA node allocation (talent points)
+    //   2. Memorized spells (the gems cast in combat)
+    //   3. The full AFK/auto-skill profile (queue, toggles, thresholds, goal)
+    // Reuses the existing AA-preset apply logic and the AFK snapshot helpers so
+    // swapping is one click instead of three separate manual steps.
+    function ensureLoadoutState(targetChar) {
+      if (!targetChar) return;
+      if (!targetChar.loadouts || typeof targetChar.loadouts !== 'object' || Array.isArray(targetChar.loadouts)) {
+        targetChar.loadouts = { slot1: null, slot2: null, slot3: null };
+      }
+      ['slot1', 'slot2', 'slot3'].forEach(slot => {
+        const l = targetChar.loadouts[slot];
+        if (l && (typeof l !== 'object' || Array.isArray(l))) targetChar.loadouts[slot] = null;
+      });
+      if (typeof targetChar.activeLoadout !== 'string') targetChar.activeLoadout = '';
+    }
+
+    function getCurrentLoadoutSnapshot() {
+      if (!char) return null;
+      ensureExtendedSystems(char);
+      const nodes = getAANodesForClass(char.cls);
+      const aaSnap = {};
+      nodes.forEach(node => { aaSnap[node.key] = Number(char.aa.nodes[node.key] || 0); });
+      const maxSlots = getMaxMemorizedSpellSlots(char);
+      const spells = [];
+      for (let i = 0; i < maxSlots; i++) spells.push(char.memorizedSpells[i] || null);
+      return {
+        cls: char.cls,
+        savedAt: Date.now(),
+        aaNodes: aaSnap,
+        memorizedSpells: spells,
+        afkProfile: getCurrentAfkProfileSnapshot()
+      };
+    }
+
+    function saveLoadout(slotName) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      ensureLoadoutState(char);
+      if (['slot1', 'slot2', 'slot3'].indexOf(slotName) < 0) return;
+      const snap = getCurrentLoadoutSnapshot();
+      if (!snap) return;
+      // Preserve a user-given name across re-saves.
+      const existing = char.loadouts[slotName];
+      snap.name = (existing && existing.name) ? existing.name : ('Loadout ' + slotName.replace('slot', '#'));
+      char.loadouts[slotName] = snap;
+      char.activeLoadout = slotName;
+      log('Saved ' + snap.name + '.', 'info');
+      renderLoadoutBar();
+      renderAATab();
+      autoSave();
+    }
+
+    function renameLoadout(slotName) {
+      if (!char) return;
+      ensureLoadoutState(char);
+      const l = char.loadouts[slotName];
+      if (!l) { log('That loadout is empty.', 'info'); return; }
+      const next = (window.prompt('Rename loadout:', l.name || '') || '').trim().slice(0, 24);
+      if (!next) return;
+      l.name = next;
+      log('Renamed loadout to ' + next + '.', 'info');
+      renderLoadoutBar();
+      renderAATab();
+      autoSave();
+    }
+
+    function clearLoadout(slotName) {
+      if (!char) return;
+      ensureLoadoutState(char);
+      if (['slot1', 'slot2', 'slot3'].indexOf(slotName) < 0) return;
+      char.loadouts[slotName] = null;
+      if (char.activeLoadout === slotName) char.activeLoadout = '';
+      log('Cleared loadout ' + slotName.replace('slot', '#') + '.', 'info');
+      renderLoadoutBar();
+      renderAATab();
+      autoSave();
+    }
+
+    function loadLoadout(slotName) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      ensureLoadoutState(char);
+      const l = char.loadouts[slotName];
+      if (!l) { log('That loadout is empty.', 'info'); return; }
+      if (l.cls && l.cls !== char.cls) {
+        log('That loadout belongs to a different class.', 'info');
+        return;
+      }
+      if (mob) {
+        log('Cannot swap loadouts during combat.', 'info');
+        return;
+      }
+
+      // 1) AA nodes — clamp to owned points (mirrors loadAAPreset logic).
+      const nodes = getAANodesForClass(char.cls);
+      const target = {};
+      let targetSpent = 0;
+      nodes.forEach(node => {
+        const raw = Number((l.aaNodes && l.aaNodes[node.key]) || 0);
+        const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number.isFinite(raw) ? raw : 0)));
+        target[node.key] = rank;
+        targetSpent += rank;
+      });
+      const totalOwned = Math.max(0, Number(char.aa.points || 0)) + Math.max(0, Number(char.aa.spent || 0));
+      if (targetSpent <= totalOwned) {
+        char.aa.nodes = target;
+        char.aa.spent = targetSpent;
+        char.aa.points = totalOwned - targetSpent;
+        reconcileAAVitals(char);
+      } else {
+        log('Loadout AA exceeds owned points — keeping current talents.', 'info');
+      }
+
+      // 2) Memorized spells — only restore slots the character can use & still owns.
+      const maxSlots = getMaxMemorizedSpellSlots(char);
+      const book = getClassSpellbook(char.cls).map(s => s.id);
+      if (Array.isArray(l.memorizedSpells)) {
+        for (let i = 0; i < maxSlots; i++) {
+          const id = l.memorizedSpells[i] || null;
+          char.memorizedSpells[i] = (id && book.indexOf(id) >= 0) ? id : null;
+        }
+      }
+
+      // 3) AFK / auto-skill profile.
+      if (l.afkProfile) applyAfkProfileSnapshot(l.afkProfile, true);
+
+      char.activeLoadout = slotName;
+      log('Loaded ' + (l.name || ('loadout ' + slotName.replace('slot', '#'))) + '.', 'lvl');
+      renderLoadoutBar();
+      renderAll();
+      renderAATab();
+      autoSave();
+    }
+
+    function renderLoadoutBar() {
+      const el = document.getElementById('loadout-bar');
+      if (!el) return;
+      if (!char) { el.innerHTML = ''; return; }
+      ensureLoadoutState(char);
+      const slots = ['slot1', 'slot2', 'slot3'];
+      let html = '<span style="font-size:11px;color:var(--text-secondary);align-self:center;margin-right:2px">Loadouts:</span>';
+      slots.forEach(slot => {
+        const l = char.loadouts[slot];
+        const active = char.activeLoadout === slot;
+        const label = l ? (l.name || ('#' + slot.replace('slot', ''))) : ('Empty ' + slot.replace('slot', '#'));
+        const wrongCls = l && l.cls && l.cls !== char.cls;
+        html += '<span style="display:inline-flex;gap:2px;align-items:center">' +
+          '<button class="btn' + (active ? ' active' : '') + '" style="font-size:11px;padding:3px 8px"' +
+          (l && !wrongCls ? ' onclick="loadLoadout(\'' + slot + '\')"' : ' disabled') +
+          ' title="' + (wrongCls ? 'Different class' : (l ? 'Equip this loadout' : 'Empty slot')) + '">' +
+          label + (active ? ' ●' : '') + '</button>' +
+          '<button class="btn" style="font-size:10px;padding:3px 6px" onclick="saveLoadout(\'' + slot + '\')" title="Save current build here">' +
+          (l ? '⟳' : '+') + '</button>' +
+          (l ? '<button class="btn" style="font-size:10px;padding:3px 6px" onclick="renameLoadout(\'' + slot + '\')" title="Rename">✎</button>' +
+               '<button class="btn" style="font-size:10px;padding:3px 6px" onclick="clearLoadout(\'' + slot + '\')" title="Clear">✕</button>' : '') +
+          '</span>';
+      });
+      el.innerHTML = html;
+    }
+
     function cleanupStatusEffects(targetChar, logExpired = false) {
       if (!Array.isArray(targetChar.statusEffects)) targetChar.statusEffects = [];
       const now = Date.now();
@@ -11991,6 +13136,83 @@
       hardcoreGoldBonus: 0.25
     };
 
+    // ────────────────────────────────────────────────────────────────────────
+    // 1.3.90 — Daily login streak + weekly contract tiers.
+    // Both are retention levers layered on top of the existing daily-quest and
+    // elite-contract systems. They are pure content/config plus a thin amount
+    // of state, mirroring the daily-quest reset pattern (UTC-day keyed).
+    // ────────────────────────────────────────────────────────────────────────
+
+    // Reward escalates per consecutive day, capped, with milestone bonus chests
+    // on the marked days. day is 1-indexed (day 1 = first login of a streak).
+    const LOGIN_STREAK = {
+      // Base reward per day before the per-day ramp.
+      baseGold: 250,
+      baseXp: 120,
+      // Each consecutive day multiplies the base by (1 + perDayRamp * (day-1)),
+      // capped at rampCapDay so a long streak doesn't explode.
+      perDayRamp: 0.18,
+      rampCapDay: 14,
+      // Milestone days grant an extra flat bonus on top of the daily reward.
+      milestones: {
+        3:  { gold: 500,   xp: 300,   label: '3-Day Streak' },
+        7:  { gold: 1500,  xp: 900,   label: 'Weekly Devotion' },
+        14: { gold: 4000,  xp: 2400,  label: 'Fortnight Flame' },
+        30: { gold: 12000, xp: 7000,  label: 'Monthly Ember' }
+      }
+    };
+
+    // Weekly contract tier track. Players earn "contract points" (CP) by
+    // completing elite-contract steps during the current UTC week; CP advance a
+    // tier ladder, each tier offering a one-time claimable chest. Resets weekly
+    // (Monday 00:00 UTC). pointsPerStep / pointsPerChain feed the ladder.
+    const WEEKLY_CONTRACT = {
+      pointsPerStep: 1,       // each completed contract step
+      pointsPerChain: 3,      // extra on completing a full chain (final step)
+      tiers: [
+        { id: 'bronze',   label: 'Bronze',   need: 3,  gold: 1000,  xp: 600,   color: '#b08d57' },
+        { id: 'silver',   label: 'Silver',   need: 8,  gold: 3000,  xp: 1800,  color: '#c0c0c0' },
+        { id: 'gold',     label: 'Gold',     need: 16, gold: 7000,  xp: 4200,  color: '#facc15' },
+        { id: 'platinum', label: 'Platinum', need: 28, gold: 15000, xp: 9000,  color: '#7fd4e0' },
+        { id: 'diamond',  label: 'Diamond',  need: 44, gold: 30000, xp: 18000, color: '#a6e3ff' }
+      ]
+    };
+
+    // UTC-day key, e.g. "2026-06-08". Used by the login streak.
+    function utcDayKey(ts) {
+      return new Date(typeof ts === 'number' ? ts : Date.now()).toISOString().slice(0, 10);
+    }
+    // Whole-day difference between two UTC-day keys (b - a). Returns integer.
+    function utcDayDiff(aKey, bKey) {
+      if (!aKey || !bKey) return null;
+      const a = Date.parse(aKey + 'T00:00:00Z');
+      const b = Date.parse(bKey + 'T00:00:00Z');
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+      return Math.round((b - a) / 86400000);
+    }
+    // ISO week key (Monday-anchored, UTC), e.g. "2026-W24". Used by weekly tiers.
+    function utcWeekKey(ts) {
+      const d = new Date(typeof ts === 'number' ? ts : Date.now());
+      // Shift to Thursday of the current week to compute the ISO week number.
+      const target = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      const dayNr = (target.getUTCDay() + 6) % 7; // Mon=0..Sun=6
+      target.setUTCDate(target.getUTCDate() - dayNr + 3);
+      const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4));
+      const firstDayNr = (firstThursday.getUTCDay() + 6) % 7;
+      firstThursday.setUTCDate(firstThursday.getUTCDate() - firstDayNr + 3);
+      const week = 1 + Math.round((target - firstThursday) / (7 * 86400000));
+      return target.getUTCFullYear() + '-W' + String(week).padStart(2, '0');
+    }
+    // Timestamp (ms) of the next UTC-Monday 00:00 after `ts` — used to show the
+    // weekly reset countdown.
+    function nextUtcWeekResetMs(ts) {
+      const d = new Date(typeof ts === 'number' ? ts : Date.now());
+      const dayNr = (d.getUTCDay() + 6) % 7; // days since Monday
+      const next = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      next.setUTCDate(next.getUTCDate() + (7 - dayNr));
+      return next.getTime();
+    }
+
     // Per-zone boss definitions. Loot 'rare' field on each zone is reused as a guaranteed reward base.
     const BOSS_BY_ZONE = {
       0: { name: 'Vermin Tyrant', mob: 'Field Rat', mechanic: 'enrage' },
@@ -12159,6 +13381,11 @@
       if (!char) return;
       ensureDailyQuestState(char);
       if (Date.now() >= Number(char.dailyReset || 0)) rollDailyQuests();
+      // 1.3.90 — keep retention systems current during long sessions: a crossed
+      // UTC midnight may advance/break the login streak, and a crossed UTC week
+      // boundary resets the weekly contract tier track.
+      if (typeof checkLoginStreak === 'function') checkLoginStreak(char);
+      if (typeof ensureWeeklyContractState === 'function') ensureWeeklyContractState(char);
     }
     function tickDailyQuestProgress(baseName) {
       if (!char || !Array.isArray(char.dailyQuests)) return;
@@ -12189,6 +13416,132 @@
       autoSave();
     }
 
+    // ── Daily Login Streak ──
+    function ensureLoginStreakState(targetChar) {
+      if (!targetChar.loginStreak || typeof targetChar.loginStreak !== 'object') {
+        targetChar.loginStreak = { current: 0, best: 0, lastDay: '', claimedDay: '' };
+      }
+      const s = targetChar.loginStreak;
+      s.current = Math.max(0, Math.floor(Number(s.current) || 0));
+      s.best = Math.max(s.current, Math.floor(Number(s.best) || 0));
+      if (typeof s.lastDay !== 'string') s.lastDay = '';
+      if (typeof s.claimedDay !== 'string') s.claimedDay = '';
+    }
+    // Reward owed for a given streak day (gold/xp + optional milestone).
+    function getLoginStreakReward(day) {
+      const d = Math.max(1, Math.floor(Number(day) || 1));
+      const rampDay = Math.min(d, LOGIN_STREAK.rampCapDay);
+      const mult = 1 + LOGIN_STREAK.perDayRamp * (rampDay - 1);
+      const gold = Math.floor(LOGIN_STREAK.baseGold * mult);
+      const xp = Math.floor(LOGIN_STREAK.baseXp * mult);
+      const milestone = LOGIN_STREAK.milestones[d] || null;
+      return { gold, xp, milestone };
+    }
+    // Called on entering the game with a character. Advances/resets the streak
+    // based on the gap since the last login day, then auto-grants the day's
+    // reward (login rewards are claimed automatically, like classic dailies).
+    function checkLoginStreak(targetChar) {
+      const c = targetChar || char;
+      if (!c) return;
+      ensureLoginStreakState(c);
+      const s = c.loginStreak;
+      const today = utcDayKey();
+      if (s.lastDay === today) {
+        // Already counted today; nothing to do (still ensures reward was given).
+        if (s.claimedDay === today) return;
+      } else {
+        const gap = utcDayDiff(s.lastDay, today);
+        if (s.lastDay && gap === 1) {
+          s.current += 1; // consecutive day
+        } else {
+          s.current = 1;  // first login, or a day (or more) was missed
+        }
+        s.lastDay = today;
+        s.best = Math.max(s.best, s.current);
+      }
+      // Grant the reward once per day.
+      if (s.claimedDay !== today) {
+        const reward = getLoginStreakReward(s.current);
+        let totalGold = reward.gold;
+        let totalXp = reward.xp;
+        if (reward.milestone) {
+          totalGold += reward.milestone.gold;
+          totalXp += reward.milestone.xp;
+        }
+        c.gold = (Number(c.gold) || 0) + totalGold;
+        const xpSplit = (typeof awardExperience === 'function')
+          ? awardExperience(totalXp, 'login')
+          : { regularXp: totalXp, aaXp: 0 };
+        s.claimedDay = today;
+        log('Daily login streak: Day ' + s.current + '! +' + fmt(xpSplit.regularXp) + ' XP, +' + fmt(totalGold) + 'g' +
+          (reward.milestone ? (' — ' + reward.milestone.label + ' bonus!') : '') + '.', 'loot');
+        if (reward.milestone && typeof showToast === 'function') {
+          showToast('🔥 ' + reward.milestone.label + ' — Day ' + s.current + ' login bonus!', 'success');
+        } else if (typeof showToast === 'function') {
+          showToast('🔥 Login streak Day ' + s.current + ': +' + fmt(totalGold) + 'g', 'info');
+        }
+        if (typeof bumpStat === 'function') bumpStat('loginDays', 1);
+        if (typeof checkLevelUp === 'function') checkLevelUp();
+        if (typeof checkAchievements === 'function') checkAchievements();
+      }
+    }
+
+    // ── Weekly Contract Tiers ──
+    function ensureWeeklyContractState(targetChar) {
+      if (!targetChar.weeklyContract || typeof targetChar.weeklyContract !== 'object') {
+        targetChar.weeklyContract = { week: '', points: 0, claimed: [] };
+      }
+      const w = targetChar.weeklyContract;
+      if (typeof w.week !== 'string') w.week = '';
+      w.points = Math.max(0, Math.floor(Number(w.points) || 0));
+      if (!Array.isArray(w.claimed)) w.claimed = [];
+      // Roll over if the stored week is stale.
+      const nowWeek = utcWeekKey();
+      if (w.week !== nowWeek) {
+        w.week = nowWeek;
+        w.points = 0;
+        w.claimed = [];
+      }
+    }
+    // Add contract points toward the weekly tier track. Called when an elite
+    // contract step (and/or chain) is completed.
+    function addWeeklyContractPoints(amount) {
+      if (!char) return;
+      ensureWeeklyContractState(char);
+      const add = Math.max(0, Math.floor(Number(amount) || 0));
+      if (!add) return;
+      char.weeklyContract.points += add;
+    }
+    // Highest tier index the player currently qualifies for (-1 = none yet).
+    function getWeeklyContractTierIndex(points) {
+      const p = Math.max(0, Number(points) || 0);
+      let idx = -1;
+      WEEKLY_CONTRACT.tiers.forEach((t, i) => { if (p >= t.need) idx = i; });
+      return idx;
+    }
+    function claimWeeklyContractTier(tierIdx) {
+      if (!char) return;
+      ensureWeeklyContractState(char);
+      const w = char.weeklyContract;
+      const tier = WEEKLY_CONTRACT.tiers[tierIdx];
+      if (!tier) return;
+      if (w.points < tier.need) { log('Not enough contract points for ' + tier.label + ' tier yet.', 'info'); return; }
+      if (w.claimed.includes(tier.id)) return;
+      const prestige = (typeof getPrestigeModifiers === 'function') ? getPrestigeModifiers(char) : { goldMult: 1 };
+      const goldAward = Math.floor(tier.gold * (prestige.goldMult || 1));
+      char.gold += goldAward;
+      const xpSplit = (typeof awardExperience === 'function') ? awardExperience(tier.xp, 'contract') : { regularXp: tier.xp, aaXp: 0 };
+      w.claimed.push(tier.id);
+      log('Weekly Contract Tier claimed: ' + tier.label + '! +' + fmt(xpSplit.regularXp) + ' XP, +' + fmt(goldAward) + 'g.', 'loot');
+      if (typeof showToast === 'function') showToast('🏆 ' + tier.label + ' weekly tier reward claimed!', 'success');
+      if (typeof bumpStat === 'function') bumpStat('weeklyTiersClaimed', 1);
+      if (typeof checkLevelUp === 'function') checkLevelUp();
+      if (typeof checkAchievements === 'function') checkAchievements();
+      renderAll();
+      renderQuests();
+      autoSave();
+    }
+
     // ── Achievements & Titles ──
     const ACHIEVEMENTS = [
       { id: 'first_blood', name: 'First Blood', desc: 'Defeat your first enemy.', title: 'Initiate', check: s => s.kills >= 1 },
@@ -12201,6 +13554,9 @@
       { id: 'boss_master', name: 'Boss Master', desc: 'Slay 10 zone bosses.', title: 'Boss Master', check: s => s.bossKills >= 10 },
       { id: 'persistent', name: 'Persistent', desc: 'Die 10 times.', title: 'Stubborn', check: s => s.deaths >= 10 },
       { id: 'daily_grind', name: 'Daily Grind', desc: 'Claim 25 daily quests.', title: 'Daily Grinder', check: s => (s.dailiesClaimed || 0) >= 25 },
+      { id: 'devoted', name: 'Devoted', desc: 'Reach a 7-day login streak.', title: 'Devoted', check: (s, c) => !!c.loginStreak && (c.loginStreak.best || 0) >= 7 },
+      { id: 'unbroken_flame', name: 'Unbroken Flame', desc: 'Reach a 30-day login streak.', title: 'Eternal Flame', check: (s, c) => !!c.loginStreak && (c.loginStreak.best || 0) >= 30 },
+      { id: 'tier_climber', name: 'Tier Climber', desc: 'Claim 10 weekly contract tiers.', title: 'Tier Climber', check: s => (s.weeklyTiersClaimed || 0) >= 10 },
       { id: 'wealthy', name: 'Wealthy', desc: 'Reach 100,000 lifetime gold earned.', title: 'Wealthy', check: s => (s.goldEarned || 0) >= 100000 },
       { id: 'ironwill', name: 'Ironwill', desc: 'Reach level 50 in Hardcore mode.', title: 'Ironwilled', check: (s, c) => !!c.hardcore && c.level >= 50 }
     ];
@@ -12209,7 +13565,7 @@
       if (!targetChar.stats || typeof targetChar.stats !== 'object') {
         targetChar.stats = { kills: 0, namedKills: 0, eliteKills: 0, bossKills: 0, deaths: 0, goldEarned: 0, dailiesClaimed: 0 };
       }
-      ['kills', 'namedKills', 'eliteKills', 'bossKills', 'deaths', 'goldEarned', 'dailiesClaimed'].forEach(k => {
+      ['kills', 'namedKills', 'eliteKills', 'bossKills', 'deaths', 'goldEarned', 'dailiesClaimed', 'loginDays', 'weeklyTiersClaimed'].forEach(k => {
         if (!Number.isFinite(Number(targetChar.stats[k]))) targetChar.stats[k] = 0;
       });
       if (!targetChar.achievements || typeof targetChar.achievements !== 'object') targetChar.achievements = {};
@@ -12873,6 +14229,11 @@
         }
       }
       const xpSplit = awardExperience(baseXpReward + bonusXp + chainBonusXp, 'contract');
+      // 1.3.90 — accrue weekly contract-tier points: one per step, plus a chain
+      // bonus when the final step of a chain is completed.
+      if (typeof addWeeklyContractPoints === 'function') {
+        addWeeklyContractPoints(WEEKLY_CONTRACT.pointsPerStep + (isFinalStep ? WEEKLY_CONTRACT.pointsPerChain : 0));
+      }
       log('Elite contract step complete! +' + fmt(xpSplit.regularXp) + ' XP' + (xpSplit.aaXp > 0 ? (' (+' + fmt(xpSplit.aaXp) + ' AA XP)') : '') + ', +' + fmt(baseGoldReward) + 'g' +
         (bonusXp > 0 ? (' + streak bonus +' + fmt(bonusXp) + ' XP, +' + fmt(bonusGold) + 'g') : '') +
         (chainBonusXp > 0 ? (' + chain bonus +' + fmt(chainBonusXp) + ' XP, +' + fmt(chainBonusGold) + 'g') : '') + '.', 'loot');
@@ -12976,7 +14337,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.80';
+    const CURRENT_VERSION = '1.3.90';
     const BACKUP_KEY = 'EmberQuest_backups';
     const MAX_BACKUPS = 3;
     const BAG_SLOT_COUNT = 8;
@@ -13075,7 +14436,7 @@
       const listEl = document.getElementById('settings-backup-list');
       if (listEl) {
         if (backups.length === 0) {
-          listEl.innerHTML = 'No backups yet. Backups are created automatically on each save.';
+          listEl.innerHTML = 'No local backups yet. Backups are created automatically on each save.';
         } else {
           const items = backups.map((b, i) => 
             '<div style="padding:4px 0;border-bottom:0.5px solid var(--border)">' +
@@ -13083,9 +14444,138 @@
             '<button class="btn" style="font-size:9px;padding:1px 6px;" onclick="recoverFromBackup(' + i + ')">Recover</button>' +
             '</div>'
           ).join('');
-          listEl.innerHTML = '<div style="font-size:11px;margin-bottom:6px;font-weight:600;">Recent backups (latest first):</div>' + items;
+          listEl.innerHTML = '<div style="font-size:11px;margin-bottom:6px;font-weight:600;">Local backups (latest first):</div>' + items;
         }
       }
+      renderCloudVersionList();
+    }
+
+    // ── Cloud Version History UI ───────────────────────────────
+    function _cloudVersionKindLabel(kind) {
+      if (kind === 'auto') return 'Auto';
+      if (kind === 'pre-restore') return 'Pre-restore';
+      if (kind === 'manual') return 'Manual';
+      return kind || '';
+    }
+
+    // ── Charselect snapshot status pill ───────────────────────
+    // Shows a transient "Restoring…" state during a restore, otherwise the
+    // time of the most recent cloud snapshot. Stored on the Cloud object so it
+    // survives across renders within a session.
+    function _relativeTimeShort(ts) {
+      const diff = Date.now() - ts;
+      if (diff < 60000) return 'just now';
+      const mins = Math.floor(diff / 60000);
+      if (mins < 60) return mins + 'm ago';
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h ago';
+      const days = Math.floor(hrs / 24);
+      return days + 'd ago';
+    }
+
+    function setSnapshotStatus(state, detail) {
+      const el = document.getElementById('cs-snapshot-status');
+      if (!el) return;
+      if (!currentUser || !sb || (Cloud && Cloud._versionsUnavailable && state !== 'restoring')) {
+        el.style.display = 'none';
+        return;
+      }
+      if (state === 'restoring') {
+        el.style.display = 'inline-flex';
+        el.style.color = '#f4d68a';
+        el.innerHTML = '<span class="snap-spin" style="display:inline-block;width:9px;height:9px;border:1.5px solid rgba(244,214,138,0.4);border-top-color:#f4d68a;border-radius:50%;animation:snapspin 0.7s linear infinite"></span>Restoring…';
+        return;
+      }
+      // 'idle' — show last snapshot time if known.
+      const ts = Cloud && Cloud._lastSnapshotAt ? Cloud._lastSnapshotAt : 0;
+      if (!ts) { el.style.display = 'none'; return; }
+      el.style.display = 'inline-flex';
+      el.style.color = '#cdbb94';
+      el.innerHTML = '<span style="opacity:0.85">☁︎</span> Snapshot ' + _relativeTimeShort(ts);
+      el.title = 'Last cloud snapshot: ' + new Date(ts).toLocaleString();
+    }
+
+    function renderCloudVersionList() {
+      const el = document.getElementById('settings-cloud-version-list');
+      if (!el) return;
+      if (!currentUser || !sb) {
+        el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Sign in to enable cloud version history.</div>';
+        return;
+      }
+      el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Loading cloud versions…</div>';
+      Cloud.fetchVersions().then(versions => {
+        if (Cloud._versionsUnavailable) {
+          el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Cloud version history is not set up for this account yet. (Local backups above still work.)</div>';
+          return;
+        }
+        if (!versions.length) {
+          el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">No cloud versions yet. Use “Snapshot Now”, or one is archived automatically as you play.</div>';
+          return;
+        }
+        const rows = versions.map(v => {
+          const when = new Date(v.created_at).toLocaleString();
+          const summary = Array.isArray(v.summary) ? v.summary : [];
+          const chars = summary.slice(0, 4).map(c =>
+            (c.name || '?') + ' L' + (c.level || 1)).join(', ');
+          const more = summary.length > 4 ? ' +' + (summary.length - 4) + ' more' : '';
+          const tag = _cloudVersionKindLabel(v.kind);
+          return '<div style="padding:5px 0;border-bottom:0.5px solid var(--border)">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px">' +
+            '<span style="font-size:10px">' + when +
+            (tag ? ' <span style="opacity:0.7">· ' + tag + '</span>' : '') +
+            (v.label ? ' <span style="color:var(--text-primary)">“' + escapeHtmlSafe(v.label) + '”</span>' : '') +
+            ' <span style="opacity:0.7">· v' + (v.version || '?') + '</span></span>' +
+            '<button class="btn" style="font-size:9px;padding:1px 6px;flex:0 0 auto" onclick="restoreCloudVersion(\'' + v.id + '\')">Restore</button>' +
+            '</div>' +
+            '<div style="font-size:9px;color:var(--text-secondary);margin-top:2px">' +
+            (v.char_count || summary.length) + ' character' + ((v.char_count || summary.length) === 1 ? '' : 's') +
+            (chars ? ': ' + escapeHtmlSafe(chars) + more : '') + '</div>' +
+            '</div>';
+        }).join('');
+        el.innerHTML = '<div style="font-size:11px;margin-bottom:6px;font-weight:600;">Cloud versions (latest first):</div>' + rows;
+      }).catch(() => {
+        el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Could not load cloud versions right now.</div>';
+      });
+    }
+
+    function escapeHtmlSafe(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function snapshotCloudVersionNow() {
+      if (!currentUser || !sb) { log('Sign in to use cloud version history.', 'info'); return; }
+      if (Cloud._versionsUnavailable) { log('Cloud version history is not set up for this account.', 'info'); return; }
+      const label = (window.prompt('Label this snapshot (optional):', '') || '').trim().slice(0, 40);
+      const btnHint = document.getElementById('settings-cloud-version-list');
+      if (btnHint) btnHint.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Saving snapshot…</div>';
+      Cloud.pushVersion(label, 'manual').then(res => {
+        if (res && res.ok) log('Cloud snapshot saved.', 'info');
+        else log('Could not save cloud snapshot.', 'info');
+        renderCloudVersionList();
+      });
+    }
+
+    function restoreCloudVersion(id) {
+      if (!currentUser || !sb) return;
+      if (!window.confirm('Restore this cloud version? Your current characters will be replaced (a safety snapshot of the current state is saved first).')) return;
+      const el = document.getElementById('settings-cloud-version-list');
+      if (el) el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Restoring…</div>';
+      setSnapshotStatus('restoring');
+      Cloud.restoreVersion(id).then(res => {
+        if (res && res.ok) {
+          log('Restored cloud version from ' + new Date(res.created_at).toLocaleString() + '.', 'info');
+          showScreen('screen-charselect');
+          renderSlots();
+          closeSettingsModal();
+          setSnapshotStatus('idle');
+        } else {
+          log('Could not restore that version.', 'info');
+          setSnapshotStatus('idle');
+          renderCloudVersionList();
+        }
+      }).catch(() => { setSnapshotStatus('idle'); });
     }
 
     function showBackupRecoveryOptions() {
@@ -13526,7 +15016,7 @@
       const modal = document.getElementById('afk-return-modal');
       if (!modal) return;
 
-      const { elapsed, fights, xp, gold, loot, runes, faction, questCompletions, zone } = afkStats;
+      const { elapsed, fights, xp, gold, loot, runes, faction, questCompletions, zone, timeline } = afkStats;
 
       // Format duration
       const minutes = Math.floor(elapsed / 60000);
@@ -13547,8 +15037,69 @@
 
       const statsHtml = stats.map((s, i) => '\n        <div class="summary-stat-row ' + s.key + '" style="animation-delay: ' + (i * 0.08) + 's">\n          <span class="summary-stat-label">' + s.label + '</span>\n          <span class="summary-stat-value ' + s.key + '">' + s.value + '</span>\n        </div>\n      ').join('');
 
-      document.getElementById('afk-summary-stats').innerHTML = statsHtml;
+      const graphHtml = buildAfkSummaryGraph(timeline, elapsed);
+
+      document.getElementById('afk-summary-stats').innerHTML = graphHtml + statsHtml;
       modal.classList.add('open');
+    }
+
+    // Renders a small dual-line SVG graph (cumulative gold + XP over the away
+    // period) for the AFK return summary. Returns '' when there isn't enough
+    // data to plot a meaningful trend.
+    function buildAfkSummaryGraph(timeline, elapsedMs) {
+      if (!Array.isArray(timeline) || timeline.length < 2) return '';
+
+      const W = 320, H = 120, padL = 8, padR = 8, padT = 14, padB = 18;
+      const innerW = W - padL - padR;
+      const innerH = H - padT - padB;
+      const n = timeline.length;
+
+      const maxGold = Math.max(1, ...timeline.map(t => t.gold));
+      const maxXp = Math.max(1, ...timeline.map(t => t.xp));
+
+      const xAt = i => padL + (n === 1 ? innerW / 2 : (i / (n - 1)) * innerW);
+      const yAt = (v, max) => padT + innerH - (v / max) * innerH;
+
+      const goldPts = timeline.map((t, i) => xAt(i).toFixed(1) + ',' + yAt(t.gold, maxGold).toFixed(1));
+      const xpPts = timeline.map((t, i) => xAt(i).toFixed(1) + ',' + yAt(t.xp, maxXp).toFixed(1));
+
+      // Area fill under the gold line for a bit of depth.
+      const goldArea = 'M ' + xAt(0).toFixed(1) + ',' + (padT + innerH).toFixed(1) +
+        ' L ' + goldPts.join(' L ') +
+        ' L ' + xAt(n - 1).toFixed(1) + ',' + (padT + innerH).toFixed(1) + ' Z';
+
+      // Light gridlines (quarter marks).
+      let grid = '';
+      for (let g = 1; g <= 3; g++) {
+        const y = (padT + (innerH * g) / 4).toFixed(1);
+        grid += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y +
+          '" stroke="var(--border)" stroke-width="1" stroke-dasharray="2 3"/>';
+      }
+
+      const mins = Math.floor(elapsedMs / 60000);
+      const startLabel = '0';
+      const endLabel = mins > 0 ? (mins + 'm') : (Math.floor(elapsedMs / 1000) + 's');
+
+      const svg =
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Offline progress over time">' +
+          grid +
+          '<path d="' + goldArea + '" fill="#f4d68a" fill-opacity="0.14" stroke="none"/>' +
+          '<polyline points="' + goldPts.join(' ') + '" fill="none" stroke="#f4d68a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<polyline points="' + xpPts.join(' ') + '" fill="none" stroke="#f4a87a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<circle cx="' + xAt(n - 1).toFixed(1) + '" cy="' + yAt(timeline[n - 1].gold, maxGold).toFixed(1) + '" r="2.6" fill="#f4d68a"/>' +
+          '<circle cx="' + xAt(n - 1).toFixed(1) + '" cy="' + yAt(timeline[n - 1].xp, maxXp).toFixed(1) + '" r="2.6" fill="#f4a87a"/>' +
+          '<text x="' + padL + '" y="' + (H - 5) + '" font-size="9" fill="var(--text-secondary)">' + startLabel + '</text>' +
+          '<text x="' + (W - padR) + '" y="' + (H - 5) + '" font-size="9" fill="var(--text-secondary)" text-anchor="end">' + endLabel + '</text>' +
+        '</svg>';
+
+      return '<div class="afk-summary-graph">' +
+          '<div class="afk-graph-title">Progress over time</div>' +
+          svg +
+          '<div class="afk-graph-legend">' +
+            '<span><i class="afk-graph-swatch" style="background:#f4d68a"></i>Gold</span>' +
+            '<span><i class="afk-graph-swatch" style="background:#f4a87a"></i>XP</span>' +
+          '</div>' +
+        '</div>';
     }
 
     function showToast(message, type = 'info', duration = 2600) {
@@ -14266,6 +15817,8 @@
         aa: { points: 0, spent: 0, nodes: {}, xpProgress: 0, xpAllocPct: 0 },
         abilities: rollClassAbilities(selectedClass, 1),
         afkProfiles: { slot1: null, slot2: null, slot3: null },
+        loadouts: { slot1: null, slot2: null, slot3: null },
+        activeLoadout: '',
         afkRules: { autoBuyPots: true, potMin: 5, autoAdvanceContract: true },
         crafting: { shards: { common: 0, magic: 0, rare: 0, epic: 0 } },
         contractTierPref: 'normal',
@@ -14671,6 +16224,7 @@
       ensureExtendedSystems(char);
       ensureSpellState(char);
       reconcileAAVitals(char);
+      if (typeof checkLoginStreak === 'function') checkLoginStreak(char);
 
       autoUseSkills = char.autoUseSkills !== false;
       if (Array.isArray(char.autoSkillSlots) && char.autoSkillSlots.length) {
@@ -14925,6 +16479,7 @@
         }
         afkGoalSelect.value = getAfkGoalState(char);
       }
+      syncAfkGoalTargetUI();
       const afkProfileSelect = document.getElementById('afk-profile-select');
       if (afkProfileSelect && !afkProfileSelect.value) afkProfileSelect.value = 'slot1';
       refreshAutoBattleButtons();
@@ -18269,6 +19824,40 @@
         });
       }
 
+      // ── LEFT: Daily Login Streak ─────────────────────────────────────
+      ensureLoginStreakState(char);
+      {
+        const s = char.loginStreak;
+        const reward = getLoginStreakReward(Math.max(1, s.current));
+        // Next milestone day after the current streak.
+        const milestoneDays = Object.keys(LOGIN_STREAK.milestones).map(Number).sort((a, b) => a - b);
+        const nextMs = milestoneDays.find(d => d > s.current);
+        colL.appendChild(_sectionLabel('Daily Login Streak'));
+        const card = document.createElement('div');
+        card.className = 'quest q-active';
+        // 7-pip week strip showing progress within the current 7-day cycle.
+        const inWeek = ((s.current - 1) % 7 + 7) % 7 + 1; // 1..7
+        let pips = '';
+        for (let i = 1; i <= 7; i++) {
+          const lit = i <= inWeek && s.current > 0;
+          pips += '<span style="display:inline-block;width:18px;height:18px;line-height:18px;text-align:center;border-radius:50%;font-size:10px;margin-right:3px;' +
+            (lit ? 'background:#f59e0b22;border:1px solid #f59e0b;color:#f59e0b' : 'background:transparent;border:1px solid var(--border-md);color:var(--text-secondary)') + '">' + (lit ? '🔥' : i) + '</span>';
+        }
+        card.innerHTML =
+          '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">' +
+            '<span class="quest-name">🔥 ' + s.current + '-Day Streak</span>' +
+            '<span class="quest-prog">Best: ' + s.best + '</span>' +
+          '</div>' +
+          '<div style="margin-top:6px">' + pips + '</div>' +
+          '<div class="quest-prog" style="margin-top:6px">Today\'s reward (auto-claimed on login): <strong>' +
+            fmt(reward.gold) + 'g · ' + fmt(reward.xp) + ' XP</strong></div>' +
+          (nextMs ? ('<div class="quest-prog" style="margin-top:2px">Next milestone: <strong>Day ' + nextMs + '</strong> — ' +
+            LOGIN_STREAK.milestones[nextMs].label + ' (+' + fmt(LOGIN_STREAK.milestones[nextMs].gold) + 'g · +' +
+            fmt(LOGIN_STREAK.milestones[nextMs].xp) + ' XP)</div>') : '') +
+          '<div class="quest-prog" style="margin-top:4px;opacity:.7">Log in each day to keep the streak — miss a day and it resets.</div>';
+        colL.appendChild(card);
+      }
+
       // ── MIDDLE: Elite Contracts ──────────────────────────────────────
       const activeContracts = (char.eliteContracts || []).filter(c => c && c.active);
       if (activeContracts.length) {
@@ -18318,6 +19907,47 @@
               '<button class="btn' + (primary ? ' active' : '') + '" onclick="setPrimaryContract(' + idx + ')">Primary</button>' +
               '<button class="btn' + (afkPinned ? ' active' : '') + '" onclick="setAfkPinnedContract(' + idx + ')">Pin AFK</button>' +
             '</div>';
+          colM.appendChild(card);
+        });
+      }
+
+      // ── MIDDLE: Weekly Contract Tiers ────────────────────────────────
+      ensureWeeklyContractState(char);
+      {
+        const w = char.weeklyContract;
+        const resetIn = Math.max(0, nextUtcWeekResetMs() - Date.now());
+        const days = Math.floor(resetIn / 86400000);
+        const hours = Math.floor((resetIn % 86400000) / 3600000);
+        const curIdx = getWeeklyContractTierIndex(w.points);
+        const maxNeed = WEEKLY_CONTRACT.tiers[WEEKLY_CONTRACT.tiers.length - 1].need;
+        colM.appendChild(_sectionLabel('Weekly Contract Tiers — resets in ' + days + 'd ' + hours + 'h'));
+        const head = document.createElement('div');
+        head.className = 'quest q-active';
+        head.innerHTML =
+          '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">' +
+            '<span class="quest-name">Contract Points</span>' +
+            '<span class="quest-prog">' + w.points + ' / ' + maxNeed + ' CP</span>' +
+          '</div>' +
+          _questBar(Math.min(w.points, maxNeed), maxNeed, w.points >= maxNeed) +
+          '<div class="quest-prog" style="margin-top:2px;opacity:.7">Earn points by completing elite-contract steps. Tier chests below are one-time per week.</div>';
+        colM.appendChild(head);
+
+        WEEKLY_CONTRACT.tiers.forEach((t, i) => {
+          const reached = w.points >= t.need;
+          const claimed = w.claimed.includes(t.id);
+          const ready = reached && !claimed;
+          const card = document.createElement('div');
+          card.className = 'quest ' + (claimed ? 'q-done' : ready ? 'q-ready' : 'q-active');
+          card.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px">' +
+              '<span class="quest-name" style="color:' + t.color + '">◆ ' + t.label + ' Tier' +
+                (claimed ? _statusBadge('Claimed', '#22c55e') : ready ? _statusBadge('Ready!', '#facc15') : '') +
+              '</span>' +
+              '<span class="quest-prog">' + t.need + ' CP</span>' +
+            '</div>' +
+            '<div class="quest-prog" style="margin-top:3px">Reward: <strong>' + fmt(t.gold) + 'g · ' + fmt(t.xp) + ' XP</strong></div>' +
+            (reached ? '' : _questBar(Math.min(w.points, t.need), t.need, false)) +
+            (!claimed ? ('<div style="margin-top:8px"><button class="btn' + (ready ? ' active' : '') + '" onclick="claimWeeklyContractTier(' + i + ')" ' + (ready ? '' : 'disabled') + '>Claim Chest</button></div>') : '');
           colM.appendChild(card);
         });
       }
@@ -18576,6 +20206,20 @@
 
       aa.innerHTML = aaHtml;
       el.appendChild(aa);
+    }
+
+    function renderLoadoutsTab() {
+      const el = document.getElementById('loadouts-list');
+      if (!el || !char) return;
+      el.innerHTML = '';
+      const wrap = document.createElement('div');
+      wrap.className = 'quest';
+      wrap.innerHTML =
+        '<div class="quest-name" style="margin:0 0 4px 0">Combat Loadouts</div>' +
+        '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary);margin-bottom:6px">One-click swap of AA talents, memorized spells, and your AFK/auto-skill profile together. Save your current build to a slot, then equip it any time out of combat.</div>' +
+        '<div id="loadout-bar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>';
+      el.appendChild(wrap);
+      renderLoadoutBar();
     }
 
     function renderPrestigeTab() {
@@ -19785,6 +21429,13 @@
       if (typeof addDamageMeterKill === 'function') addDamageMeterKill();
       const wasBoss = !!mob.boss;
       bumpStat('kills', 1);
+      if (typeof queueGuildKill === 'function') queueGuildKill(1);
+      if (typeof queueGuildQuest === 'function') {
+        queueGuildQuest('kills', 1);
+        if (mob.elite) queueGuildQuest('elite', 1);
+        if (wasBoss) queueGuildQuest('boss', 1);
+        if (mob.named) queueGuildQuest('named', 1);
+      }
       if (mob.named) bumpStat('namedKills', 1);
       if (mob.elite) bumpStat('eliteKills', 1);
       const aa = getAACombatModifiers(char);
@@ -21577,6 +23228,7 @@
         autoHpPotionPercent: Math.max(5, Math.min(95, Math.floor(Number(autoHpPotionPercent || 35)))),
         autoMpPotionPercent: Math.max(5, Math.min(95, Math.floor(Number(autoMpPotionPercent || 20)))),
         afkGoal: getAfkGoalState(char),
+        afkGoalTargets: Object.assign({}, char.afkGoalTargets),
         hpInput: thresholdInputs && thresholdInputs.hpPotion ? Math.max(5, Math.min(95, Math.floor(Number(thresholdInputs.hpPotion.value || autoHpPotionPercent || 35)))) : autoHpPotionPercent,
         mpInput: thresholdInputs && thresholdInputs.mpPotion ? Math.max(5, Math.min(95, Math.floor(Number(thresholdInputs.mpPotion.value || autoMpPotionPercent || 20)))) : autoMpPotionPercent,
         restHpInput: thresholdInputs && thresholdInputs.hpRest ? Math.max(5, Math.min(95, Math.floor(Number(thresholdInputs.hpRest.value || autoRestHpPercent || 40)))) : autoRestHpPercent,
@@ -21617,11 +23269,19 @@
       if (AFK_GOALS[profile.afkGoal]) {
         char.afkGoal = profile.afkGoal;
       }
+      if (profile.afkGoalTargets && typeof profile.afkGoalTargets === 'object') {
+        Object.entries(AFK_GOALS).forEach(([id, def]) => {
+          if (!def.smart) return;
+          const v = Number(profile.afkGoalTargets[id]);
+          if (Number.isFinite(v) && v > 0) char.afkGoalTargets[id] = Math.floor(v);
+        });
+      }
 
       refreshAutoBattleButtons();
       if (!silent) {
         setAfkGoalAction('Loaded AFK profile');
         applySmartAfkGoal(false);
+        syncAfkGoalTargetUI();
       }
       return true;
     }
@@ -21780,6 +23440,22 @@
       const modeLabel = afkOn ? 'AFK On' : 'AFK Off';
       let msg = 'Goal: ' + goalLabel + ' · ' + modeLabel;
 
+      // Smart-goal live progress (gold accrued / level reached vs target).
+      if (AFK_GOALS[goal] && AFK_GOALS[goal].smart) {
+        const prog = getSmartGoalProgress(char, goal);
+        if (prog) {
+          if (AFK_GOALS[goal].target === 'gold') {
+            msg += ' · Progress: ' + fmt(prog.current) + ' / ' + fmt(prog.target) + 'g (' + prog.pct.toFixed(0) + '%)';
+          } else {
+            msg += ' · Progress: lvl ' + prog.current + ' / ' + prog.target;
+            if (goal === 'level_alts_to') {
+              const remaining = slots.filter((c, i) => c && typeof c === 'object' && Number(c.level || 0) < prog.target).length;
+              msg += ' · alts remaining: ' + remaining;
+            }
+          }
+        }
+      }
+
       if (afkGoalLastAction) {
         const sec = Math.max(0, Math.floor((Date.now() - afkGoalLastActionAt) / 1000));
         msg += ' · Last auto action: ' + afkGoalLastAction + (sec > 0 ? (' (' + sec + 's ago)') : '');
@@ -21800,7 +23476,42 @@
       setAfkGoalAction('Goal changed to ' + AFK_GOALS[chosen].label);
       applySmartAfkGoal(false);
       log('AFK goal set to ' + AFK_GOALS[chosen].label + '.', 'info');
+      syncAfkGoalTargetUI();
       renderAll();
+      autoSave();
+    }
+
+    // Show/hide and populate the numeric target input for smart goals.
+    function syncAfkGoalTargetUI() {
+      const wrap = document.getElementById('afk-goal-target-wrap');
+      const input = document.getElementById('afk-goal-target');
+      const label = document.getElementById('afk-goal-target-label');
+      if (!wrap || !input || !char) return;
+      const goal = getAfkGoalState(char);
+      const def = AFK_GOALS[goal];
+      if (def && def.smart) {
+        wrap.style.display = 'inline-flex';
+        if (label) label.textContent = (def.targetLabel || 'Target') + ':';
+        input.value = getAfkGoalTarget(char, goal);
+        input.step = def.target === 'level' ? '1' : '1000';
+      } else {
+        wrap.style.display = 'none';
+      }
+    }
+
+    function setAfkGoalTargetFromUI() {
+      if (!char) return;
+      const goal = getAfkGoalState(char);
+      const def = AFK_GOALS[goal];
+      if (!def || !def.smart) return;
+      const input = document.getElementById('afk-goal-target');
+      if (!input) return;
+      setAfkGoalTarget(char, goal, input.value);
+      const v = getAfkGoalTarget(char, goal);
+      input.value = v;
+      setAfkGoalAction((def.target === 'gold' ? 'Gold target set to ' + fmt(v) : 'Alt level target set to ' + v));
+      log('AFK ' + def.label + ' target set to ' + (def.target === 'gold' ? fmt(v) + ' gold.' : 'level ' + v + '.'), 'info');
+      renderAfkGoalStatus();
       autoSave();
     }
 
@@ -21819,6 +23530,20 @@
         applyLootFilterPreset('gold', true);
         if (prevPreset !== 'gold') {
           setAfkGoalAction('Applied Gold Farm loot preset');
+        }
+      } else if (goal === 'farm_until_gold') {
+        // Behaves like Gold Farm but auto-stops once the target is hit.
+        const prevPreset = char.lootFilterPreset;
+        applyLootFilterPreset('gold', true);
+        if (prevPreset !== 'gold') {
+          setAfkGoalAction('Applied Gold Farm loot preset (target ' + fmt(getAfkGoalTarget(char, 'farm_until_gold')) + 'g)');
+        }
+      } else if (goal === 'level_alts_to') {
+        // Behaves like Level Push for the active char; alt hand-off happens
+        // when the goal completes (see maybeCompleteSmartGoal).
+        if (!autoUseSkills) {
+          autoUseSkills = true;
+          setAfkGoalAction('Enabled class skill casting (target lvl ' + getAfkGoalTarget(char, 'level_alts_to') + ')');
         }
       } else if (goal === 'contract') {
         const board = Array.isArray(char.eliteContracts) ? char.eliteContracts : [];
@@ -21841,11 +23566,87 @@
       }
     }
 
+    // When a smart goal is satisfied, take the configured action:
+    //  • farm_until_gold  → stop AFK and notify the player.
+    //  • level_alts_to    → if another alt is still below the target level,
+    //    hand off to that alt (which auto-resumes AFK via loadSlot); otherwise
+    //    stop AFK once every alt has reached the goal.
+    // Returns true if it consumed the tick (caller should stop further work).
+    function maybeCompleteSmartGoal() {
+      if (!char || !afkOn) return false;
+      const goal = getAfkGoalState(char);
+      const def = AFK_GOALS[goal];
+      if (!def || !def.smart) return false;
+      if (!isSmartGoalComplete(char, goal)) {
+        // Target no longer met (e.g. gold spent) — allow a fresh announcement
+        // if it gets reached again later.
+        char._smartGoalAnnouncedAt = null;
+        return false;
+      }
+
+      const target = getAfkGoalTarget(char, goal);
+
+      if (goal === 'farm_until_gold') {
+        // Target reached — keep AFK running and keep farming. Announce once
+        // per completion so we don't spam the log every tick.
+        const stamp = goal + ':' + target;
+        if (char._smartGoalAnnouncedAt !== stamp) {
+          char._smartGoalAnnouncedAt = stamp;
+          setAfkGoalAction('Reached gold target — still farming');
+          log('AFK goal reached: ' + fmt(target) + ' gold. AFK stays enabled and keeps farming.', 'lvl');
+          showToast('Gold target reached (' + fmt(char.gold) + 'g)! Still farming.', 'success', 4200);
+          renderAfkGoalStatus();
+        }
+        return false;
+      }
+
+      if (goal === 'level_alts_to') {
+        // The active char has hit the target. Hand off to the next alt that's
+        // still below it (AFK stays enabled on that alt).
+        const nextSlot = findNextAltBelowLevel(target);
+        if (nextSlot >= 0 && slots[nextSlot]) {
+          const altName = slots[nextSlot].name || ('Slot ' + (nextSlot + 1));
+          log('AFK goal: ' + char.name + ' reached level ' + target + '. Switching to alt ' + altName + '.', 'lvl');
+          showToast(char.name + ' hit lvl ' + target + ' — leveling ' + altName + ' next', 'success', 4200);
+          // Persist current char, carry the goal+target onto the next alt, and
+          // enable AFK there so loadSlot() resumes hunting automatically.
+          char.afkEnabled = false;
+          char.lastAfkAt = null;
+          if (afkOn) { afkOn = false; clearInterval(afkInterval); afkInterval = null; }
+          if (activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+          const alt = slots[nextSlot];
+          ensureExtendedSystems(alt);
+          alt.afkGoal = 'level_alts_to';
+          alt.afkGoalTargets = alt.afkGoalTargets || {};
+          alt.afkGoalTargets.level_alts_to = target;
+          alt.afkEnabled = true;
+          alt.lastAfkAt = Date.now();
+          saveSlots();
+          loadSlot(nextSlot);
+          return true;
+        }
+        // No more alts below the target — everyone is done. Keep AFK enabled
+        // on the current character and keep grinding; announce once.
+        const stamp = goal + ':' + target;
+        if (char._smartGoalAnnouncedAt !== stamp) {
+          char._smartGoalAnnouncedAt = stamp;
+          setAfkGoalAction('All alts reached level ' + target + ' — still running');
+          log('AFK goal reached: all characters at level ' + target + '. AFK stays enabled.', 'lvl');
+          showToast('All alts reached level ' + target + '! AFK still running.', 'success', 4200);
+          renderAfkGoalStatus();
+        }
+        return false;
+      }
+
+      return false;
+    }
+
 
     function afkTick() {
       if (!char) return;
       if (typeof checkDailyRollover === 'function') checkDailyRollover();
       applySmartAfkGoal(true);
+      if (maybeCompleteSmartGoal()) return;
       runAfkAutomationRules();
 
       char.mp = Math.min(char.maxMp, char.mp + char.mpRegen + (getAbilityModifiers(char).mpRegenBonus || 0));
@@ -21929,6 +23730,13 @@
       let totalRunes = 0;
       let questCompletions = 0;
 
+      // Timeline buckets for the return-summary graph: cumulative gold and XP
+      // sampled across the away period so we can draw progress over time.
+      const TIMELINE_BUCKETS = Math.max(2, Math.min(24, fights));
+      const timeline = [];
+      const fightsPerBucket = fights / TIMELINE_BUCKETS;
+      let nextBucketBoundary = fightsPerBucket;
+
       const goal = getAfkGoalState(char);
       const board = Array.isArray(char.eliteContracts) ? char.eliteContracts : [];
       const pinIdx = Math.max(0, Math.min(board.length - 1, Number(char.afkPinnedContractIdx || 0)));
@@ -21998,6 +23806,12 @@
         }
         // Herb drops during AFK (silent)
         if (typeof maybeDropHerbSilent === 'function') maybeDropHerbSilent();
+
+        // Sample a cumulative snapshot whenever we cross a bucket boundary.
+        if ((i + 1) >= nextBucketBoundary || i === fights - 1) {
+          timeline.push({ gold: totalGold, xp: totalXp, fight: i + 1 });
+          nextBucketBoundary += fightsPerBucket;
+        }
       }
 
       const afkXp = awardExperience(totalXp, 'afk');
@@ -22028,7 +23842,8 @@
           runes: totalRunes,
           faction: factionGain,
           questCompletions,
-          zone: simZoneIdx
+          zone: simZoneIdx,
+          timeline
         });
       }
 
@@ -22038,6 +23853,10 @@
       renderQuests();
       renderAll();
       autoSave();
+
+      // After applying offline gains, a smart goal may now be satisfied
+      // (e.g. crossed the gold target or hit the alt level while away).
+      maybeCompleteSmartGoal();
     }
 
     function handleVisibilityChange() {
@@ -22966,7 +24785,8 @@
       dungeon: '🏛 Dungeon', quests: '📜 Quests', aa: '✨ Alternate Ascension',
       prestige: '🏆 Prestige & Ascension', spells: '🔮 Spellbook', runes: '💎 Runes',
       loot: '🔍 Loot Filter', bank: '🏦 Shared Bank', group: '👥 Group',
-      tradeskill: '⚗️ Alchemy', leaderboard: '🏅 Leaderboard', about: 'ℹ About EmberQuest'
+      tradeskill: '⚗️ Alchemy', leaderboard: '🏅 Leaderboard', about: 'ℹ About EmberQuest',
+      arena: '⚔ Arena', guild: '🛡 Guild', loadouts: '🎛 Combat Loadouts'
     };
     const POPUP_PANEL_IDS = new Set(Object.keys(POPUP_PANEL_TITLES));
     let _activePopup = null;
@@ -23001,6 +24821,9 @@
       if (name === 'tradeskill') renderTradeskillTab();
       if (name === 'leaderboard') renderLeaderboardTab();
       if (name === 'about') renderHallOfFame();
+      if (name === 'arena') renderArenaTab();
+      if (name === 'guild') renderGuildTab();
+      if (name === 'loadouts') renderLoadoutsTab();
     }
 
     function closePopup() {
@@ -23925,6 +25748,706 @@
         </div>`;
       }).join('');
     }
+
+    //  ASYNCHRONOUS PvP ARENA
+    // ══════════════════════════════════════════════
+    // The challenger picks one of their own characters and an opponent from
+    // the published snapshot ladder. We run a deterministic-ish turn-based
+    // simulation: each side trades blows using their atk/def/hp, with the
+    // game's existing crit/dodge probabilities, until one falls. The opponent
+    // is "AI-controlled" purely from their snapshot — no live connection.
+    let _arenaOpponents = null;
+    let _arenaBusy = false;
+
+    function pvpEscape(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+      ));
+    }
+
+    // Build a combat fighter from a leaderboard/snapshot-style stat object.
+    function pvpFighterFromStats(s, label) {
+      return {
+        name: s.name || 'Champion',
+        cls: s.cls || s.class || '',
+        level: Math.max(1, Math.floor(Number(s.level || 1))),
+        atk: Math.max(1, Math.floor(Number(s.atk || 1))),
+        def: Math.max(0, Math.floor(Number(s.def || 0))),
+        hp: Math.max(1, Math.floor(Number(s.maxHp ?? s.hp ?? 1))),
+        maxHp: Math.max(1, Math.floor(Number(s.maxHp ?? s.hp ?? 1))),
+        power: Math.max(0, Math.floor(Number(s.power || 0))),
+        label: label || ''
+      };
+    }
+
+    // One attacker swing vs defender. Mirrors the PvE damage feel: base damage
+    // scales atk against def, with a small variance, plus the standard 5% crit
+    // and 4% dodge from PHASE1. Returns {dmg, crit, dodged}.
+    function pvpSwing(attacker, defender) {
+      if (Math.random() < PHASE1.playerDodge) return { dmg: 0, crit: false, dodged: true };
+      const mitigation = defender.def / (defender.def + 60 + attacker.level * 6);
+      let base = attacker.atk * (1.5 + Math.random() * 0.6) * (1 - mitigation);
+      base = Math.max(1, Math.floor(base));
+      let crit = false;
+      if (Math.random() < PHASE1.playerCrit) { base = Math.max(1, Math.floor(base * PHASE1.playerCritMult)); crit = true; }
+      return { dmg: base, crit, dodged: false };
+    }
+
+    // Simulate a full duel. Returns { winner: 'a'|'b', rounds:[...], aHp, bHp }.
+    function simulatePvpDuel(a, b) {
+      const fa = pvpFighterFromStats(a, 'you');
+      const fb = pvpFighterFromStats(b, 'opp');
+      const rounds = [];
+      // Higher-level (tiebreak: higher atk) strikes first.
+      let first = fa, second = fb;
+      if (fb.level > fa.level || (fb.level === fa.level && fb.atk > fa.atk)) { first = fb; second = fa; }
+      let guard = 0;
+      while (fa.hp > 0 && fb.hp > 0 && guard < 200) {
+        guard++;
+        for (const [atk, def] of [[first, second], [second, first]]) {
+          if (atk.hp <= 0 || def.hp <= 0) continue;
+          const sw = pvpSwing(atk, def);
+          def.hp -= sw.dmg;
+          rounds.push({ from: atk.name, to: def.name, fromSide: atk === fa ? 'a' : 'b', dmg: sw.dmg, crit: sw.crit, dodged: sw.dodged, defHp: Math.max(0, def.hp) });
+          if (def.hp <= 0) break;
+        }
+      }
+      const winner = fa.hp > 0 && fb.hp >= fa.hp ? 'a' : (fa.hp > 0 && fb.hp <= 0 ? 'a' : 'b');
+      // Cleaner winner determination:
+      let w;
+      if (fa.hp <= 0 && fb.hp <= 0) w = fa.atk >= fb.atk ? 'a' : 'b';
+      else if (fb.hp <= 0) w = 'a';
+      else if (fa.hp <= 0) w = 'b';
+      else w = fa.hp >= fb.hp ? 'a' : 'b';
+      return { winner: w, rounds, aHp: Math.max(0, fa.hp), bHp: Math.max(0, fb.hp), aMax: fa.maxHp, bMax: fb.maxHp, aName: fa.name, bName: fb.name };
+    }
+
+    function getMyArenaChar() {
+      // The active character is the one entering the arena.
+      if (char && typeof char === 'object') return computeLeaderboardStats(char);
+      return null;
+    }
+
+    function renderArenaTab() {
+      const el = document.getElementById('arena-content');
+      if (!el) return;
+      const me = getMyArenaChar();
+      if (!me) { el.innerHTML = '<div style="color:var(--text-secondary)">Load a character to enter the Arena.</div>'; return; }
+
+      const canCloud = !!(typeof Cloud === 'object' && Cloud.ready && currentUser && sb);
+      if (!canCloud) {
+        el.innerHTML = '<div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-secondary);font-size:13px">'
+          + 'Sign in to challenge other players. The Arena needs a cloud connection to load opponents.</div>';
+        return;
+      }
+
+      let html = '';
+      // Your card.
+      html += '<div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:12px">'
+        + '<div style="font-weight:700;color:var(--accent,#f4d68a)">⚔ ' + pvpEscape(me.name) + '</div>'
+        + '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px">Lv ' + me.level + ' ' + pvpEscape(me.race) + ' ' + pvpEscape(me.cls)
+        + ' · ⚡' + fmt(me.power) + ' · ⚔' + fmt(me.atk) + ' · 🛡' + fmt(me.def) + ' · ❤' + fmt(me.maxHp) + '</div>'
+        + '<div id="arena-myrating" style="font-size:11px;color:var(--text-secondary);margin-top:4px">Rating: loading…</div>'
+        + '</div>';
+
+      html += '<div id="arena-result" style="margin-bottom:12px"></div>';
+      html += '<div style="font-weight:700;font-size:12px;margin-bottom:6px">Opponents</div>';
+      html += '<div id="arena-list" style="display:flex;flex-direction:column;gap:6px"><div style="color:var(--text-secondary);font-size:12px">Loading opponents…</div></div>';
+      el.innerHTML = html;
+
+      // Publish my snapshot then load ladder + opponents.
+      const token = ++leaderboardFetchToken;
+      (async () => {
+        try { await Cloud.publishPvpSnapshots(); } catch (e) {}
+        // My rating.
+        try {
+          const mine = await Cloud.fetchMyPvpRatings();
+          const rEl = document.getElementById('arena-myrating');
+          if (rEl && Array.isArray(mine)) {
+            const row = mine.find(r => r.name === me.name) || mine[0];
+            if (row) rEl.textContent = 'Rating: ' + (Number(row.rating) || 1000) + '  ·  ' + (Number(row.wins) || 0) + 'W / ' + (Number(row.losses) || 0) + 'L';
+            else rEl.textContent = 'Rating: 1000 (unranked)';
+          }
+        } catch (e) {}
+        // Opponents.
+        const ops = await Cloud.fetchArenaOpponents(!!me.hardcore);
+        if (token !== leaderboardFetchToken) return;
+        _arenaOpponents = ops;
+        renderArenaOpponentList();
+      })();
+    }
+
+    function renderArenaOpponentList() {
+      const list = document.getElementById('arena-list');
+      if (!list) return;
+      const ops = _arenaOpponents;
+      if (!ops) { list.innerHTML = '<div style="color:var(--text-secondary);font-size:12px">Arena unavailable right now.</div>'; return; }
+      if (!ops.length) { list.innerHTML = '<div style="color:var(--text-secondary);font-size:12px">No opponents published yet. As more players sign in, their heroes appear here.</div>'; return; }
+      list.innerHTML = ops.map((o, i) => {
+        const rating = Number(o.rating) || 1000;
+        return '<div style="display:flex;align-items:center;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-primary)">'
+          + '<div style="flex:1;min-width:0">'
+          + '<div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + pvpEscape(o.name) + ' <span style="font-size:10px;color:var(--text-secondary)">#' + (i + 1) + '</span></div>'
+          + '<div style="font-size:11px;color:var(--text-secondary)">Lv ' + (o.level || 1) + ' ' + pvpEscape(o.class) + ' · ⚡' + fmt(o.power) + ' · ⚔' + fmt(o.atk) + ' · 🛡' + fmt(o.def) + ' · ❤' + fmt(o.hp) + '</div>'
+          + '<div style="font-size:10px;color:var(--text-secondary)">Rating ' + rating + ' · ' + (Number(o.wins) || 0) + 'W/' + (Number(o.losses) || 0) + 'L</div>'
+          + '</div>'
+          + '<button class="btn" data-arena-fight="' + i + '" style="font-size:11px;white-space:nowrap">Fight</button>'
+          + '</div>';
+      }).join('');
+      list.querySelectorAll('[data-arena-fight]').forEach(btn => {
+        btn.addEventListener('click', () => startArenaFight(parseInt(btn.getAttribute('data-arena-fight'), 10)));
+      });
+    }
+
+    async function startArenaFight(idx) {
+      if (_arenaBusy) return;
+      const ops = _arenaOpponents;
+      const me = getMyArenaChar();
+      if (!ops || !ops[idx] || !me) return;
+      _arenaBusy = true;
+      const opp = ops[idx];
+      const oppStats = {
+        name: opp.name, cls: opp.class, level: opp.level, atk: opp.atk,
+        def: opp.def, maxHp: opp.hp, power: opp.power
+      };
+      const duel = simulatePvpDuel(me, oppStats);
+      const iWon = duel.winner === 'a';
+
+      // Reward: gold scaled to opponent power, bonus on a win. Loss still pays
+      // a small consolation so the arena is never purely punishing.
+      const baseReward = Math.max(20, Math.floor((opp.power || 0) * 0.004));
+      const reward = iWon ? baseReward : Math.floor(baseReward * 0.25);
+      if (reward > 0 && char) {
+        char.gold = (Number(char.gold) || 0) + reward;
+        bumpStat('goldEarned', reward);
+      }
+
+      renderArenaResult(duel, iWon, reward, opp);
+
+      // Submit rating result (best-effort), then refresh ratings + ladder.
+      try {
+        const res = await Cloud.submitPvpResult(opp_charKeyForMe(), opp, iWon);
+        if (res && res.ok) {
+          const rEl = document.getElementById('arena-myrating');
+          if (rEl) rEl.textContent = 'Rating: ' + res.myRating + ' (' + (res.delta >= 0 ? '+' : '') + res.delta + ')';
+        }
+      } catch (e) {}
+      // Persist gold and refresh the UI.
+      try { if (typeof saveSlots === 'function') saveSlots(); } catch (e) {}
+      if (typeof renderAll === 'function') renderAll();
+      _arenaBusy = false;
+    }
+
+    // The active character's slot index is the snapshot key we rate.
+    function opp_charKeyForMe() {
+      return (typeof activeSlot === 'number' && activeSlot >= 0) ? activeSlot : 0;
+    }
+
+    function renderArenaResult(duel, iWon, reward, opp) {
+      const box = document.getElementById('arena-result');
+      if (!box) return;
+      const youName = pvpEscape(duel.aName);
+      const oppName = pvpEscape(duel.bName);
+      // Build a compact blow-by-blow (last ~8 swings).
+      const tail = duel.rounds.slice(-8).map(r => {
+        const who = r.fromSide === 'a' ? youName : oppName;
+        const tgt = r.fromSide === 'a' ? oppName : youName;
+        if (r.dodged) return '<div style="font-size:11px;color:var(--text-secondary)">' + who + ' attacks — ' + tgt + ' dodges.</div>';
+        return '<div style="font-size:11px">' + who + ' hits ' + tgt + ' for <b style="color:#ef4444">' + fmt(r.dmg) + '</b>'
+          + (r.crit ? ' <span style="color:#f59e0b">CRIT!</span>' : '') + '</div>';
+      }).join('');
+      box.innerHTML = '<div style="padding:10px;border:1px solid ' + (iWon ? '#22c55e' : '#ef4444')
+        + ';border-radius:var(--radius-md);background:var(--bg-secondary)">'
+        + '<div style="font-weight:700;font-size:14px;color:' + (iWon ? '#22c55e' : '#ef4444') + '">'
+        + (iWon ? '🏆 Victory!' : '💀 Defeat') + ' vs ' + oppName + '</div>'
+        + '<div style="font-size:11px;color:var(--text-secondary);margin:4px 0">'
+        + youName + ' ❤ ' + fmt(duel.aHp) + '/' + fmt(duel.aMax) + '  ·  '
+        + oppName + ' ❤ ' + fmt(duel.bHp) + '/' + fmt(duel.bMax) + '</div>'
+        + '<div style="margin:6px 0 4px">' + tail + '</div>'
+        + '<div style="font-size:12px;color:#f59e0b;font-weight:600">+' + fmt(reward) + ' gold</div>'
+        + '</div>';
+      if (typeof showToast === 'function') showToast((iWon ? 'Arena win! +' : 'Arena loss. +') + fmt(reward) + 'g', iWon ? 'success' : 'info');
+    }
+
+    // ══════════════════════════════════════════════
+    //  GUILDS / CLANS
+    // ══════════════════════════════════════════════
+    let _guildBusy = false;
+
+    function renderGuildTab() {
+      const el = document.getElementById('guild-content');
+      if (!el) return;
+      const canCloud = !!(typeof Cloud === 'object' && Cloud.ready && currentUser && sb);
+      if (!canCloud) {
+        el.innerHTML = '<div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-secondary);font-size:13px">'
+          + 'Sign in to create or join a guild. Guilds need a cloud connection.</div>';
+        return;
+      }
+      el.innerHTML = '<div style="color:var(--text-secondary);font-size:12px">Loading guild…</div>';
+      (async () => {
+        const mine = await Cloud.fetchMyGuild();
+        if (mine && mine.guild) renderMyGuild(el, mine);
+        else renderGuildBrowser(el);
+      })();
+    }
+
+    // Discrete guild quests the owner can take on, beyond the weekly kill goal.
+    // Each rewards gold into the guild bank on completion.
+    const GUILD_QUESTS = [
+      { id: 'cull',    kind: 'kills', target: 10000, reward: 25000,  name: 'The Great Cull',     desc: 'Slay 10,000 monsters together.' },
+      { id: 'elites',  kind: 'elite', target: 500,   reward: 40000,  name: 'Elite Hunt',         desc: 'Defeat 500 elite enemies.' },
+      { id: 'bosses',  kind: 'boss',  target: 100,   reward: 75000,  name: 'Boss Slayers',       desc: 'Bring down 100 bosses.' },
+      { id: 'named',   kind: 'named', target: 250,   reward: 50000,  name: 'Trophy Wall',        desc: 'Hunt 250 named foes.' }
+    ];
+    function guildQuestById(id) { return GUILD_QUESTS.find(q => q.id === id) || null; }
+    const GUILD_QUEST_KIND_LABEL = { kills: 'kills', elite: 'elites', boss: 'bosses', named: 'named foes' };
+
+    let _guildSubtab = 'overview';
+    let _guildCache = null; // last fetched { guild, me, roster }
+
+    function setGuildSubtab(name) { _guildSubtab = name; renderGuildTab(); }
+
+    function renderMyGuild(el, info) {
+      _guildCache = info;
+      const g = info.guild;
+      const isOwner = info.me && info.me.role === 'owner';
+
+      // Header
+      let html = '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+        + '<div style="font-weight:700;font-size:16px;color:var(--accent,#f4d68a)">'
+        + (g.tag ? '[' + pvpEscape(g.tag) + '] ' : '') + pvpEscape(g.name) + '</div>'
+        + '<button class="btn danger" id="guild-leave-btn" style="font-size:11px;padding:3px 8px">Leave</button>'
+        + '</div>';
+
+      // Sub-tab nav
+      const tabs = [
+        ['overview', '📊 Overview'], ['leaderboard', '🏅 Leaderboard'],
+        ['bank', '🏦 Vault'], ['coop', '⚔ Co-op']
+      ];
+      html += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">'
+        + tabs.map(([id, label]) =>
+          '<button class="btn' + (_guildSubtab === id ? ' active' : '') + '" data-gsub="' + id + '" style="font-size:11px;padding:4px 9px">' + label + '</button>'
+        ).join('') + '</div>';
+
+      html += '<div id="guild-subtab-body"></div>';
+      el.innerHTML = html;
+
+      el.querySelectorAll('[data-gsub]').forEach(b =>
+        b.addEventListener('click', () => setGuildSubtab(b.getAttribute('data-gsub'))));
+      const leave = document.getElementById('guild-leave-btn');
+      if (leave) leave.addEventListener('click', async () => {
+        if (_guildBusy) return; _guildBusy = true;
+        leave.disabled = true;
+        await Cloud.leaveGuild();
+        _guildBusy = false; _guildSubtab = 'overview';
+        renderGuildTab();
+      });
+
+      const body = document.getElementById('guild-subtab-body');
+      if (_guildSubtab === 'overview') renderGuildOverview(body, info, isOwner);
+      else if (_guildSubtab === 'leaderboard') renderGuildLeaderboard(body, info);
+      else if (_guildSubtab === 'bank') renderGuildBankPanel(body, info, isOwner);
+      else if (_guildSubtab === 'coop') renderGuildCoop(body, info);
+    }
+
+    function renderGuildOverview(body, info, isOwner) {
+      const g = info.guild;
+      const target = Math.max(1, Number(g.goal_target) || 1);
+      const prog = Math.max(0, Number(g.goal_progress) || 0);
+      const pct = Math.min(100, Math.round(prog / target * 100));
+
+      let html = '<div style="padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:12px">'
+        + '<div style="font-weight:700;font-size:13px">Weekly Goal — slay monsters together</div>'
+        + '<div style="margin-top:6px;height:14px;border-radius:8px;background:var(--bg-primary);overflow:hidden;border:0.5px solid var(--border)">'
+        + '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#6b4f28,#f4d68a)"></div></div>'
+        + '<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">' + fmt(prog) + ' / ' + fmt(target) + ' kills (' + pct + '%)</div>'
+        + '</div>';
+
+      // Active discrete quest, or a chooser for the owner.
+      const activeKind = g.quest_kind;
+      if (activeKind) {
+        const q = guildQuestById(g.quest_id) || { name: 'Guild Quest', desc: '' };
+        const qt = Math.max(1, Number(g.quest_target) || 1);
+        const qp = Math.max(0, Number(g.quest_progress) || 0);
+        const qpct = Math.min(100, Math.round(qp / qt * 100));
+        html += '<div style="padding:12px;border:1px solid var(--accent,#f4d68a);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:12px">'
+          + '<div style="font-weight:700;font-size:13px;color:var(--accent,#f4d68a)">📜 ' + pvpEscape(q.name) + '</div>'
+          + '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px">' + pvpEscape(q.desc) + '</div>'
+          + '<div style="margin-top:6px;height:12px;border-radius:7px;background:var(--bg-primary);overflow:hidden;border:0.5px solid var(--border)">'
+          + '<div style="height:100%;width:' + qpct + '%;background:linear-gradient(90deg,#3b6ea5,#7fb2e5)"></div></div>'
+          + '<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">' + fmt(qp) + ' / ' + fmt(qt) + ' ' + (GUILD_QUEST_KIND_LABEL[activeKind] || '') + ' (' + qpct + '%)</div>'
+          + '<div style="font-size:11px;color:#f59e0b;margin-top:4px">Reward: ' + fmt(g.quest_reward || 0) + ' gold to the vault on completion.</div>'
+          + '</div>';
+      } else if (isOwner) {
+        html += '<div style="padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:12px">'
+          + '<div style="font-weight:700;font-size:13px;margin-bottom:6px">📜 Take on a Guild Quest</div>'
+          + '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px">Members\' kills contribute automatically while the quest is active.</div>'
+          + GUILD_QUESTS.map(q =>
+            '<div style="display:flex;align-items:center;gap:8px;padding:7px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-primary);margin-bottom:6px">'
+            + '<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:12px">' + pvpEscape(q.name) + '</div>'
+            + '<div style="font-size:10px;color:var(--text-secondary)">' + pvpEscape(q.desc) + ' · 💰' + fmt(q.reward) + '</div></div>'
+            + '<button class="btn" data-gquest="' + q.id + '" style="font-size:11px;white-space:nowrap">Start</button></div>'
+          ).join('')
+          + '</div>';
+      } else {
+        html += '<div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-secondary);font-size:12px;margin-bottom:12px">No guild quest active. The guild owner can start one.</div>';
+      }
+
+      body.innerHTML = html;
+      body.querySelectorAll('[data-gquest]').forEach(btn =>
+        btn.addEventListener('click', async () => {
+          if (_guildBusy) return; _guildBusy = true; btn.disabled = true;
+          const q = guildQuestById(btn.getAttribute('data-gquest'));
+          const res = await Cloud.startGuildQuest(info.guild.id, q);
+          _guildBusy = false;
+          if (res && res.ok) { renderGuildTab(); if (typeof showToast === 'function') showToast('Guild quest started!', 'success'); }
+          else { btn.disabled = false; if (typeof showToast === 'function') showToast((res && res.error) || 'Could not start quest', 'error'); }
+        }));
+    }
+
+    function renderGuildLeaderboard(body, info) {
+      const roster = (info.roster || []).slice().sort((a, b) => (Number(b.contribution) || 0) - (Number(a.contribution) || 0));
+      const maxC = Math.max(1, ...roster.map(m => Number(m.contribution) || 0));
+      let html = '<div style="font-weight:700;font-size:12px;margin-bottom:6px">Member Contributions (' + roster.length + ')</div>';
+      html += '<div style="display:flex;flex-direction:column;gap:4px">'
+        + roster.map((m, i) => {
+          const mine = currentUser && m.user_id === currentUser.id;
+          const c = Number(m.contribution) || 0;
+          const w = Math.round(c / maxC * 100);
+          const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : ('#' + (i + 1));
+          return '<div style="position:relative;padding:7px 9px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-primary);overflow:hidden' + (mine ? ';outline:1px solid var(--accent,#f4d68a)' : '') + '">'
+            + '<div style="position:absolute;inset:0;width:' + w + '%;background:linear-gradient(90deg,rgba(244,214,138,0.18),rgba(244,214,138,0.04))"></div>'
+            + '<div style="position:relative;display:flex;justify-content:space-between;align-items:center;gap:8px">'
+            + '<span style="font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + medal + ' ' + (m.role === 'owner' ? '👑 ' : '') + pvpEscape(m.display || 'Adventurer') + (mine ? ' (you)' : '') + '</span>'
+            + '<span style="font-size:12px;color:var(--text-secondary);white-space:nowrap">' + fmt(c) + ' kills</span>'
+            + '</div></div>';
+        }).join('') + '</div>';
+      body.innerHTML = html;
+    }
+
+    function renderGuildBankPanel(body, info, isOwner) {
+      body.innerHTML = '<div style="color:var(--text-secondary);font-size:12px">Loading vault…</div>';
+      (async () => {
+        const bank = await Cloud.fetchGuildBank(info.guild.id);
+        if (_guildSubtab !== 'bank') return;
+        if (!bank) { body.innerHTML = '<div style="color:var(--text-secondary);font-size:12px">Vault unavailable.</div>'; return; }
+        const myGold = char ? (Number(char.gold) || 0) : 0;
+        let html = '<div style="padding:12px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:12px">'
+          + '<div style="font-weight:700;font-size:13px">🏦 Guild Vault</div>'
+          + '<div style="font-size:18px;color:#f59e0b;font-weight:700;margin:4px 0">' + fmt(bank.gold) + ' gold</div>'
+          + '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
+          + '<input id="guild-bank-amt" type="number" min="1" placeholder="Amount" style="flex:1;min-width:90px;padding:7px;border-radius:6px;border:0.5px solid var(--border);background:var(--bg-primary);color:var(--text-primary)">'
+          + '<button class="btn" id="guild-bank-deposit" style="font-size:11px">Deposit</button>'
+          + (isOwner ? '<button class="btn" id="guild-bank-withdraw" style="font-size:11px">Withdraw</button>' : '')
+          + '</div>'
+          + '<div style="font-size:10px;color:var(--text-secondary);margin-top:4px">Your gold: ' + fmt(myGold) + (isOwner ? '' : ' · Only the guild owner may withdraw.') + '</div>'
+          + '<div id="guild-bank-err" style="font-size:11px;color:#ef4444;margin-top:4px"></div>'
+          + '</div>';
+
+        // Item stash: deposit from your inventory, withdraw to it.
+        html += '<div style="font-weight:700;font-size:12px;margin-bottom:6px">Shared Stash (' + (bank.items || []).length + '/100)</div>';
+        if (!(bank.items || []).length) {
+          html += '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">No items deposited yet.</div>';
+        } else {
+          html += '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px">'
+            + bank.items.map(row => {
+              const it = row.item;
+              const nm = (typeof getItemDisplayName === 'function' && it) ? getItemDisplayName(it) : (it && (it.name || it.base)) || 'Item';
+              const rc = (typeof getItemRarityClass === 'function' && it) ? getItemRarityClass(it) : '';
+              const canTake = isOwner || (currentUser && row.depositor === currentUser.id);
+              return '<div style="display:flex;align-items:center;gap:8px;padding:7px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-primary)">'
+                + '<div style="flex:1;min-width:0"><div class="' + rc + '" style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + pvpEscape(nm) + '</div>'
+                + '<div style="font-size:10px;color:var(--text-secondary)">by ' + pvpEscape(row.display || 'member') + '</div></div>'
+                + (canTake ? '<button class="btn" data-bank-take="' + row.id + '" style="font-size:10px;white-space:nowrap">Take</button>'
+                          : '<span style="font-size:10px;color:var(--text-secondary)">locked</span>')
+                + '</div>';
+            }).join('') + '</div>';
+        }
+        // Deposit-from-inventory control.
+        const inv = (char && Array.isArray(char.inventory)) ? char.inventory : [];
+        if (inv.length) {
+          html += '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+            + '<select id="guild-bank-item-sel" style="flex:1;min-width:120px;padding:7px;border-radius:6px;border:0.5px solid var(--border);background:var(--bg-primary);color:var(--text-primary)">'
+            + inv.map((it, i) => {
+              const nm = (typeof getItemDisplayName === 'function') ? getItemDisplayName(it) : ((it && (it.name || it.base)) || ('Item ' + i));
+              return '<option value="' + i + '">' + pvpEscape(nm) + '</option>';
+            }).join('')
+            + '</select>'
+            + '<button class="btn" id="guild-bank-item-deposit" style="font-size:11px">Deposit Item</button>'
+            + '</div>';
+        } else {
+          html += '<div style="font-size:11px;color:var(--text-secondary)">Your inventory is empty — nothing to deposit.</div>';
+        }
+
+        body.innerHTML = html;
+
+        const errEl = document.getElementById('guild-bank-err');
+        const amtEl = document.getElementById('guild-bank-amt');
+        const dep = document.getElementById('guild-bank-deposit');
+        if (dep) dep.addEventListener('click', async () => {
+          if (_guildBusy) return;
+          const amt = Math.floor(Number(amtEl && amtEl.value) || 0);
+          errEl.textContent = '';
+          if (!(amt > 0)) { errEl.textContent = 'Enter an amount.'; return; }
+          if (!char || (Number(char.gold) || 0) < amt) { errEl.textContent = 'Not enough gold.'; return; }
+          _guildBusy = true; dep.disabled = true;
+          const res = await Cloud.depositGuildGold(info.guild.id, amt);
+          _guildBusy = false; dep.disabled = false;
+          if (res && res.ok) {
+            char.gold = (Number(char.gold) || 0) - amt;
+            if (typeof saveSlots === 'function') saveSlots();
+            if (typeof renderAll === 'function') renderAll();
+            renderGuildBankPanel(body, info, isOwner);
+            if (typeof showToast === 'function') showToast('Deposited ' + fmt(amt) + 'g', 'success');
+          } else { errEl.textContent = (res && res.error) || 'Deposit failed.'; }
+        });
+        const wd = document.getElementById('guild-bank-withdraw');
+        if (wd) wd.addEventListener('click', async () => {
+          if (_guildBusy) return;
+          const amt = Math.floor(Number(amtEl && amtEl.value) || 0);
+          errEl.textContent = '';
+          if (!(amt > 0)) { errEl.textContent = 'Enter an amount.'; return; }
+          _guildBusy = true; wd.disabled = true;
+          const res = await Cloud.withdrawGuildGold(info.guild.id, amt);
+          _guildBusy = false; wd.disabled = false;
+          if (res && res.ok) {
+            if (char) { char.gold = (Number(char.gold) || 0) + res.withdrawn; if (typeof bumpStat === 'function') bumpStat('goldEarned', res.withdrawn); }
+            if (typeof saveSlots === 'function') saveSlots();
+            if (typeof renderAll === 'function') renderAll();
+            renderGuildBankPanel(body, info, isOwner);
+            if (typeof showToast === 'function') showToast('Withdrew ' + fmt(res.withdrawn) + 'g', 'success');
+          } else { errEl.textContent = (res && res.error) || 'Withdraw failed.'; }
+        });
+        body.querySelectorAll('[data-bank-take]').forEach(btn =>
+          btn.addEventListener('click', async () => {
+            if (_guildBusy) return; _guildBusy = true; btn.disabled = true;
+            const res = await Cloud.withdrawGuildItem(btn.getAttribute('data-bank-take'));
+            _guildBusy = false;
+            if (res && res.ok && res.item && char) {
+              if (!Array.isArray(char.inventory)) char.inventory = [];
+              char.inventory.push(res.item);
+              if (typeof saveSlots === 'function') saveSlots();
+              if (typeof renderAll === 'function') renderAll();
+              renderGuildBankPanel(body, info, isOwner);
+              if (typeof showToast === 'function') showToast('Item withdrawn to your inventory.', 'success');
+            } else { btn.disabled = false; if (typeof showToast === 'function') showToast((res && res.error) || 'Could not withdraw item', 'error'); }
+          }));
+        const itemDep = document.getElementById('guild-bank-item-deposit');
+        if (itemDep) itemDep.addEventListener('click', async () => {
+          if (_guildBusy) return;
+          const sel = document.getElementById('guild-bank-item-sel');
+          const i = Math.floor(Number(sel && sel.value));
+          if (!char || !Array.isArray(char.inventory) || !char.inventory[i]) return;
+          _guildBusy = true; itemDep.disabled = true;
+          const item = char.inventory[i];
+          const res = await Cloud.depositGuildItem(info.guild.id, item);
+          _guildBusy = false; itemDep.disabled = false;
+          if (res && res.ok) {
+            char.inventory.splice(i, 1);
+            if (typeof saveSlots === 'function') saveSlots();
+            if (typeof renderAll === 'function') renderAll();
+            renderGuildBankPanel(body, info, isOwner);
+            if (typeof showToast === 'function') showToast('Item deposited to the vault.', 'success');
+          } else { if (typeof showToast === 'function') showToast((res && res.error) || 'Could not deposit', 'error'); }
+        });
+      })();
+    }
+
+    // ── Async co-op dungeons (borrowed-hero snapshots) ────────────────────
+    // Build a safe snapshot of the active character to seed/join a run.
+    function buildCoopSnapshot() {
+      if (!char || typeof computeLeaderboardStats !== 'function') return null;
+      const s = computeLeaderboardStats(char);
+      return {
+        user_id: currentUser ? currentUser.id : 'local',
+        char_key: (typeof activeSlot === 'number' && activeSlot >= 0) ? activeSlot : 0,
+        name: s.name, cls: s.cls, race: s.race, level: s.level,
+        atk: s.atk, def: s.def, maxHp: s.maxHp, power: s.power, hardcore: !!s.hardcore
+      };
+    }
+    // Resolve a forming run locally against tier-scaled encounters using the
+    // existing PvP swing math, then compute per-member payouts.
+    function resolveCoopRunLocally(run) {
+      const party = Array.isArray(run.party) ? run.party : [];
+      const tier = Math.max(1, Number(run.tier) || 1);
+      const partyPower = party.reduce((s, p) => s + (Number(p.power) || 0), 0);
+      const partyHp = party.reduce((s, p) => s + (Number(p.maxHp) || 0), 0);
+      const partyAtk = party.reduce((s, p) => s + (Number(p.atk) || 0), 0);
+      // Encounter difficulty scales with tier and party size.
+      const encounters = 3 + tier;
+      const bossPower = Math.floor((partyPower / Math.max(1, party.length)) * (1.1 + tier * 0.15) * Math.max(1, party.length) * 0.8);
+      // Simple resolution: party survives if total atk over the fight outpaces
+      // the scaled boss. We reuse simulatePvpDuel with an aggregated fighter.
+      const partyFighter = { name: 'Party', level: Math.round(party.reduce((s, p) => s + (Number(p.level) || 1), 0) / Math.max(1, party.length)), atk: partyAtk, def: Math.floor(partyHp / 40), maxHp: partyHp, power: partyPower };
+      const bossFighter = { name: 'Dungeon Boss', level: Math.round(partyFighter.level * (1 + tier * 0.1)), atk: Math.floor(bossPower / 12), def: Math.floor(bossPower / 18), maxHp: Math.floor(bossPower * 1.4), power: bossPower };
+      const duel = simulatePvpDuel(partyFighter, bossFighter);
+      const cleared = duel.winner === 'a';
+      // Payouts: gold/XP per member scaled by tier, halved on a wipe.
+      const baseGold = Math.floor((150 + tier * 220) * (cleared ? 1 : 0.4));
+      const baseXp = Math.floor((400 + tier * 650) * (cleared ? 1 : 0.4));
+      const payouts = party.map(p => ({ user_id: p.user_id, char_key: p.char_key, gold: baseGold, xp: baseXp, name: p.name }));
+      return { cleared, encounters, duel, payouts, baseGold, baseXp, boss: bossFighter };
+    }
+
+    function renderGuildCoop(body, info) {
+      const canSnap = !!buildCoopSnapshot();
+      let html = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">Open a dungeon run seeded with a snapshot of your active hero. Guildmates join with their own heroes; once a party is formed, the run resolves asynchronously — no live session needed. Rewards arrive in each hero\'s LFG reward ledger.</div>';
+      html += '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:12px">'
+        + '<label style="font-size:11px;color:var(--text-secondary)">Tier</label>'
+        + '<select id="coop-tier" style="padding:7px;border-radius:6px;border:0.5px solid var(--border);background:var(--bg-primary);color:var(--text-primary)">'
+        + [1, 2, 3, 4, 5].map(t => '<option value="' + t + '">Tier ' + t + '</option>').join('')
+        + '</select>'
+        + '<button class="btn" id="coop-create"' + (canSnap ? '' : ' disabled') + ' style="font-size:11px">Open Run</button>'
+        + '</div>';
+      html += '<div id="coop-list"><div style="color:var(--text-secondary);font-size:12px">Loading runs…</div></div>';
+      body.innerHTML = html;
+
+      const createBtn = document.getElementById('coop-create');
+      if (createBtn) createBtn.addEventListener('click', async () => {
+        if (_guildBusy) return;
+        const snap = buildCoopSnapshot();
+        if (!snap) return;
+        const tier = Math.floor(Number(document.getElementById('coop-tier').value) || 1);
+        _guildBusy = true; createBtn.disabled = true;
+        const res = await Cloud.createCoopRun(info.guild.id, tier, snap);
+        _guildBusy = false; createBtn.disabled = false;
+        if (res && res.ok) { renderGuildCoop(body, info); if (typeof showToast === 'function') showToast('Dungeon run opened!', 'success'); }
+        else if (typeof showToast === 'function') showToast((res && res.error) || 'Could not open run', 'error');
+      });
+
+      (async () => {
+        const runs = await Cloud.listCoopRuns(info.guild.id);
+        if (_guildSubtab !== 'coop') return;
+        const listEl = document.getElementById('coop-list');
+        if (!listEl) return;
+        if (!runs) { listEl.innerHTML = '<div style="color:var(--text-secondary);font-size:12px">Co-op runs unavailable.</div>'; return; }
+        if (!runs.length) { listEl.innerHTML = '<div style="color:var(--text-secondary);font-size:12px">No runs yet — open one to gather a party.</div>'; return; }
+        listEl.innerHTML = runs.map((r, i) => {
+          const party = Array.isArray(r.party) ? r.party : [];
+          const mine = currentUser && party.some(p => p && p.user_id === currentUser.id);
+          const isHost = currentUser && r.host === currentUser.id;
+          const forming = r.status === 'forming';
+          const names = party.map(p => pvpEscape(p.name || 'Hero')).join(', ');
+          let actions = '';
+          if (forming) {
+            if (!mine) actions += '<button class="btn" data-coop-join="' + i + '" style="font-size:10px;white-space:nowrap">Join</button>';
+            if (party.length >= 2) actions += '<button class="btn" data-coop-resolve="' + i + '" style="font-size:10px;white-space:nowrap">Run It</button>';
+            if (isHost) actions += '<button class="btn danger" data-coop-del="' + i + '" style="font-size:10px;white-space:nowrap">Cancel</button>';
+          }
+          return '<div style="padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-primary);margin-bottom:6px">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+            + '<div style="min-width:0"><div style="font-weight:600;font-size:12px">⚔ Tier ' + (r.tier || 1) + ' Dungeon '
+            + (forming ? '<span style="font-size:10px;color:#22c55e">· forming</span>' : '<span style="font-size:10px;color:var(--text-secondary)">· ' + pvpEscape(r.status) + '</span>') + '</div>'
+            + '<div style="font-size:10px;color:var(--text-secondary)">Party ' + party.length + '/6: ' + (names || '—') + '</div></div>'
+            + '<div style="display:flex;gap:4px;flex-wrap:wrap">' + actions + '</div>'
+            + '</div></div>';
+        }).join('');
+
+        listEl.querySelectorAll('[data-coop-join]').forEach(btn =>
+          btn.addEventListener('click', async () => {
+            if (_guildBusy) return;
+            const r = runs[parseInt(btn.getAttribute('data-coop-join'), 10)];
+            const snap = buildCoopSnapshot();
+            if (!r || !snap) return;
+            _guildBusy = true; btn.disabled = true;
+            const res = await Cloud.joinCoopRun(r.id, snap);
+            _guildBusy = false;
+            if (res && res.ok) { renderGuildCoop(body, info); if (typeof showToast === 'function') showToast('Joined the run!', 'success'); }
+            else { btn.disabled = false; if (typeof showToast === 'function') showToast((res && res.error) || 'Could not join', 'error'); }
+          }));
+        listEl.querySelectorAll('[data-coop-resolve]').forEach(btn =>
+          btn.addEventListener('click', async () => {
+            if (_guildBusy) return;
+            const r = runs[parseInt(btn.getAttribute('data-coop-resolve'), 10)];
+            if (!r) return;
+            _guildBusy = true; btn.disabled = true;
+            const outcome = resolveCoopRunLocally(r);
+            const res = await Cloud.resolveCoopRun(r.id, outcome.payouts);
+            _guildBusy = false;
+            if (res && res.ok) {
+              showCoopResult(outcome, r);
+              renderGuildCoop(body, info);
+            } else { btn.disabled = false; if (typeof showToast === 'function') showToast((res && res.error) || 'Could not resolve', 'error'); }
+          }));
+        listEl.querySelectorAll('[data-coop-del]').forEach(btn =>
+          btn.addEventListener('click', async () => {
+            if (_guildBusy) return;
+            const r = runs[parseInt(btn.getAttribute('data-coop-del'), 10)];
+            if (!r) return;
+            _guildBusy = true; btn.disabled = true;
+            await Cloud.deleteCoopRun(r.id);
+            _guildBusy = false;
+            renderGuildCoop(body, info);
+          }));
+      })();
+    }
+
+    function showCoopResult(outcome, run) {
+      const cleared = outcome.cleared;
+      const msg = (cleared ? '🏆 Dungeon cleared!' : '💀 The party fell.')
+        + ' Each hero earns ' + fmt(outcome.baseGold) + 'g and ' + fmt(outcome.baseXp) + ' XP'
+        + (cleared ? '.' : ' (reduced).')
+        + ' Rewards land in each hero\'s ledger — collect them next login.';
+      if (typeof showToast === 'function') showToast(cleared ? 'Dungeon cleared!' : 'Party wiped — partial rewards.', cleared ? 'success' : 'info', 4000);
+      if (typeof log === 'function') log(msg, cleared ? 'loot' : 'info');
+    }
+
+    function renderGuildBrowser(el) {
+      let html = '<div style="padding:10px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-secondary);margin-bottom:12px">'
+        + '<div style="font-weight:700;font-size:12px;margin-bottom:6px">Found a guild</div>'
+        + '<input id="guild-new-name" type="text" maxlength="32" placeholder="Guild name" style="width:100%;margin-bottom:6px;padding:8px;border-radius:6px;border:0.5px solid var(--border);background:var(--bg-primary);color:var(--text-primary)">'
+        + '<input id="guild-new-tag" type="text" maxlength="5" placeholder="Tag (e.g. EMBR)" style="width:100%;margin-bottom:8px;padding:8px;border-radius:6px;border:0.5px solid var(--border);background:var(--bg-primary);color:var(--text-primary)">'
+        + '<button class="btn" id="guild-create-btn" style="font-size:12px">Create guild</button>'
+        + '<div id="guild-create-err" style="font-size:11px;color:#ef4444;margin-top:6px"></div>'
+        + '</div>';
+      html += '<div style="font-weight:700;font-size:12px;margin-bottom:6px">Open guilds</div>';
+      html += '<div id="guild-browse-list" style="display:flex;flex-direction:column;gap:6px"><div style="color:var(--text-secondary);font-size:12px">Loading…</div></div>';
+      el.innerHTML = html;
+
+      const createBtn = document.getElementById('guild-create-btn');
+      if (createBtn) createBtn.addEventListener('click', async () => {
+        if (_guildBusy) return;
+        const name = document.getElementById('guild-new-name').value;
+        const tag = document.getElementById('guild-new-tag').value;
+        const errEl = document.getElementById('guild-create-err');
+        errEl.textContent = '';
+        _guildBusy = true; createBtn.disabled = true;
+        const res = await Cloud.createGuild(name, tag);
+        _guildBusy = false; createBtn.disabled = false;
+        if (res && res.ok) { renderGuildTab(); if (typeof showToast === 'function') showToast('Guild founded!', 'success'); }
+        else { errEl.textContent = (res && res.error) || 'Could not create guild.'; }
+      });
+
+      (async () => {
+        const guilds = await Cloud.listGuilds();
+        const listEl = document.getElementById('guild-browse-list');
+        if (!listEl) return;
+        if (!guilds) { listEl.innerHTML = '<div style="color:var(--text-secondary);font-size:12px">Guild list unavailable.</div>'; return; }
+        if (!guilds.length) { listEl.innerHTML = '<div style="color:var(--text-secondary);font-size:12px">No guilds yet — be the first to found one.</div>'; return; }
+        listEl.innerHTML = guilds.map((g, i) => {
+          const target = Math.max(1, Number(g.goal_target) || 1);
+          const pct = Math.min(100, Math.round((Number(g.goal_progress) || 0) / target * 100));
+          return '<div style="display:flex;align-items:center;gap:8px;padding:8px;border:0.5px solid var(--border);border-radius:var(--radius-md);background:var(--bg-primary)">'
+            + '<div style="flex:1;min-width:0"><div style="font-weight:600">' + (g.tag ? '[' + pvpEscape(g.tag) + '] ' : '') + pvpEscape(g.name) + '</div>'
+            + '<div style="font-size:11px;color:var(--text-secondary)">Weekly goal ' + pct + '% · ' + fmt(g.goal_progress || 0) + '/' + fmt(target) + '</div></div>'
+            + '<button class="btn" data-guild-join="' + i + '" style="font-size:11px">Join</button></div>';
+        }).join('');
+        listEl.querySelectorAll('[data-guild-join]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (_guildBusy) return;
+            const g = guilds[parseInt(btn.getAttribute('data-guild-join'), 10)];
+            if (!g) return;
+            _guildBusy = true; btn.disabled = true;
+            const res = await Cloud.joinGuild(g.id);
+            _guildBusy = false;
+            if (res && res.ok) { renderGuildTab(); if (typeof showToast === 'function') showToast('Joined ' + g.name, 'success'); }
+            else { btn.disabled = false; if (typeof showToast === 'function') showToast((res && res.error) || 'Could not join', 'error'); }
+          });
+        });
+      })();
+    }
+
+    // ══════════════════════════════════════════════
 
     // ── Audio settings UI wiring ─────────────────────
     function onAudioVolumeInput(v) {
