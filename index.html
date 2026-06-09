@@ -2439,6 +2439,250 @@
       border-radius: 2px;
     }
 
+    /* ──────────────────────────────────────────────────────────
+       FINAL FANTASY-STYLE BATTLE STAGE (v1.3.95)
+       Party stands on the right, enemy on the left; the active
+       attacker steps toward the center and snaps back.
+       ────────────────────────────────────────────────────────── */
+    #battle-stage {
+      position: relative;
+      width: 100%;
+      height: 168px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      image-rendering: pixelated;
+      border: 1px solid #0a0c14;
+      box-shadow: inset 0 0 0 1px #3a3f55, inset 0 -18px 30px rgba(0,0,0,0.45);
+      /* sky → distant hills → grass field, evoking the FF overworld battle */
+      background:
+        linear-gradient(180deg,
+          #8fd0ec 0%,
+          #a9dcf0 22%,
+          #cfeacb 40%,
+          #7fc05a 41%,
+          #5ea63f 70%,
+          #3f7d2c 100%);
+    }
+    #screen-game.ui-layout-mobile #battle-stage { height: 150px; }
+
+    /* Faint scanline / parallax hills for retro texture */
+    #battle-stage::before {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      top: 30%;
+      height: 14%;
+      background: radial-gradient(ellipse 120px 40px at 18% 100%, rgba(70,130,80,0.55), transparent 70%),
+                  radial-gradient(ellipse 150px 46px at 55% 100%, rgba(70,130,80,0.45), transparent 70%),
+                  radial-gradient(ellipse 110px 38px at 88% 100%, rgba(70,130,80,0.5), transparent 70%);
+      pointer-events: none;
+    }
+    #battle-stage::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 4px);
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .battle-side {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+      z-index: 2;
+    }
+    .battle-enemies { left: 10px; align-items: flex-start; }
+    .battle-party   { right: 10px; align-items: flex-end; }
+
+    .battle-unit {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: transform 0.16s cubic-bezier(.34,1.4,.5,1);
+      will-change: transform;
+    }
+    .battle-party .battle-unit { flex-direction: row-reverse; }
+
+    /* The sprite token: a chunky pixel-art-styled avatar */
+    .battle-sprite {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #fff;
+      position: relative;
+      box-shadow:
+        0 2px 0 rgba(0,0,0,0.45),
+        inset 0 0 0 2px rgba(255,255,255,0.18),
+        inset 0 -8px 10px rgba(0,0,0,0.35);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    }
+    .battle-party .battle-sprite { transform: scaleX(-1); } /* heroes face left, toward the foe */
+    .battle-party .battle-sprite > i,
+    .battle-party .battle-sprite > .battle-emoji { transform: scaleX(-1); }
+
+    /* When a sprite holds the full character model (same one used on the
+       character screen), let the figure stand taller than the 34px tile so it
+       reads as a little 3D combatant rather than a flat token. */
+    .battle-sprite-model {
+      overflow: visible;
+    }
+    .battle-sprite-model .battle-model {
+      position: absolute;
+      left: 50%;
+      bottom: 2px;
+      width: 46px;
+      height: 64px;
+      transform: translateX(-50%);
+      pointer-events: none;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+    }
+    .battle-sprite-model .battle-model svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    /* The party tiles are mirrored to face the foe; flip the model back so the
+       face/features still read correctly. */
+    .battle-party .battle-sprite-model .battle-model { transform: translateX(-50%) scaleX(-1); }
+
+    /* Little ground shadow under each combatant */
+    .battle-sprite::after {
+      content: '';
+      position: absolute;
+      bottom: -7px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 28px;
+      height: 7px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 50%;
+      filter: blur(1px);
+    }
+
+    .battle-label {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 10px;
+      line-height: 1.15;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000, 0 0 3px #000;
+      max-width: 92px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .battle-party .battle-label { text-align: right; }
+    .battle-label .battle-hp-mini {
+      display: block;
+      width: 64px;
+      height: 4px;
+      margin-top: 2px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 2px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5);
+    }
+    .battle-party .battle-label .battle-hp-mini { margin-left: auto; }
+    .battle-label .battle-hp-mini > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #36d171, #1fa34f);
+      transition: width 0.25s ease;
+    }
+    .battle-label .battle-hp-mini.low > span { background: linear-gradient(90deg, #f1b05f, #d98521); }
+    .battle-label .battle-hp-mini.crit > span { background: linear-gradient(90deg, #f06060, #c22e2e); }
+
+    /* The active attacker lunges toward the enemy and snaps back. */
+    @keyframes battle-lunge-left {
+      0%   { transform: translateX(0); }
+      45%  { transform: translateX(-120px); }
+      60%  { transform: translateX(-120px); }
+      100% { transform: translateX(0); }
+    }
+    @keyframes battle-lunge-right {
+      0%   { transform: translateX(0); }
+      45%  { transform: translateX(120px); }
+      60%  { transform: translateX(120px); }
+      100% { transform: translateX(0); }
+    }
+    .battle-party .battle-unit.attacking  { animation: battle-lunge-left 0.5s ease; z-index: 5; }
+    .battle-enemies .battle-unit.attacking { animation: battle-lunge-right 0.5s ease; z-index: 5; }
+
+    /* Being struck: flash white + recoil shake */
+    @keyframes battle-hit-flash {
+      0%, 100% { filter: none; }
+      20%, 60% { filter: brightness(2.4) saturate(0); }
+      40%      { filter: brightness(1) saturate(1); }
+    }
+    @keyframes battle-shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+    .battle-sprite.hit { animation: battle-hit-flash 0.35s steps(1,end), battle-shake 0.35s ease; }
+
+    /* Death: fade and topple */
+    @keyframes battle-defeat {
+      0%   { opacity: 1; transform: rotate(0) translateY(0); }
+      100% { opacity: 0; transform: rotate(-22deg) translateY(8px); }
+    }
+    .battle-unit.defeated { animation: battle-defeat 0.45s ease forwards; }
+
+    /* Floating damage / hit numbers */
+    .battle-popup {
+      position: absolute;
+      z-index: 8;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: #ffe7a8;
+      text-shadow: 1px 1px 0 #000, 0 0 4px #000;
+      pointer-events: none;
+      animation: battle-popup-rise 0.7s ease forwards;
+    }
+    .battle-popup.dmg  { color: #ffd24a; }
+    .battle-popup.crit { color: #ff7a3c; font-size: 18px; }
+    .battle-popup.heal { color: #6ee887; }
+    .battle-popup.miss { color: #cfd6e0; font-size: 13px; }
+    @keyframes battle-popup-rise {
+      0%   { opacity: 0; transform: translate(-50%, 4px) scale(0.7); }
+      15%  { opacity: 1; transform: translate(-50%, -6px) scale(1.1); }
+      100% { opacity: 0; transform: translate(-50%, -34px) scale(1); }
+    }
+
+    #battle-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 18px;
+      z-index: 3;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.85);
+      text-shadow: 1px 1px 0 #000, 0 0 4px #000;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .battle-party .battle-unit.attacking,
+      .battle-enemies .battle-unit.attacking,
+      .battle-sprite.hit,
+      .battle-unit.defeated,
+      .battle-popup { animation-duration: 0.001s; }
+    }
+
     #screen-game .mob-name {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 14px;
@@ -4275,8 +4519,13 @@
           id="tab-combat">
           <div
             id="mob-area">
+            <div id="battle-stage">
+              <div class="battle-side battle-enemies" id="battle-enemies"></div>
+              <div class="battle-side battle-party" id="battle-party"></div>
+              <div id="battle-empty">No enemy. Enable auto-battle or find a mob.</div>
+            </div>
             <div
-              style="color:var(--text-secondary);font-size:13px"
+              style="color:var(--text-secondary);font-size:13px;display:none"
               id="no-mob-msg">
               No
               enemy.
@@ -14350,7 +14599,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.93';
+    const CURRENT_VERSION = '1.3.95';
     const BACKUP_KEY = 'EmberQuest_backups';
     const MAX_BACKUPS = 3;
     const BAG_SLOT_COUNT = 8;
@@ -15448,7 +15697,7 @@ function exportSlotsToFile(options = {}) {
     }
 
     // Build a full SVG portrait given a race name.
-    function buildAvatarSvg(race) {
+    function buildAvatarSvg(race, uid) {
       const cfg = getRaceAvatarConfig(race);
 
       // Build proportions from body type
@@ -15675,7 +15924,7 @@ function exportSlotsToFile(options = {}) {
         tail += `<path d="M ${hipR - 2} ${ys.legTop + 10} Q ${hipR + 30} ${ys.legTop + 40} ${hipR + 18} ${ys.legBot - 20}" fill="none" stroke="#1a0e08" stroke-width="1" opacity="0.4"/>`;
       }
 
-      return `<svg viewBox="0 0 200 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+      let svg = `<svg viewBox="0 0 200 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
         <defs>${skinG}${tunicG}${pantsG}${beltG}</defs>
         ${tail}
         ${neck}
@@ -15688,6 +15937,20 @@ function exportSlotsToFile(options = {}) {
         ${ears}
         ${hairFront}
       </svg>`;
+
+      // When several avatars share a page (e.g. the whole party on the battle
+      // stage), the fixed gradient IDs would collide and every figure would
+      // pick up the first one's colors. Namespace the four gradient IDs (both
+      // the definitions and their url(#...) references) per call when a uid is
+      // supplied so each model keeps its own palette.
+      if (uid != null) {
+        ['av-skin', 'av-tunic', 'av-pants', 'av-belt'].forEach(id => {
+          const scoped = id + '-' + uid;
+          svg = svg.split('id="' + id + '"').join('id="' + scoped + '"')
+                   .split('url(#' + id + ')').join('url(#' + scoped + ')');
+        });
+      }
+      return svg;
     }
 
     function updateNameplate() {
@@ -16584,8 +16847,265 @@ function exportSlotsToFile(options = {}) {
       }
     }
 
+    /* ──────────────────────────────────────────────────────────
+       FINAL FANTASY-STYLE BATTLE SCENE (v1.3.95)
+       Renders the party on the right and the enemy on the left,
+       and provides step-forward attack / hit / defeat animations.
+       ────────────────────────────────────────────────────────── */
+
+    // Pick a thematic emoji for a monster based on its name/flags.
+    function getMobBattleEmoji(m) {
+      if (!m) return '👾';
+      const n = (m.baseName || m.name || '').toLowerCase();
+      const pairs = [
+        ['dragon', '🐉'], ['drake', '🐉'], ['wyrm', '🐉'], ['serpent', '🐍'], ['snake', '🐍'], ['naga', '🐍'],
+        ['skeleton', '💀'], ['lich', '💀'], ['undead', '💀'], ['bone', '💀'], ['wraith', '👻'], ['ghost', '👻'], ['spirit', '👻'], ['shade', '👻'],
+        ['demon', '👹'], ['devil', '👹'], ['fiend', '👹'], ['imp', '👹'], ['ogre', '👹'], ['troll', '👹'],
+        ['goblin', '👺'], ['kobold', '👺'], ['gnoll', '👺'],
+        ['spider', '🕷️'], ['scorpion', '🦂'], ['beetle', '🪲'], ['bug', '🐛'], ['worm', '🪱'],
+        ['wolf', '🐺'], ['hound', '🐺'], ['jackal', '🐺'], ['bear', '🐻'], ['boar', '🐗'], ['rat', '🐀'], ['bat', '🦇'],
+        ['slime', '🟢'], ['ooze', '🟢'], ['blob', '🟢'],
+        ['golem', '🗿'], ['sentinel', '🗿'], ['construct', '🗿'], ['statue', '🗿'],
+        ['knight', '⚔️'], ['captain', '⚔️'], ['herald', '🛡️'], ['guard', '🛡️'], ['soldier', '⚔️'],
+        ['mage', '🔮'], ['witch', '🔮'], ['warlock', '🔮'], ['caster', '🔮'], ['totem', '🪬'],
+        ['elemental', '🔥'], ['flame', '🔥'], ['fire', '🔥'], ['frost', '❄️'], ['ice', '❄️'],
+        ['fish', '🐟'], ['crab', '🦀'], ['shark', '🦈'], ['bird', '🦅'], ['harpy', '🦅'], ['raven', '🐦‍⬛'],
+        ['plant', '🌿'], ['treant', '🌳'], ['mushroom', '🍄']
+      ];
+      for (const [k, e] of pairs) { if (n.includes(k)) return e; }
+      return m.named ? '👹' : (m.elite ? '👺' : '👾');
+    }
+
+    // Build the list of party combatants (player + mercs + grouped + LFG).
+    function getBattlePartyUnits() {
+      const units = [];
+      if (!char) return units;
+      const clsColor = (CLASS_COLORS && CLASS_COLORS[char.cls]) || '#3B8AC4';
+      const clsIcon = (CLASS_ICONS && CLASS_ICONS[char.cls]) || 'ti-user';
+      units.push({
+        id: 'player',
+        name: char.name,
+        icon: clsIcon,
+        color: clsColor,
+        race: char.race || 'Human',
+        hpPct: Math.min(100, (char.hp / (char.maxHp || 1)) * 100)
+      });
+
+      // Contracted (main) mercenary
+      const mainMercType = (char.mercenary && char.mercenary.type && char.mercenary.type !== 'none') ? char.mercenary.type : null;
+      if (mainMercType && MERCENARY_TYPES[mainMercType]) {
+        const merc = MERCENARY_TYPES[mainMercType];
+        units.push({
+          id: 'merc-main',
+          name: (typeof getMercenaryDisplayName === 'function') ? getMercenaryDisplayName(char) : (merc.name || 'Mercenary'),
+          icon: (CLASS_ICONS && CLASS_ICONS[merc.class]) || 'ti-sword',
+          color: (CLASS_COLORS && CLASS_COLORS[merc.class]) || '#9A6B35',
+          race: merc.race || 'Human',
+          hpPct: 100
+        });
+      }
+
+      // Group mercenaries
+      const groupMercTypes = (typeof getGroupMercTypes === 'function') ? getGroupMercTypes(char) : [];
+      groupMercTypes.forEach((type, i) => {
+        const merc = MERCENARY_TYPES[type];
+        if (!merc) return;
+        units.push({
+          id: 'merc-' + i,
+          name: merc.name || type,
+          icon: (CLASS_ICONS && CLASS_ICONS[merc.class]) || 'ti-sword',
+          color: (CLASS_COLORS && CLASS_COLORS[merc.class]) || '#8A7445',
+          race: merc.race || 'Human',
+          hpPct: 100
+        });
+      });
+
+      // Grouped alt characters
+      const groupSlots = (typeof getGroupMemberSlotIndices === 'function') ? getGroupMemberSlotIndices() : [];
+      groupSlots.forEach(idx => {
+        const member = slots[idx];
+        if (!member) return;
+        units.push({
+          id: 'group-' + idx,
+          name: member.name,
+          icon: (CLASS_ICONS && CLASS_ICONS[member.cls]) || 'ti-user',
+          color: (CLASS_COLORS && CLASS_COLORS[member.cls]) || '#548A37',
+          race: member.race || 'Human',
+          hpPct: Math.min(100, ((member.hp || 0) / (member.maxHp || 1)) * 100)
+        });
+      });
+
+      // Borrowed LFG heroes
+      const lfgHeroes = (typeof getLfgParty === 'function') ? getLfgParty(char) : [];
+      lfgHeroes.forEach((hero, i) => {
+        units.push({
+          id: 'lfg-' + i,
+          name: hero.name + ' ⓛ',
+          icon: (CLASS_ICONS && CLASS_ICONS[hero.class || hero.cls]) || 'ti-user',
+          color: (CLASS_COLORS && CLASS_COLORS[hero.class || hero.cls]) || '#7cc6ff',
+          race: hero.race || 'Human',
+          hpPct: 100
+        });
+      });
+
+      return units.slice(0, 6); // max group size
+    }
+
+    function hpMiniClass(pct) {
+      if (pct <= 25) return 'crit';
+      if (pct <= 55) return 'low';
+      return '';
+    }
+
+    // Signature of current combatants, so we only rebuild the DOM when the
+    // roster actually changes — otherwise we patch HP bars in place and let
+    // any in-flight lunge/hit animations finish undisturbed.
+    function _battleSceneSignature(party) {
+      return (mob ? ('M:' + (mob.baseName || mob.name) + (mob.named ? 'n' : mob.elite ? 'e' : '')) : 'M:none') +
+        '|' + party.map(u => u.id).join(',');
+    }
+
+    let _battleSceneSig = '';
+
+    function _patchUnitHp(unitId, pct) {
+      const el = _battleUnitEl(unitId);
+      if (!el) return;
+      const mini = el.querySelector('.battle-hp-mini');
+      const fill = mini && mini.querySelector('span');
+      if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+      if (mini) {
+        mini.classList.remove('low', 'crit');
+        const c = hpMiniClass(pct);
+        if (c) mini.classList.add(c);
+      }
+    }
+
+    function renderBattleScene() {
+      const stage = document.getElementById('battle-stage');
+      const enemiesEl = document.getElementById('battle-enemies');
+      const partyEl = document.getElementById('battle-party');
+      const emptyEl = document.getElementById('battle-empty');
+      if (!stage || !enemiesEl || !partyEl) return;
+
+      const party = getBattlePartyUnits();
+      const sig = _battleSceneSignature(party);
+
+      // Fast path: same combatants on screen → just sync HP, keep animations.
+      if (sig === _battleSceneSig && partyEl.children.length) {
+        party.forEach(u => _patchUnitHp(u.id, u.hpPct));
+        if (mob) _patchUnitHp('enemy', (mob.hp / (mob.maxHp || 1)) * 100);
+        return;
+      }
+      _battleSceneSig = sig;
+
+      // Party side (always shown so the heroes stand ready between fights)
+      partyEl.innerHTML = party.map(u => {
+        const hpCls = hpMiniClass(u.hpPct);
+        // Use the same 3D-style character model shown on the character screen,
+        // falling back to the flat class icon if the avatar builder is missing.
+        const modelSvg = (typeof buildAvatarSvg === 'function')
+          ? '<div class="battle-model">' + buildAvatarSvg(u.race || 'Human', u.id) + '</div>'
+          : '<i class="ti ' + u.icon + '"></i>';
+        return '<div class="battle-unit" data-unit="' + u.id + '">' +
+          '<div class="battle-sprite battle-sprite-model" style="background:linear-gradient(160deg,' + u.color + ',' + u.color + 'cc);">' +
+            modelSvg +
+          '</div>' +
+          '<div class="battle-label">' + escapeHtml(u.name) +
+            '<span class="battle-hp-mini ' + hpCls + '"><span style="width:' + Math.max(0, Math.min(100, u.hpPct)) + '%"></span></span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      // Enemy side
+      if (!mob) {
+        // If the previous enemy is mid-defeat animation, leave it on screen so
+        // the topple/fade can finish; clear it once the animation completes.
+        const dying = enemiesEl.querySelector('.battle-unit.defeated');
+        if (dying) {
+          _battleSceneSig = ''; // force a clean rebuild on the next render
+          setTimeout(() => {
+            if (!mob && enemiesEl) { enemiesEl.innerHTML = ''; _battleSceneSig = ''; }
+          }, 470);
+          if (emptyEl) emptyEl.style.display = 'none';
+          return;
+        }
+        enemiesEl.innerHTML = '';
+        if (emptyEl) emptyEl.style.display = 'flex';
+        return;
+      }
+      if (emptyEl) emptyEl.style.display = 'none';
+
+      const hpPct = Math.max(0, (mob.hp / (mob.maxHp || 1)) * 100);
+      const hpCls = hpMiniClass(hpPct);
+      const ring = mob.named ? '0 0 10px rgba(199,43,193,0.7)' : (mob.elite ? '0 0 8px rgba(194,141,24,0.6)' : 'none');
+      const tag = mob.named ? '<span style="color:#e98fe6">★</span> ' : (mob.elite ? '<span style="color:#f1c14a">◆</span> ' : '');
+      enemiesEl.innerHTML =
+        '<div class="battle-unit" data-unit="enemy">' +
+          '<div class="battle-sprite" style="background:linear-gradient(160deg,#5a2b2b,#2a1414);font-size:20px;box-shadow:0 2px 0 rgba(0,0,0,0.45),inset 0 0 0 2px rgba(255,255,255,0.15),inset 0 -8px 10px rgba(0,0,0,0.35),' + ring + ';">' +
+            '<span class="battle-emoji">' + getMobBattleEmoji(mob) + '</span>' +
+          '</div>' +
+          '<div class="battle-label">' + tag + escapeHtml(mob.baseName || mob.name) +
+            '<span class="battle-hp-mini ' + hpCls + '"><span style="width:' + hpPct + '%"></span></span>' +
+          '</div>' +
+        '</div>';
+    }
+
+    // Animation helpers — all no-op safely if the stage isn't present.
+    function _battleUnitEl(unitId) {
+      const stage = document.getElementById('battle-stage');
+      if (!stage) return null;
+      return stage.querySelector('.battle-unit[data-unit="' + unitId + '"]');
+    }
+
+    // Make a unit step forward to strike. Resolves after the lunge completes.
+    function battleAttackAnim(unitId) {
+      const el = _battleUnitEl(unitId);
+      if (!el) return;
+      el.classList.remove('attacking');
+      void el.offsetWidth; // restart animation
+      el.classList.add('attacking');
+      setTimeout(() => { if (el) el.classList.remove('attacking'); }, 520);
+    }
+
+    function battleHitAnim(unitId) {
+      const el = _battleUnitEl(unitId);
+      if (!el) return;
+      const sprite = el.querySelector('.battle-sprite');
+      if (!sprite) return;
+      sprite.classList.remove('hit');
+      void sprite.offsetWidth;
+      sprite.classList.add('hit');
+      setTimeout(() => { if (sprite) sprite.classList.remove('hit'); }, 380);
+    }
+
+    function battleDefeatAnim(unitId) {
+      const el = _battleUnitEl(unitId);
+      if (!el) return;
+      el.classList.add('defeated');
+    }
+
+    // Floating combat number anchored over a unit.
+    function battlePopup(unitId, text, kind) {
+      const stage = document.getElementById('battle-stage');
+      const el = _battleUnitEl(unitId);
+      if (!stage || !el) return;
+      const sprite = el.querySelector('.battle-sprite');
+      if (!sprite) return;
+      const sRect = sprite.getBoundingClientRect();
+      const stRect = stage.getBoundingClientRect();
+      const pop = document.createElement('div');
+      pop.className = 'battle-popup ' + (kind || '');
+      pop.textContent = text;
+      pop.style.left = (sRect.left - stRect.left + sRect.width / 2) + 'px';
+      pop.style.top = (sRect.top - stRect.top - 4) + 'px';
+      pop.style.transform = 'translate(-50%, 0)';
+      stage.appendChild(pop);
+      setTimeout(() => { if (pop && pop.parentNode) pop.parentNode.removeChild(pop); }, 760);
+    }
+
     function renderMob() {
       const mc = document.getElementById('mob-card'), nm = document.getElementById('no-mob-msg');
+      renderBattleScene();
       if (!mob) { mc.style.display = 'none'; nm.style.display = 'block'; return; }
       mc.style.display = 'block'; nm.style.display = 'none';
       document.getElementById('mob-name').textContent = mob.name;
@@ -21196,6 +21716,7 @@ function exportSlotsToFile(options = {}) {
 
     function doAttack() {
       if (!mob) return false;
+      battleAttackAnim('player'); // hero steps forward to strike
       const event = getActiveZoneEvent(char.zone);
       const fx = getStatusEffectModifiers(char);
       const aa = getAACombatModifiers(char);
@@ -21231,6 +21752,7 @@ function exportSlotsToFile(options = {}) {
           ' dodges.'
         ], 'info');
         addDamageMeterDodge();
+        setTimeout(() => battlePopup('enemy', 'MISS', 'miss'), 220);
         // Skip to enemy counter-attack (still costs the player a turn)
         dmg = 0;
       } else {
@@ -21267,6 +21789,14 @@ function exportSlotsToFile(options = {}) {
 
         mob.hp -= dmg;
         addDamageMeterEntry('player', dmg);
+        // Land the strike visually at the lunge's apex.
+        (function(_d, _crit){
+          setTimeout(() => {
+            battleHitAnim('enemy');
+            battlePopup('enemy', fmt(_d), _crit ? 'crit' : 'dmg');
+            renderBattleScene();
+          }, 220);
+        })(dmg, critRoll.crit);
         // Runeword lifesteal: heal a portion of melee damage dealt.
         const lifestealPct = getEquippedRunewordEffects(char).lifesteal || 0;
         if (lifestealPct > 0 && dmg > 0 && char.hp < char.maxHp) {
@@ -21331,6 +21861,9 @@ function exportSlotsToFile(options = {}) {
         return false;
       }
 
+      // Enemy steps forward to retaliate, just after the hero recovers.
+      setTimeout(() => battleAttackAnim('enemy'), 560);
+
       // Player dodge
       if (rollPlayerDodge()) {
         log([
@@ -21338,6 +21871,7 @@ function exportSlotsToFile(options = {}) {
           ' tries to hit YOU, but YOU dodge!'
         ], 'info');
         addDamageMeterDodge();
+        setTimeout(() => battlePopup('player', 'MISS', 'miss'), 780);
         renderAll();
         return false;
       }
@@ -21371,6 +21905,7 @@ function exportSlotsToFile(options = {}) {
           { text: mob.name, cls: 'combat-log-mob' },
           ' tries to hit YOU, but misses!'
         ], 'info');
+        setTimeout(() => battlePopup('player', 'MISS', 'miss'), 780);
         renderAll();
         return false;
       }
@@ -21378,6 +21913,14 @@ function exportSlotsToFile(options = {}) {
       if (abil.mitigation > 0) md = Math.max(1, md - abil.mitigation);
       char.hp -= md;
       addDamageMeterEntry('taken', md);
+      // Player recoils as the enemy strike connects.
+      (function(_md, _crit){
+        setTimeout(() => {
+          battleHitAnim('player');
+          battlePopup('player', fmt(_md), _crit ? 'crit' : 'dmg');
+          renderBattleScene();
+        }, 780);
+      })(md, mobCritRoll.crit);
       log([
         { text: mob.name, cls: 'combat-log-attacker' },
         ' hits YOU for ',
@@ -21474,6 +22017,7 @@ function exportSlotsToFile(options = {}) {
     }
 
     function killMob() {
+      battleDefeatAnim('enemy'); // enemy topples and fades
       const zone = ZONES[char.zone];
       const event = getActiveZoneEvent(char.zone);
       ensureExtendedSystems(char);
