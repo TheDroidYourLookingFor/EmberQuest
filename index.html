@@ -7680,7 +7680,7 @@
           </div>
 
 
-          <h4 style="margin:14px 0 6px">What’s New in v1.4.137</h4>
+          <h4 id="version-whats-new" style="margin:14px 0 6px">What’s New</h4>
           <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0 0 10px;padding-left:18px">
             <li><strong>Combat controls restored.</strong> The Attack / Heal / Find Mob / Flee bottom button row now has a protected layout slot and no longer gets clipped by the combat log.</li>
             <li><strong>Safer Enter World flow.</strong> Removed the last capture-phase force-open handler that could switch to the game screen before character loading finished.</li>
@@ -18079,7 +18079,28 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.4.140';
+    const CURRENT_VERSION = '1.4.143';
+    function syncCurrentVersionDisplay() {
+      const version = CURRENT_VERSION;
+      try { window.VERSION = version; } catch (_) {}
+      try { document.title = 'EmberQuest RPG - Version ' + version; } catch (_) {}
+      ['version-topbar', 'version-about', 'game-version', 'current-version'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = version;
+      });
+      document.querySelectorAll('h4').forEach(el => {
+        if (/What.?s New/i.test(el.textContent || '')) el.textContent = 'What’s New in v' + version;
+      });
+      return version;
+    }
+    try {
+      Object.defineProperty(window, 'CURRENT_VERSION', {
+        configurable: true,
+        enumerable: true,
+        get: () => CURRENT_VERSION
+      });
+    } catch (_) {}
+    window.syncCurrentVersionDisplay = syncCurrentVersionDisplay;
     const CURRENT_SAVE_SCHEMA = 2;
     const MAX_IMPORT_FILE_BYTES = 2 * 1024 * 1024; // 2 MB sanity cap for imported saves
     const BACKUP_KEY = 'EmberQuest_backups';
@@ -20897,7 +20918,6 @@ async function exportSlotsToFile(options = {}) {
           document.querySelector('.screen.game-screen');
         const select =
           document.getElementById('screen-charselect') ||
-          document.getElementById('screen-charselect') ||
           document.getElementById('screen-character-select') ||
           document.getElementById('screen-select') ||
           document.querySelector('.character-select-screen');
@@ -20936,7 +20956,11 @@ async function exportSlotsToFile(options = {}) {
           topbar.style.pointerEvents = inGame ? 'auto' : 'none';
         }
         const quickUi = document.getElementById('quick-ui-bar');
-        if (quickUi && !inGame) quickUi.style.display = 'none';
+        if (quickUi) {
+          const showQuickUi = inGame && typeof uiPrefs === 'object' && uiPrefs && !!uiPrefs.quickUiBar;
+          quickUi.style.display = showQuickUi ? 'flex' : 'none';
+          quickUi.setAttribute('aria-hidden', showQuickUi ? 'false' : 'true');
+        }
       } catch (e) {}
     }
 
@@ -20950,7 +20974,6 @@ async function exportSlotsToFile(options = {}) {
           document.getElementById('screen-game') ||
           document.querySelector('.screen.game-screen');
         const select =
-          document.getElementById('screen-charselect') ||
           document.getElementById('screen-charselect') ||
           document.getElementById('screen-character-select') ||
           document.getElementById('screen-select') ||
@@ -21099,13 +21122,14 @@ async function exportSlotsToFile(options = {}) {
       try {
         document.body.classList.add('ui-broken-layout-guard');
         // These saved layout flags can create cramped or collapsed desktop layouts if combined.
-        const prefsRaw = localStorage.getItem('emberquest_ui_prefs');
+        const prefsRaw = localStorage.getItem(UI_PREFS_KEY);
         if (prefsRaw) {
           const prefs = JSON.parse(prefsRaw);
           ['focusMode', 'screenFit', 'fullHeightPanels', 'compactTopbar', 'slimTopbar', 'hideLeftPanel', 'hideRightPanel'].forEach(k => {
             if (Object.prototype.hasOwnProperty.call(prefs, k)) prefs[k] = false;
           });
-          localStorage.setItem('emberquest_ui_prefs', JSON.stringify(prefs));
+          localStorage.setItem(UI_PREFS_KEY, JSON.stringify(prefs));
+          if (typeof uiPrefs === 'object' && uiPrefs) Object.assign(uiPrefs, prefs);
         }
       } catch (e) {}
       try {
@@ -36322,7 +36346,7 @@ async function exportSlotsToFile(options = {}) {
       }
       function patchWhatNew(){
         const h = Array.from(document.querySelectorAll('h4')).find(x => /What.s New/i.test(x.textContent || ''));
-        if (h) h.textContent = 'What’s New in v1.4.137';
+        syncCurrentVersionDisplay();
         const about = h && h.nextElementSibling;
         if (about && !about.dataset.v1488) {
           about.dataset.v1488 = '1';
@@ -36501,7 +36525,7 @@ async function exportSlotsToFile(options = {}) {
       function patchWhatNew1490(){
         try {
           const h = Array.from(document.querySelectorAll('h4')).find(x => /What.s New/i.test(x.textContent || ''));
-          if (h) h.textContent = 'What’s New in v1.4.137';
+          syncCurrentVersionDisplay();
           const about = h && h.nextElementSibling;
           if (about && about.tagName === 'UL' && !about.dataset.v1490) {
             about.dataset.v1490 = '1';
@@ -36703,7 +36727,7 @@ async function exportSlotsToFile(options = {}) {
       function patchWhatsNew1491(){
         try {
           const h = Array.from(document.querySelectorAll('h4')).find(x => /What.s New/i.test(x.textContent || ''));
-          if (h) h.textContent = 'What’s New in v1.4.137';
+          syncCurrentVersionDisplay();
           const about = h && h.nextElementSibling;
           if (about && about.tagName === 'UL' && about.dataset.v1491 !== '1') {
             about.dataset.v1491 = '1';
@@ -36778,7 +36802,7 @@ async function exportSlotsToFile(options = {}) {
 
       function collectUiState1492(){
         let prefs = {};
-        try { prefs = JSON.parse(localStorage.getItem('emberquest_ui_prefs') || '{}') || {}; } catch(_) {}
+        try { prefs = JSON.parse(localStorage.getItem(UI_PREFS_KEY) || localStorage.getItem('emberquest_ui_prefs') || '{}') || {}; } catch(_) {}
         const game = document.getElementById('screen-game');
         const grid = document.getElementById('game-grid');
         const topbar = document.getElementById('game-topbar');
@@ -36804,11 +36828,14 @@ async function exportSlotsToFile(options = {}) {
 
       function forceApplyPrefs1492(prefs, msg){
         try {
-          if (typeof uiPrefs === 'object') Object.assign(uiPrefs, prefs || {});
-          localStorage.setItem('emberquest_ui_prefs', JSON.stringify(Object.assign({}, (typeof uiPrefs === 'object' ? uiPrefs : {}), prefs || {})));
-          if (typeof loadUiPreferences === 'function') loadUiPreferences();
-          else if (typeof applyUiPreferences === 'function') applyUiPreferences();
-          if (typeof applyUILayoutState === 'function') applyUILayoutState();
+          const merged = Object.assign({}, (typeof uiPrefs === 'object' && uiPrefs ? uiPrefs : {}), prefs || {});
+          if (typeof uiPrefs === 'object' && uiPrefs) Object.assign(uiPrefs, merged);
+          if (typeof applyUILayoutState === 'function') applyUILayoutState({}, { silent:true });
+          else {
+            localStorage.setItem(UI_PREFS_KEY, JSON.stringify(merged));
+            if (typeof applyUiPreferences === 'function') applyUiPreferences(true);
+          }
+          localStorage.setItem('emberquest_ui_prefs', JSON.stringify(merged));
           if (typeof syncScreenStateClasses === 'function') syncScreenStateClasses('game');
           setTimeout(() => { try { window.dispatchEvent(new Event('resize')); } catch(_){} }, 30);
           setTimeout(() => { try { if (typeof syncCombatLogSize === 'function') syncCombatLogSize(); } catch(_){} }, 80);
@@ -36938,7 +36965,7 @@ async function exportSlotsToFile(options = {}) {
       function patchWhatsNew1492(){
         try {
           const h = Array.from(document.querySelectorAll('h4')).find(x => /What.s New/i.test(x.textContent || ''));
-          if (h) h.textContent = 'What’s New in v1.4.137';
+          syncCurrentVersionDisplay();
           const about = h && h.nextElementSibling;
           if (about && about.tagName === 'UL' && about.dataset.v1492 !== '1') {
             about.dataset.v1492 = '1';
@@ -37160,7 +37187,7 @@ async function exportSlotsToFile(options = {}) {
       function patchWhatsNew1494(){
         try {
           const h = Array.from(document.querySelectorAll('h4')).find(x => /What.s New/i.test(x.textContent || ''));
-          if (h) h.textContent = 'What’s New in v1.4.137';
+          syncCurrentVersionDisplay();
           const about = h && h.nextElementSibling;
           if (about && about.tagName === 'UL' && about.dataset.v1494 !== '1') {
             about.dataset.v1494 = '1';
@@ -37200,11 +37227,7 @@ async function exportSlotsToFile(options = {}) {
     Cloud.start();
 
     // Populate version strings from single source of truth
-    document.title = 'EmberQuest RPG - Version ' + CURRENT_VERSION;
-    const _vTopbar = document.getElementById('version-topbar');
-    if (_vTopbar) _vTopbar.textContent = CURRENT_VERSION;
-    const _vAbout = document.getElementById('version-about');
-    if (_vAbout) _vAbout.textContent = CURRENT_VERSION;
+    syncCurrentVersionDisplay();
   
 
     // ══════════════════════════════════════════════
@@ -37439,7 +37462,6 @@ async function exportSlotsToFile(options = {}) {
 <script id="ux-cleanup-v1496-script">
 (function(){
   'use strict';
-  const VERSION = '1.4.140';
   const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmtSafe = v => {
     try { return (typeof fmt === 'function') ? fmt(Math.round(Number(v)||0)) : String(Math.round(Number(v)||0)); }
@@ -37640,7 +37662,7 @@ async function exportSlotsToFile(options = {}) {
   function patchAboutV1496(){
     try {
       const about = Array.from(document.querySelectorAll('#tab-about h4')).find(h => /What’s New/i.test(h.textContent || ''));
-      if (about) about.textContent = 'What’s New in v' + VERSION;
+      syncCurrentVersionDisplay();
       const list = about && about.nextElementSibling;
       if (list && list.tagName === 'UL') {
         list.innerHTML = '<li><strong>Startup performance pass.</strong> Login and character select now avoid inventory/combat/admin UI injectors, broad DOM scans, and fast maintenance loops.</li><li><strong>Topbar cleaned up.</strong> Nav moved into More, Admin sits beside the game version, and regular controls stay grouped to the right.</li><li><strong>UI menu simplified.</strong> Layout is pinned left; Settings, Backup, and Backups were moved out of the gameplay UI strip.</li><li><strong>Tiny Topbar fixed.</strong> The button now reliably toggles the compact topbar class, saved preference, checkbox, and button state.</li><li><strong>Stats panel beautified.</strong> Combat stats now use readable cards with duration, kills/hr, XP/hr, and special-kill breakdowns.</li>';
@@ -37781,7 +37803,6 @@ async function exportSlotsToFile(options = {}) {
 <script id="v14127-consolidated-ui-fix-script">
 (function(){
   'use strict';
-  const FINAL_VERSION = '1.4.140';
   let scheduled = false;
   let lastScreenState = '';
 
@@ -37803,21 +37824,15 @@ async function exportSlotsToFile(options = {}) {
     return isVisible(game) && !(select && select.classList.contains('active') && isVisible(select));
   }
   function setVersion(){
-    try { window.VERSION = FINAL_VERSION; } catch(_) {}
-    ['version-topbar','version-about','game-version','current-version'].forEach(id => {
-      const el = qs(id);
-      if (el) el.textContent = FINAL_VERSION;
-    });
+    syncCurrentVersionDisplay();
     document.querySelectorAll('.title, #game-topbar, #tab-about, #popup-body').forEach(root => {
       if (!root) return;
       Array.from(root.querySelectorAll('span,small,div,h4,p')).forEach(el => {
         if (/1\.4\.12[0-5]/.test(el.textContent || '') && (el.textContent || '').length < 120) {
-          el.textContent = (el.textContent || '').replace(/1\.4\.12[0-5]/g, FINAL_VERSION);
+          el.textContent = (el.textContent || '').replace(/1\.4\.12[0-5]/g, CURRENT_VERSION);
         }
       });
     });
-    const whatsNew = Array.from(document.querySelectorAll('h4')).find(x => /What.?s New/i.test(x.textContent || ''));
-    if (whatsNew) whatsNew.textContent = 'What’s New in v' + FINAL_VERSION;
   }
   function setScreenState(state){
     const game = qs('screen-game');
@@ -38080,7 +38095,6 @@ async function exportSlotsToFile(options = {}) {
 <script id="v14132-final-guard">
 (function(){
   'use strict';
-  const VERSION = '1.4.140';
   let queued = false;
   let stamped = false;
   const legacyMenuIds = [
@@ -38090,13 +38104,11 @@ async function exportSlotsToFile(options = {}) {
   function q(id){ return document.getElementById(id); }
   function gameActive(){ const g=q('screen-game'); return !!(g && g.classList.contains('active')); }
   function setVersionOnce(){
-    try { window.VERSION = VERSION; window.CURRENT_VERSION = VERSION; } catch(_) {}
-    ['version-topbar','version-about','game-version','current-version'].forEach(id => { const el=q(id); if (el) el.textContent = VERSION; });
+    syncCurrentVersionDisplay();
     if (stamped) return;
     stamped = true;
     try {
       const h = Array.from(document.querySelectorAll('h4')).find(x => /What.?s New/i.test(x.textContent || ''));
-      if (h) h.textContent = 'What’s New in v' + VERSION;
       const list = h && h.nextElementSibling;
       if (list && list.tagName === 'UL') {
         list.innerHTML = '<li><strong>Adaptive alchemy loop.</strong> Auto-brew no longer wakes every second forever; it schedules near the next eligible brew window.</li><li><strong>Visibility-aware admin badge.</strong> The scheduled-report badge updater now skips hidden tabs and absent admin UI.</li><li><strong>Lower idle work.</strong> Final UI stabilization avoids unnecessary damage-meter redraws when the meter is not visible.</li><li><strong>No save-format change.</strong> This update is UI/performance-only and safe for existing saves.</li>';
@@ -38518,7 +38530,14 @@ async function exportSlotsToFile(options = {}) {
 <script id="layout-mode-hotfix-v14135-script">
 (function layoutModeHotfixV14135(){
   function prefs(){
-    try { window.uiPrefs = normalizeUiPrefs(window.uiPrefs || uiPrefs || {}); return window.uiPrefs || uiPrefs; }
+    try {
+      if (typeof uiPrefs === 'object' && uiPrefs) {
+        window.uiPrefs = uiPrefs;
+        return uiPrefs;
+      }
+      window.uiPrefs = normalizeUiPrefs(window.uiPrefs || {});
+      return window.uiPrefs;
+    }
     catch (_) { return (typeof uiPrefs === 'object' && uiPrefs) ? uiPrefs : {}; }
   }
   function save(){ try { if (typeof saveUiPreferences === 'function') saveUiPreferences(); } catch (_) {} }
@@ -38562,24 +38581,12 @@ async function exportSlotsToFile(options = {}) {
     if (mode === 'normal') {
       p.screenFit = false;
       p.focusMode = false;
-      p.hideLeftPanel = false;
-      p.hideRightPanel = false;
-      p.fullHeightPanels = false;
-      p.compactTopbar = false;
-      p.density = 'normal';
     } else if (mode === 'fit') {
       p.screenFit = true;
       p.focusMode = false;
-      p.hideLeftPanel = false;
-      p.hideRightPanel = false;
-      p.fullHeightPanels = false;
-      p.compactSidebars = true;
     } else if (mode === 'focus') {
       p.screenFit = false;
       p.focusMode = true;
-      p.hideLeftPanel = false;
-      p.hideRightPanel = false;
-      p.fullHeightPanels = false;
     }
     save();
     apply(true);
@@ -38774,25 +38781,12 @@ async function exportSlotsToFile(options = {}) {
     if (mode === 'focus') {
       p.focusMode = true;
       p.screenFit = false;
-      p.hideLeftPanel = false;
-      p.hideRightPanel = false;
-      p.fullHeightPanels = false;
     } else if (mode === 'fit') {
       p.focusMode = false;
       p.screenFit = true;
-      p.hideLeftPanel = false;
-      p.hideRightPanel = false;
-      p.fullHeightPanels = false;
-      p.compactSidebars = true;
     } else {
       p.focusMode = false;
       p.screenFit = false;
-      p.hideLeftPanel = false;
-      p.hideRightPanel = false;
-      p.fullHeightPanels = false;
-      p.compactTopbar = false;
-      p.slimTopbar = false;
-      p.density = 'normal';
     }
     return mode;
   }
@@ -38851,10 +38845,6 @@ async function exportSlotsToFile(options = {}) {
   window.setUiBooleanPreference = function(key, value){
     if (key === 'screenFit') return applyMode(value ? 'fit' : 'normal', false);
     if (key === 'focusMode') return applyMode(value ? 'focus' : 'normal', false);
-    if ((key === 'hideLeftPanel' || key === 'hideRightPanel' || key === 'fullHeightPanels') && value && currentMode() !== 'normal') {
-      var p = getPrefs();
-      if (p) { p.screenFit = false; p.focusMode = false; }
-    }
     if (typeof originalSetBoolean === 'function') return originalSetBoolean.apply(this, arguments);
   };
   var originalRepair = window.repairBrokenUiLayout;
@@ -39042,16 +39032,11 @@ async function exportSlotsToFile(options = {}) {
 </style>
 <script id="layout-mode-hotfix-v14137-script">
 (function layoutModeHotfixV14137(){
-  var VERSION = '1.4.140';
   function q(id){ return document.getElementById(id); }
   function prefs(){ try { if (typeof uiPrefs === 'object' && uiPrefs) return uiPrefs; } catch(_) {} return null; }
   function modeFromPrefs(){ var p = prefs() || {}; return p.focusMode ? 'focus' : (p.screenFit ? 'fit' : 'normal'); }
   function writeVersion(){
-    try { document.title = 'EmberQuest RPG - Version ' + VERSION; } catch(_) {}
-    ['version-topbar','version-about','game-version','current-version'].forEach(function(id){ var el=q(id); if (el) el.textContent = VERSION; });
-    try { window.VERSION = VERSION; window.CURRENT_VERSION = VERSION; } catch(_) {}
-    var h = document.querySelector('#tab-about h4, #popup-body h4');
-    if (h && /What.s New/i.test(h.textContent || '')) h.textContent = 'What’s New in v' + VERSION;
+    syncCurrentVersionDisplay();
   }
   function normalize(mode){ return (mode === 'fit' || mode === 'focus') ? mode : 'normal'; }
   function save(){
@@ -39062,14 +39047,10 @@ async function exportSlotsToFile(options = {}) {
     mode = normalize(mode || modeFromPrefs());
     var game = q('screen-game');
     if (!game) return;
-    game.classList.remove('ui-screen-fit','ui-focus-mode','ui-normal-mode','ui-fit-mode','ui-focus-layout-mode','ui-hide-left-panel','ui-hide-right-panel','ui-full-height-panels');
+    game.classList.remove('ui-screen-fit','ui-focus-mode','ui-normal-mode','ui-fit-mode','ui-focus-layout-mode');
     if (mode === 'fit') game.classList.add('ui-screen-fit','ui-fit-mode');
     else if (mode === 'focus') game.classList.add('ui-focus-mode','ui-focus-layout-mode');
     else game.classList.add('ui-normal-mode');
-    var left = q('game-grid') && q('game-grid').children ? q('game-grid').children[0] : null;
-    var right = q('game-grid') && q('game-grid').children ? q('game-grid').children[2] : null;
-    if (left) left.style.display = (mode === 'focus') ? 'none' : '';
-    if (right) right.style.display = (mode === 'focus') ? 'none' : '';
   }
   function syncControls(mode){
     mode = normalize(mode || modeFromPrefs());
@@ -39091,11 +39072,6 @@ async function exportSlotsToFile(options = {}) {
     if (p) {
       p.focusMode = mode === 'focus';
       p.screenFit = mode === 'fit';
-      p.hideLeftPanel = false;
-      p.hideRightPanel = false;
-      p.fullHeightPanels = false;
-      if (mode === 'normal') { p.compactTopbar = false; p.slimTopbar = false; p.density = 'normal'; }
-      if (mode === 'fit') p.compactSidebars = true;
     }
     save();
     try { if (typeof applyUiPreferences === 'function') applyUiPreferences(true); } catch(_) {}
@@ -39114,7 +39090,6 @@ async function exportSlotsToFile(options = {}) {
   window.setUiBooleanPreference = function(key, value){
     if (key === 'screenFit') return setMode(value ? 'fit' : 'normal', false);
     if (key === 'focusMode') return setMode(value ? 'focus' : 'normal', false);
-    if ((key === 'hideLeftPanel' || key === 'hideRightPanel' || key === 'fullHeightPanels') && value && modeFromPrefs() !== 'normal') setMode('normal', true);
     return typeof oldBool === 'function' ? oldBool.apply(this, arguments) : undefined;
   };
   var oldApply = window.applyUiPreferences;
@@ -39315,7 +39290,6 @@ async function exportSlotsToFile(options = {}) {
 </style>
 <script id="layout-mode-hotfix-v14138-script">
 (function layoutModeHotfixV14138(){
-  var VERSION = '1.4.140';
   function q(id){ return document.getElementById(id); }
   function getPrefs(){ try { return (typeof uiPrefs === 'object' && uiPrefs) ? uiPrefs : null; } catch(_) { return null; } }
   function currentMode(){
@@ -39335,11 +39309,7 @@ async function exportSlotsToFile(options = {}) {
     } catch(_) {}
   }
   function writeVersion(){
-    try { window.CURRENT_VERSION = VERSION; window.VERSION = VERSION; } catch(_) {}
-    try { document.title = 'EmberQuest RPG - Version ' + VERSION; } catch(_) {}
-    ['version-topbar','version-about','game-version','current-version'].forEach(function(id){
-      var el = q(id); if (el) el.textContent = VERSION;
-    });
+    syncCurrentVersionDisplay();
   }
   function applyModeState(mode){
     var p = getPrefs();
@@ -39348,26 +39318,6 @@ async function exportSlotsToFile(options = {}) {
 
     p.focusMode = (mode === 'focus');
     p.screenFit = (mode === 'fit');
-    p.hideLeftPanel = false;
-    p.hideRightPanel = false;
-    p.fullHeightPanels = false;
-    p.compactTopbar = false;
-    p.slimTopbar = false;
-    p.compactSidebars = false;
-    p.wideCenter = true;
-    p.activePanelGlow = false;
-    p.breathingRoom = false;
-    p.mobileBottomActions = false;
-
-    if (p.density === 'compact') p.density = 'normal';
-    if (mode === 'focus') {
-      p.combatViewSize = 'large';
-      p.readableLog = true;
-    } else if (mode === 'fit') {
-      p.combatViewSize = 'large';
-    } else {
-      p.combatViewSize = 'normal';
-    }
     return mode;
   }
   function syncButtons(mode){
@@ -39536,12 +39486,9 @@ async function exportSlotsToFile(options = {}) {
 <script id="settings-menu-restore-v14139-script">
 (function settingsMenuRestoreV14139(){
   'use strict';
-  var VERSION = '1.4.140';
   function q(id){ return document.getElementById(id); }
   function writeVersion139(){
-    try { window.VERSION = VERSION; window.CURRENT_VERSION = VERSION; } catch(_) {}
-    try { document.title = 'EmberQuest RPG - Version ' + VERSION; } catch(_) {}
-    ['version-topbar','version-about','game-version','current-version'].forEach(function(id){ var el = q(id); if (el) el.textContent = VERSION; });
+    syncCurrentVersionDisplay();
   }
   function normalizeSettingsMenu139(){
     var modal = q('settings-modal');
@@ -39618,7 +39565,6 @@ async function exportSlotsToFile(options = {}) {
 <script id="combat-stats-robust-v14140-script">
 (function combatStatsRobustV14140(){
   'use strict';
-  var VERSION = '1.4.140';
   function esc140(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function fmt140(v){
     try { return (typeof fmt === 'function') ? fmt(Math.round(Number(v) || 0)) : Math.round(Number(v) || 0).toLocaleString(); }
@@ -39650,9 +39596,7 @@ async function exportSlotsToFile(options = {}) {
     return window.__eqCombatSession;
   }
   function writeVersion140(){
-    try { window.VERSION = VERSION; window.CURRENT_VERSION = VERSION; } catch(_) {}
-    try { document.title = 'EmberQuest RPG - Version ' + VERSION; } catch(_) {}
-    ['version-topbar','version-about','game-version','current-version'].forEach(function(id){ var el = document.getElementById(id); if (el) el.textContent = VERSION; });
+    syncCurrentVersionDisplay();
   }
 
   window.toggleCombatStatsPanel = function toggleCombatStatsPanelV14140(){
