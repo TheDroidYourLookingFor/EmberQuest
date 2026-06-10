@@ -5837,7 +5837,7 @@
 
     /* v1.4.83 exact screen-id repair.
        The real character select id is #screen-charselect. */
-    body:not(.game-active) #screen-charselect {
+    body:not(.game-active) #screen-charselect.active {
       display: block !important;
       visibility: visible !important;
       opacity: 1 !important;
@@ -6233,7 +6233,7 @@
     <div id="cs-account">
       <span id="cs-snapshot-status" style="display:none;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid rgba(255,220,160,0.2);background:rgba(0,0,0,0.3);"></span>
       <span id="cs-user-email"></span>
-      <button type="button" onclick="Cloud.signOut();setGameScreenActive()">Log Out</button>
+      <button type="button" onclick="Cloud.signOut()">Log Out</button>
     </div>
 
     <!-- LEFT-SIDE classic control panel -->
@@ -6750,7 +6750,7 @@
             <label class="ui-pref-check"><input type="checkbox" id="settings-ui-better-focus" onchange="setUiBooleanPreference('focusSafeControls', this.checked)"> Keep key controls visible in focus mode</label>
             <label class="ui-pref-check"><input type="checkbox" id="settings-ui-breathing-room" onchange="setUiBooleanPreference('breathingRoom', this.checked)"> Extra panel breathing room</label>
             <div class="settings-button-grid">
-              <button class="btn" onclick="openUiRescueCenterV1492 && openUiRescueCenterV1492()">UI Rescue Center</button>
+              <button class="btn" id="settings-ui-rescue-btn-v1495" onclick="openUiRescueCenterV1492 && openUiRescueCenterV1492()">UI Rescue Center</button>
               <button class="btn" onclick="cycleUxModePreference()">Cycle UX Preset</button>
               <button class="btn" onclick="applyUxPreset('cozy')">Cozy Preset</button>
               <button class="btn" onclick="applyUxPreset('combat')">Combat Preset</button>
@@ -8966,6 +8966,7 @@
         return { confirmed: false };
       },
       async signOut() {
+        const hadAuthenticatedUser = !!currentUser;
         try { if (window.Chat) Chat.cleanupSubscriptions(); } catch (e) {}
         clearTimeout(this.syncTimer); this.syncTimer = null;
         if (sb) { try { await sb.auth.signOut(); } catch (e) {} }
@@ -8974,7 +8975,9 @@
         currentAdminRecord = null;
         updateAdminVisibility();
         slots = []; while (slots.length < MAX_SLOTS) slots.push(null);
-        try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+        if (hadAuthenticatedUser) {
+          try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+        }
         this.showLogin();
       },
       async refreshAdminFlag() {
@@ -18076,7 +18079,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.4.136';
+    const CURRENT_VERSION = '1.4.140';
     const CURRENT_SAVE_SCHEMA = 2;
     const MAX_IMPORT_FILE_BYTES = 2 * 1024 * 1024; // 2 MB sanity cap for imported saves
     const BACKUP_KEY = 'EmberQuest_backups';
@@ -20880,8 +20883,14 @@ async function exportSlotsToFile(options = {}) {
       }
     }
 
+    function isLoginScreenActive() {
+      const login = document.getElementById('screen-login');
+      return !!(login && login.classList.contains('active'));
+    }
+
     function syncScreenStateClasses(forceState) {
       try {
+        if (forceState !== 'game' && isLoginScreenActive()) return;
         const body = document.body;
         const game =
           document.getElementById('screen-game') ||
@@ -21001,6 +21010,7 @@ async function exportSlotsToFile(options = {}) {
     }
 
     function setCharacterSelectActive() {
+      if (isLoginScreenActive()) return;
       document.body.classList.remove('force-game-ui');
       try {
         const realSelect = document.getElementById('screen-charselect');
@@ -21109,6 +21119,7 @@ async function exportSlotsToFile(options = {}) {
 
     function detectAndRepairBrokenUiLayout() {
       try {
+        if (isLoginScreenActive()) return;
         if (!document.body.classList.contains('game-active')) {
           setCharacterSelectActive();
           return;
@@ -21122,16 +21133,17 @@ async function exportSlotsToFile(options = {}) {
     window.detectAndRepairBrokenUiLayout = detectAndRepairBrokenUiLayout;
     window.addEventListener('DOMContentLoaded', () => {
       try { installGameScreenTopbarObserver(); } catch (e) {}
-      try { setCharacterSelectActive(); } catch (e) {}
       setTimeout(() => {
+        if (isLoginScreenActive()) return;
         const game = document.getElementById('screen-game');
         const select = document.getElementById('screen-charselect') || document.getElementById('screen-character-select') || document.getElementById('screen-select') || document.querySelector('.character-select-screen');
         if (document.body.classList.contains('game-active') || (isElementActuallyVisible(game) && !isElementActuallyVisible(select))) setGameScreenActive();
-        else setCharacterSelectActive();
+        else if (select && select.classList.contains('active')) setCharacterSelectActive();
       }, 50);
       setTimeout(detectAndRepairBrokenUiLayout, 900);
     });
     window.addEventListener('resize', () => {
+      if (isLoginScreenActive()) return;
       try { syncScreenStateClasses(document.body.classList.contains('game-active') ? 'game' : 'select'); } catch (e) {}
     });
     window.addEventListener('DOMContentLoaded', () => { setTimeout(detectAndRepairBrokenUiLayout, 250); setTimeout(detectAndRepairBrokenUiLayout, 1200); });
@@ -22332,7 +22344,7 @@ async function exportSlotsToFile(options = {}) {
       setTimeout(setGameScreenActive, 150);
       const _savedTab = (() => { try { return sessionStorage.getItem('EQ_lastTab'); } catch(e) { return null; } })();
       const _savedPopup = (() => { try { return sessionStorage.getItem('EQ_activePopup'); } catch(e) { return null; } })();
-      const _mainTabs = ['combat','zone','inv','shop','casino'];
+      const _mainTabs = ['combat','zone','inv','shop','casino','chat'];
       switchTab(_savedTab && _mainTabs.includes(_savedTab) ? _savedTab : 'combat');
       if (_savedPopup && POPUP_PANEL_IDS.has(_savedPopup)) openPopup(_savedPopup);
       resetAFKUI();
@@ -34041,6 +34053,11 @@ async function exportSlotsToFile(options = {}) {
         return;
       }
       const r = target.getBoundingClientRect();
+      if (r.bottom < 8 || r.top > window.innerHeight - 8 || r.right < 8 || r.left > window.innerWidth - 8) {
+        try { target.scrollIntoView({ block: 'center', inline: 'nearest' }); } catch (e) {}
+        requestAnimationFrame(positionTour);
+        return;
+      }
       const pad = 6;
       hi.style.display = 'block';
       hi.style.transform = 'none';
@@ -34055,7 +34072,8 @@ async function exportSlotsToFile(options = {}) {
       let top = r.bottom + 14;
       let left = r.left;
       if (top + tipH > window.innerHeight - 10) top = Math.max(10, r.top - tipH - 14);
-      if (left + tipW > window.innerWidth - 10) left = Math.max(10, window.innerWidth - tipW - 10);
+      top = Math.max(10, Math.min(top, window.innerHeight - tipH - 10));
+      left = Math.max(10, Math.min(left, window.innerWidth - tipW - 10));
       tip.style.transform = 'none';
       tip.style.top = top + 'px';
       tip.style.left = left + 'px';
@@ -37421,7 +37439,7 @@ async function exportSlotsToFile(options = {}) {
 <script id="ux-cleanup-v1496-script">
 (function(){
   'use strict';
-  const VERSION = '1.4.137';
+  const VERSION = '1.4.140';
   const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmtSafe = v => {
     try { return (typeof fmt === 'function') ? fmt(Math.round(Number(v)||0)) : String(Math.round(Number(v)||0)); }
@@ -37763,7 +37781,7 @@ async function exportSlotsToFile(options = {}) {
 <script id="v14127-consolidated-ui-fix-script">
 (function(){
   'use strict';
-  const FINAL_VERSION = '1.4.137';
+  const FINAL_VERSION = '1.4.140';
   let scheduled = false;
   let lastScreenState = '';
 
@@ -38062,7 +38080,7 @@ async function exportSlotsToFile(options = {}) {
 <script id="v14132-final-guard">
 (function(){
   'use strict';
-  const VERSION = '1.4.137';
+  const VERSION = '1.4.140';
   let queued = false;
   let stamped = false;
   const legacyMenuIds = [
@@ -39024,7 +39042,7 @@ async function exportSlotsToFile(options = {}) {
 </style>
 <script id="layout-mode-hotfix-v14137-script">
 (function layoutModeHotfixV14137(){
-  var VERSION = '1.4.137';
+  var VERSION = '1.4.140';
   function q(id){ return document.getElementById(id); }
   function prefs(){ try { if (typeof uiPrefs === 'object' && uiPrefs) return uiPrefs; } catch(_) {} return null; }
   function modeFromPrefs(){ var p = prefs() || {}; return p.focusMode ? 'focus' : (p.screenFit ? 'fit' : 'normal'); }
@@ -39297,7 +39315,7 @@ async function exportSlotsToFile(options = {}) {
 </style>
 <script id="layout-mode-hotfix-v14138-script">
 (function layoutModeHotfixV14138(){
-  var VERSION = '1.4.138';
+  var VERSION = '1.4.140';
   function q(id){ return document.getElementById(id); }
   function getPrefs(){ try { return (typeof uiPrefs === 'object' && uiPrefs) ? uiPrefs : null; } catch(_) { return null; } }
   function currentMode(){
@@ -39518,7 +39536,7 @@ async function exportSlotsToFile(options = {}) {
 <script id="settings-menu-restore-v14139-script">
 (function settingsMenuRestoreV14139(){
   'use strict';
-  var VERSION = '1.4.139';
+  var VERSION = '1.4.140';
   function q(id){ return document.getElementById(id); }
   function writeVersion139(){
     try { window.VERSION = VERSION; window.CURRENT_VERSION = VERSION; } catch(_) {}
@@ -39711,6 +39729,42 @@ async function exportSlotsToFile(options = {}) {
 })();
 </script>
 
+<style id="mobile-layout-repair-v14140-style">
+@media (max-width: 820px) {
+  #screen-game.ui-layout-desktop {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    overflow-x: hidden !important;
+  }
+
+  #screen-game.ui-layout-desktop #game-grid,
+  #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #game-grid,
+  #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #game-grid,
+  #screen-game.ui-layout-desktop.ui-focus-mode #game-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #screen-game.ui-layout-desktop #game-grid > div,
+  #screen-game.ui-layout-desktop #center-panel {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+</style>
+
 <!-- v1.4.140 hotfix: restore reliable main-panel navigation -->
 <script id="main-tab-navigation-repair-v14140">
 (function mainTabNavigationRepairV14140(){
@@ -39722,6 +39776,10 @@ async function exportSlotsToFile(options = {}) {
     shop: 'renderShop',
     casino: 'renderCasino'
   };
+
+  function hasLoadedCharacter() {
+    try { return typeof char !== 'undefined' && !!char; } catch(_) { return false; }
+  }
 
   function activateMainTab(tab) {
     if (MAIN_TABS.indexOf(tab) === -1) tab = 'combat';
@@ -39752,7 +39810,7 @@ async function exportSlotsToFile(options = {}) {
         window.Chat.open();
       } else {
         var renderer = RENDERERS[tab];
-        if (renderer && typeof window[renderer] === 'function') window[renderer]();
+        if (renderer && hasLoadedCharacter() && typeof window[renderer] === 'function') window[renderer]();
       }
     } catch(e) {
       console.warn('Main tab renderer failed:', tab, e);
@@ -39765,24 +39823,31 @@ async function exportSlotsToFile(options = {}) {
 
   window.switchTab = activateMainTab;
 
+  function handleMainTabClick(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+    var button = event && event.currentTarget;
+    activateMainTab(button ? button.getAttribute('data-main-tab') : 'combat');
+    return false;
+  }
+
   function bindMainTabs() {
     MAIN_TABS.forEach(function(id){
       var button = document.getElementById('tabbtn-' + id);
       if (!button || button.__mainTabRepairV14140) return;
       button.__mainTabRepairV14140 = true;
-      button.onclick = function(event) {
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        activateMainTab(id);
-        return false;
-      };
+      button.setAttribute('data-main-tab', id);
+      button.onclick = null;
+      button.addEventListener('click', handleMainTabClick, true);
     });
   }
 
   function start() {
     bindMainTabs();
+    var game = document.getElementById('screen-game');
+    if (!game || !game.classList.contains('active') || !document.body.classList.contains('game-active')) return;
     var saved = null;
     try { saved = sessionStorage.getItem('EQ_lastTab'); } catch(_) {}
     var visible = MAIN_TABS.find(function(id){
