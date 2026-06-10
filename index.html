@@ -3197,7 +3197,72 @@
     #help-close { background: transparent; border: 0; color: rgba(240,230,204,0.7); font-size: 16px; cursor: pointer; line-height: 1; }
     #help-close:hover { color: #f4d68a; }
     #help-body { padding: 16px; font-size: 13px; line-height: 1.55; }
-  </style>
+  
+
+    /* v1.4.11 UI polish: cleaner tabs, focus mode, density presets */
+    :root { --eq-ui-radius: var(--radius-md); }
+    #game-topbar.ui-sticky-enabled,
+    #screen-game.ui-sticky-tabs #game-topbar {
+      position: sticky;
+      top: 8px;
+      z-index: 45;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      backdrop-filter: blur(8px);
+    }
+    #screen-game.ui-sticky-tabs .tab-bar,
+    #screen-game.ui-sticky-tabs .popup-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 12;
+      background: var(--bg-primary);
+      padding-top: 2px;
+      border-radius: var(--radius-md);
+    }
+    #screen-game.ui-focus-mode #game-grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #screen-game.ui-focus-mode #game-grid > div:first-child,
+    #screen-game.ui-focus-mode #game-grid > div:last-child {
+      display: none !important;
+    }
+    #screen-game.ui-density-compact .panel { padding: 7px; }
+    #screen-game.ui-density-compact #game-grid { gap: 6px; grid-template-columns: 190px minmax(0,1fr) 230px; }
+    #screen-game.ui-density-compact .btn { padding: 4px 8px; font-size: 11px; }
+    #screen-game.ui-density-compact .tab { padding: 3px 8px; font-size: 10px; }
+    #screen-game.ui-density-compact #combat-log { font-size: 11px; }
+    #screen-game.ui-density-comfort .panel { padding: 12px; }
+    #screen-game.ui-density-comfort #game-grid { gap: 12px; grid-template-columns: 230px minmax(0,1fr) 285px; }
+    #screen-game.ui-density-comfort .btn { padding: 7px 12px; }
+    #screen-game.ui-density-comfort .tab { padding: 6px 12px; }
+    #screen-game.ui-density-comfort #combat-log { font-size: 13px; line-height: 1.55; }
+    #screen-game.ui-readable-log #combat-log { font-size: 13px; line-height: 1.6; }
+    #screen-game.ui-readable-log #combat-log p { padding: 1px 0; }
+    #screen-game.ui-polished-tabs .tab-bar {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      scrollbar-width: thin;
+      padding-bottom: 4px;
+    }
+    #screen-game.ui-polished-tabs .tab {
+      white-space: nowrap;
+      border-radius: 999px;
+    }
+    #screen-game.ui-polished-tabs .tab.active {
+      box-shadow: inset 0 0 0 1px var(--border-md), 0 1px 6px rgba(0,0,0,0.08);
+    }
+    #screen-game.ui-hide-empty-panels .panel:empty { display:none; }
+    .ui-pref-row { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; }
+    .ui-pref-row select { font-size:12px; padding:5px 8px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); background:var(--bg-primary); color:var(--text-primary); }
+    .ui-pref-check { display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer; }
+    @media(max-width:760px) {
+      #screen-game.ui-polished-tabs .tab-bar { flex-wrap: nowrap; overflow-x: auto; }
+      #screen-game.ui-density-comfort .btn, #screen-game.ui-density-comfort .tab { min-height: 44px; }
+      #screen-game.ui-focus-mode #game-grid { max-width: 100%; }
+    }
+</style>
 
 <body>
 
@@ -3593,7 +3658,7 @@
     <input
       id="import-save-input"
       type="file"
-      accept="application/json,.json"
+      accept="application/json,text/plain,.json,.eqsave,.txt"
       style="display:none"
       onchange="importSlotsFromFile(event)">
     <div
@@ -3632,6 +3697,18 @@
           before
           importing
         </label>
+        <div class="modal-option-row" style="align-items:flex-start;flex-direction:column;gap:6px">
+          <div style="font-size:11px;color:var(--text-primary);font-weight:600">Import mode</div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input id="import-mode-replace" name="import-mode" type="radio" value="replace" checked>
+            Replace all character slots
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input id="import-mode-merge" name="import-mode" type="radio" value="merge">
+            Merge imported characters into empty slots
+          </label>
+          <div id="import-mode-hint" style="font-size:10px;color:var(--text-secondary)"></div>
+        </div>
         <div
           class="modal-actions">
           <button
@@ -3850,11 +3927,32 @@
             <div id="settings-keybind-list" style="display:flex;flex-direction:column;margin-top:2px;"></div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div style="font-size:12px;font-weight:600;">🖥️ UI Layout</div>
+              <button class="btn" onclick="resetUiPreferences()" style="font-size:11px;padding:5px 9px;">Reset UI</button>
+            </div>
+            <div style="font-size:10px;color:var(--text-secondary);">Tune spacing, tab behavior, and combat readability without changing gameplay.</div>
+            <div class="ui-pref-row">
+              <span>Density</span>
+              <select id="settings-ui-density" onchange="setUiDensityPreference(this.value)">
+                <option value="normal">Normal</option>
+                <option value="compact">Compact</option>
+                <option value="comfort">Comfort</option>
+              </select>
+            </div>
+            <label class="ui-pref-check"><input type="checkbox" id="settings-ui-sticky" onchange="setUiBooleanPreference('stickyTabs', this.checked)"> Sticky top bar / tabs</label>
+            <label class="ui-pref-check"><input type="checkbox" id="settings-ui-focus" onchange="setUiBooleanPreference('focusMode', this.checked)"> Focus mode: hide side panels</label>
+            <label class="ui-pref-check"><input type="checkbox" id="settings-ui-readable-log" onchange="setUiBooleanPreference('readableLog', this.checked)"> Larger combat log text</label>
+            <label class="ui-pref-check"><input type="checkbox" id="settings-ui-polished-tabs" onchange="setUiBooleanPreference('polishedTabs', this.checked)"> Scrollable pill-style tabs</label>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px;">
             <div style="font-size:12px;font-weight:600;">💾 Save Management</div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              <button class="btn" onclick="exportSlotsToFile()" title="Download all characters as JSON backup">📥 Export Save</button>
+              <button class="btn" onclick="exportSlotsToFile()" title="Download all characters as an encrypted local-browser backup">📥 Export Save</button>
+              <button class="btn" onclick="exportPasswordProtectedSave()" title="Download a password-protected portable backup that can import on another browser/device">🔐 Password Export</button>
+              <button class="btn" onclick="exportCurrentCharacterSave()" title="Download only the active character as an importable save">🧍 Export Character</button>
               <button class="btn" onclick="promptImportSlots()" title="Import previously exported characters">📤 Import Save</button>
-              <button class="btn" onclick="showBackupRecoveryOptions()" title="Recover from auto-backups (last 3 saves)">🔄 Restore Backup</button>
+              <button class="btn" onclick="showBackupRecoveryOptions()" title="Recover from auto-backups (last 21 saves)">🔄 Restore Backup</button>
             </div>
             <div id="settings-backup-list" style="font-size:10px;color:var(--text-secondary);margin-top:4px;"></div>
           </div>
@@ -3866,6 +3964,29 @@
               <button class="btn" onclick="renderCloudVersionList()" title="Refresh the list of cloud versions">↻ Refresh</button>
             </div>
             <div id="settings-cloud-version-list" style="font-size:10px;color:var(--text-secondary);margin-top:4px;"></div>
+          </div>
+                  <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px;">
+            <div style="font-size:12px;font-weight:600;">🛡️ Stability Tools</div>
+            <div style="font-size:10px;color:var(--text-secondary);">Validate saves, repair harmless metadata mismatches, compact backups, and create restore points before risky changes.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn" onclick="runSaveDiagnostics()" title="Check all slots for malformed data and repair safe issues">Run Save Check</button>
+              <button class="btn" onclick="createVersionedBackup(true, { kind: 'manual' });updateSettingsDisplay();showToast('Local backup created.', 'success')" title="Create a local recovery point now">Create Local Backup</button>
+              <button class="btn" onclick="createNamedLocalBackup()" title="Create a labeled local recovery point for easier restores">Named Backup</button>
+              <button class="btn" onclick="compareCurrentSaveToLatestBackup()" title="Compare current save against the newest local backup summary">Compare Latest</button>
+              <button class="btn" onclick="testPartyCombatAnimations()" title="Preview party lunge and enemy hit popups without changing HP">Test Party Animations</button>
+              <button class="btn" onclick="downloadLatestLocalBackup()" title="Download only the newest local backup as an importable save file">Export Latest Backup</button>
+              <button class="btn" onclick="downloadRecoveryBundle()" title="Download current save, local backups, and diagnostics together">Export Recovery Bundle</button>
+              <button class="btn" onclick="downloadSaveDiagnostics()" title="Download a small save-health report for troubleshooting">Export Diagnostics</button>
+              <button class="btn" onclick="copySaveDiagnosticsToClipboard()" title="Copy the diagnostics report to your clipboard">Copy Diagnostics</button>
+              <button class="btn" onclick="auditLocalBackups()" title="Validate every stored local backup and flag broken snapshots">Verify Backups</button>
+              <button class="btn" onclick="verifyCurrentSaveIntegrity()" title="Compare the current save against the last written save-health stamp">Verify Current Save</button>
+              <button class="btn" onclick="downloadBackupIndex()" title="Download a lightweight index of local backups without full save data">Export Backup Index</button>
+              <button class="btn" onclick="copyLatestBackupSummaryToClipboard()" title="Copy the newest backup summary to the clipboard">Copy Latest Backup Summary</button>
+              <button class="btn" onclick="restoreLatestLocalBackup()" title="Restore the newest local recovery backup after confirmation">Restore Latest</button>
+              <button class="btn danger" onclick="purgeCorruptSaveCopies()" title="Delete preserved corrupt-save copies after exporting a recovery bundle">Prune Corrupt Copies</button>
+              <button class="btn danger" onclick="clearLocalBackups()" title="Delete stored local recovery backups after exporting them">Clear Backups</button>
+            </div>
+            <div id="settings-diagnostics-result" style="font-size:10px;color:var(--text-secondary);margin-top:2px;"></div>
           </div>
         </div>
         <div class="modal-actions">
@@ -4549,8 +4670,17 @@
 
           <h4 style="margin:14px 0 6px">Saving &amp; Backups</h4>
           <div style="font-size:12px;line-height:1.55;color:var(--text-secondary);margin-bottom:10px">
-            Progress autosaves to your browser's local storage and syncs to the cloud when you're signed in. Clearing your browser data can erase local characters, so use <strong>Export</strong> on the topbar to download a JSON backup; <strong>Import</strong> restores it (and offers to back up your current save first).
+            Progress autosaves to your browser's local storage and syncs to the cloud when you're signed in. Clearing your browser data can erase local characters, so use <strong>Export</strong> on the topbar to download a backup; <strong>Import</strong> restores it, and Settings can export a full recovery bundle with local snapshots and diagnostics.
           </div>
+
+
+          <h4 style="margin:14px 0 6px">What’s New in v1.4.11</h4>
+          <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0 0 10px;padding-left:18px">
+            <li><strong>UI layout pass.</strong> Settings now has a UI Layout section with Density, Sticky Tabs, Focus Mode, Larger Combat Log, and Scrollable Pill Tabs toggles.</li>
+            <li><strong>Focus Mode.</strong> The game can hide side panels and center the main combat/tab area for a cleaner play view.</li>
+            <li><strong>Readable combat option.</strong> Combat log text can be enlarged independently from the rest of the interface.</li>
+            <li><strong>Better tab polish.</strong> Tabs can stay horizontally scrollable and pill-shaped so crowded sections are easier to use on small screens.</li>
+          </ul>
 
           <h4 style="margin:14px 0 6px">Credits &amp; License</h4>
           <div style="font-size:12px;line-height:1.55;color:var(--text-secondary)">
@@ -5393,6 +5523,7 @@
     const UI_LAYOUT_KEY = 'EmberQuest_uiLayout';
     const AUDIO_KEY = 'EmberQuest_audio';
     const KEYBINDS_KEY = 'EmberQuest_keybinds';
+    const UI_PREFS_KEY = 'EmberQuest_uiPrefs';
 
     // ══════════════════════════════════════════════
     //  AUDIO ENGINE  (lightweight Web Audio SFX layer)
@@ -8235,6 +8366,7 @@
         const legacyDmg = Math.floor(level * 2.1 + char.atk * 0.28 + Math.random() * 8);
         const dmg = Math.max(3, Math.floor(Math.max(hpAnchorDmg, legacyDmg) * gearMult));
         mob.hp -= dmg;
+        battlePartyDamageAnim('merc-main', dmg);
         addDamageMeterEntry('merc', dmg);
         log([
           { text: mercName, cls: 'combat-log-merc' },
@@ -8250,6 +8382,7 @@
         const atkDebuff = Math.max(1, Math.floor(level / 26) + 1);
         const defDebuff = Math.max(1, Math.floor(level / 30) + 1);
         mob.hp -= dmg;
+        battlePartyDamageAnim('merc-main', dmg);
         addDamageMeterEntry('merc', dmg);
         mob.atk = Math.max(1, mob.atk - atkDebuff);
         mob.def = Math.max(0, mob.def - defDebuff);
@@ -11010,7 +11143,7 @@
       // summary fields (name, cls, level, atk, knownSpells). Works for both
       // local grouped characters and borrowed LFG hero snapshots.
       // Returns 'killed' if the mob died, 'acted'/'skipped' otherwise.
-      function runAllyAction(slotChar, badge) {
+      function runAllyAction(slotChar, badge, unitId) {
         if (!mob || mob.hp <= 0) return 'killed';
         if (!slotChar) return 'skipped';
         if (Math.random() > 0.7) return 'skipped'; // 70% chance to act this swing
@@ -11058,6 +11191,7 @@
         }
 
         mob.hp -= dmg;
+        battlePartyDamageAnim(unitId, dmg);
         addDamageMeterEntry('merc', dmg);
         log([
           { text: memberName, cls: 'combat-log-merc' },
@@ -11075,12 +11209,12 @@
       // Local grouped characters first.
       for (let m = 0; m < members.length; m++) {
         if (!mob || mob.hp <= 0) break;
-        if (runAllyAction(slots[members[m]], '') === 'killed') return true;
+        if (runAllyAction(slots[members[m]], '', 'group-' + members[m]) === 'killed') return true;
       }
       // Then borrowed LFG heroes (tagged so the combat log identifies them).
       for (let m = 0; m < lfg.length; m++) {
         if (!mob || mob.hp <= 0) break;
-        if (runAllyAction(lfg[m], ' (LFG)') === 'killed') return true;
+        if (runAllyAction(lfg[m], ' (LFG)', 'lfg-' + m) === 'killed') return true;
       }
       return false;
     }
@@ -11624,6 +11758,7 @@
         if (behavior === 'damage') {
           const dmg = Math.max(3, Math.floor((level * 2.2 + char.atk * 0.26 + Math.random() * 8) * gearMult));
           mob.hp -= dmg;
+          battlePartyDamageAnim('merc-' + i, dmg);
           addDamageMeterEntry('merc', dmg);
           log([
             { text: label, cls: 'combat-log-merc' },
@@ -14738,6 +14873,7 @@
     let potionHealAmount_legendary_Mana = 200000;
     let pendingImportedSlots = null;
     let pendingImportFileName = '';
+    let pendingImportMeta = null;
     let pendingTransmuteSourceRune = null;
     let afkHiddenAt = null;
     let activeBagIndex = 0;
@@ -14746,44 +14882,438 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.3.99';
+    const CURRENT_VERSION = '1.4.11';
+    const CURRENT_SAVE_SCHEMA = 2;
+    const MAX_IMPORT_FILE_BYTES = 2 * 1024 * 1024; // 2 MB sanity cap for imported saves
     const BACKUP_KEY = 'EmberQuest_backups';
-    const MAX_BACKUPS = 3;
+    const SAVE_HEALTH_KEY = SAVE_KEY + '.health';
+    const MAX_BACKUPS = 21;
+    const BACKUP_MIN_INTERVAL_MS = 5 * 60 * 1000;
     const BAG_SLOT_COUNT = 8;
 
     // ══════════════════════════════════════════════
     //  PERSISTENCE
     // ══════════════════════════════════════════════
     function loadSlots() {
-      try { slots = JSON.parse(localStorage.getItem(SAVE_KEY)) || []; }
-      catch (e) { slots = []; }
-      if (!Array.isArray(slots)) slots = [];
+      window.__lastSaveLoadError = '';
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        slots = raw ? JSON.parse(raw) : [];
+      }
+      catch (e) {
+        window.__lastSaveLoadError = 'Local save could not be parsed; it was preserved as a corrupt-save copy. ' + (e && e.message ? e.message : '');
+        try {
+          const raw = localStorage.getItem(SAVE_KEY);
+          if (raw) localStorage.setItem(SAVE_KEY + '.corrupt.' + Date.now(), raw);
+        } catch (_) {}
+        slots = [];
+      }
+      if (!Array.isArray(slots)) {
+        window.__lastSaveLoadError = window.__lastSaveLoadError || 'Local save root was not a slot array; started from an empty slot list.';
+        slots = [];
+      }
       while (slots.length < MAX_SLOTS) slots.push(null);
+      if (slots.length > MAX_SLOTS) slots = slots.slice(0, MAX_SLOTS);
     }
 
-    function createVersionedBackup() {
+    function stableSaveHash(value) {
+      const text = JSON.stringify(value || null);
+      let h = 2166136261;
+      for (let i = 0; i < text.length; i++) {
+        h ^= text.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0).toString(16);
+    }
+
+    function getCurrentSaveHealthStamp() {
       try {
-        const backups = JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
-        const backup = {
-          timestamp: Date.now(),
+        const parsed = JSON.parse(localStorage.getItem(SAVE_HEALTH_KEY) || 'null');
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function writeSaveHealthStamp(rawSaveText) {
+      try {
+        const raw = typeof rawSaveText === 'string' ? rawSaveText : JSON.stringify(slots || []);
+        const stamp = {
+          game: 'EmberQuest',
           version: CURRENT_VERSION,
-          slots: JSON.parse(JSON.stringify(slots))
+          saveSchema: CURRENT_SAVE_SCHEMA,
+          savedAt: new Date().toISOString(),
+          hash: stableSaveHash(raw),
+          bytes: raw.length,
+          activeSlot: activeSlot,
+          summary: summarizeSlotsForBackup(slots)
+        };
+        localStorage.setItem(SAVE_HEALTH_KEY, JSON.stringify(stamp));
+        return stamp;
+      } catch (e) {
+        console.warn('Save health stamp failed', e);
+        return null;
+      }
+    }
+
+    function checkCurrentSaveIntegrity() {
+      const result = { ok: false, status: 'unknown', message: '', stamp: null, currentHash: '', currentBytes: 0 };
+      try {
+        const raw = localStorage.getItem(SAVE_KEY) || '';
+        const stamp = getCurrentSaveHealthStamp();
+        result.stamp = stamp;
+        result.currentHash = stableSaveHash(raw);
+        result.currentBytes = raw.length;
+        if (!stamp) {
+          result.status = 'missing-stamp';
+          result.message = 'No save-health stamp exists yet. Save once or run Save Check to create one.';
+          return result;
+        }
+        if (stamp.hash !== result.currentHash) {
+          result.status = 'hash-mismatch';
+          result.message = 'Current local save differs from the last save-health stamp. This can happen after manual browser edits, partial writes, or an older patch.';
+          return result;
+        }
+        result.ok = true;
+        result.status = 'ok';
+        result.message = 'Current save matches the last save-health stamp from ' + new Date(stamp.savedAt || Date.now()).toLocaleString() + '.';
+        return result;
+      } catch (e) {
+        result.status = 'error';
+        result.message = 'Could not verify current save: ' + (e && e.message ? e.message : 'unknown error');
+        return result;
+      }
+    }
+
+    function verifyCurrentSaveIntegrity() {
+      const resultEl = document.getElementById('settings-diagnostics-result');
+      const check = checkCurrentSaveIntegrity();
+      const msg = 'Current save verification: ' + check.message;
+      if (resultEl) resultEl.textContent = msg;
+      showToast(msg, check.ok ? 'success' : 'error', check.ok ? 3600 : 6500);
+      updateSettingsDisplay();
+    }
+
+    function downloadBackupIndex() {
+      try {
+        const backups = getVersionedBackups();
+        const index = {
+          game: 'EmberQuest',
+          kind: 'backup-index',
+          version: CURRENT_VERSION,
+          saveSchema: CURRENT_SAVE_SCHEMA,
+          generatedAt: new Date().toISOString(),
+          currentSaveHealth: getCurrentSaveHealthStamp(),
+          backups: backups.map((b, i) => ({
+            index: i + 1,
+            timestamp: b.timestamp || null,
+            createdAt: b.timestamp ? new Date(b.timestamp).toISOString() : null,
+            version: b.version || '',
+            kind: b.kind || '',
+            label: b.label || '',
+            hash: b.hash || stableSaveHash(b.slots || []),
+            characters: Array.isArray(b.summary) ? b.summary.filter(x => x && !x.empty) : []
+          }))
+        };
+        const blob = new Blob([JSON.stringify(index, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.href = url;
+        a.download = 'emberquest-backup-index-' + stamp + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Backup index exported.', 'success');
+      } catch (e) {
+        showToast('Backup index export failed: ' + (e && e.message ? e.message : 'Unknown error'), 'error', 4200);
+      }
+    }
+
+
+    async function copyLatestBackupSummaryToClipboard() {
+      const resultEl = document.getElementById('settings-diagnostics-result');
+      try {
+        const backups = getVersionedBackups();
+        if (!backups.length) {
+          const msg = 'No local backups are available to summarize.';
+          if (resultEl) resultEl.textContent = msg;
+          showToast(msg, 'info');
+          return;
+        }
+        const b = backups[0];
+        const lines = [];
+        lines.push('EmberQuest latest local backup');
+        lines.push('Created: ' + new Date(b.timestamp || Date.now()).toLocaleString());
+        lines.push('Version: ' + (b.version || '?') + ' / schema ' + (b.saveSchema || '?'));
+        lines.push('Kind: ' + (b.kind || 'unknown') + (b.label ? ' / ' + b.label : ''));
+        lines.push('Hash: ' + (b.hash || backupPayloadHash(b)) + (isBackupHashOk(b) ? ' OK' : ' MISMATCH'));
+        const chars = Array.isArray(b.summary) ? b.summary.filter(x => x && !x.empty) : summarizeSlotsForBackup(b.slots).filter(x => x && !x.empty);
+        lines.push('Characters: ' + (chars.length ? chars.map(c => c.name + ' L' + c.level + ' ' + (c.class || '')).join(', ') : 'none'));
+        const text = lines.join('\n');
+        if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard API is unavailable.');
+        await navigator.clipboard.writeText(text);
+        if (resultEl) resultEl.textContent = 'Latest backup summary copied to clipboard.';
+        showToast('Latest backup summary copied.', 'success');
+      } catch (e) {
+        const msg = 'Copy latest backup summary failed: ' + (e && e.message ? e.message : 'Unknown error');
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, 'error', 4200);
+      }
+    }
+
+    function refreshSaveHealthStamp() {
+      const resultEl = document.getElementById('settings-diagnostics-result');
+      try {
+        if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+        const raw = JSON.stringify(slots || []);
+        localStorage.setItem(SAVE_KEY, raw);
+        const stamp = writeSaveHealthStamp(raw);
+        const msg = stamp ? ('Save-health stamp refreshed: ' + new Date(stamp.savedAt).toLocaleString() + '.') : 'Save-health stamp could not be refreshed.';
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, stamp ? 'success' : 'error', stamp ? 3200 : 4200);
+        updateSettingsDisplay();
+      } catch (e) {
+        const msg = 'Refresh failed: ' + (e && e.message ? e.message : 'storage error');
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, 'error', 4200);
+      }
+    }
+
+    function backupPayloadHash(backup) {
+      return stableSaveHash(backup && Array.isArray(backup.slots) ? backup.slots : []);
+    }
+
+    function isBackupHashOk(backup) {
+      if (!backup || !Array.isArray(backup.slots)) return false;
+      if (!backup.hash) return true;
+      return backup.hash === backupPayloadHash(backup);
+    }
+
+    function compactLocalBackups() {
+      const resultEl = document.getElementById('settings-diagnostics-result');
+      try {
+        const backups = getVersionedBackups();
+        const seen = new Set();
+        const compacted = [];
+        let invalid = 0, duplicate = 0, refreshed = 0;
+        backups.forEach(b => {
+          try {
+            if (!b || !Array.isArray(b.slots)) throw new Error('missing slots');
+            const cleanedSlots = validateImportedSlots(b.slots);
+            const hash = stableSaveHash(cleanedSlots);
+            if (seen.has(hash)) { duplicate++; return; }
+            seen.add(hash);
+            const cleaned = Object.assign({}, b, {
+              slots: cleanedSlots,
+              hash: hash,
+              version: b.version || CURRENT_VERSION,
+              saveSchema: b.saveSchema || CURRENT_SAVE_SCHEMA,
+              kind: sanitizeImportedString(b.kind || 'manual', 'manual', 24),
+              label: sanitizeImportedString(b.label || '', '', 48),
+              summary: summarizeSlotsForBackup(cleanedSlots),
+              timestamp: Number(b.timestamp || Date.now())
+            });
+            if (b.hash !== hash || !b.summary || !b.version || !b.saveSchema) refreshed++;
+            compacted.push(cleaned);
+          } catch (_) {
+            invalid++;
+          }
+        });
+        compacted.sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+        if (compacted.length > MAX_BACKUPS) compacted.splice(MAX_BACKUPS);
+        localStorage.setItem(BACKUP_KEY, JSON.stringify(compacted));
+        updateSettingsDisplay();
+        const msg = 'Backup compaction complete: kept ' + compacted.length + ', removed ' + duplicate + ' duplicate(s), dropped ' + invalid + ' invalid, refreshed ' + refreshed + ' metadata record(s).';
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, invalid ? 'info' : 'success', 5200);
+      } catch (e) {
+        const msg = 'Backup compaction failed: ' + (e && e.message ? e.message : 'storage error');
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, 'error', 5200);
+      }
+    }
+
+    async function exportCurrentCharacterSave() {
+      try {
+        if (!char || activeSlot < 0) {
+          showToast('Enter the world with a character before exporting a single character.', 'info', 3600);
+          return;
+        }
+        slots[activeSlot] = JSON.parse(JSON.stringify(char));
+        const single = new Array(MAX_SLOTS).fill(null);
+        single[activeSlot] = JSON.parse(JSON.stringify(slots[activeSlot]));
+        const safeName = sanitizeImportedString(char.name || 'character', 'character', 32).replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '') || 'character';
+        const payload = {
+          meta: {
+            game: 'EmberQuest',
+            kind: 'single-character-export',
+            version: CURRENT_VERSION,
+            saveSchema: CURRENT_SAVE_SCHEMA,
+            exportedAt: new Date().toISOString(),
+            sourceSlot: activeSlot + 1,
+            character: { name: char.name || 'Unknown', level: Number(char.level || 1), class: char.cls || '' }
+          },
+          slots: single
+        };
+        const data = await encodeSavePayload(payload);
+        const blob = new Blob([data], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.href = url;
+        a.download = 'emberquest-' + safeName + '-' + stamp + '.eqsave';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Current character exported.', 'success');
+      } catch (e) {
+        showToast('Character export failed: ' + (e && e.message ? e.message : 'Unknown error'), 'error', 4200);
+      }
+    }
+
+    function summarizeSlotsForBackup(slotList) {
+      const list = Array.isArray(slotList) ? slotList : [];
+      return list.slice(0, MAX_SLOTS).map((s, i) => s ? {
+        slot: i + 1,
+        name: String(s.name || 'Unknown'),
+        level: Number(s.level || 1),
+        class: String(s.cls || 'Unknown')
+      } : { slot: i + 1, empty: true });
+    }
+
+    function createVersionedBackup(force = false, options = {}) {
+      try {
+        const backups = getVersionedBackups();
+        const now = Date.now();
+        const snapshot = JSON.parse(JSON.stringify(slots));
+        const hash = stableSaveHash(snapshot);
+        const latest = backups.length ? backups[0] : null;
+        if (!force && latest && latest.timestamp && (now - latest.timestamp) < BACKUP_MIN_INTERVAL_MS) {
+          return false;
+        }
+        if (!force && latest && latest.hash && latest.hash === hash) {
+          return false;
+        }
+        const backup = {
+          timestamp: now,
+          version: CURRENT_VERSION,
+          saveSchema: CURRENT_SAVE_SCHEMA,
+          hash,
+          kind: sanitizeImportedString(options && options.kind, force ? 'manual' : 'auto', 24),
+          label: sanitizeImportedString(options && options.label, '', 48),
+          summary: summarizeSlotsForBackup(snapshot),
+          slots: snapshot
         };
         backups.unshift(backup);
-        if (backups.length > MAX_BACKUPS) {
-          backups.splice(MAX_BACKUPS);
-        }
+        backups.sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+        if (backups.length > MAX_BACKUPS) backups.splice(MAX_BACKUPS);
         localStorage.setItem(BACKUP_KEY, JSON.stringify(backups));
+        return true;
       } catch (e) {
-        // Silently fail if backup storage is full
+        console.warn('Local backup failed', e);
+        return false;
       }
     }
 
     function getVersionedBackups() {
       try {
-        return JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
+        const parsed = JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .filter(b => b && Array.isArray(b.slots))
+          .sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0))
+          .slice(0, MAX_BACKUPS);
       } catch (e) {
         return [];
+      }
+    }
+
+    function describeBackupForConfirm(backup) {
+      const when = new Date(backup && backup.timestamp ? backup.timestamp : Date.now()).toLocaleString();
+      const summary = Array.isArray(backup && backup.summary)
+        ? backup.summary.filter(x => x && !x.empty).slice(0, 5).map(x => String(x.name || 'Unknown') + ' L' + Number(x.level || 1)).join(', ')
+        : '';
+      return when + (summary ? '\nCharacters: ' + summary : '\nNo character summary available.');
+    }
+
+    function createNamedLocalBackup() {
+      const label = sanitizeImportedString(window.prompt('Backup label (optional):', '') || '', '', 48);
+      const ok = createVersionedBackup(true, { kind: 'manual', label });
+      updateSettingsDisplay();
+      showToast(ok ? ('Named local backup created' + (label ? ': ' + label : '') + '.') : 'Local backup was not created.', ok ? 'success' : 'error', ok ? 3200 : 4200);
+    }
+
+    function summarizeBackupDiff(a, b) {
+      const left = Array.isArray(a) ? a : [];
+      const right = Array.isArray(b) ? b : [];
+      let changed = 0;
+      let details = [];
+      for (let i = 0; i < MAX_SLOTS; i++) {
+        const ca = left[i] || null;
+        const cb = right[i] || null;
+        const ha = stableSaveHash(ca);
+        const hb = stableSaveHash(cb);
+        if (ha !== hb) {
+          changed++;
+          const an = ca ? String(ca.name || 'Unknown') + ' L' + Number(ca.level || 1) : 'Empty';
+          const bn = cb ? String(cb.name || 'Unknown') + ' L' + Number(cb.level || 1) : 'Empty';
+          details.push('Slot ' + (i + 1) + ': current ' + an + ', backup ' + bn);
+        }
+      }
+      return { changed, details };
+    }
+
+    function compareCurrentSaveToLatestBackup() {
+      const resultEl = document.getElementById('settings-diagnostics-result');
+      const backups = getVersionedBackups();
+      if (!backups.length) {
+        const msg = 'No local backups are available to compare.';
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, 'info');
+        return;
+      }
+      if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+      const diff = summarizeBackupDiff(slots, backups[0].slots);
+      const label = backups[0].label ? ' “' + backups[0].label + '”' : '';
+      const msg = diff.changed ? ('Current save differs from latest backup' + label + ' in ' + diff.changed + ' slot(s). ' + diff.details.slice(0, 2).join(' | ')) : ('Current save matches the latest backup' + label + '.');
+      if (resultEl) resultEl.textContent = msg;
+      showToast(msg, diff.changed ? 'info' : 'success', diff.changed ? 6500 : 3200);
+    }
+
+    async function downloadLatestLocalBackup() {
+      try {
+        const backups = getVersionedBackups();
+        if (!backups.length) { showToast('No local backup is available to export.', 'info'); return; }
+        const latest = backups[0];
+        const payload = {
+          meta: {
+            game: 'EmberQuest',
+            kind: 'local-backup-export',
+            version: CURRENT_VERSION,
+            saveSchema: CURRENT_SAVE_SCHEMA,
+            exportedAt: new Date().toISOString(),
+            sourceBackupTimestamp: latest.timestamp || 0,
+            sourceBackupLabel: latest.label || ''
+          },
+          slots: latest.slots
+        };
+        const data = await encodeSavePayload(payload);
+        const blob = new Blob([data], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date(latest.timestamp || Date.now()).toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.href = url;
+        a.download = 'emberquest-latest-local-backup-' + stamp + '.eqsave';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Latest local backup exported.', 'success');
+      } catch (e) {
+        showToast('Latest backup export failed: ' + (e && e.message ? e.message : 'Unknown error'), 'error', 4200);
       }
     }
 
@@ -14800,7 +15330,13 @@
         return;
       }
 
-      slots = JSON.parse(JSON.stringify(backup.slots));
+      if (!confirm('Restore this local backup? Your current save will be replaced, and a pre-restore snapshot will be kept.\n\n' + describeBackupForConfirm(backup))) return;
+
+      createVersionedBackup(true, { kind: 'pre-restore', label: 'Before restoring local backup' });
+      const restoredSlots = (typeof validateImportedSlots === 'function')
+        ? validateImportedSlots(backup.slots)
+        : JSON.parse(JSON.stringify(backup.slots));
+      slots = restoredSlots;
       activeSlot = -1;
       char = null;
       mob = null;
@@ -14810,11 +15346,108 @@
         afkInterval = null;
       }
       
-      try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
+      try {
+        const saveText = JSON.stringify(slots);
+        localStorage.setItem(SAVE_KEY, saveText);
+        writeSaveHealthStamp(saveText);
+      } catch (e) {
+        showToast('Restore failed: browser storage rejected the restored save.', 'error', 4200);
+        return;
+      }
       Cloud.queueSync();
       showScreen('screen-charselect');
       renderSlots();
       log('Restored from backup: ' + new Date(backup.timestamp).toLocaleString(), 'info');
+      showToast('Backup restored. A pre-restore snapshot was kept.', 'success', 3600);
+    }
+
+    function deleteLocalBackup(backupIndex) {
+      const backups = getVersionedBackups();
+      if (backupIndex < 0 || backupIndex >= backups.length) return;
+      backups.splice(backupIndex, 1);
+      try {
+        localStorage.setItem(BACKUP_KEY, JSON.stringify(backups));
+        updateSettingsDisplay();
+        showToast('Local backup deleted.', 'success');
+      } catch (e) {
+        showToast('Could not delete backup: ' + (e && e.message ? e.message : 'storage error'), 'error', 3600);
+      }
+    }
+
+    function clearLocalBackups() {
+      if (!confirm('Delete all local recovery backups? Export a recovery bundle first if you may need them.')) return;
+      try {
+        localStorage.setItem(BACKUP_KEY, '[]');
+        updateSettingsDisplay();
+        showToast('All local backups cleared.', 'success');
+      } catch (e) {
+        showToast('Could not clear backups: ' + (e && e.message ? e.message : 'storage error'), 'error', 3600);
+      }
+    }
+
+
+    function getCorruptSaveCopyKeys() {
+      try {
+        return Object.keys(localStorage).filter(k => k.indexOf(SAVE_KEY + '.corrupt.') === 0).sort();
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function purgeCorruptSaveCopies() {
+      const keys = getCorruptSaveCopyKeys();
+      if (!keys.length) {
+        showToast('No preserved corrupt-save copies found.', 'info');
+        return;
+      }
+      if (!confirm('Delete ' + keys.length + ' preserved corrupt-save cop' + (keys.length === 1 ? 'y' : 'ies') + '? Export a recovery bundle first if you may need them.')) return;
+      let removed = 0;
+      try {
+        keys.forEach(k => { localStorage.removeItem(k); removed++; });
+        updateSettingsDisplay();
+        const resultEl = document.getElementById('settings-diagnostics-result');
+        const msg = 'Pruned ' + removed + ' corrupt-save cop' + (removed === 1 ? 'y.' : 'ies.');
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, 'success');
+      } catch (e) {
+        showToast('Could not prune corrupt copies: ' + (e && e.message ? e.message : 'storage error'), 'error', 4200);
+      }
+    }
+
+    function auditLocalBackups() {
+      const resultEl = document.getElementById('settings-diagnostics-result');
+      const backups = getVersionedBackups();
+      if (!backups.length) {
+        const msg = 'Backup audit complete: no local backups are stored.';
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, 'info');
+        return;
+      }
+      let valid = 0;
+      const broken = [];
+      backups.forEach((b, i) => {
+        try {
+          if (!b || !Array.isArray(b.slots)) throw new Error('missing slot data');
+          validateImportedSlots(b.slots);
+          if (!isBackupHashOk(b)) throw new Error('hash mismatch');
+          valid++;
+        } catch (e) {
+          broken.push('#' + (i + 1) + ' ' + (e && e.message ? e.message : 'invalid backup'));
+        }
+      });
+      const msg = 'Backup audit complete: ' + valid + '/' + backups.length + ' valid' + (broken.length ? '. Broken: ' + broken.slice(0, 3).join('; ') : '.');
+      if (resultEl) resultEl.textContent = msg;
+      showToast(msg, broken.length ? 'error' : 'success', broken.length ? 6500 : 3600);
+      updateSettingsDisplay();
+    }
+
+    function restoreLatestLocalBackup() {
+      const backups = getVersionedBackups();
+      if (!backups.length) {
+        showToast('No local backups are available to restore.', 'info');
+        return;
+      }
+      recoverFromBackup(0);
     }
 
     function openSettingsModal(event) {
@@ -14824,6 +15457,7 @@
       updateSettingsDisplay();
       _syncSettingsAudioUI();
       if (typeof renderKeybindSettings === 'function') renderKeybindSettings();
+      if (typeof syncUiPreferenceControls === 'function') syncUiPreferenceControls();
     }
 
     function _syncSettingsAudioUI() {
@@ -14851,16 +15485,29 @@
       const listEl = document.getElementById('settings-backup-list');
       if (listEl) {
         if (backups.length === 0) {
-          listEl.innerHTML = 'No local backups yet. Backups are created automatically on each save.';
+          listEl.innerHTML = 'No local backups yet. Backups are created automatically during play and before risky restores/imports.';
         } else {
-          const items = backups.map((b, i) => 
-            '<div style="padding:4px 0;border-bottom:0.5px solid var(--border)">' +
-            '<span>' + new Date(b.timestamp).toLocaleString() + ' (v' + b.version + ')</span> ' +
-            '<button class="btn" style="font-size:9px;padding:1px 6px;" onclick="recoverFromBackup(' + i + ')">Recover</button>' +
-            '</div>'
-          ).join('');
-          listEl.innerHTML = '<div style="font-size:11px;margin-bottom:6px;font-weight:600;">Local backups (latest first):</div>' + items;
+          const items = backups.map((b, i) => {
+            const chars = Array.isArray(b.summary) ? b.summary.filter(x => x && !x.empty).slice(0, 3).map(x => escapeHtmlSafe(x.name) + ' L' + Number(x.level || 1)).join(', ') : '';
+            let backupOk = true;
+            try { if (!b || !Array.isArray(b.slots)) throw new Error('missing slots'); validateImportedSlots(b.slots); if (!isBackupHashOk(b)) throw new Error('hash mismatch'); } catch (_) { backupOk = false; }
+            return '<div style="padding:4px 0;border-bottom:0.5px solid var(--border)">' +
+              '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">' +
+              '<span>' + new Date(b.timestamp || Date.now()).toLocaleString() + ' (v' + escapeHtmlSafe(b.version || '?') + ')' + (b.kind ? ' · ' + escapeHtmlSafe(b.kind) : '') + (b.label ? ' · “' + escapeHtmlSafe(b.label) + '”' : '') + (backupOk ? '' : ' <strong style="color:#A32D2D">Invalid</strong>') + '</span> ' +
+              '<span style="display:flex;gap:4px;flex-wrap:wrap">' +
+              '<button class="btn" style="font-size:9px;padding:1px 6px;" onclick="recoverFromBackup(' + i + ')">Recover</button>' +
+              '<button class="btn danger" style="font-size:9px;padding:1px 6px;" onclick="deleteLocalBackup(' + i + ')">Delete</button>' +
+              '</span></div>' +
+              (chars ? '<div style="font-size:9px;color:var(--text-secondary);margin-top:2px">' + chars + '</div>' : '') +
+              '</div>';
+          }).join('');
+          listEl.innerHTML = '<div style="font-size:11px;margin-bottom:6px;font-weight:600;">Local backups (latest ' + MAX_BACKUPS + ' first):</div>' + items;
         }
+      }
+      const diagEl = document.getElementById('settings-diagnostics-result');
+      if (diagEl && !diagEl.textContent) {
+        const health = checkCurrentSaveIntegrity();
+        diagEl.textContent = health.ok ? ('Save health: OK. Last saved ' + new Date((health.stamp && health.stamp.savedAt) || Date.now()).toLocaleString() + '.') : ('Save health: ' + health.message);
       }
       renderCloudVersionList();
     }
@@ -14999,7 +15646,7 @@
         log('No backups available yet.', 'info');
         return;
       }
-      log('Backups available in Settings (last 3 saves). Use Restore Backup to recover.', 'info');
+      log('Backups available in Settings (last ' + MAX_BACKUPS + ' saves). Use the Recover buttons in Settings to restore one.', 'info');
       updateSettingsDisplay();
     }
 
@@ -15023,8 +15670,16 @@
         }
         slots[activeSlot] = JSON.parse(JSON.stringify(char));
       }
-      try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) { }
-      createVersionedBackup();
+      try {
+        const saveText = JSON.stringify(slots);
+        localStorage.setItem(SAVE_KEY, saveText);
+        writeSaveHealthStamp(saveText);
+      } catch (e) {
+        console.warn('Local save failed', e);
+        showToast('Local save failed. Export a backup now; browser storage may be full.', 'error', 5200);
+        return;
+      }
+      createVersionedBackup(false, { kind: 'auto' });
       Cloud.queueSync();
       flashSaved();
     }
@@ -15168,45 +15823,159 @@
     }
 
     
-    const SAVE_ENCRYPTION_PREFIX = 'EQSAVE1:';
-    function encodeSavePayload(payload) {
+    const SAVE_ENCRYPTION_PREFIX = 'EQSAVE2:';
+    const PASSWORD_SAVE_ENCRYPTION_PREFIX = 'EQSAVE3:';
+    const PASSWORD_SAVE_KDF_ITERATIONS = 250000;
+    const LEGACY_SAVE_ENCRYPTION_PREFIX = 'EQSAVE1:';
+
+    function bytesToBase64(bytes) {
+      let binary = '';
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+      }
+      return btoa(binary);
+    }
+
+    function base64ToBytes(value) {
+      const binary = atob(value);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    }
+
+    function legacyEncodeSavePayload(payload) {
       const json = JSON.stringify(payload);
       const xorKey = 'EmberQuest_Save_v1391';
       let out = '';
       for (let i = 0; i < json.length; i++) {
         out += String.fromCharCode(json.charCodeAt(i) ^ xorKey.charCodeAt(i % xorKey.length));
       }
-      return SAVE_ENCRYPTION_PREFIX + btoa(out);
+      return LEGACY_SAVE_ENCRYPTION_PREFIX + btoa(out);
     }
 
-    function decodeSavePayload(text) {
-      const raw = String(text || '').trim();
-      if (raw.startsWith(SAVE_ENCRYPTION_PREFIX)) {
-        const encoded = raw.slice(SAVE_ENCRYPTION_PREFIX.length);
-        const xorKey = 'EmberQuest_Save_v1391';
-        const decoded = atob(encoded);
-        let json = '';
-        for (let i = 0; i < decoded.length; i++) {
-          json += String.fromCharCode(decoded.charCodeAt(i) ^ xorKey.charCodeAt(i % xorKey.length));
-        }
-        return JSON.parse(json);
+    function legacyDecodeSavePayload(raw) {
+      const encoded = raw.slice(LEGACY_SAVE_ENCRYPTION_PREFIX.length);
+      const xorKey = 'EmberQuest_Save_v1391';
+      const decoded = atob(encoded);
+      let json = '';
+      for (let i = 0; i < decoded.length; i++) {
+        json += String.fromCharCode(decoded.charCodeAt(i) ^ xorKey.charCodeAt(i % xorKey.length));
       }
-      return JSON.parse(raw); // backwards compatibility
+      return JSON.parse(json);
     }
 
-function exportSlotsToFile(options = {}) {
+    async function getSaveCryptoKey() {
+      if (!window.crypto || !crypto.subtle) return null;
+      const seed = 'EmberQuest export key v2|' + location.origin + '|' + navigator.userAgent;
+      const seedBytes = new TextEncoder().encode(seed);
+      const digest = await crypto.subtle.digest('SHA-256', seedBytes);
+      return crypto.subtle.importKey('raw', digest, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+    }
+
+    async function derivePasswordSaveKey(passphrase, saltBytes, iterations) {
+      if (!window.crypto || !crypto.subtle) throw new Error('This browser does not support password-protected saves.');
+      const baseKey = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(String(passphrase || '')),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveKey']
+      );
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: saltBytes, iterations: iterations || PASSWORD_SAVE_KDF_ITERATIONS, hash: 'SHA-256' },
+        baseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }
+
+    async function encodePasswordSavePayload(payload, passphrase) {
+      if (!passphrase || String(passphrase).length < 6) throw new Error('Password must be at least 6 characters.');
+      const json = JSON.stringify(payload);
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await derivePasswordSaveKey(passphrase, salt, PASSWORD_SAVE_KDF_ITERATIONS);
+      const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(json));
+      return PASSWORD_SAVE_ENCRYPTION_PREFIX + bytesToBase64(new TextEncoder().encode(JSON.stringify({
+        v: CURRENT_SAVE_SCHEMA,
+        alg: 'AES-GCM',
+        kdf: 'PBKDF2-SHA256',
+        iterations: PASSWORD_SAVE_KDF_ITERATIONS,
+        salt: bytesToBase64(salt),
+        iv: bytesToBase64(iv),
+        data: bytesToBase64(new Uint8Array(ciphertext))
+      })));
+    }
+
+    async function decodePasswordSavePayload(raw) {
+      const envelopeText = new TextDecoder().decode(base64ToBytes(raw.slice(PASSWORD_SAVE_ENCRYPTION_PREFIX.length)));
+      const envelope = JSON.parse(envelopeText);
+      if (!envelope || envelope.alg !== 'AES-GCM' || envelope.kdf !== 'PBKDF2-SHA256' || !envelope.salt || !envelope.iv || !envelope.data) {
+        throw new Error('Invalid password-protected save envelope.');
+      }
+      const passphrase = window.prompt('This save is password-protected. Enter the export password:');
+      if (!passphrase) throw new Error('Password required for this save.');
+      const key = await derivePasswordSaveKey(passphrase, base64ToBytes(envelope.salt), Number(envelope.iterations || PASSWORD_SAVE_KDF_ITERATIONS));
+      const plain = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: base64ToBytes(envelope.iv) },
+        key,
+        base64ToBytes(envelope.data)
+      );
+      return JSON.parse(new TextDecoder().decode(new Uint8Array(plain)));
+    }
+
+    async function encodeSavePayload(payload) {
+      const json = JSON.stringify(payload);
+      const key = await getSaveCryptoKey();
+      if (!key) return legacyEncodeSavePayload(payload);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(json));
+      return SAVE_ENCRYPTION_PREFIX + bytesToBase64(new TextEncoder().encode(JSON.stringify({
+        v: CURRENT_SAVE_SCHEMA,
+        alg: 'AES-GCM',
+        iv: bytesToBase64(iv),
+        data: bytesToBase64(new Uint8Array(ciphertext))
+      })));
+    }
+
+    async function decodeSavePayload(text) {
+      const raw = String(text || '').trim();
+      if (raw.startsWith(PASSWORD_SAVE_ENCRYPTION_PREFIX)) return decodePasswordSavePayload(raw);
+      if (raw.startsWith(SAVE_ENCRYPTION_PREFIX)) {
+        const envelopeText = new TextDecoder().decode(base64ToBytes(raw.slice(SAVE_ENCRYPTION_PREFIX.length)));
+        const envelope = JSON.parse(envelopeText);
+        if (!envelope || envelope.alg !== 'AES-GCM' || !envelope.iv || !envelope.data) {
+          throw new Error('Invalid encrypted save envelope.');
+        }
+        const key = await getSaveCryptoKey();
+        if (!key) throw new Error('This browser does not support encrypted save imports.');
+        const plain = await crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: base64ToBytes(envelope.iv) },
+          key,
+          base64ToBytes(envelope.data)
+        );
+        return JSON.parse(new TextDecoder().decode(new Uint8Array(plain)));
+      }
+      if (raw.startsWith(LEGACY_SAVE_ENCRYPTION_PREFIX)) return legacyDecodeSavePayload(raw);
+      return JSON.parse(raw); // backwards compatibility with early plain JSON exports
+    }
+
+async function exportSlotsToFile(options = {}) {
       if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
 
       const payload = {
         meta: {
           game: 'EmberQuest',
           version: CURRENT_VERSION,
+          saveSchema: CURRENT_SAVE_SCHEMA,
           exportedAt: new Date().toISOString()
         },
         slots
       };
 
-      const encryptedData = encodeSavePayload(payload);
+      const encryptedData = await encodeSavePayload(payload);
       const blob = new Blob([encryptedData], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -15224,14 +15993,125 @@ function exportSlotsToFile(options = {}) {
       if (!options.silent && char) log('Save exported successfully.', 'info');
     }
 
+    async function exportPasswordProtectedSave() {
+      try {
+        const pass1 = window.prompt('Enter a password for this portable save export. You will need it to import later:');
+        if (!pass1) return;
+        if (pass1.length < 6) { showToast('Password export cancelled: use at least 6 characters.', 'error', 4200); return; }
+        const pass2 = window.prompt('Re-enter the same password:');
+        if (pass1 !== pass2) { showToast('Password export cancelled: passwords did not match.', 'error', 4200); return; }
+        if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+        const payload = {
+          meta: {
+            game: 'EmberQuest',
+            version: CURRENT_VERSION,
+            saveSchema: CURRENT_SAVE_SCHEMA,
+            exportedAt: new Date().toISOString(),
+            portablePasswordProtected: true
+          },
+          slots
+        };
+        const data = await encodePasswordSavePayload(payload, pass1);
+        const blob = new Blob([data], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = 'emberquest-password-save-' + stamp + '.eqsave';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Password-protected save exported. Keep the password safe.', 'success', 4200);
+      } catch (e) {
+        showToast('Password export failed: ' + (e && e.message ? e.message : 'Unknown error'), 'error', 5200);
+      }
+    }
+
     function promptImportSlots() {
       const input = document.getElementById('import-save-input');
       input.value = '';
       input.click();
     }
 
+    function clampImportedInt(value, fallback, min, max) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.max(min, Math.min(max, Math.floor(n)));
+    }
+
+    function sanitizeImportedString(value, fallback, maxLen) {
+      const s = String(value == null ? fallback : value).replace(/[\u0000-\u001f\u007f]/g, '').trim();
+      return (s || fallback).slice(0, maxLen);
+    }
+
+    function sanitizeImportedItem(item) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+      const clean = JSON.parse(JSON.stringify(item));
+      clean.name = sanitizeImportedString(clean.name || clean.baseName || 'Unknown Item', 'Unknown Item', 80);
+      if (clean.baseName !== undefined) clean.baseName = sanitizeImportedString(clean.baseName, clean.name, 80);
+      if (clean.slot !== undefined) clean.slot = sanitizeImportedString(clean.slot, '', 24);
+      if (clean.type !== undefined) clean.type = sanitizeImportedString(clean.type, '', 40);
+      if (clean.rarity !== undefined) clean.rarity = sanitizeImportedString(clean.rarity, 'common', 24).toLowerCase();
+      ['atk', 'def', 'hp', 'mp', 'str', 'dex', 'con', 'int', 'wis', 'cha', 'ilvl', 'value', 'qty', 'maxSockets', 'runewordXp'].forEach(k => {
+        if (clean[k] !== undefined) clean[k] = clampImportedInt(clean[k], 0, 0, 999999);
+      });
+      if (Array.isArray(clean.sockets)) clean.sockets = clean.sockets.slice(0, 6).map(r => RUNE_DATA && RUNE_DATA[r] ? r : null);
+      return clean;
+    }
+
+    function sanitizeImportedCharacterSave(c) {
+      if (!c || typeof c !== 'object' || Array.isArray(c)) throw new Error('Invalid character save.');
+      c.name = sanitizeImportedString(c.name, 'Adventurer', 24);
+      c.cls = CLASSES[c.cls] ? c.cls : 'Warrior';
+      c.race = RACE_CLASS_RULES[c.race] ? c.race : 'Human';
+
+      c.level = clampImportedInt(c.level, 1, 1, 999);
+      c.xp = clampImportedInt(c.xp, 0, 0, 999999999999);
+      c.xpNext = clampImportedInt(c.xpNext, 100, 1, 999999999999);
+      c.gold = clampImportedInt(c.gold, 0, 0, 999999999999);
+      c.hp = clampImportedInt(c.hp, 1, 0, 999999999);
+      c.mp = clampImportedInt(c.mp, 0, 0, 999999999);
+      c.maxHp = clampImportedInt(c.maxHp, 1, 1, 999999999);
+      c.maxMp = clampImportedInt(c.maxMp, 0, 0, 999999999);
+      c.atk = clampImportedInt(c.atk, 1, 0, 999999999);
+      c.def = clampImportedInt(c.def, 0, 0, 999999999);
+      c.faction = clampImportedInt(c.faction, 0, -500, 500);
+      c.zone = clampImportedInt(c.zone, 0, 0, Math.max(0, ZONES.length - 1));
+      c.hp = Math.min(c.hp, c.maxHp);
+      c.mp = Math.min(c.mp, c.maxMp);
+
+      const potionKeys = Object.keys(c).filter(k => /^healpotions_|^manapotions_|^healpotions$|^manapotions$/.test(k));
+      potionKeys.forEach(k => { c[k] = clampImportedInt(c[k], 0, 0, 999999); });
+
+      if (Array.isArray(c.inventory)) c.inventory = c.inventory.slice(0, 300).map(sanitizeImportedItem).filter(Boolean);
+      else c.inventory = [];
+
+      if (c.equipment && typeof c.equipment === 'object' && !Array.isArray(c.equipment)) {
+        const cleanEquipment = {};
+        ['weapon', 'chest', 'legs', 'feet', 'offhand', 'charm'].forEach(slot => {
+          const item = sanitizeImportedItem(c.equipment[slot]);
+          if (item) cleanEquipment[slot] = item;
+        });
+        c.equipment = cleanEquipment;
+      } else {
+        c.equipment = {};
+      }
+
+      if (Array.isArray(c.runeStash)) c.runeStash = c.runeStash.slice(0, 1000).filter(r => RUNE_DATA && RUNE_DATA[r]);
+      else c.runeStash = [];
+
+      if (Array.isArray(c.knownSpells)) c.knownSpells = c.knownSpells.slice(0, 200).map(s => sanitizeImportedString(s, '', 80)).filter(Boolean);
+      if (Array.isArray(c.spellQueue)) c.spellQueue = c.spellQueue.slice(0, 12).map(s => sanitizeImportedString(s, '', 80)).filter(Boolean);
+
+      c.version = CURRENT_VERSION;
+      c.saveSchema = CURRENT_SAVE_SCHEMA;
+      return c;
+    }
+
     function validateImportedSlots(rawSlots) {
       if (!Array.isArray(rawSlots)) throw new Error('Invalid save format: slots must be an array.');
+      if (rawSlots.length > MAX_SLOTS) throw new Error('Imported save has too many character slots.');
 
       const normalized = [];
       for (let i = 0; i < Math.min(rawSlots.length, MAX_SLOTS); i++) {
@@ -15248,6 +16128,7 @@ function exportSlotsToFile(options = {}) {
 
         const cloned = JSON.parse(JSON.stringify(entry));
         migrateSaveData(cloned, true);
+        sanitizeImportedCharacterSave(cloned);
         normalized.push(cloned);
       }
 
@@ -15264,9 +16145,10 @@ function exportSlotsToFile(options = {}) {
         .replaceAll("'", '&#39;');
     }
 
-    function openImportPreview(validatedSlots, fileName) {
+    function openImportPreview(validatedSlots, fileName, meta) {
       pendingImportedSlots = validatedSlots;
       pendingImportFileName = fileName || 'selected file';
+      pendingImportMeta = meta || null;
 
       const subtitle = document.getElementById('import-preview-subtitle');
       const grid = document.getElementById('import-preview-grid');
@@ -15292,6 +16174,22 @@ function exportSlotsToFile(options = {}) {
         grid.appendChild(slotCard);
       });
 
+      const occupiedImported = validatedSlots.filter(Boolean).length;
+      const occupiedCurrent = Array.isArray(slots) ? slots.filter(Boolean).length : 0;
+      const emptyCurrent = Math.max(0, MAX_SLOTS - occupiedCurrent);
+      const duplicateNames = getImportDuplicateNameWarnings(validatedSlots);
+      const hint = document.getElementById('import-mode-hint');
+      const mergeRadio = document.getElementById('import-mode-merge');
+      const replaceRadio = document.getElementById('import-mode-replace');
+      if (hint) {
+        hint.textContent = occupiedImported + ' imported character(s), ' + emptyCurrent + ' empty local slot(s).' + (duplicateNames.length ? ' Duplicate local name(s): ' + duplicateNames.slice(0, 4).join(', ') + '.' : '');
+      }
+      if (mergeRadio && replaceRadio) {
+        mergeRadio.disabled = occupiedImported > emptyCurrent;
+        if (occupiedImported === 1 && emptyCurrent >= 1) { mergeRadio.checked = true; replaceRadio.checked = false; }
+        if (occupiedImported > emptyCurrent) { replaceRadio.checked = true; mergeRadio.checked = false; }
+      }
+
       document.getElementById('import-preview-modal').classList.add('open');
 
       const confirmBtn = document.getElementById('import-confirm-btn');
@@ -15301,6 +16199,7 @@ function exportSlotsToFile(options = {}) {
     function closeImportPreview() {
       pendingImportedSlots = null;
       pendingImportFileName = '';
+      pendingImportMeta = null;
       document.getElementById('import-preview-modal').classList.remove('open');
     }
 
@@ -15342,6 +16241,33 @@ function exportSlotsToFile(options = {}) {
       transmuteRunesTarget(source);
     }
 
+    function getImportDuplicateNameWarnings(importedSlots) {
+      const existing = new Set((Array.isArray(slots) ? slots : [])
+        .filter(Boolean)
+        .map(s => String(s.name || '').trim().toLowerCase())
+        .filter(Boolean));
+      const warnings = [];
+      (Array.isArray(importedSlots) ? importedSlots : []).forEach(s => {
+        const name = s && String(s.name || '').trim();
+        if (name && existing.has(name.toLowerCase()) && warnings.indexOf(name) === -1) warnings.push(name);
+      });
+      return warnings;
+    }
+
+    function mergeImportedSlotsIntoEmptySlots(importedSlots) {
+      const incoming = (Array.isArray(importedSlots) ? importedSlots : []).filter(Boolean).map(s => JSON.parse(JSON.stringify(s)));
+      const merged = (Array.isArray(slots) ? slots : []).slice(0, MAX_SLOTS).map(s => s ? JSON.parse(JSON.stringify(s)) : null);
+      while (merged.length < MAX_SLOTS) merged.push(null);
+      let placed = 0;
+      for (let i = 0; i < MAX_SLOTS && placed < incoming.length; i++) {
+        if (!merged[i]) {
+          merged[i] = incoming[placed++];
+        }
+      }
+      if (placed < incoming.length) throw new Error('Not enough empty character slots to merge this import.');
+      return validateImportedSlots(merged);
+    }
+
     function applyImportedSlots(importedSlots) {
       slots = Array.isArray(importedSlots) ? importedSlots.slice() : [];
       while (slots.length < MAX_SLOTS) slots.push(null);
@@ -15355,7 +16281,15 @@ function exportSlotsToFile(options = {}) {
         afkInterval = null;
       }
 
-      localStorage.setItem(SAVE_KEY, JSON.stringify(slots));
+      try {
+        const saveText = JSON.stringify(slots);
+        localStorage.setItem(SAVE_KEY, saveText);
+        writeSaveHealthStamp(saveText);
+      } catch (e) {
+        showToast('Import failed while saving locally: ' + (e && e.message ? e.message : 'storage error'), 'error', 5200);
+        return;
+      }
+      createVersionedBackup(true, { kind: 'import', label: 'After import' });
       Cloud.queueSync();
       showScreen('screen-charselect');
       renderSlots();
@@ -15369,15 +16303,26 @@ function exportSlotsToFile(options = {}) {
 
       const backupToggle = document.getElementById('import-backup-toggle');
       const shouldBackup = backupToggle ? backupToggle.checked : true;
-      const imported = pendingImportedSlots;
-
-      if (shouldBackup) {
-        exportSlotsToFile({ prefix: 'emberquest-pre-import-backup', silent: true });
+      const modeEl = document.querySelector('input[name="import-mode"]:checked');
+      const mode = modeEl ? modeEl.value : 'replace';
+      let imported;
+      try {
+        if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+        imported = mode === 'merge' ? mergeImportedSlotsIntoEmptySlots(pendingImportedSlots) : pendingImportedSlots;
+      } catch (e) {
+        showToast('Import merge failed: ' + (e && e.message ? e.message : 'Unknown error'), 'error', 5200);
+        return;
       }
 
+      if (shouldBackup) {
+        createVersionedBackup(true, { kind: 'pre-import', label: mode === 'merge' ? 'Before merge import' : 'Before replace import' });
+        exportSlotsToFile({ prefix: 'emberquest-pre-import-backup', silent: true }).catch(e => console.warn('pre-import backup export failed', e));
+      }
+
+      const importedCount = (pendingImportedSlots || []).filter(Boolean).length;
       closeImportPreview();
       applyImportedSlots(imported);
-      showToast('Save imported successfully.' + (shouldBackup ? ' Backup file downloaded first.' : ''), 'success');
+      showToast((mode === 'merge' ? 'Merged ' : 'Imported ') + importedCount + ' character' + (importedCount === 1 ? '' : 's') + ' successfully.' + (shouldBackup ? ' Recovery backup created first.' : ''), 'success', 4200);
     }
 
     function handleModalKeydown(event) {
@@ -15415,16 +16360,20 @@ function exportSlotsToFile(options = {}) {
     function importSlotsFromFile(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
+      if (file.size > MAX_IMPORT_FILE_BYTES) {
+        showToast('Import failed: save file is too large.', 'error', 3800);
+        return;
+      }
 
       const reader = new FileReader();
 
-      reader.onload = function (e) {
+      reader.onload = async function (e) {
         try {
           const text = String((e && e.target && e.target.result) || '');
-          const parsed = decodeSavePayload(text);
-          const rawSlots = Array.isArray(parsed) ? parsed : parsed.slots;
+          const parsed = await decodeSavePayload(text);
+          const rawSlots = Array.isArray(parsed) ? parsed : (parsed.slots || (parsed.currentSave && parsed.currentSave.slots));
           const validatedSlots = validateImportedSlots(rawSlots);
-          openImportPreview(validatedSlots, file.name);
+          openImportPreview(validatedSlots, file.name, parsed && parsed.meta ? parsed.meta : null);
         } catch (err) {
           showToast('Import failed: ' + (err && err.message ? err.message : 'Unknown error'), 'error', 3800);
         }
@@ -15435,6 +16384,199 @@ function exportSlotsToFile(options = {}) {
       };
 
       reader.readAsText(file);
+    }
+
+    function runSaveDiagnostics() {
+      const resultEl = document.getElementById('settings-diagnostics-result');
+      let repaired = 0;
+      let checked = 0;
+      try {
+        if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+        const fixed = validateImportedSlots(slots);
+        for (let i = 0; i < MAX_SLOTS; i++) {
+          checked++;
+          if (JSON.stringify(slots[i]) !== JSON.stringify(fixed[i])) repaired++;
+        }
+        slots = fixed;
+        if (activeSlot >= 0 && slots[activeSlot]) char = JSON.parse(JSON.stringify(slots[activeSlot]));
+        const diagnosticSaveText = JSON.stringify(slots);
+        localStorage.setItem(SAVE_KEY, diagnosticSaveText);
+        writeSaveHealthStamp(diagnosticSaveText);
+        Cloud.queueSync();
+        renderSlots();
+        if (char) renderAll();
+        const report = buildSaveDiagnosticsReport();
+        const warningText = report.warnings.length ? ' Warnings: ' + report.warnings.slice(0, 3).join(' ') : '';
+        const msg = 'Save check complete: ' + checked + ' slots checked, ' + repaired + ' repaired.' + warningText;
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, repaired ? 'success' : (report.warnings.length ? 'info' : 'info'), report.warnings.length ? 5200 : 3200);
+      } catch (e) {
+        const msg = 'Save check failed: ' + (e && e.message ? e.message : 'Unknown error');
+        if (resultEl) resultEl.textContent = msg;
+        showToast(msg, 'error', 4200);
+      }
+    }
+
+
+    function buildSaveDiagnosticsReport() {
+      const report = {
+        game: 'EmberQuest',
+        version: CURRENT_VERSION,
+        saveSchema: CURRENT_SAVE_SCHEMA,
+        generatedAt: new Date().toISOString(),
+        maxSlots: MAX_SLOTS,
+        activeSlot,
+        storage: {},
+        warnings: [],
+        slots: []
+      };
+
+      try {
+        const rawSlots = localStorage.getItem(SAVE_KEY) || '';
+        const rawBackups = localStorage.getItem(BACKUP_KEY) || '';
+        report.storage.saveBytes = rawSlots.length;
+        report.storage.backupBytes = rawBackups.length;
+        report.storage.totalApproxBytes = rawSlots.length + rawBackups.length;
+        report.storage.localStorageKeys = Object.keys(localStorage).length;
+        const corruptKeys = getCorruptSaveCopyKeys();
+        report.storage.corruptSaveCopies = corruptKeys.length;
+        report.storage.corruptSaveCopyKeys = corruptKeys;
+        report.saveHealth = checkCurrentSaveIntegrity();
+        if (report.saveHealth && !report.saveHealth.ok) report.warnings.push(report.saveHealth.message);
+        if (window.__lastSaveLoadError) report.warnings.push(window.__lastSaveLoadError);
+        if (report.storage.totalApproxBytes > 4_000_000) {
+          report.warnings.push('Local storage is approaching common browser quota limits; export a save and clear old backups if needed.');
+        }
+      } catch (e) {
+        report.warnings.push('Could not measure localStorage usage: ' + (e && e.message ? e.message : 'unknown error'));
+      }
+
+      const backups = getVersionedBackups();
+      report.backups = backups.map((b, i) => {
+        let valid = false;
+        let error = '';
+        try {
+          if (!b || !Array.isArray(b.slots)) throw new Error('missing slot data');
+          validateImportedSlots(b.slots);
+          valid = true;
+        } catch (e) {
+          error = e && e.message ? e.message : 'invalid backup';
+        }
+        return {
+          index: i,
+          timestamp: b && b.timestamp || 0,
+          version: b && b.version || '',
+          saveSchema: b && b.saveSchema || 0,
+          kind: b && b.kind || '',
+          label: b && b.label || '', 
+          characterCount: b && Array.isArray(b.slots) ? b.slots.filter(Boolean).length : 0,
+          hash: b && b.hash || '',
+          valid,
+          error
+        };
+      });
+      const brokenBackups = report.backups.filter(b => !b.valid);
+      report.backupHealth = { total: report.backups.length, valid: report.backups.length - brokenBackups.length, broken: brokenBackups.length };
+      if (!backups.length) report.warnings.push('No local recovery backups are currently stored.');
+      if (brokenBackups.length) report.warnings.push(brokenBackups.length + ' local backup snapshot(s) failed validation.');
+
+      const seenNames = new Map();
+      const sourceSlots = Array.isArray(slots) ? slots : [];
+      for (let i = 0; i < MAX_SLOTS; i++) {
+        const s = sourceSlots[i];
+        if (!s) {
+          report.slots.push({ slot: i + 1, empty: true });
+          continue;
+        }
+        const summary = {
+          slot: i + 1,
+          empty: false,
+          name: String(s.name || 'Unknown'),
+          class: String(s.cls || 'Unknown'),
+          race: String(s.race || 'Unknown'),
+          level: Number(s.level || 1),
+          gold: Number(s.gold || 0),
+          inventoryCount: Array.isArray(s.inventory) ? s.inventory.length : 0,
+          runeCount: Array.isArray(s.runeStash) ? s.runeStash.length : 0,
+          version: s.version || '',
+          saveSchema: s.saveSchema || 0
+        };
+        report.slots.push(summary);
+
+        const nameKey = summary.name.trim().toLowerCase();
+        if (nameKey) {
+          if (seenNames.has(nameKey)) report.warnings.push('Duplicate character name: ' + summary.name + ' in slots ' + seenNames.get(nameKey) + ' and ' + (i + 1) + '.');
+          else seenNames.set(nameKey, i + 1);
+        }
+        if (!CLASSES[summary.class]) report.warnings.push('Slot ' + (i + 1) + ' has an unknown class: ' + summary.class + '.');
+        if (!RACE_CLASS_RULES[summary.race]) report.warnings.push('Slot ' + (i + 1) + ' has an unknown race: ' + summary.race + '.');
+        if (summary.inventoryCount > 250) report.warnings.push('Slot ' + (i + 1) + ' has a very large inventory (' + summary.inventoryCount + ' items).');
+      }
+      return report;
+    }
+
+    function downloadSaveDiagnostics() {
+      try {
+        if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+        const report = buildSaveDiagnosticsReport();
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.href = url;
+        a.download = 'emberquest-diagnostics-' + stamp + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Diagnostics report exported.', 'success');
+      } catch (e) {
+        showToast('Diagnostics export failed: ' + (e && e.message ? e.message : 'Unknown error'), 'error', 4200);
+      }
+    }
+
+    async function copySaveDiagnosticsToClipboard() {
+      try {
+        if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+        const text = JSON.stringify(buildSaveDiagnosticsReport(), null, 2);
+        if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard API is unavailable.');
+        await navigator.clipboard.writeText(text);
+        const resultEl = document.getElementById('settings-diagnostics-result');
+        if (resultEl) resultEl.textContent = 'Diagnostics copied to clipboard.';
+        showToast('Diagnostics copied to clipboard.', 'success');
+      } catch (e) {
+        showToast('Copy failed: ' + (e && e.message ? e.message : 'Unknown error'), 'error', 4200);
+      }
+    }
+
+
+    function downloadRecoveryBundle() {
+      try {
+        if (char && activeSlot >= 0) slots[activeSlot] = JSON.parse(JSON.stringify(char));
+        const bundle = {
+          game: 'EmberQuest',
+          kind: 'recovery-bundle',
+          version: CURRENT_VERSION,
+          saveSchema: CURRENT_SAVE_SCHEMA,
+          generatedAt: new Date().toISOString(),
+          currentSave: { slots: JSON.parse(JSON.stringify(slots)) },
+          localBackups: getVersionedBackups(),
+          diagnostics: buildSaveDiagnosticsReport()
+        };
+        const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.href = url;
+        a.download = 'emberquest-recovery-bundle-' + stamp + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Recovery bundle exported.', 'success');
+      } catch (e) {
+        showToast('Recovery bundle export failed: ' + (e && e.message ? e.message : 'Unknown error'), 'error', 4200);
+      }
     }
 
     function autoSave() {
@@ -15825,6 +16967,99 @@ function exportSlotsToFile(options = {}) {
       Keybinds.reset();
       renderKeybindSettings();
       if (typeof showToast === 'function') showToast('Keybinds reset to defaults.', 'info');
+    }
+
+
+    const DEFAULT_UI_PREFS = {
+      density: 'normal',
+      stickyTabs: true,
+      focusMode: false,
+      readableLog: false,
+      polishedTabs: true
+    };
+    let uiPrefs = Object.assign({}, DEFAULT_UI_PREFS);
+
+    function normalizeUiPrefs(prefs) {
+      const out = Object.assign({}, DEFAULT_UI_PREFS, prefs || {});
+      if (!['normal', 'compact', 'comfort'].includes(out.density)) out.density = 'normal';
+      out.stickyTabs = !!out.stickyTabs;
+      out.focusMode = !!out.focusMode;
+      out.readableLog = !!out.readableLog;
+      out.polishedTabs = !!out.polishedTabs;
+      return out;
+    }
+
+    function loadUiPreferences() {
+      try {
+        const raw = localStorage.getItem(UI_PREFS_KEY);
+        uiPrefs = normalizeUiPrefs(raw ? JSON.parse(raw) : null);
+      } catch (e) {
+        uiPrefs = Object.assign({}, DEFAULT_UI_PREFS);
+      }
+      applyUiPreferences(true);
+    }
+
+    function saveUiPreferences() {
+      try { localStorage.setItem(UI_PREFS_KEY, JSON.stringify(uiPrefs)); } catch (e) {}
+    }
+
+    function applyUiPreferences(silent = false) {
+      uiPrefs = normalizeUiPrefs(uiPrefs);
+      const gameScreen = document.getElementById('screen-game');
+      if (gameScreen) {
+        gameScreen.classList.toggle('ui-density-compact', uiPrefs.density === 'compact');
+        gameScreen.classList.toggle('ui-density-comfort', uiPrefs.density === 'comfort');
+        gameScreen.classList.toggle('ui-sticky-tabs', !!uiPrefs.stickyTabs);
+        gameScreen.classList.toggle('ui-focus-mode', !!uiPrefs.focusMode);
+        gameScreen.classList.toggle('ui-readable-log', !!uiPrefs.readableLog);
+        gameScreen.classList.toggle('ui-polished-tabs', !!uiPrefs.polishedTabs);
+      }
+      const topbar = document.getElementById('game-topbar');
+      if (topbar) topbar.classList.toggle('ui-sticky-enabled', !!uiPrefs.stickyTabs);
+      const focusBtn = document.getElementById('focus-mode-btn');
+      if (focusBtn) focusBtn.classList.toggle('active', !!uiPrefs.focusMode);
+      syncUiPreferenceControls();
+      requestAnimationFrame(syncCombatLogSize);
+      if (!silent && typeof showToast === 'function') showToast('UI preferences updated.', 'success', 1800);
+    }
+
+    function syncUiPreferenceControls() {
+      const density = document.getElementById('settings-ui-density');
+      if (density) density.value = uiPrefs.density || 'normal';
+      const sticky = document.getElementById('settings-ui-sticky');
+      if (sticky) sticky.checked = !!uiPrefs.stickyTabs;
+      const focus = document.getElementById('settings-ui-focus');
+      if (focus) focus.checked = !!uiPrefs.focusMode;
+      const readable = document.getElementById('settings-ui-readable-log');
+      if (readable) readable.checked = !!uiPrefs.readableLog;
+      const polished = document.getElementById('settings-ui-polished-tabs');
+      if (polished) polished.checked = !!uiPrefs.polishedTabs;
+    }
+
+    function setUiDensityPreference(value) {
+      uiPrefs.density = ['normal', 'compact', 'comfort'].includes(value) ? value : 'normal';
+      saveUiPreferences();
+      applyUiPreferences();
+    }
+
+    function setUiBooleanPreference(key, value) {
+      if (!Object.prototype.hasOwnProperty.call(DEFAULT_UI_PREFS, key)) return;
+      uiPrefs[key] = !!value;
+      saveUiPreferences();
+      applyUiPreferences();
+    }
+
+    function resetUiPreferences() {
+      uiPrefs = Object.assign({}, DEFAULT_UI_PREFS);
+      saveUiPreferences();
+      applyUiPreferences();
+      showToast('UI preferences reset.', 'info', 2200);
+    }
+
+    function toggleFocusMode() {
+      uiPrefs.focusMode = !uiPrefs.focusMode;
+      saveUiPreferences();
+      applyUiPreferences();
     }
 
     function loadUiLayoutPreference() {
@@ -17233,7 +18468,7 @@ function exportSlotsToFile(options = {}) {
         if (!merc) return;
         units.push({
           id: 'merc-' + i,
-          name: merc.name || type,
+          name: (typeof getGroupMercDisplayName === 'function') ? getGroupMercDisplayName(char, i) : (merc.name || type),
           icon: (CLASS_ICONS && CLASS_ICONS[merc.class]) || 'ti-sword',
           color: (CLASS_COLORS && CLASS_COLORS[merc.class]) || '#8A7445',
           race: merc.race || 'Human',
@@ -17422,6 +18657,41 @@ function exportSlotsToFile(options = {}) {
       pop.style.transform = 'translate(-50%, 0)';
       stage.appendChild(pop);
       setTimeout(() => { if (pop && pop.parentNode) pop.parentNode.removeChild(pop); }, 760);
+    }
+
+    // Animate visible party members when their combat-log damage actually lands.
+    // This keeps the battle window synchronized with mercenary, grouped-alt,
+    // and borrowed-LFG damage messages without changing the damage formulas.
+    function battlePartyDamageAnim(unitId, amount, kind = 'dmg') {
+      if (!unitId) return;
+      renderBattleScene();
+      battleAttackAnim(unitId);
+      setTimeout(() => {
+        if (mob) battleHitAnim('enemy');
+        if (mob && Number(amount || 0) > 0) battlePopup('enemy', fmt(amount), kind);
+        renderBattleScene();
+      }, 220);
+    }
+
+    function testPartyCombatAnimations() {
+      if (!char) {
+        showToast('Load a character first.', 'info');
+        return;
+      }
+      if (!mob) {
+        showToast('Start combat first so there is an enemy target to animate.', 'info');
+        return;
+      }
+      const units = (typeof getBattlePartyUnits === 'function') ? getBattlePartyUnits() : [];
+      const partyUnits = units.filter(u => u && u.id && u.id !== 'enemy');
+      if (!partyUnits.length) {
+        showToast('No visible party units found.', 'info');
+        return;
+      }
+      partyUnits.forEach((u, idx) => {
+        setTimeout(() => battlePartyDamageAnim(u.id, 1 + idx, 'dmg'), idx * 260);
+      });
+      showToast('Previewing party combat animations.', 'info');
     }
 
     function renderMob() {
@@ -26035,6 +27305,7 @@ function exportSlotsToFile(options = {}) {
         buySpell(buyBtn.dataset.spell);
       }
     });
+    loadUiPreferences();
     loadUiLayoutPreference();
     loadSharedBank();
     loadSlots(); // fills local slots from localStorage as a fallback before cloud takes over
