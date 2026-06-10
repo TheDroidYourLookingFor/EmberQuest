@@ -39711,6 +39711,95 @@ async function exportSlotsToFile(options = {}) {
 })();
 </script>
 
+<!-- v1.4.140 hotfix: restore reliable main-panel navigation -->
+<script id="main-tab-navigation-repair-v14140">
+(function mainTabNavigationRepairV14140(){
+  'use strict';
+  var MAIN_TABS = ['combat', 'zone', 'inv', 'shop', 'casino', 'chat'];
+  var RENDERERS = {
+    zone: 'renderZones',
+    inv: 'renderInv',
+    shop: 'renderShop',
+    casino: 'renderCasino'
+  };
+
+  function activateMainTab(tab) {
+    if (MAIN_TABS.indexOf(tab) === -1) tab = 'combat';
+
+    MAIN_TABS.forEach(function(id){
+      var panel = document.getElementById('tab-' + id);
+      var button = document.getElementById('tabbtn-' + id);
+      var active = id === tab;
+
+      if (panel) {
+        panel.style.setProperty('display', active ? (id === 'combat' ? 'flex' : 'block') : 'none', 'important');
+        panel.setAttribute('aria-hidden', active ? 'false' : 'true');
+      }
+      if (button) {
+        button.classList.toggle('active', active);
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+        button.setAttribute('tabindex', active ? '0' : '-1');
+      }
+    });
+
+    try { sessionStorage.setItem('EQ_lastTab', tab); } catch(_) {}
+
+    try {
+      if (tab === 'combat' && typeof window.syncCombatLogSize === 'function') {
+        requestAnimationFrame(window.syncCombatLogSize);
+      } else if (tab === 'chat' && window.Chat && typeof window.Chat.open === 'function') {
+        window.Chat.open();
+      } else {
+        var renderer = RENDERERS[tab];
+        if (renderer && typeof window[renderer] === 'function') window[renderer]();
+      }
+    } catch(e) {
+      console.warn('Main tab renderer failed:', tab, e);
+    }
+
+    try { if (typeof window.syncQuickTabSelect === 'function') window.syncQuickTabSelect(); } catch(_) {}
+    try { if (typeof window.updateActiveContextBar === 'function') window.updateActiveContextBar(); } catch(_) {}
+    return tab;
+  }
+
+  window.switchTab = activateMainTab;
+
+  function bindMainTabs() {
+    MAIN_TABS.forEach(function(id){
+      var button = document.getElementById('tabbtn-' + id);
+      if (!button || button.__mainTabRepairV14140) return;
+      button.__mainTabRepairV14140 = true;
+      button.onclick = function(event) {
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        activateMainTab(id);
+        return false;
+      };
+    });
+  }
+
+  function start() {
+    bindMainTabs();
+    var saved = null;
+    try { saved = sessionStorage.getItem('EQ_lastTab'); } catch(_) {}
+    var visible = MAIN_TABS.find(function(id){
+      var panel = document.getElementById('tab-' + id);
+      return panel && getComputedStyle(panel).display !== 'none';
+    });
+    activateMainTab(MAIN_TABS.indexOf(saved) !== -1 ? saved : (visible || 'combat'));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
+</script>
+
 </body>
 
 </html>
