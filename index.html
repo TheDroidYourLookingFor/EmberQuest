@@ -3199,7 +3199,7 @@
     #help-body { padding: 16px; font-size: 13px; line-height: 1.55; }
   
 
-    /* v1.4.11 UI polish: cleaner tabs, focus mode, density presets */
+    /* v1.4.12 UI polish: cleaner tabs, focus mode, density presets */
     :root { --eq-ui-radius: var(--radius-md); }
     #game-topbar.ui-sticky-enabled,
     #screen-game.ui-sticky-tabs #game-topbar {
@@ -3257,6 +3257,76 @@
     .ui-pref-row { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; }
     .ui-pref-row select { font-size:12px; padding:5px 8px; border:0.5px solid var(--border-md); border-radius:var(--radius-md); background:var(--bg-primary); color:var(--text-primary); }
     .ui-pref-check { display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer; }
+
+
+    /* v1.4.12 UI polish: clearer cards, slim topbar, better focus/keyboard affordance */
+    #screen-game.ui-slim-topbar #game-topbar {
+      padding: 4px 8px;
+      gap: 6px;
+    }
+    #screen-game.ui-slim-topbar #game-topbar .btn {
+      min-height: 30px;
+      padding: 3px 8px !important;
+      font-size: 10.5px !important;
+    }
+    #screen-game.ui-card-panels .panel,
+    #screen-game.ui-card-panels .eq-paperdoll,
+    #screen-game.ui-card-panels .eq-bag-area,
+    #screen-game.ui-card-panels #mob-area,
+    #screen-game.ui-card-panels .quest,
+    #screen-game.ui-card-panels .shop-section-btn {
+      box-shadow: 0 1px 10px rgba(0,0,0,0.08);
+      border-color: var(--border-md);
+    }
+    #screen-game.ui-card-panels h3 {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 7px;
+      margin: -2px 0 8px;
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border);
+    }
+    #screen-game.ui-active-panel-glow #center-panel {
+      outline: 2px solid rgba(55,138,221,0.22);
+      outline-offset: 2px;
+    }
+    #screen-game.ui-active-panel-glow .tab.active {
+      border-color: #378ADD;
+    }
+    #screen-game.ui-mobile-bottom-actions #game-topbar {
+      padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    }
+    #screen-game.ui-mobile-bottom-actions.ui-layout-mobile #game-topbar {
+      position: sticky;
+      top: 0;
+      bottom: auto;
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+    }
+    .btn:focus-visible,
+    .tab:focus-visible,
+    .eq-btn:focus-visible,
+    .popup-btn:focus-visible {
+      outline: 2px solid #f4d68a;
+      outline-offset: 2px;
+    }
+    .tab[aria-selected="true"] {
+      font-weight: 700;
+    }
+    .ui-mini-note {
+      font-size: 10px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+    @media(max-width:760px) {
+      #screen-game.ui-slim-topbar #game-topbar .title {
+        font-size: 12px;
+      }
+      #screen-game.ui-card-panels .panel {
+        border-radius: 10px;
+      }
+    }
     @media(max-width:760px) {
       #screen-game.ui-polished-tabs .tab-bar { flex-wrap: nowrap; overflow-x: auto; }
       #screen-game.ui-density-comfort .btn, #screen-game.ui-density-comfort .tab { min-height: 44px; }
@@ -3654,6 +3724,14 @@
         onclick="toggleLayoutMode()"
         style="font-size:11px;padding:4px 10px">Layout:
         Desktop</button>
+      <button
+        class="btn"
+        id="focus-mode-btn"
+        onclick="toggleFocusMode()"
+        title="Hide side panels and center the main play area"
+        style="font-size:11px;padding:4px 10px"><i
+          class="ti ti-focus-centered"></i>
+        Focus</button>
     </div>
     <input
       id="import-save-input"
@@ -3944,6 +4022,10 @@
             <label class="ui-pref-check"><input type="checkbox" id="settings-ui-focus" onchange="setUiBooleanPreference('focusMode', this.checked)"> Focus mode: hide side panels</label>
             <label class="ui-pref-check"><input type="checkbox" id="settings-ui-readable-log" onchange="setUiBooleanPreference('readableLog', this.checked)"> Larger combat log text</label>
             <label class="ui-pref-check"><input type="checkbox" id="settings-ui-polished-tabs" onchange="setUiBooleanPreference('polishedTabs', this.checked)"> Scrollable pill-style tabs</label>
+            <label class="ui-pref-check"><input type="checkbox" id="settings-ui-slim-topbar" onchange="setUiBooleanPreference('slimTopbar', this.checked)"> Slimmer top bar controls</label>
+            <label class="ui-pref-check"><input type="checkbox" id="settings-ui-card-panels" onchange="setUiBooleanPreference('cardPanels', this.checked)"> Card-style panel polish</label>
+            <label class="ui-pref-check"><input type="checkbox" id="settings-ui-active-glow" onchange="setUiBooleanPreference('activePanelGlow', this.checked)"> Highlight active play panel</label>
+            <div class="ui-mini-note">Tip: the top-bar Focus button now mirrors this setting, so you can jump in and out of focus mode without opening Settings.</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:10px;">
             <div style="font-size:12px;font-weight:600;">💾 Save Management</div>
@@ -3952,7 +4034,7 @@
               <button class="btn" onclick="exportPasswordProtectedSave()" title="Download a password-protected portable backup that can import on another browser/device">🔐 Password Export</button>
               <button class="btn" onclick="exportCurrentCharacterSave()" title="Download only the active character as an importable save">🧍 Export Character</button>
               <button class="btn" onclick="promptImportSlots()" title="Import previously exported characters">📤 Import Save</button>
-              <button class="btn" onclick="showBackupRecoveryOptions()" title="Recover from auto-backups (last 21 saves)">🔄 Restore Backup</button>
+              <button class="btn" onclick="showBackupRecoveryOptions()" title="Recover from auto-backups (last 23 saves)">🔄 Restore Backup</button>
             </div>
             <div id="settings-backup-list" style="font-size:10px;color:var(--text-secondary);margin-top:4px;"></div>
           </div>
@@ -4674,12 +4756,12 @@
           </div>
 
 
-          <h4 style="margin:14px 0 6px">What’s New in v1.4.11</h4>
+          <h4 style="margin:14px 0 6px">What’s New in v1.4.12</h4>
           <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0 0 10px;padding-left:18px">
-            <li><strong>UI layout pass.</strong> Settings now has a UI Layout section with Density, Sticky Tabs, Focus Mode, Larger Combat Log, and Scrollable Pill Tabs toggles.</li>
-            <li><strong>Focus Mode.</strong> The game can hide side panels and center the main combat/tab area for a cleaner play view.</li>
-            <li><strong>Readable combat option.</strong> Combat log text can be enlarged independently from the rest of the interface.</li>
-            <li><strong>Better tab polish.</strong> Tabs can stay horizontally scrollable and pill-shaped so crowded sections are easier to use on small screens.</li>
+            <li><strong>Top-bar Focus button.</strong> Focus Mode can now be toggled directly from the main top bar.</li>
+            <li><strong>More UI controls.</strong> Settings → UI Layout now includes Slim Top Bar, Card Panels, and Active Panel Highlight toggles.</li>
+            <li><strong>Better tab usability.</strong> Active tabs now update ARIA state and scroll into view when selected.</li>
+            <li><strong>Keyboard polish.</strong> Buttons and tabs now have clearer focus outlines for keyboard users.</li>
           </ul>
 
           <h4 style="margin:14px 0 6px">Credits &amp; License</h4>
@@ -14882,12 +14964,12 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.4.11';
+    const CURRENT_VERSION = '1.4.12';
     const CURRENT_SAVE_SCHEMA = 2;
     const MAX_IMPORT_FILE_BYTES = 2 * 1024 * 1024; // 2 MB sanity cap for imported saves
     const BACKUP_KEY = 'EmberQuest_backups';
     const SAVE_HEALTH_KEY = SAVE_KEY + '.health';
-    const MAX_BACKUPS = 21;
+    const MAX_BACKUPS = 23;
     const BACKUP_MIN_INTERVAL_MS = 5 * 60 * 1000;
     const BAG_SLOT_COUNT = 8;
 
@@ -16975,7 +17057,10 @@ async function exportSlotsToFile(options = {}) {
       stickyTabs: true,
       focusMode: false,
       readableLog: false,
-      polishedTabs: true
+      polishedTabs: true,
+      slimTopbar: false,
+      cardPanels: true,
+      activePanelGlow: false
     };
     let uiPrefs = Object.assign({}, DEFAULT_UI_PREFS);
 
@@ -16986,6 +17071,9 @@ async function exportSlotsToFile(options = {}) {
       out.focusMode = !!out.focusMode;
       out.readableLog = !!out.readableLog;
       out.polishedTabs = !!out.polishedTabs;
+      out.slimTopbar = !!out.slimTopbar;
+      out.cardPanels = !!out.cardPanels;
+      out.activePanelGlow = !!out.activePanelGlow;
       return out;
     }
 
@@ -17013,7 +17101,11 @@ async function exportSlotsToFile(options = {}) {
         gameScreen.classList.toggle('ui-focus-mode', !!uiPrefs.focusMode);
         gameScreen.classList.toggle('ui-readable-log', !!uiPrefs.readableLog);
         gameScreen.classList.toggle('ui-polished-tabs', !!uiPrefs.polishedTabs);
+        gameScreen.classList.toggle('ui-slim-topbar', !!uiPrefs.slimTopbar);
+        gameScreen.classList.toggle('ui-card-panels', !!uiPrefs.cardPanels);
+        gameScreen.classList.toggle('ui-active-panel-glow', !!uiPrefs.activePanelGlow);
       }
+      updateTabAccessibility();
       const topbar = document.getElementById('game-topbar');
       if (topbar) topbar.classList.toggle('ui-sticky-enabled', !!uiPrefs.stickyTabs);
       const focusBtn = document.getElementById('focus-mode-btn');
@@ -17034,6 +17126,12 @@ async function exportSlotsToFile(options = {}) {
       if (readable) readable.checked = !!uiPrefs.readableLog;
       const polished = document.getElementById('settings-ui-polished-tabs');
       if (polished) polished.checked = !!uiPrefs.polishedTabs;
+      const slim = document.getElementById('settings-ui-slim-topbar');
+      if (slim) slim.checked = !!uiPrefs.slimTopbar;
+      const cards = document.getElementById('settings-ui-card-panels');
+      if (cards) cards.checked = !!uiPrefs.cardPanels;
+      const glow = document.getElementById('settings-ui-active-glow');
+      if (glow) glow.checked = !!uiPrefs.activePanelGlow;
     }
 
     function setUiDensityPreference(value) {
@@ -27120,6 +27218,25 @@ async function exportSlotsToFile(options = {}) {
       if (tab === 'inv') renderInv();
       if (tab === 'shop') renderShop();
       if (tab === 'casino') renderCasino();
+      updateTabAccessibility();
+      scrollActiveTabIntoView();
+    }
+
+    function updateTabAccessibility() {
+      document.querySelectorAll('.tab').forEach(el => {
+        const onclick = el.getAttribute('onclick') || '';
+        const match = onclick.match(/switchTab\('([^']+)'\)/);
+        if (!match) return;
+        el.setAttribute('role', 'tab');
+        el.setAttribute('tabindex', el.classList.contains('active') ? '0' : '-1');
+        el.setAttribute('aria-selected', el.classList.contains('active') ? 'true' : 'false');
+      });
+    }
+
+    function scrollActiveTabIntoView() {
+      const active = document.querySelector('.tab-bar .tab.active');
+      if (!active || typeof active.scrollIntoView !== 'function') return;
+      try { active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (e) { active.scrollIntoView(false); }
     }
 
     // ══════════════════════════════════════════════
