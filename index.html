@@ -452,11 +452,6 @@
     }
 
     /* ── game layout ── */
-    #screen-game {
-      max-width: 1120px;
-      margin: 0 auto;
-    }
-
     #game-topbar {
       display: flex;
       align-items: center;
@@ -466,12 +461,6 @@
       background: var(--bg-primary);
       border: 0.5px solid var(--border);
       border-radius: var(--radius-md);
-    }
-
-    #game-topbar .title {
-      font-size: 14px;
-      font-weight: 500;
-      flex: 1;
     }
 
     #game-grid {
@@ -3240,15 +3229,6 @@
       box-shadow: 0 4px 14px rgba(0,0,0,0.12);
       backdrop-filter: blur(8px);
     }
-    #screen-game.ui-sticky-tabs .tab-bar,
-    #screen-game.ui-sticky-tabs .popup-toolbar {
-      position: sticky;
-      top: 0;
-      z-index: 12;
-      background: var(--bg-primary);
-      padding-top: 2px;
-      border-radius: var(--radius-md);
-    }
     #screen-game.ui-focus-mode:not(.ui-screen-fit) #game-grid {
       grid-template-columns: minmax(0, 1fr) !important;
       max-width: 860px;
@@ -3515,9 +3495,6 @@
     }
     #settings-modal .settings-card.settings-collapsed {
       gap: 0;
-    }
-    #settings-modal .settings-card.settings-collapsed > div:first-child {
-      margin-bottom: -2px;
     }
     #settings-modal .settings-card > div:first-child:hover {
       border-color: var(--border-md);
@@ -4946,54 +4923,13 @@
     }
     #game-topbar .title { flex: 0 0 auto !important; order: 1; }
     #game-topbar #admin-topbar-btn { flex: 0 0 auto !important; order: 2; }
-    #game-topbar .topbar-spacer { display: block; flex: 1 1 auto !important; min-width: 8px; order: 5; }
     #game-topbar #save-indicator { flex: 0 0 auto !important; order: 10; }
-    #game-topbar .topbar-settings { order: 20; }
-    #game-topbar .topbar-save { order: 30; }
-    #game-topbar .topbar-characters { order: 40; }
-    #game-topbar #quick-ui-btn { order: 50; }
-    #game-topbar #ux-more-btn-v1494 { order: 60; }
-    #game-topbar .btn { flex: 0 0 auto !important; }
     #quick-ui-bar #layout-mode-btn {
       order: -100;
       margin-right: auto;
       justify-content: center;
       border-color: rgba(244,214,138,0.45);
       color: #fff7d6;
-    }
-
-    /* Canonical one-column Settings layout. */
-    #settings-modal .modal-card { width: min(780px, 100%) !important; }
-    #settings-modal .settings-container-grid {
-      display: flex !important;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px !important;
-      overflow-y: auto;
-      padding: 2px 2px 4px;
-    }
-    #settings-modal .settings-card,
-    #settings-modal .settings-wide,
-    #settings-modal .settings-full {
-      width: 100%;
-      max-width: none;
-      grid-column: 1 / -1;
-      align-self: stretch;
-    }
-    #settings-modal .settings-card > div:first-child {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      min-height: 34px;
-      padding: 5px 30px 5px 2px;
-      margin: -2px 0 6px;
-      border-bottom: 0.5px solid var(--border);
-      box-sizing: border-box;
-    }
-    #settings-modal .settings-card.settings-collapsed > div:first-child {
-      margin-bottom: -2px;
-      border-bottom-color: transparent;
     }
 
     /* Normal, Fit, and Focus are exclusive desktop view modes. */
@@ -5063,10 +4999,6 @@
       max-height: none !important;
       overflow: visible !important;
     }
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #game-grid > div:first-child,
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #game-grid > div:last-child {
-      display: none !important;
-    }
     #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #center-panel {
       display: block !important;
       width: 100% !important;
@@ -5092,29 +5024,6 @@
       overflow-y: auto !important;
     }
 
-    /* User layout preferences must override the consolidated mode defaults. */
-    #screen-game.ui-layout-desktop.ui-normal-mode.ui-wide-center:not(.ui-screen-fit):not(.ui-focus-mode) #game-grid {
-      grid-template-columns: 190px minmax(0, 1.35fr) 230px !important;
-    }
-    #screen-game.ui-layout-desktop.ui-screen-fit.ui-wide-center:not(.ui-focus-mode) #game-grid {
-      grid-template-columns: clamp(140px, 13vw, 200px) minmax(0, 1.18fr) clamp(210px, 16vw, 270px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode.ui-hide-left-panel:not(.ui-screen-fit):not(.ui-focus-mode) #game-grid {
-      grid-template-columns: minmax(0, 1fr) minmax(260px, 330px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-screen-fit.ui-hide-left-panel:not(.ui-focus-mode) #game-grid {
-      grid-template-columns: minmax(0, 1fr) minmax(250px, 300px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode.ui-hide-right-panel:not(.ui-screen-fit):not(.ui-focus-mode) #game-grid {
-      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-screen-fit.ui-hide-right-panel:not(.ui-focus-mode) #game-grid {
-      grid-template-columns: minmax(210px, 250px) minmax(0, 1fr) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode.ui-hide-left-panel.ui-hide-right-panel:not(.ui-screen-fit):not(.ui-focus-mode) #game-grid,
-    #screen-game.ui-layout-desktop.ui-screen-fit.ui-hide-left-panel.ui-hide-right-panel:not(.ui-focus-mode) #game-grid {
-      grid-template-columns: minmax(0, 1fr) !important;
-    }
     #screen-game.ui-layout-desktop.ui-full-height-panels:not(.ui-screen-fit):not(.ui-fit-mode) {
       display: flex !important;
       flex-direction: column;
@@ -5363,9 +5272,7 @@
     @media (max-width: 520px) {
       #combat-session-stats.combat-session-stats { grid-template-columns: 1fr; }
       .compare-grid { grid-template-columns: 1fr; }
-      .ux-more-backdrop-v1494 { align-items: flex-end; justify-content: center; padding: 12px; background: rgba(0,0,0,.25); }
-      .ux-more-card-v1494 { width: 100%; }
-      .ux-more-grid-v1494 { grid-template-columns: 1fr; }
+      /* v1494 more-menu mobile overrides moved to the v1.5.0 layout fix layer. */
     }
 
     /* ========================================================================
@@ -6149,7 +6056,7 @@
       <button
         class="btn"
         id="ux-more-btn-v1494"
-        onclick="return openTopbarMoreV1494(event)"
+        onclick="return openTopbarMore(event)"
         title="More actions"
         aria-label="More"
         style="font-size:11px;padding:4px 10px">
@@ -6490,7 +6397,7 @@
             <div class="ui-pref-row"><span>UX preset</span><select id="settings-ui-ux-mode" onchange="setUxModePreference(this.value)"><option value="classic">Classic</option><option value="cozy">Cozy</option><option value="bigclick">Big Click</option><option value="combat">Combat HUD</option></select></div>
             <label class="ui-pref-check"><input type="checkbox" id="settings-ui-breathing-room" onchange="setUiBooleanPreference('breathingRoom', this.checked)"> Extra panel breathing room</label>
             <div class="settings-button-grid">
-              <button class="btn" id="settings-ui-rescue-btn-v1495" onclick="openUiRescueCenterV1492 && openUiRescueCenterV1492()">UI Rescue Center</button>
+              <button class="btn" id="settings-ui-rescue-btn-v1495" onclick="typeof openUiRescueCenter === 'function' && openUiRescueCenter()">UI Rescue Center</button>
               <button class="btn" onclick="cycleUxModePreference()">Cycle UX Preset</button>
               <button class="btn" onclick="applyUxPreset('cozy')">Cozy Preset</button>
               <button class="btn" onclick="applyUxPreset('combat')">Combat Preset</button>
@@ -6505,7 +6412,7 @@
               <button class="btn" onclick="exportCurrentCharacterSave()" title="Download only the active character as an importable save">🧍 Export Character</button>
               <button class="btn" onclick="promptImportSlots()" title="Import previously exported characters">📤 Import Save</button>
               <button class="btn" onclick="showBackupRecoveryOptions()" title="Recover from auto-backups (last 5 saves)">🔄 Restore Backup</button>
-              <button class="btn" onclick="(openBackupManagerV1491 || openBackupManager) && (openBackupManagerV1491 || openBackupManager)()" title="Open the Backup Manager">🗂️ Backup Manager</button>
+              <button class="btn" onclick="typeof openBackupManager === 'function' && openBackupManager()" title="Open the Backup Manager">🗂️ Backup Manager</button>
             </div>
             <div id="settings-backup-list" style="font-size:10px;color:var(--text-secondary);margin-top:4px;"></div>
           </div>
@@ -7594,7 +7501,7 @@
                 id="combat-log-search-toggle-v1490"
                 style="font-size:10px;padding:2px 8px"
                 title="Search, copy, export, mark, or clear the combat log"
-                onclick="toggleCombatLogSearchToolsV1490()">Search Log</button>
+                onclick="toggleCombatLogSearchTools()">Search Log</button>
               <div
                 id="combat-log-search-panel-v1490"
                 style="display:none;gap:6px;flex-wrap:wrap;align-items:center;flex:1 1 100%;width:100%;padding:4px 0;margin-top:2px;border-top:0.5px solid var(--border)">
@@ -7602,7 +7509,7 @@
                   id="combat-log-search-v1490"
                   type="text"
                   placeholder="Search combat log..."
-                  oninput="applyCombatLogSearchV1490(this.value)"
+                  oninput="applyCombatLogSearch(this.value)"
                   style="min-width:160px;flex:1 1 180px;font-size:11px;padding:4px 8px">
                 <span
                   id="combat-log-search-meta-v1490"
@@ -7610,33 +7517,33 @@
                 <button
                   class="btn"
                   style="font-size:10px;padding:2px 8px"
-                  onclick="clearCombatLogSearchV1490()">Clear Search</button>
+                  onclick="clearCombatLogSearch()">Clear Search</button>
                 <button
                   class="btn"
                   style="font-size:10px;padding:2px 8px"
-                  onclick="copyVisibleCombatLogV1490()">Copy Log</button>
+                  onclick="copyVisibleCombatLog()">Copy Log</button>
                 <button
                   class="btn"
                   style="font-size:10px;padding:2px 8px"
-                  onclick="exportVisibleCombatLogV1490()">Export Log</button>
+                  onclick="exportVisibleCombatLog()">Export Log</button>
                 <button
                   class="btn"
                   style="font-size:10px;padding:2px 8px"
-                  onclick="exportCombatSessionStatsV1490()">Export Session</button>
+                  onclick="exportCombatSessionStats()">Export Session</button>
                 <button
                   class="btn"
                   id="combat-marker-btn-v1491"
                   style="font-size:10px;padding:2px 8px"
-                  onclick="addCombatLogMarkerV1491()">Mark Log</button>
+                  onclick="addCombatLogMarker()">Mark Log</button>
                 <button
                   class="btn"
                   id="session-history-btn-v1491"
                   style="font-size:10px;padding:2px 8px"
-                  onclick="openCombatSessionHistoryV1491()">Session History</button>
+                  onclick="openCombatSessionHistory()">Session History</button>
                 <button
                   class="btn danger"
                   style="font-size:10px;padding:2px 8px"
-                  onclick="clearCombatLogV1490()">Clear Log</button>
+                  onclick="clearCombatLog()">Clear Log</button>
               </div>
             </span>
           </div>
@@ -17849,7 +17756,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.5.10';
+    const CURRENT_VERSION = '1.5.11';
     function syncCurrentVersionDisplay() {
       const version = CURRENT_VERSION;
       try { window.VERSION = version; } catch (_) {}
@@ -30215,44 +30122,44 @@ async function exportSlotsToFile(options = {}) {
       // Use the strongest available healing potion first.
       if (char.healpotions_legendary && char.healpotions_legendary > 0) {
         char.healpotions_legendary -= 1;
-        const healAmt = Math.floor(potionHealAmount_legendary_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_legendary_Health * getAlchemyHealMultiplier());
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a legendary healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_epic && char.healpotions_epic > 0) {
         char.healpotions_epic -= 1;
-        const healAmt = Math.floor(potionHealAmount_epic_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_epic_Health * getAlchemyHealMultiplier());
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used an epic healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_heroic && char.healpotions_heroic > 0) {
         char.healpotions_heroic -= 1;
-        const healAmt = Math.floor(potionHealAmount_heroic_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_heroic_Health * getAlchemyHealMultiplier());
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a heroic healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_shp && char.healpotions_shp > 0) {
         char.healpotions_shp -= 1;
-        const healAmt = Math.floor(potionHealAmount_shp_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_shp_Health * getAlchemyHealMultiplier());
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a superior healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_ghp && char.healpotions_ghp > 0) {
         char.healpotions_ghp -= 1;
-        const healAmt = Math.floor(potionHealAmount_ghp_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_ghp_Health * getAlchemyHealMultiplier());
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a greater healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       else if (char.healpotions_lhp && char.healpotions_lhp > 0) {
         char.healpotions_lhp -= 1;
-        const healAmt = Math.floor(potionHealAmount_lhp_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_lhp_Health * getAlchemyHealMultiplier());
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a light healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
       // Fallback to Minor Healing Potion
       else if (char.healpotions && char.healpotions > 0) {
         char.healpotions -= 1;
-        const healAmt = Math.floor(potionHealAmount_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_Health * getAlchemyHealMultiplier());
         char.hp = Math.min(char.maxHp, char.hp + healAmt);
         log('Used a healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
       }
@@ -30276,44 +30183,44 @@ async function exportSlotsToFile(options = {}) {
       // Use the strongest available mana potion first.
       if (char.manapotions_legendary && char.manapotions_legendary > 0) {
         char.manapotions_legendary -= 1;
-        const healAmt = Math.floor(potionHealAmount_legendary_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_legendary_Mana * getAlchemyHealMultiplier());
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a legendary mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_epic && char.manapotions_epic > 0) {
         char.manapotions_epic -= 1;
-        const healAmt = Math.floor(potionHealAmount_epic_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_epic_Mana * getAlchemyHealMultiplier());
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used an epic mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_heroic && char.manapotions_heroic > 0) {
         char.manapotions_heroic -= 1;
-        const healAmt = Math.floor(potionHealAmount_heroic_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_heroic_Mana * getAlchemyHealMultiplier());
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a heroic mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_smp && char.manapotions_smp > 0) {
         char.manapotions_smp -= 1;
-        const healAmt = Math.floor(potionHealAmount_smp_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_smp_Mana * getAlchemyHealMultiplier());
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a superior mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_gmp && char.manapotions_gmp > 0) {
         char.manapotions_gmp -= 1;
-        const healAmt = Math.floor(potionHealAmount_gmp_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_gmp_Mana * getAlchemyHealMultiplier());
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a greater mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       else if (char.manapotions_lmp && char.manapotions_lmp > 0) {
         char.manapotions_lmp -= 1;
-        const healAmt = Math.floor(potionHealAmount_lmp_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_lmp_Mana * getAlchemyHealMultiplier());
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a light mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
       // Fallback to Minor Mana Potion
       else if (char.manapotions && char.manapotions > 0) {
         char.manapotions -= 1;
-        const healAmt = Math.floor(potionHealAmount_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+        const healAmt = Math.floor(potionHealAmount_Mana * getAlchemyHealMultiplier());
         char.mp = Math.min(char.maxMp, char.mp + healAmt);
         log('Used a mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
       }
@@ -30445,7 +30352,7 @@ async function exportSlotsToFile(options = {}) {
 
       char.healpotions_lhp -= 1;
 
-      const healAmt = Math.floor(potionHealAmount_lhp_Health * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+      const healAmt = Math.floor(potionHealAmount_lhp_Health * getAlchemyHealMultiplier());
 
       char.hp = Math.min(char.maxHp, char.hp + healAmt);
 
@@ -30467,7 +30374,7 @@ async function exportSlotsToFile(options = {}) {
 
       char.manapotions_lmp -= 1;
 
-      const healAmt = Math.floor(potionHealAmount_lmp_Mana * (typeof getAlchemyHealMultiplier === "function" ? getAlchemyHealMultiplier() : 1));
+      const healAmt = Math.floor(potionHealAmount_lmp_Mana * getAlchemyHealMultiplier());
 
       char.mp = Math.min(char.maxMp, char.mp + healAmt);
 
@@ -31159,10 +31066,10 @@ async function exportSlotsToFile(options = {}) {
       if (open) toggleVisualsMenu();
     }
 
-    function toggleVisualsMenu() {
+    function toggleVisualsMenu(event) {
       try {
-        if (typeof openSettings === 'function') openSettings();
-        else if (typeof openSettingsModal === 'function') openSettingsModal();
+        if (typeof openSettings === 'function') openSettings(event);
+        else if (typeof openSettingsModal === 'function') openSettingsModal(event);
         else if (typeof openPopup === 'function') openPopup('settings');
         else if (typeof switchTab === 'function') switchTab('settings');
       } catch (e) {}
@@ -31185,12 +31092,11 @@ async function exportSlotsToFile(options = {}) {
     document.addEventListener('keydown', (ev) => {
       const tag = ev.target && ev.target.tagName ? ev.target.tagName.toLowerCase() : '';
       const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || (ev.target && ev.target.isContentEditable);
-      if (typing || ev.ctrlKey || ev.metaKey || ev.altKey) return;
-      if (ev.key && ev.key.toLowerCase() === 'v') {
+      if (typing || ev.ctrlKey || ev.metaKey || ev.altKey || ev.shiftKey) return;
+      if (ev.key === 'v' || ev.key === 'V') {
         ev.preventDefault();
-        toggleVisualsMenu();
-      }
-      if (ev.key && ev.key.toLowerCase() === 'n' && typeof toggleQuickNav === 'function') {
+        toggleVisualsMenu(ev);
+      } else if ((ev.key === 'n' || ev.key === 'N') && typeof toggleQuickNav === 'function') {
         ev.preventDefault();
         toggleQuickNav();
       }
@@ -32423,7 +32329,7 @@ async function exportSlotsToFile(options = {}) {
       if (name === 'guild') renderGuildTab();
       if (name === 'loadouts') renderLoadoutsTab();
       if (name === 'admin') renderAdminTab();
-      if (typeof window.recordPanelUseV1494 === 'function') window.recordPanelUseV1494(name);
+      if (typeof window.recordPanelUse === 'function') window.recordPanelUse(name);
     }
 
     function closePopup() {
@@ -33321,7 +33227,7 @@ async function exportSlotsToFile(options = {}) {
       if (tab === 'chat' && window.Chat) Chat.open();
       updateTabAccessibility();
       scrollActiveTabIntoView();
-      if (typeof window.recordPanelUseV1494 === 'function') window.recordPanelUseV1494(tab);
+      if (typeof window.recordPanelUse === 'function') window.recordPanelUse(tab);
       return tab;
     }
 
@@ -33496,7 +33402,7 @@ async function exportSlotsToFile(options = {}) {
     document.addEventListener('keydown', function(e) {
       // Skip if typing in an input/textarea/select
       if (e.target && ['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
       if (!char || document.getElementById('screen-game').style.display === 'none') return;
       // While capturing a rebind, swallow the event — the capture handler owns it.
       if (Keybinds.isCapturing()) return;
@@ -33509,7 +33415,7 @@ async function exportSlotsToFile(options = {}) {
     });
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('resize', () => requestAnimationFrame(syncCombatLogSize));
-    window.addEventListener('resize', () => { try { if (typeof positionTopbarMoreV1494 === 'function') positionTopbarMoreV1494(); } catch (_) {} });
+    window.addEventListener('resize', () => { try { if (typeof positionTopbarMore === 'function') positionTopbarMore(); } catch (_) {} });
 
     // Delegated handler for leaderboard sort/sub-tab buttons
     document.getElementById('leaderboard-list').addEventListener('click', e => {
@@ -34210,16 +34116,6 @@ async function exportSlotsToFile(options = {}) {
         brewPotion(recipeId, false);
       }
     }
-
-    // ── Hook into killMob for herb drops ────────────
-    // Patch killMob to call maybeDropHerb after kill
-    const _origKillMob = killMob;
-    // We hook via overriding the function reference after definition
-    // Instead we patch by wrapping — done below after killMob is defined
-    // Actually: insert a call to maybeDropHerb() via the existing killMob's end
-    // We'll register a post-kill hook array
-    if (!window._postKillHooks) window._postKillHooks = [];
-    window._postKillHooks.push(maybeDropHerb);
 
     // ── Apply alchemy bonus to potion heals ─────────
     // Patch useHpPotion and similar to apply the bonus
@@ -35197,8 +35093,8 @@ async function exportSlotsToFile(options = {}) {
       }
       window.ensureCombatSession = _ensureCombatSession;
       window.resetCombatStatsSession = function resetCombatStatsSession(){
-        const saved = typeof window.saveCombatSessionHistoryV1491 === 'function'
-          ? window.saveCombatSessionHistoryV1491('reset')
+        const saved = typeof window.saveCombatSessionHistory === 'function'
+          ? window.saveCombatSessionHistory('reset')
           : null;
         window.__eqCombatSession = null;
         _ensureCombatSession();
@@ -35243,7 +35139,7 @@ async function exportSlotsToFile(options = {}) {
           '<div class="statbox"><div class="label">Kills</div><div class="value">' + _fmt(kills) + '</div><div class="sub">' + _fmt(perHour(kills)) + ' per hour</div></div>' +
           '<div class="statbox"><div class="label">Experience</div><div class="value">' + _fmt(sess.xp) + '</div><div class="sub">' + _fmt(perHour(sess.xp)) + ' XP/hr</div></div>' +
           '<div class="statbox"><div class="label">Special Kills</div><div class="value">' + _fmt(named) + ' / ' + _fmt(elite) + ' / ' + _fmt(boss) + '</div><div class="sub">Named / Elite / Boss</div></div>' +
-          '<div class="stats-actions"><button class="btn" onclick="window.addCombatLogMarkerV1491 && window.addCombatLogMarkerV1491()">Add Marker</button><button class="btn" onclick="window.openCombatSessionHistoryV1491 && window.openCombatSessionHistoryV1491()">Session History</button><button class="btn" onclick="(window.exportCombatSessionStatsV1490 || window.exportCombatSessionStats || function(){})()">Export Stats</button><button class="btn danger" onclick="resetCombatStatsSession()">Reset Session</button></div>';
+          '<div class="stats-actions"><button class="btn" onclick="window.addCombatLogMarker && window.addCombatLogMarker()">Add Marker</button><button class="btn" onclick="window.openCombatSessionHistory && window.openCombatSessionHistory()">Session History</button><button class="btn" onclick="(window.exportCombatSessionStats || window.exportCombatSessionStats || function(){})()">Export Stats</button><button class="btn danger" onclick="resetCombatStatsSession()">Reset Session</button></div>';
       };
 
       window.__eqBankFilter = window.__eqBankFilter || { q:'', rarity:'all' };
@@ -35410,9 +35306,10 @@ async function exportSlotsToFile(options = {}) {
       document.addEventListener('keydown', function(e){
         const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-        if (e.key === 'c' && e.shiftKey) { e.preventDefault(); compareEquippedSlot('weapon'); }
-        if (e.key === 'b' && e.shiftKey) { e.preventDefault(); if (typeof createNamedLocalBackup === 'function') createNamedLocalBackup(); }
-        if (e.key === 't' && e.shiftKey) { e.preventDefault(); toggleCompactTopbar(); }
+        if (e.ctrlKey || e.metaKey || e.altKey || !e.shiftKey) return;
+        if (e.key === 'c' || e.key === 'C') { e.preventDefault(); compareEquippedSlot('weapon'); }
+        else if (e.key === 'b' || e.key === 'B') { e.preventDefault(); if (typeof createNamedLocalBackup === 'function') createNamedLocalBackup(); }
+        else if (e.key === 't' || e.key === 'T') { e.preventDefault(); toggleCompactTopbar(); }
       });
     })();
 
@@ -35449,7 +35346,8 @@ async function exportSlotsToFile(options = {}) {
       document.addEventListener('keydown', function(e){
         const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-        if (e.shiftKey && e.key.toLowerCase() === 'o') { e.preventDefault(); optimizeEquippedGear(); }
+        if (e.ctrlKey || e.metaKey || e.altKey || !e.shiftKey) return;
+        if (e.key.toLowerCase() === 'o') { e.preventDefault(); optimizeEquippedGear(); }
       });
     })();
 
@@ -35476,7 +35374,7 @@ async function exportSlotsToFile(options = {}) {
         const input = document.getElementById('combat-log-search-v1490');
         return input ? input.value.trim().toLowerCase() : (window.__eqCombatLogSearch || '');
       }
-      window.applyCombatLogSearchV1490 = function applyCombatLogSearchV1490(value){
+      window.applyCombatLogSearch = function applyCombatLogSearch(value){
         window.__eqCombatLogSearch = String(value == null ? currentSearch() : value).trim().toLowerCase();
         const q = window.__eqCombatLogSearch;
         allLogRows().forEach(p => {
@@ -35490,18 +35388,18 @@ async function exportSlotsToFile(options = {}) {
           meta.textContent = q ? (shown + '/' + total + ' visible') : (total + ' lines');
         }
       };
-      window.clearCombatLogSearchV1490 = function clearCombatLogSearchV1490(){
+      window.clearCombatLogSearch = function clearCombatLogSearch(){
         const input = document.getElementById('combat-log-search-v1490');
         if (input) input.value = '';
-        applyCombatLogSearchV1490('');
+        applyCombatLogSearch('');
       };
-      window.copyVisibleCombatLogV1490 = async function copyVisibleCombatLogV1490(){
+      window.copyVisibleCombatLog = async function copyVisibleCombatLog(){
         const text = logText(visibleLogRows());
         if (!text) return toast('No visible combat log lines to copy.', 'info');
         try { await navigator.clipboard.writeText(text); toast('Visible combat log copied.', 'success'); }
         catch(_) { toast('Clipboard unavailable. Use Export Log instead.', 'info'); }
       };
-      window.exportVisibleCombatLogV1490 = function exportVisibleCombatLogV1490(){
+      window.exportVisibleCombatLog = function exportVisibleCombatLog(){
         const text = logText(visibleLogRows());
         if (!text) return toast('No visible combat log lines to export.', 'info');
         const name = (char && char.name ? String(char.name).replace(/[^a-z0-9_-]+/gi, '_') : 'character');
@@ -35515,15 +35413,15 @@ async function exportSlotsToFile(options = {}) {
         setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         toast('Combat log exported.', 'success');
       };
-      window.clearCombatLogV1490 = function clearCombatLogV1490(){
+      window.clearCombatLog = function clearCombatLog(){
         const div = logEl();
         if (!div) return;
         if (!confirm('Clear the visible combat log? This does not affect your save.')) return;
         div.innerHTML = '<p class="log-info"><span class="log-timestamp">' + (typeof getCombatLogTimestamp === 'function' ? esc(getCombatLogTimestamp()) : '') + '</span>Combat log cleared.</p>';
-        clearCombatLogSearchV1490();
+        clearCombatLogSearch();
         toast('Combat log cleared.', 'info');
       };
-      window.toggleCombatLogSearchToolsV1490 = function toggleCombatLogSearchToolsV1490(force){
+      window.toggleCombatLogSearchTools = function toggleCombatLogSearchTools(force){
         const panel = document.getElementById('combat-log-search-panel-v1490');
         const btn = document.getElementById('combat-log-search-toggle-v1490');
         if (!panel) return;
@@ -35536,12 +35434,12 @@ async function exportSlotsToFile(options = {}) {
         if (shouldOpen) {
           const input = document.getElementById('combat-log-search-v1490');
           if (input) { try { input.focus(); input.select(); } catch(_){} }
-          applyCombatLogSearchV1490();
+          applyCombatLogSearch();
         }
       };
-      window.exportCombatSessionStatsV1490 = function exportCombatSessionStatsV1490(){
-        if (typeof window.saveCombatSessionHistoryV1491 === 'function') {
-          window.saveCombatSessionHistoryV1491('export');
+      window.exportCombatSessionStats = function exportCombatSessionStats(){
+        if (typeof window.saveCombatSessionHistory === 'function') {
+          window.saveCombatSessionHistory('export');
         }
         const sess = window.__eqCombatSession || null;
         const mins = sess ? Math.max(1/60, (Date.now() - sess.startedAt) / 60000) : 0;
@@ -35570,7 +35468,8 @@ async function exportSlotsToFile(options = {}) {
       document.addEventListener('keydown', function(e){
         const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-        if (e.shiftKey && e.key.toLowerCase() === 'l') { e.preventDefault(); exportVisibleCombatLogV1490(); }
+        if (e.ctrlKey || e.metaKey || e.altKey || !e.shiftKey) return;
+        if (e.key.toLowerCase() === 'l') { e.preventDefault(); exportVisibleCombatLog(); }
       });
     })();
 
@@ -35606,21 +35505,21 @@ async function exportSlotsToFile(options = {}) {
           killsPerHour: Math.round(kills / mins * 60)
         };
       }
-      window.saveCombatSessionHistoryV1491 = function saveCombatSessionHistoryV1491(reason){
+      window.saveCombatSessionHistory = function saveCombatSessionHistory(reason){
         const snap = sessionSnapshot(reason);
         if (!snap) return null;
         const hist = readHistory();
         hist.unshift(snap);
         writeHistory(hist);
-        renderSessionHistoryModalV1491(false);
+        renderSessionHistoryModal(false);
         return snap;
       };
-      window.openCombatSessionHistoryV1491 = function openCombatSessionHistoryV1491(){ renderSessionHistoryModalV1491(true); };
-      window.clearCombatSessionHistoryV1491 = function clearCombatSessionHistoryV1491(){
+      window.openCombatSessionHistory = function openCombatSessionHistory(){ renderSessionHistoryModal(true); };
+      window.clearCombatSessionHistory = function clearCombatSessionHistory(){
         if (!confirm('Clear saved combat session history? This does not change your character save.')) return;
-        writeHistory([]); renderSessionHistoryModalV1491(true); toast('Combat session history cleared.', 'success');
+        writeHistory([]); renderSessionHistoryModal(true); toast('Combat session history cleared.', 'success');
       };
-      window.exportCombatSessionHistoryV1491 = function exportCombatSessionHistoryV1491(){
+      window.exportCombatSessionHistory = function exportCombatSessionHistory(){
         const hist = readHistory();
         if (!hist.length) return toast('No session history to export.', 'info');
         const blob = new Blob([JSON.stringify({ kind:'combat-session-history', version:CURRENT_VERSION, exportedAt:new Date().toISOString(), sessions:hist }, null, 2)], { type:'application/json' });
@@ -35630,7 +35529,7 @@ async function exportSlotsToFile(options = {}) {
         document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         toast('Session history exported.', 'success');
       };
-      window.copyCombatSessionHistoryV1491 = async function copyCombatSessionHistoryV1491(){
+      window.copyCombatSessionHistory = async function copyCombatSessionHistory(){
         const hist = readHistory();
         if (!hist.length) return toast('No session history to copy.', 'info');
         const lines = hist.map(s => `${s.endedAt} | ${s.character && s.character.name || 'Unknown'} L${s.character && s.character.level || '?'} | ${s.minutes}m | ${fmtNum(s.xp)} XP (${fmtNum(s.xpPerHour)}/hr) | ${fmtNum(s.kills)} kills (${fmtNum(s.killsPerHour)}/hr) | N/E/B ${s.named}/${s.elite}/${s.boss}`);
@@ -35644,7 +35543,7 @@ async function exportSlotsToFile(options = {}) {
           m.id = 'session-history-modal-v1491';
           m.className = 'modal-backdrop';
           m.onclick = function(e){ if (e.target === m) m.classList.remove('open'); };
-          m.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" style="max-width:760px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><div><div class="modal-title">Combat Session History</div><div class="modal-subtitle">Recent snapshots saved when you reset or export session stats.</div></div><button class="btn" onclick="document.getElementById(\'session-history-modal-v1491\').classList.remove(\'open\')">Close</button></div><div id="session-history-list-v1491"></div><div class="modal-actions" style="margin-top:10px"><button class="btn" onclick="copyCombatSessionHistoryV1491()">Copy Summary</button><button class="btn" onclick="exportCombatSessionHistoryV1491()">Export JSON</button><button class="btn danger" onclick="clearCombatSessionHistoryV1491()">Clear History</button></div></div>';
+          m.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" style="max-width:760px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><div><div class="modal-title">Combat Session History</div><div class="modal-subtitle">Recent snapshots saved when you reset or export session stats.</div></div><button class="btn" onclick="document.getElementById(\'session-history-modal-v1491\').classList.remove(\'open\')">Close</button></div><div id="session-history-list-v1491"></div><div class="modal-actions" style="margin-top:10px"><button class="btn" onclick="copyCombatSessionHistory()">Copy Summary</button><button class="btn" onclick="exportCombatSessionHistory()">Export JSON</button><button class="btn danger" onclick="clearCombatSessionHistory()">Clear History</button></div></div>';
           document.body.appendChild(m);
         }
         const list = document.getElementById('session-history-list-v1491');
@@ -35661,15 +35560,15 @@ async function exportSlotsToFile(options = {}) {
         }
         if (open) m.classList.add('open');
       }
-      window.renderSessionHistoryModalV1491 = renderSessionHistoryModal;
+      window.renderSessionHistoryModal = renderSessionHistoryModal;
 
-      window.addCombatLogMarkerV1491 = function addCombatLogMarkerV1491(){
+      window.addCombatLogMarker = function addCombatLogMarker(){
         const label = window.prompt('Combat log marker label:', 'Marker');
         if (label === null) return;
         const clean = String(label || 'Marker').replace(/[<>]/g, '').trim().slice(0, 64) || 'Marker';
         try { if (typeof log === 'function') log('──── ' + clean + ' @ ' + new Date().toLocaleTimeString() + ' ────', 'info'); }
         catch(_) {}
-        try { if (typeof applyCombatLogSearchV1490 === 'function') applyCombatLogSearchV1490(); } catch(_) {}
+        try { if (typeof applyCombatLogSearch === 'function') applyCombatLogSearch(); } catch(_) {}
       };
 
       function backupSummaryLine(b){
@@ -35679,15 +35578,15 @@ async function exportSlotsToFile(options = {}) {
         const first = chars.slice(0, 3).map(x => `${x.name || 'Unknown'} L${Number(x.level || 1)}`).join(', ');
         return label + count + ' character' + (count === 1 ? '' : 's') + (first ? ' · ' + first : '');
       }
-      window.openBackupManagerV1491 = function openBackupManagerV1491(){ renderBackupManagerV1491(true); };
-      function renderBackupManagerV1491(open){
+      window.openBackupManager = function openBackupManager(){ renderBackupManager(true); };
+      function renderBackupManager(open){
         let m = document.getElementById('backup-manager-modal-v1491');
         if (!m) {
           m = document.createElement('div');
           m.id = 'backup-manager-modal-v1491';
           m.className = 'modal-backdrop';
           m.onclick = function(e){ if (e.target === m) m.classList.remove('open'); };
-          m.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" style="max-width:820px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><div><div class="modal-title">Backup Manager</div><div class="modal-subtitle">Create, inspect, verify, export, restore, or delete local recovery points.</div></div><button class="btn" onclick="document.getElementById(\'backup-manager-modal-v1491\').classList.remove(\'open\')">Close</button></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="btn active" onclick="createNamedLocalBackup();renderBackupManagerV1491(true)">Create Named Backup</button><button class="btn" onclick="compareCurrentSaveToLatestBackup()">Compare Latest</button><button class="btn" onclick="auditLocalBackups();renderBackupManagerV1491(true)">Verify</button><button class="btn" onclick="downloadLatestLocalBackup()">Export Latest</button><button class="btn" onclick="downloadRecoveryBundle()">Recovery Bundle</button><button class="btn danger" onclick="restoreLatestLocalBackup()">Restore Latest</button></div><div id="backup-manager-list-v1491"></div></div>';
+          m.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" style="max-width:820px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><div><div class="modal-title">Backup Manager</div><div class="modal-subtitle">Create, inspect, verify, export, restore, or delete local recovery points.</div></div><button class="btn" onclick="document.getElementById(\'backup-manager-modal-v1491\').classList.remove(\'open\')">Close</button></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="btn active" onclick="createNamedLocalBackup();renderBackupManager(true)">Create Named Backup</button><button class="btn" onclick="compareCurrentSaveToLatestBackup()">Compare Latest</button><button class="btn" onclick="auditLocalBackups();renderBackupManager(true)">Verify</button><button class="btn" onclick="downloadLatestLocalBackup()">Export Latest</button><button class="btn" onclick="downloadRecoveryBundle()">Recovery Bundle</button><button class="btn danger" onclick="restoreLatestLocalBackup()">Restore Latest</button></div><div id="backup-manager-list-v1491"></div></div>';
           document.body.appendChild(m);
         }
         const list = document.getElementById('backup-manager-list-v1491');
@@ -35699,20 +35598,22 @@ async function exportSlotsToFile(options = {}) {
             return '<div class="backup-manager-row" style="border:0.5px solid var(--border);background:var(--bg-secondary);border-radius:var(--radius-md);padding:8px;margin-bottom:6px;font-size:11px;line-height:1.45">' +
               '<div style="display:flex;justify-content:space-between;gap:8px"><strong>#' + (i + 1) + ' · ' + esc(when) + '</strong><span style="color:' + (ok ? '#1D9E75' : '#A32D2D') + '">' + (ok ? 'Hash OK' : 'Hash mismatch') + '</span></div>' +
               '<div style="color:var(--text-secondary)">' + esc(backupSummaryLine(b)) + '</div>' +
-              '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn" style="font-size:10px;padding:2px 8px" onclick="recoverFromBackup(' + i + ')">Restore</button><button class="btn danger" style="font-size:10px;padding:2px 8px" onclick="deleteLocalBackup(' + i + ');renderBackupManagerV1491(true)">Delete</button></div>' +
+              '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn" style="font-size:10px;padding:2px 8px" onclick="recoverFromBackup(' + i + ')">Restore</button><button class="btn danger" style="font-size:10px;padding:2px 8px" onclick="deleteLocalBackup(' + i + ');renderBackupManager(true)">Delete</button></div>' +
             '</div>';
           }).join('') : '<div style="font-size:12px;color:var(--text-secondary);padding:12px;background:var(--bg-secondary);border-radius:var(--radius-md)">No local backups found. Create a named backup before risky changes.</div>';
         }
         if (open) m.classList.add('open');
       }
-      window.renderBackupManagerV1491 = renderBackupManagerV1491;
+      window.renderBackupManager = renderBackupManager;
 
       document.addEventListener('keydown', function(e){
         const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-        if (e.shiftKey && e.key.toLowerCase() === 'm') { e.preventDefault(); addCombatLogMarkerV1491(); }
-        if (e.shiftKey && e.key.toLowerCase() === 'h') { e.preventDefault(); openCombatSessionHistoryV1491(); }
-        if (e.shiftKey && e.key.toLowerCase() === 'r') { e.preventDefault(); openBackupManagerV1491(); }
+        if (e.ctrlKey || e.metaKey || e.altKey || !e.shiftKey) return;
+        const k = e.key.toLowerCase();
+        if (k === 'm') { e.preventDefault(); addCombatLogMarker(); }
+        else if (k === 'h') { e.preventDefault(); openCombatSessionHistory(); }
+        else if (k === 'r') { e.preventDefault(); openBackupManager(); }
       });
     })();
 
@@ -35761,7 +35662,7 @@ async function exportSlotsToFile(options = {}) {
         const r = e && e.reason;
         recordError1492('unhandledrejection', r && (r.message || r.toString()) || 'Unhandled promise rejection', '', 0, 0, r && r.stack);
       });
-      window.recordEmberQuestErrorV1492 = recordError1492;
+      window.recordEmberQuestError = recordError1492;
 
       function collectUiState1492(){
         let prefs = {};
@@ -35787,7 +35688,7 @@ async function exportSlotsToFile(options = {}) {
           errors: readErrors1492()
         };
       }
-      window.collectUiStateV1492 = collectUiState1492;
+      window.collectUiState = collectUiState1492;
 
       function forceApplyPrefs1492(prefs, msg){
         try {
@@ -35805,7 +35706,7 @@ async function exportSlotsToFile(options = {}) {
           notify1492('UI rescue failed: ' + (e && e.message ? e.message : 'unknown error'), 'error');
         }
       }
-      window.applySafeUiLayoutV1492 = function(){
+      window.applySafeUiLayout = function(){
         forceApplyPrefs1492({
           density: 'normal', focusMode: false, readableLog: false, slimTopbar: false,
           wideCenter: false, screenFit: false, combatViewSize: 'normal', denseInventory: false,
@@ -35813,7 +35714,7 @@ async function exportSlotsToFile(options = {}) {
           hideLeftPanel: false, hideRightPanel: false, quickUiBar: true, compactTopbar: false
         }, 'Safe UI layout applied.');
       };
-      window.applyCombatUiLayoutV1492 = function(){
+      window.applyCombatUiLayout = function(){
         forceApplyPrefs1492({
           density: 'compact', focusMode: false, slimTopbar: true, wideCenter: false,
           screenFit: true, combatViewSize: 'large', fullHeightPanels: false,
@@ -35821,7 +35722,7 @@ async function exportSlotsToFile(options = {}) {
           quickUiBar: true, compactTopbar: true
         }, 'Combat layout applied.');
       };
-      window.applyFullUiLayoutV1492 = function(){
+      window.applyFullUiLayout = function(){
         forceApplyPrefs1492({
           density: 'normal', focusMode: false, slimTopbar: false, wideCenter: false,
           screenFit: true, combatViewSize: 'normal', fullHeightPanels: false,
@@ -35829,11 +35730,11 @@ async function exportSlotsToFile(options = {}) {
           quickUiBar: true, compactTopbar: false
         }, 'Full desktop layout applied.');
       };
-      window.applyLowMotionV1492 = function(){
+      window.applyLowMotion = function(){
         forceApplyPrefs1492({ lowMotion: true, readableLog: true, activePanelGlow: false, quickUiBar: true }, 'Low-motion readable mode enabled.');
       };
 
-      window.copyBugReportV1492 = async function(){
+      window.copyBugReport = async function(){
         const report = collectUiState1492();
         const text = JSON.stringify(report, null, 2);
         try {
@@ -35847,7 +35748,7 @@ async function exportSlotsToFile(options = {}) {
           } catch(e) { notify1492('Could not copy bug report.', 'error'); }
         }
       };
-      window.exportBugReportV1492 = function(){
+      window.exportBugReport = function(){
         try {
           const report = collectUiState1492();
           const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
@@ -35859,9 +35760,9 @@ async function exportSlotsToFile(options = {}) {
           notify1492('Bug report exported.', 'success');
         } catch(e) { notify1492('Could not export bug report.', 'error'); }
       };
-      window.clearRecentErrorsV1492 = function(){ writeErrors1492([]); renderUiRescueCenterV1492(false); notify1492('Recent errors cleared.', 'info'); };
+      window.clearRecentErrors = function(){ writeErrors1492([]); renderUiRescueCenter(false); notify1492('Recent errors cleared.', 'info'); };
 
-      function renderUiRescueCenterV1492(open){
+      function renderUiRescueCenter(open){
         let m = document.getElementById('ui-rescue-modal-v1492');
         if (!m) {
           m = document.createElement('div');
@@ -35870,7 +35771,7 @@ async function exportSlotsToFile(options = {}) {
           m.onclick = function(e){ if (e.target === m) m.classList.remove('open'); };
           m.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" style="max-width:860px">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><div><div class="modal-title">UI Rescue Center</div><div class="modal-subtitle">Recover cramped layouts, missing topbars, broken panel states, and collect bug reports.</div></div><button class="btn" onclick="document.getElementById(\'ui-rescue-modal-v1492\').classList.remove(\'open\')">Close</button></div>' +
-            '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="btn active" onclick="applySafeUiLayoutV1492();renderUiRescueCenterV1492(true)">Safe UI</button><button class="btn" onclick="applyFullUiLayoutV1492();renderUiRescueCenterV1492(true)">Full Desktop</button><button class="btn" onclick="applyCombatUiLayoutV1492();renderUiRescueCenterV1492(true)">Combat Layout</button><button class="btn" onclick="applyLowMotionV1492();renderUiRescueCenterV1492(true)">Low Motion</button><button class="btn" onclick="copyBugReportV1492()">Copy Bug Report</button><button class="btn" onclick="exportBugReportV1492()">Export Bug Report</button><button class="btn danger" onclick="clearRecentErrorsV1492()">Clear Errors</button></div>' +
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="btn active" onclick="applySafeUiLayout();renderUiRescueCenter(true)">Safe UI</button><button class="btn" onclick="applyFullUiLayout();renderUiRescueCenter(true)">Full Desktop</button><button class="btn" onclick="applyCombatUiLayout();renderUiRescueCenter(true)">Combat Layout</button><button class="btn" onclick="applyLowMotion();renderUiRescueCenter(true)">Low Motion</button><button class="btn" onclick="copyBugReport()">Copy Bug Report</button><button class="btn" onclick="exportBugReport()">Export Bug Report</button><button class="btn danger" onclick="clearRecentErrors()">Clear Errors</button></div>' +
             '<div id="ui-rescue-body-v1492"></div></div>';
           document.body.appendChild(m);
         }
@@ -35891,14 +35792,16 @@ async function exportSlotsToFile(options = {}) {
         }
         if (open) m.classList.add('open');
       }
-      window.renderUiRescueCenterV1492 = renderUiRescueCenterV1492;
-      window.openUiRescueCenterV1492 = function(){ renderUiRescueCenterV1492(true); };
+      window.renderUiRescueCenter = renderUiRescueCenter;
+      window.openUiRescueCenter = function(){ renderUiRescueCenter(true); };
 
       document.addEventListener('keydown', function(e){
         const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-        if (e.shiftKey && e.key.toLowerCase() === 'u') { e.preventDefault(); openUiRescueCenterV1492(); }
-        if (e.shiftKey && e.key.toLowerCase() === 'e') { e.preventDefault(); copyBugReportV1492(); }
+        if (e.ctrlKey || e.metaKey || e.altKey || !e.shiftKey) return;
+        const k = e.key.toLowerCase();
+        if (k === 'u') { e.preventDefault(); openUiRescueCenter(); }
+        else if (k === 'e') { e.preventDefault(); copyBugReport(); }
       });
     })();
     // More menu, favorites, and recent-panel navigation.
@@ -35934,55 +35837,55 @@ async function exportSlotsToFile(options = {}) {
         recents.unshift(id);
         saveList(RECENT_KEY, recents.slice(0, 10));
       }
-      window.recordPanelUseV1494 = recordPanelUse;
+      window.recordPanelUse = recordPanelUse;
 
-      window.toggleCurrentPanelFavoriteV1494 = function toggleCurrentPanelFavoriteV1494(){
+      window.toggleCurrentPanelFavorite = function toggleCurrentPanelFavorite(){
         const id = currentPanelId();
         let next = favorites();
         next = next.includes(id) ? next.filter(panel => panel !== id) : [id].concat(next);
         saveList(FAVORITE_KEY, next.slice(0, 10));
         showToast((next.includes(id) ? 'Favorited ' : 'Unfavorited ') + labelForPanel(id) + '.', 'info', 1500);
       };
-      window.clearPanelRecentsV1494 = function clearPanelRecentsV1494(){
+      window.clearPanelRecents = function clearPanelRecents(){
         saveList(RECENT_KEY, []);
         showToast('Recent panels cleared.', 'info', 1400);
       };
-      window.openPanelV1494 = function openPanelV1494(id){
+      window.openPanel = function openPanel(id){
         if (!id) return;
         if (POPUP_PANEL_IDS.has(id)) openPopup(id);
         else switchTab(id);
       };
-      window.openTopbarMoreV1494 = function openTopbarMoreV1494(event){
+      window.openTopbarMore = function openTopbarMore(event){
         if (event && event.preventDefault) event.preventDefault();
         let backdrop = document.getElementById('ux-more-backdrop-v1494');
         if (!backdrop) {
           backdrop = document.createElement('div');
           backdrop.id = 'ux-more-backdrop-v1494';
           backdrop.className = 'ux-more-backdrop-v1494';
-          backdrop.addEventListener('click', e => { if (e.target === backdrop) closeTopbarMoreV1494(); });
+          backdrop.addEventListener('click', e => { if (e.target === backdrop) closeTopbarMore(); });
           document.body.appendChild(backdrop);
         }
         const active = currentPanelId();
         const favs = favorites();
         const recents = parseList(RECENT_KEY).slice(0, 10);
         const navHtml = getQuickNavTargets().map(target =>
-          '<button class="btn ' + (target.id === active ? 'active' : '') + '" data-more-panel="' + escapeHtmlSafe(target.id) + '" onclick="openPanelV1494(\'' + escapeHtmlSafe(target.id) + '\');closeTopbarMoreV1494()">' + escapeHtmlSafe(target.label) + '</button>'
+          '<button class="btn ' + (target.id === active ? 'active' : '') + '" data-more-panel="' + escapeHtmlSafe(target.id) + '" onclick="openPanel(\'' + escapeHtmlSafe(target.id) + '\');closeTopbarMore()">' + escapeHtmlSafe(target.label) + '</button>'
         ).join('');
         const panelButtons = (ids, cls) => ids.map(id =>
-          '<button class="' + cls + '" onclick="openPanelV1494(\'' + escapeHtmlSafe(id) + '\');closeTopbarMoreV1494()">' + escapeHtmlSafe(labelForPanel(id)) + '</button>'
+          '<button class="' + cls + '" onclick="openPanel(\'' + escapeHtmlSafe(id) + '\');closeTopbarMore()">' + escapeHtmlSafe(labelForPanel(id)) + '</button>'
         ).join('');
         backdrop.innerHTML = '<div class="ux-more-card-v1494" role="dialog" aria-modal="true" aria-label="More actions and navigation">' +
-          '<div class="ux-more-head-v1494"><div><strong>More</strong><span>Navigation, favorites, recent panels, and UI actions</span></div><button class="btn" onclick="closeTopbarMoreV1494()">Close</button></div>' +
-          '<div class="ux-more-section-v1494" style="border-top:0;padding-top:0;margin-top:0"><strong>Navigation</strong><input class="ux-more-search-v1494" placeholder="Filter panels..." oninput="filterTopbarMoreNavV1494(this.value)"><div class="ux-more-nav-grid-v1494">' + navHtml + '</div></div>' +
-          '<div class="ux-more-grid-v1494"><button class="btn" onclick="toggleQuickUiBar();closeTopbarMoreV1494()">Toggle UI Bar</button><button class="btn" onclick="openSettingsModal(event);closeTopbarMoreV1494()">Settings</button><button class="btn" onclick="cycleUxModePreference()">Cycle UX Preset</button><button class="btn" onclick="toggleCurrentPanelFavoriteV1494()">Favorite Current</button></div>' +
+          '<div class="ux-more-head-v1494"><div><strong>More</strong><span>Navigation, favorites, recent panels, and UI actions</span></div><button class="btn" onclick="closeTopbarMore()">Close</button></div>' +
+          '<div class="ux-more-section-v1494" style="border-top:0;padding-top:0;margin-top:0"><strong>Navigation</strong><input class="ux-more-search-v1494" placeholder="Filter panels..." oninput="filterTopbarMoreNav(this.value)"><div class="ux-more-nav-grid-v1494">' + navHtml + '</div></div>' +
+          '<div class="ux-more-grid-v1494"><button class="btn" onclick="toggleQuickUiBar();closeTopbarMore()">Toggle UI Bar</button><button class="btn" onclick="openSettingsModal(event);closeTopbarMore()">Settings</button><button class="btn" onclick="cycleUxModePreference()">Cycle UX Preset</button><button class="btn" onclick="toggleCurrentPanelFavorite()">Favorite Current</button></div>' +
           '<div class="ux-more-section-v1494"><strong>Favorites</strong><div class="ux-more-chiprow-v1494">' + (favs.length ? panelButtons(favs, 'ux-recent-chip-v1494 favorite') : '<span>No favorites yet.</span>') + '</div></div>' +
           '<div class="ux-more-section-v1494"><strong>Recent</strong><div class="ux-more-chiprow-v1494">' + (recents.length ? panelButtons(recents, 'ux-recent-chip-v1494') : '<span>No recent panels yet.</span>') + '</div></div></div>';
         backdrop.classList.add('open');
-        positionTopbarMoreV1494();
+        positionTopbarMore();
         const input = backdrop.querySelector('.ux-more-search-v1494');
         if (input) requestAnimationFrame(() => input.focus());
       };
-      window.positionTopbarMoreV1494 = function positionTopbarMoreV1494(){
+      window.positionTopbarMore = function positionTopbarMore(){
         const backdrop = document.getElementById('ux-more-backdrop-v1494');
         if (!backdrop || !backdrop.classList.contains('open')) return;
         const card = backdrop.querySelector('.ux-more-card-v1494');
@@ -36012,22 +35915,23 @@ async function exportSlotsToFile(options = {}) {
         card.style.right = 'auto';
         card.style.maxHeight = 'calc(100vh - ' + (top + margin) + 'px)';
       };
-      window.filterTopbarMoreNavV1494 = function filterTopbarMoreNavV1494(value){
+      window.filterTopbarMoreNav = function filterTopbarMoreNav(value){
         const query = String(value || '').trim().toLowerCase();
         document.querySelectorAll('#ux-more-backdrop-v1494 [data-more-panel]').forEach(button => {
           button.style.display = !query || button.textContent.toLowerCase().includes(query) ? '' : 'none';
         });
       };
-      window.closeTopbarMoreV1494 = function closeTopbarMoreV1494(){
+      window.closeTopbarMore = function closeTopbarMore(){
         document.getElementById('ux-more-backdrop-v1494')?.classList.remove('open');
       };
       document.addEventListener('keydown', event => {
         const tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-        if (event.key === 'Escape') closeTopbarMoreV1494();
-        if (event.shiftKey && event.key.toLowerCase() === 'f') {
+        if (event.key === 'Escape') closeTopbarMore();
+        if (!event.ctrlKey && !event.metaKey && !event.altKey && event.shiftKey &&
+            event.key.toLowerCase() === 'f') {
           event.preventDefault();
-          toggleCurrentPanelFavoriteV1494();
+          toggleCurrentPanelFavorite();
         }
       });
     })();
