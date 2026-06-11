@@ -8,6 +8,8 @@ An Old School MMO-inspired idle/incremental RPG that runs in a single HTML file.
 
 EmberQuest is a love-letter to classic MMOs: 16 races, 16 classes, 24 zones spanning the newbie fields to the endgame, a D&D-style six-ability-score system, a runeword crafting system, Alternate Ascension, prestige, mercenaries, pets, dungeons, and an auto-battle ("AFK") mode for when you'd rather watch your character grind than do it yourself.
 
+Join me on  [Discord](https://discord.gg/vj3W9eqjv3)!
+
 ## Features
 
 **Classic character creation.** A guided three-step wizard: pick from 16 races (Human, Goliath, Aasimar, Wood/High/Dark/Half Elf, Dwarf, Troll, Ogre, Halfling, Gnome, Lizardfolk, Tabaxi, Bullywug, Dragonborn), then one of 16 classes (Warrior, Cleric, Paladin, Ranger, Death Knight, Druid, Monk, Bard, Rogue, Shaman, Necromancer, Wizard, Conjurer, Enchanter, Beastmaster, Berserker), then name your hero. Up to 24 character slots per account, and an optional **Hardcore (permadeath)** mode for those who like the stakes high.
