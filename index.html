@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>EmberQuest RPG</title>
+  <title>EmberQuest RPG - Version 1.6.5</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 
   <style>/*
 /* Login screen */
@@ -5778,7 +5779,10 @@
   
 
 /* ═══════════════════════════════════════════════════════════════════
-   v1.5.21 — Discord chat bridge + Mobile UI v2 layout + objective quick travel + lightweight Discord community + epic quest target migration
+   v1.6.5 — AFK goals now use core automation to pick useful zones and live/offline AFK share the same targeting logic
+   v1.6.4 — LFG usage presence indicator for shared heroes
+   v1.6.3 — Party combat targeting: enemies can attack group members, and heals automatically target wounded allies
+   v1.6.0 — Discord chat bridge + Mobile UI v2 layout + objective quick travel + lightweight Discord community + epic quest target migration
    Scoped so the desktop three-column layout remains untouched.
    ═══════════════════════════════════════════════════════════════════ */
 #mobile-v2-hud,
@@ -6071,10 +6075,233 @@
   #screen-game.ui-layout-mobile-v2 * { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 
-  </style>
+  
+/* ═══════════════════════════════════════════════════════════════════
+   v1.6.5 — AFK goals now choose useful unlocked zones instead of only toggling settings
+   v1.6.4 — LFG usage presence indicator for shared heroes
+   v1.6.3 — Party damage/healing support for mercenaries, grouped alts, and borrowed LFG heroes
+   v1.6.0 — Cloud save, news, weekly leaderboard, guild expansion UI
+   ═══════════════════════════════════════════════════════════════════ */
+.v16-news-panel {
+  margin: 10px 0 12px;
+  padding: 10px;
+  border: 1px solid rgba(244,214,138,0.24);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.22);
+  color: #f0e6cc;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.v16-news-panel:empty { display: none; }
+.v16-news-title {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:7px;
+  color:#f4d68a;
+  font-weight:700;
+}
+.v16-news-list { display:flex; flex-direction:column; gap:6px; }
+.v16-news-card {
+  border: 1px solid rgba(244,214,138,0.18);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.045);
+  padding: 8px;
+}
+.v16-news-card strong { color:#fff1bb; }
+.v16-news-meta { color:rgba(240,230,204,0.68); font-size:10px; margin-top:2px; }
+.v16-news-actions { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+.v16-news-actions button,
+.v16-inline-btn {
+  border:1px solid rgba(244,214,138,0.28);
+  background:rgba(0,0,0,0.24);
+  color:#f4d68a;
+  border-radius:6px;
+  padding:4px 8px;
+  font-size:11px;
+  cursor:pointer;
+}
+#charselect-news-v160 {
+  position:absolute;
+  right:16px;
+  top:60px;
+  width:min(360px, calc(100vw - 330px));
+  z-index:12;
+}
+@media (max-width: 720px) {
+  #charselect-news-v160 {
+    position:relative;
+    inset:auto;
+    width:auto;
+    margin:10px;
+  }
+}
+.v16-scope-toggle,
+.v16-guild-grid,
+.v16-admin-grid {
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.v16-card {
+  border:0.5px solid var(--border);
+  background:var(--bg-secondary);
+  border-radius:var(--radius-md);
+  padding:10px;
+  font-size:12px;
+  line-height:1.45;
+}
+.v16-card h4 {
+  margin:0 0 6px;
+  font-size:12px;
+  color:var(--text-primary);
+}
+.v16-pill {
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  border:0.5px solid var(--border);
+  border-radius:999px;
+  background:var(--bg-primary);
+  color:var(--text-secondary);
+  padding:2px 8px;
+  font-size:10px;
+  white-space:nowrap;
+}
+.v16-progress {
+  height:8px;
+  background:var(--bg-tertiary);
+  border-radius:999px;
+  overflow:hidden;
+  margin:5px 0 6px;
+}
+.v16-progress > span {
+  display:block;
+  height:100%;
+  width:0;
+  background:#BA7517;
+}
+.v16-conflict-actions {
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.v16-conflict-actions button {
+  font-size:11px;
+  padding:4px 8px;
+}
+
+/* v1.6.4 — core LFG usage indicator, reused by the Group tab render. */
+.lfg-share-actions-v164 {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  flex:0 0 auto;
+  margin-left:auto;
+}
+.lfg-usage-pill-v164 {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:700;
+  color:var(--text-secondary);
+  background:var(--bg-secondary);
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:4px 9px;
+}
+.lfg-usage-pill-v164.active {
+  color:#22c55e;
+  background:rgba(34,197,94,.10);
+  border-color:rgba(34,197,94,.35);
+}
+.lfg-usage-pill-v164.warn {
+  color:#f59e0b;
+  background:rgba(245,158,11,.10);
+  border-color:rgba(245,158,11,.35);
+}
+@media (max-width: 520px) {
+  .lfg-share-actions-v164 {
+    width:100%;
+    justify-content:space-between;
+  }
+  .lfg-usage-pill-v164 {
+    flex:1 1 auto;
+    justify-content:center;
+  }
+}
+#screen-game.ui-layout-mobile-v2 .v16-guild-grid,
+#screen-game.ui-layout-mobile-v2 .v16-admin-grid {
+  flex-direction:column;
+}
+</style>
 </head>
 
 <body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     EmberQuest RPG — v1.6.5
+     Changes from v1.5.13:
+     UI FIXES:
+       - Removed stray duplicate <body> tag right after the real one
+         (HTML had two opening <body> elements; only the first is
+         kept now).
+       - #ux-more-backdrop-v1494: bottom-sheet anchor now triggers at
+         <=820px (was <=520px), so the More menu sits flush at the
+         viewport bottom on phones and small tablets and stops
+         clipping off-screen at narrow widths. Card gets
+         max-height: 65vh with internal scroll.
+       - #screen-game.ui-layout-mobile #battle-stage: height floor
+         raised from 150px to 200px so the 6-enemy pyramid never
+         clips on mobile.
+       - .mob-pack-actions: flex-wrap + scroll guard so 4-6 enemy
+         action rows wrap gracefully instead of overflowing the
+         mob-card on narrow widths.
+       - .battle-enemies.multi-enemy .battle-label max-width clamped
+         with min-width:0 so labels for 4-6 enemies don't push the
+         pyramid wider than the stage.
+       - Mobile touch-target floor: #screen-game.ui-layout-mobile
+         .btn / .tab / .popup-btn / .mob-pack-actions .btn raised
+         to min-height: 36px (popup buttons stay 40px). Approaches
+         the 44px ideal without breaking the dense top-bar layout.
+       - min-width: 0 explicitly applied to flex/grid children that
+         could blow out the layout (#game-grid > div, .tab-bar,
+         .mob-pack-actions, .eq-inventory-layout, .eq-bag-grid).
+       - Combat log auto-scrolls into all layout modes (mobile +
+         desktop normal/fit/focus + cinematic) — overflow-y: auto
+         applied consistently.
+       - Z-index pass: toast-host z-index raised so toasts sit
+         above the More backdrop bottom-sheet on phones.
+       - fetchLfgPool(): added missing !currentUser guard so the
+         "lfg fetch failed [object Object]" console warning stops
+         firing during offline / not-signed-in play. The sibling
+         LFG functions (submitLfgRewardBatch, collectLfgRewards)
+         already had this guard; fetchLfgPool was the only one
+         missing it.
+     ENCOUNTER SCALING:
+       - spawnMob(): replaced flat 3-max pack table with zone-tier
+         aware scaling. Tier is derived from the active zone's
+         minLvl (Early <18, Mid 18-94, High 95-169, End-game >=170).
+       - End-game zones (minLvl >= 170): guaranteed minimum pack of
+         2 outdoors, up to 6 enemies per encounter. Distribution
+         follows the table in EmberQuest_Upgrade_Prompt.md.
+       - Boss-like, named, forced hunt-target, and dungeon-boss
+         encounters remain solo (unchanged).
+     BATTLE STAGE:
+       - Enemy sprite row supports up to 6 slots; the existing
+         applyPyramidFormation already laid out 1-6 in 1/2/3 rows
+         and is unchanged. Stage CSS comment updated from
+         "max enemies is 3" to "max enemies is 6".
+       - Battle stage heights (240/300/360 px) confirmed adequate
+         for a 6-enemy pyramid (max content ~146px) — left as-is
+         on desktop; mobile floor bumped to 200px.
+     ═══════════════════════════════════════════════════════════════ -->
 
   <div
     id="toast-host"
@@ -6093,6 +6320,7 @@
       <div style="background:rgba(244,214,138,0.10);border:1px solid rgba(244,214,138,0.28);border-radius:7px;padding:9px 12px;margin-bottom:14px;font-size:12px;line-height:1.5;color:#f0e6cc">
         <span style="color:#f4d68a;font-weight:700">☁ Account benefits:</span> sync characters across devices, cloud backup, and global leaderboards.
       </div>
+      <div id="login-news-v160" class="v16-news-panel" aria-live="polite"></div>
       <form id="login-form" autocomplete="on">
         <input id="login-user" type="email" placeholder="Email" autocomplete="username" required>
         <input id="login-pass" type="password" placeholder="Password (min 6 chars)" autocomplete="current-password" minlength="6" required>
@@ -6313,6 +6541,8 @@
       <span id="cs-user-email"></span>
       <button type="button" onclick="Cloud.signOut()">Log Out</button>
     </div>
+
+    <div id="charselect-news-v160" class="v16-news-panel" aria-live="polite"></div>
 
     <!-- LEFT-SIDE classic control panel -->
     <div
@@ -7274,7 +7504,7 @@
             <div class="admin-manage-box">
               <div style="font-weight:700;margin-bottom:5px">Internal Admin Change Notes</div>
               <div class="admin-internal-notes">
-                <div><strong>v1.4.137</strong> fixes remaining desktop Fit/Focus/Normal sizing, restores full-width Fit, and removes stale version overrides.<br><strong>v1.4.136</strong> hardens Fit / Focus / Normal mode switching so all buttons and Settings write to the same real UI preference object.<br><strong>v1.4.135</strong> repairs Fit / Focus / Normal layout modes so they behave as exclusive view modes and no longer stack cramped saved states.<br><strong>v1.4.134</strong> keeps the combat action button row visible by reserving bottom controls in the combat flex layout.<br><strong>v1.4.133</strong> restores Search Log beside Timestamps and keeps the combat-log tools hidden behind it until opened.<br><strong>v1.4.123</strong> makes the More button appear immediately after entering the world instead of waiting for a delayed UI refresh.<br><strong>v1.4.123</strong> tucks the combat-log copy/export/clear/mark/history tools behind Search Log and places Search Log after Timestamps.<br><strong>v1.4.123</strong> fixes the More menu recent-panels list so it tracks and shows the last 10 places visited.<br><strong>v1.4.123</strong> adds keybinds for spell gems 4–6 and keeps combat-log search hidden until Search Log is clicked.<br><strong>v1.4.123</strong> removed UI Rescue from More, moved Admin next to the version, removed the ? tab button, and added tab help inside About.<br><strong>v1.4.123</strong> fixed center-panel fit, settings single-list alignment, topbar Settings/UI/More order, and Save indicator order.<br><strong>v1.4.101</strong> fixed combat bottom controls, More-menu toggling, settings collapsibles/alignment, Stats, and UI/More order.<br><strong>v1.4.100</strong> removed the center-panel quick action/context bar from every tab.<br><strong>v1.4.99</strong> removed the unwanted center-panel quick action/context bar that appeared under the tabs.<br><strong>v1.4.98</strong> performance hotfix: heavy UI observers and recurring injectors now sleep on login/character select and only run while the game screen is active.<br><strong>v1.4.97</strong> UX cleanup: Nav moved into More, Rescue/Backup tools moved into Settings, Layout left-aligned in UI, Tiny Topbar fixed, and combat Stats were restyled.<br><strong>v1.4.95</strong> UX cleanup: removed Command Palette, moved Rescue into Settings, and moved Layout into the UI menu.<br><strong>v1.4.92</strong> Added UI Rescue Center, error watchdog, bug-report export, and safe layout presets.<br><strong>v1.4.91</strong> Added backup manager, combat session history, log markers, and recovery shortcuts.<br><strong>v1.4.90</strong> Added combat log search/export/copy/clear tools and improved session reset controls.<br><strong>v1.4.89</strong> Fixed Layout Diagnostics so it no longer renders at the bottom unless opened.<br><strong>v1.4.88</strong> Added inventory search/extra filters, optimize gear, save diagnostics/export, and UI sanity tools.<br><strong>v1.4.87</strong> Added side-by-side item compare, compact topbar toggle, inventory quick actions, and accessibility shortcuts.<br><strong>v1.4.85</strong> Fixed UI menu open/close spacing so panels no longer jump into the top bar.</div>
+                <div><strong>v1.6.5</strong> upgrades AFK goals so Level Push and Level Alts move to the highest unlocked zone, Gold goals pick the best unlocked gold zone, and live/offline AFK use the same core goal planner.<br><strong>v1.6.4</strong> adds a live LFG usage indicator showing how many active borrowers are using your shared hero.<br><strong>v1.6.3</strong> adds party-wide enemy targeting and party-aware heals so mercenaries, grouped alts, and LFG heroes can take damage and receive healing.<br><strong>v1.4.137</strong> fixes remaining desktop Fit/Focus/Normal sizing, restores full-width Fit, and removes stale version overrides.<br><strong>v1.4.136</strong> hardens Fit / Focus / Normal mode switching so all buttons and Settings write to the same real UI preference object.<br><strong>v1.4.135</strong> repairs Fit / Focus / Normal layout modes so they behave as exclusive view modes and no longer stack cramped saved states.<br><strong>v1.4.134</strong> keeps the combat action button row visible by reserving bottom controls in the combat flex layout.<br><strong>v1.4.133</strong> restores Search Log beside Timestamps and keeps the combat-log tools hidden behind it until opened.<br><strong>v1.4.123</strong> makes the More button appear immediately after entering the world instead of waiting for a delayed UI refresh.<br><strong>v1.4.123</strong> tucks the combat-log copy/export/clear/mark/history tools behind Search Log and places Search Log after Timestamps.<br><strong>v1.4.123</strong> fixes the More menu recent-panels list so it tracks and shows the last 10 places visited.<br><strong>v1.4.123</strong> adds keybinds for spell gems 4–6 and keeps combat-log search hidden until Search Log is clicked.<br><strong>v1.4.123</strong> removed UI Rescue from More, moved Admin next to the version, removed the ? tab button, and added tab help inside About.<br><strong>v1.4.123</strong> fixed center-panel fit, settings single-list alignment, topbar Settings/UI/More order, and Save indicator order.<br><strong>v1.4.101</strong> fixed combat bottom controls, More-menu toggling, settings collapsibles/alignment, Stats, and UI/More order.<br><strong>v1.4.100</strong> removed the center-panel quick action/context bar from every tab.<br><strong>v1.4.99</strong> removed the unwanted center-panel quick action/context bar that appeared under the tabs.<br><strong>v1.4.98</strong> performance hotfix: heavy UI observers and recurring injectors now sleep on login/character select and only run while the game screen is active.<br><strong>v1.4.97</strong> UX cleanup: Nav moved into More, Rescue/Backup tools moved into Settings, Layout left-aligned in UI, Tiny Topbar fixed, and combat Stats were restyled.<br><strong>v1.4.95</strong> UX cleanup: removed Command Palette, moved Rescue into Settings, and moved Layout into the UI menu.<br><strong>v1.4.92</strong> Added UI Rescue Center, error watchdog, bug-report export, and safe layout presets.<br><strong>v1.4.91</strong> Added backup manager, combat session history, log markers, and recovery shortcuts.<br><strong>v1.4.90</strong> Added combat log search/export/copy/clear tools and improved session reset controls.<br><strong>v1.4.89</strong> Fixed Layout Diagnostics so it no longer renders at the bottom unless opened.<br><strong>v1.4.88</strong> Added inventory search/extra filters, optimize gear, save diagnostics/export, and UI sanity tools.<br><strong>v1.4.87</strong> Added side-by-side item compare, compact topbar toggle, inventory quick actions, and accessibility shortcuts.<br><strong>v1.4.85</strong> Fixed UI menu open/close spacing so panels no longer jump into the top bar.</div>
                 <div><strong>v1.4.84</strong> Moved Fit/Focus/Panels/Preset into the UI menu and right-aligned top-bar controls.</div>
                 <div><strong>v1.4.83</strong> Fixed real screen id mismatch (#screen-charselect) and made loadSlot activate the game screen directly.</div>
                 <div><strong>v1.4.82</strong> Fixed world entry showing nothing by force-restoring the game screen, topbar, and main layout after character load.</div>
@@ -8569,12 +8799,7 @@
 
           <div
             style="font-size:10px;color:var(--text-secondary);margin-bottom:8px">
-            Class
-            skills
-            are tied
-            to
-            attack
-            behavior.
+            AFK goals now choose zones automatically: Level Push hunts the highest unlocked zone, Gold Farm hunts the best unlocked gold zone, and Contract follows the pinned contract. Class skills are tied to attack behavior.
           </div>
 
           <div
@@ -9161,6 +9386,7 @@
       },
       async signOut() {
         const hadAuthenticatedUser = !!currentUser;
+        try { if (typeof stopLfgUsageHeartbeat === 'function') stopLfgUsageHeartbeat(true); } catch (e) {}
         try { if (window.Chat) Chat.cleanupSubscriptions(); } catch (e) {}
         clearTimeout(this.syncTimer); this.syncTimer = null;
         if (sb) { try { await sb.auth.signOut(); } catch (e) {} }
@@ -9181,21 +9407,46 @@
           updateAdminVisibility();
           return false;
         }
+
+        let rpcAnswered = false;
         try {
-          const { data, error } = await sb
-            .from('admin_users')
-            .select('user_id,is_admin,role,notes,updated_at')
-            .eq('user_id', currentUser.id)
-            .eq('is_admin', true)
-            .maybeSingle();
-          if (error) throw error;
-          currentAdminRecord = data || null;
-          currentUserIsAdmin = !!(data && data.is_admin);
+          // v1.6.0 uses a security-definer RPC first so the Admin button does
+          // not depend on fragile/self-referencing RLS policies on admin_users.
+          const { data, error } = await sb.rpc('is_emberquest_admin');
+          if (!error && typeof data === 'boolean') {
+            rpcAnswered = true;
+            currentUserIsAdmin = !!data;
+          } else if (error && !String(error.message || '').toLowerCase().includes('could not find')) {
+            console.warn('Admin RPC check failed; falling back to direct row check', error);
+          }
         } catch (e) {
-          console.warn('Admin flag check failed', e);
-          currentUserIsAdmin = false;
-          currentAdminRecord = null;
+          console.warn('Admin RPC check failed; falling back to direct row check', e);
         }
+
+        if (!rpcAnswered || currentUserIsAdmin) {
+          try {
+            const { data, error } = await sb
+              .from('admin_users')
+              .select('user_id,is_admin,role,notes,updated_at')
+              .eq('user_id', currentUser.id)
+              .eq('is_admin', true)
+              .maybeSingle();
+            if (error) throw error;
+            currentAdminRecord = data || null;
+            if (!rpcAnswered) currentUserIsAdmin = !!(data && data.is_admin);
+          } catch (e) {
+            // If the RPC already confirmed admin, keep the Admin button visible
+            // even if the best-effort metadata read is blocked by RLS.
+            console.warn('Admin flag metadata read failed', e);
+            if (!rpcAnswered) {
+              currentUserIsAdmin = false;
+              currentAdminRecord = null;
+            } else if (currentUserIsAdmin && !currentAdminRecord) {
+              currentAdminRecord = { user_id: currentUser.id, is_admin: true, role: 'admin', notes: 'RPC verified', updated_at: null };
+            }
+          }
+        }
+
         updateAdminVisibility();
         return currentUserIsAdmin;
       },
@@ -9522,6 +9773,102 @@
           if (currentUser) rows = rows.map(r => ({ ...r, owned_by_current_user: r.user_id === currentUser.id }));
           return rows;
         } catch (e) { console.warn('lfg fetch error', e); return null; }
+      },
+      _lfgUsageUnavailable: false,
+      _isMissingLfgUsageTableError(error) {
+        const msg = String((error && (error.message || error.details || error.hint)) || '').toLowerCase();
+        return error && (error.code === '42P01' || msg.includes('lfg_usage') || msg.includes('schema cache'));
+      },
+      // v1.6.4: active LFG usage presence. Borrowers upsert/delete rows while
+      // they have a shared hero in their group. The owner reads recent rows to
+      // display how many people are actively using their shared character.
+      async fetchMyLfgUsageCounts() {
+        if (!sb || !currentUser || this._lfgUsageUnavailable) return null;
+        try {
+          const cutoff = new Date(Date.now() - LFG_USAGE_STALE_MS).toISOString();
+          const { data, error } = await sb.from('lfg_usage')
+            .select('owner_char_key,borrower_user_id,borrower_session_id,last_seen')
+            .eq('owner_user_id', currentUser.id)
+            .gte('last_seen', cutoff);
+          if (error) {
+            if (this._isMissingLfgUsageTableError(error)) this._lfgUsageUnavailable = true;
+            else console.warn('lfg usage count fetch failed', error);
+            return null;
+          }
+          const byChar = {};
+          (data || []).forEach(row => {
+            const key = String(row.owner_char_key);
+            const borrowerKey = String(row.borrower_user_id || row.borrower_session_id || 'unknown');
+            if (!byChar[key]) byChar[key] = new Set();
+            byChar[key].add(borrowerKey);
+          });
+          const out = {};
+          Object.keys(byChar).forEach(key => { out[key] = byChar[key].size; });
+          return out;
+        } catch (e) {
+          if (this._isMissingLfgUsageTableError(e)) this._lfgUsageUnavailable = true;
+          else console.warn('lfg usage count fetch error', e);
+          return null;
+        }
+      },
+      async clearMyLfgUsageForSlot(borrowerCharKey) {
+        if (!sb || !currentUser || this._lfgUsageUnavailable) return { ok: false };
+        try {
+          const q = sb.from('lfg_usage')
+            .delete()
+            .eq('borrower_user_id', currentUser.id)
+            .eq('borrower_char_key', Math.floor(Number(borrowerCharKey || 0)))
+            .eq('borrower_session_id', getLfgUsageSessionId());
+          const { error } = await q;
+          if (error) {
+            if (this._isMissingLfgUsageTableError(error)) this._lfgUsageUnavailable = true;
+            else console.warn('lfg usage clear failed', error);
+            return { ok: false, error };
+          }
+          return { ok: true };
+        } catch (e) {
+          if (this._isMissingLfgUsageTableError(e)) this._lfgUsageUnavailable = true;
+          else console.warn('lfg usage clear error', e);
+          return { ok: false, error: e };
+        }
+      },
+      async syncLfgUsageForParty(heroes, borrowerCharKey, borrowerName) {
+        if (!sb || !currentUser || this._lfgUsageUnavailable) return { ok: false };
+        const cleanHeroes = (Array.isArray(heroes) ? heroes : [])
+          .filter(h => h && h.user_id && h.char_key != null && h.user_id !== currentUser.id);
+        try {
+          // Clear this browser/session's old presence for the active character,
+          // then republish the current borrowed-hero roster. This keeps add,
+          // remove, tab switches, and stale saved parties using the same core path.
+          await this.clearMyLfgUsageForSlot(borrowerCharKey);
+          if (!cleanHeroes.length) return { ok: true };
+          const now = new Date().toISOString();
+          const sessionId = getLfgUsageSessionId();
+          const rows = cleanHeroes.map(h => ({
+            owner_user_id: h.user_id,
+            owner_char_key: Math.floor(Number(h.char_key)),
+            borrower_user_id: currentUser.id,
+            borrower_char_key: Math.floor(Number(borrowerCharKey || 0)),
+            borrower_session_id: sessionId,
+            borrower_char_name: String(borrowerName || (char && char.name) || 'Hero').slice(0, 80),
+            borrower_level: Math.max(1, Math.floor(Number(char && char.level || 1))),
+            last_seen: now,
+            created_at: now
+          }));
+          const { error } = await sb.from('lfg_usage').upsert(rows, {
+            onConflict: 'owner_user_id,owner_char_key,borrower_user_id,borrower_char_key,borrower_session_id'
+          });
+          if (error) {
+            if (this._isMissingLfgUsageTableError(error)) this._lfgUsageUnavailable = true;
+            else console.warn('lfg usage sync failed', error);
+            return { ok: false, error };
+          }
+          return { ok: true };
+        } catch (e) {
+          if (this._isMissingLfgUsageTableError(e)) this._lfgUsageUnavailable = true;
+          else console.warn('lfg usage sync error', e);
+          return { ok: false, error: e };
+        }
       },
       // ── LFG rewards (Phase 3) ─────────────────────────────────────────────
       // Submit a batch of kill events for borrowed heroes to the lfg-reward
@@ -11708,6 +12055,8 @@
       if (!merc) return false;
 
       const mercName = getMercenaryDisplayName();
+      const mercUnit = getPartyCombatantById('merc-main');
+      if (mercUnit && mercUnit.hp <= 0) return false;
       const level = Math.max(1, Number(char.level || 1));
       const now = Date.now();
 
@@ -11755,14 +12104,16 @@
           ' points of damage and weakens it.'
         ], 'dmg');
       } else if (behavior === 'heal') {
-        const hurt = char.maxHp - char.hp;
-        if (hurt > Math.floor(char.maxHp * 0.08)) {
-          const healAmt = Math.min(hurt, Math.max(6, Math.floor(char.maxHp * 0.07 + level * 1.1 + Math.random() * 7)));
-          char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        const healTarget = getBestPartyHealTarget(0.92, true);
+        if (healTarget) {
+          const healAmt = Math.max(6, Math.floor(healTarget.maxHp * 0.07 + level * 1.1 + Math.random() * 7));
+          const healed = applyPartyHeal(healTarget, healAmt);
           log([
             { text: mercName, cls: 'combat-log-merc' },
-            ' heals you for ',
-            { text: fmt(healAmt), cls: 'combat-log-heal-amt' },
+            ' heals ',
+            getPartyUnitLogPart(healTarget, false),
+            ' for ',
+            { text: fmt(healed), cls: 'combat-log-heal-amt' },
             ' hit points.'
           ], 'heal');
         } else {
@@ -12953,14 +13304,14 @@
       rares: { label: 'Rare Hunt', autoSellJunk: true, autoSellNormalGear: false, autoSellBlueMagicGear: false, autoSellRareGear: false, autoSellLegendaryGear: false, protectRarePlus: true, autoEquipEmptySlots: false, autoEquipUpgradedEquipment: false }
     };
     const AFK_GOALS = {
-      balanced: { label: 'Balanced' },
-      level: { label: 'Level Push' },
-      contract: { label: 'Finish Contract' },
-      gold: { label: 'Gold Farm' },
+      balanced: { label: 'Balanced', zoneMode: 'balanced', desc: 'Keep hunting in an efficient unlocked zone near your level.' },
+      level: { label: 'Level Push', zoneMode: 'highest', desc: 'Move to the highest-level unlocked zone and push experience.' },
+      contract: { label: 'Finish Contract', zoneMode: 'contract', desc: 'Move to the pinned contract zone and target its mob.' },
+      gold: { label: 'Gold Farm', zoneMode: 'gold', desc: 'Move to the unlocked zone with the strongest gold multiplier.' },
       // Smart goal automation — these carry a numeric target stored on
-      // char.afkGoalTargets and auto-stop AFK (or switch alts) on completion.
-      farm_until_gold: { label: 'Farm Until X Gold', smart: true, target: 'gold', targetLabel: 'Target gold', defaultTarget: 100000 },
-      level_alts_to: { label: 'Level Alts to N', smart: true, target: 'level', targetLabel: 'Target level', defaultTarget: 20 }
+      // char.afkGoalTargets and drive target/progress behavior on completion.
+      farm_until_gold: { label: 'Farm Until X Gold', smart: true, target: 'gold', targetLabel: 'Target gold', defaultTarget: 100000, zoneMode: 'gold', desc: 'Gold Farm behavior with a visible target.' },
+      level_alts_to: { label: 'Level Alts to N', smart: true, target: 'level', targetLabel: 'Target level', defaultTarget: 20, zoneMode: 'highest', desc: 'Level the active character in the highest unlocked zone, then hand off to the next alt.' }
     };
 
     const DUNGEON_MODIFIERS = {
@@ -13903,6 +14254,12 @@
       while (targetChar.groupMercNames.length < targetChar.groupMercs.length) {
         targetChar.groupMercNames.push('');
       }
+      // v1.6.3 party combat vitals: non-player group members now have HP
+      // pools that enemies can target and healing can restore. Local grouped
+      // characters use their own saved hp/maxHp; mercenary/LFG combat HP is
+      // tracked on the leader so borrowed heroes are never modified.
+      if (!targetChar.partyHp || typeof targetChar.partyHp !== 'object') targetChar.partyHp = {};
+      if (!targetChar.partyHp.units || typeof targetChar.partyHp.units !== 'object') targetChar.partyHp.units = {};
       if (!targetChar.classQuest || typeof targetChar.classQuest !== 'object') {
         targetChar.classQuest = createClassQuestState(targetChar.cls);
       }
@@ -14421,6 +14778,286 @@
       return targetChar.lfgParty.filter(h => h && typeof h === 'object' && (!!h.hardcore === !!targetChar.hardcore));
     }
 
+    // v1.6.3: shared party combat helpers. The player and local grouped
+    // characters use their real HP. Mercenaries and borrowed LFG heroes use
+    // leader-owned combat HP pools so the party can take damage without
+    // mutating another player's save.
+    function ensurePartyHpState(targetChar = char) {
+      if (!targetChar) return {};
+      if (!targetChar.partyHp || typeof targetChar.partyHp !== 'object') targetChar.partyHp = {};
+      if (!targetChar.partyHp.units || typeof targetChar.partyHp.units !== 'object') targetChar.partyHp.units = {};
+      return targetChar.partyHp.units;
+    }
+
+    function syncPartyHpPool(id, maxHp, targetChar = char) {
+      const pools = ensurePartyHpState(targetChar);
+      const cap = Math.max(1, Math.floor(Number(maxHp || 1)));
+      let rec = pools[id];
+      if (!rec || typeof rec !== 'object') rec = { hp: cap, maxHp: cap };
+      const oldMax = Math.max(1, Math.floor(Number(rec.maxHp || cap)));
+      let hp = Number(rec.hp);
+      if (!Number.isFinite(hp)) hp = cap;
+      if (oldMax !== cap) hp = Math.round(Math.max(0, Math.min(1, hp / oldMax)) * cap);
+      rec.maxHp = cap;
+      rec.hp = Math.max(0, Math.min(cap, Math.floor(hp)));
+      pools[id] = rec;
+      return rec;
+    }
+
+    function prunePartyHpPools(activeIds, targetChar = char) {
+      const pools = ensurePartyHpState(targetChar);
+      const keep = new Set(activeIds || []);
+      Object.keys(pools).forEach(k => { if (!keep.has(k)) delete pools[k]; });
+    }
+
+    function getPartyUnitLogClass(unit) {
+      if (!unit) return 'combat-log-merc';
+      if (unit.type === 'player') return 'combat-log-player';
+      if (unit.type === 'merc-main' || unit.type === 'merc') return 'combat-log-merc';
+      return 'combat-log-merc';
+    }
+
+    function getPartyUnitLogPart(unit, caps = false) {
+      if (!unit || unit.isPlayer) return caps ? 'YOU' : 'you';
+      return { text: unit.name || 'ally', cls: getPartyUnitLogClass(unit) };
+    }
+
+    function getPartyUnitPlainName(unit, caps = false) {
+      if (!unit || unit.isPlayer) return caps ? 'YOU' : 'you';
+      return unit.name || 'ally';
+    }
+
+    function getMercCombatMaxHp(mercType, indexOffset = 0) {
+      const base = Math.max(1, Number(char?.maxHp || 100));
+      const merc = MERCENARY_TYPES[mercType] || {};
+      let mult = merc.behavior === 'heal' ? 0.74 : (merc.behavior === 'debuff' ? 0.8 : 0.9);
+      if ((merc.class || '').toLowerCase().includes('warrior') || (merc.class || '').toLowerCase().includes('paladin') || (merc.class || '').toLowerCase().includes('death')) mult += 0.08;
+      return Math.max(20, Math.floor(base * mult + (Number(char?.level || 1) * (3 + indexOffset))));
+    }
+
+    function getLfgCombatMaxHp(hero) {
+      const fallback = Math.max(1, Number(char?.maxHp || 100));
+      return Math.max(20, Math.floor(Number(hero?.maxHp || hero?.hpMax || fallback * 0.86)));
+    }
+
+    function coerceLocalMemberVitals(member) {
+      if (!member) return;
+      member.maxHp = Math.max(1, Math.floor(Number(member.maxHp || member.hp || 1)));
+      if (!Number.isFinite(Number(member.hp))) member.hp = member.maxHp;
+      member.hp = Math.max(0, Math.min(member.maxHp, Math.floor(Number(member.hp || 0))));
+      member.maxMp = Math.max(0, Math.floor(Number(member.maxMp || member.mp || 0)));
+      if (!Number.isFinite(Number(member.mp))) member.mp = member.maxMp;
+      member.mp = Math.max(0, Math.min(member.maxMp, Math.floor(Number(member.mp || 0))));
+    }
+
+    function getPartyCombatants(options = {}) {
+      const includeDowned = options.includeDowned !== false;
+      const units = [];
+      if (!char) return units;
+      const activePoolIds = [];
+
+      coerceLocalMemberVitals(char);
+      units.push({
+        id: 'player', unitId: 'player', type: 'player', isPlayer: true,
+        name: char.name || 'You', displayName: char.name || 'You', cls: char.cls, race: char.race || 'Human',
+        level: Math.max(1, Number(char.level || 1)), hp: Math.max(0, Number(char.hp || 0)), maxHp: Math.max(1, Number(char.maxHp || 1)),
+        def: Math.max(0, Number(char.def || 0)),
+        setHp(v) { char.hp = Math.max(0, Math.min(char.maxHp || 1, Math.floor(Number(v) || 0))); this.hp = char.hp; }
+      });
+
+      const mainMercType = (char.mercenary && char.mercenary.type && char.mercenary.type !== 'none') ? char.mercenary.type : null;
+      if (mainMercType && MERCENARY_TYPES[mainMercType]) {
+        const merc = MERCENARY_TYPES[mainMercType];
+        const rec = syncPartyHpPool('merc-main', getMercCombatMaxHp(mainMercType, 0));
+        activePoolIds.push('merc-main');
+        units.push({
+          id: 'merc-main', unitId: 'merc-main', type: 'merc-main', mercType: mainMercType,
+          name: getMercenaryDisplayName(char), displayName: getMercenaryDisplayName(char), cls: merc.class, race: merc.race || 'Human',
+          level: Math.max(1, Number(char.level || 1)), hp: rec.hp, maxHp: rec.maxHp,
+          def: Math.max(1, Math.floor((char.def || 1) * 0.72 + (char.level || 1) * 0.8)),
+          setHp(v) { rec.hp = Math.max(0, Math.min(rec.maxHp, Math.floor(Number(v) || 0))); this.hp = rec.hp; }
+        });
+      }
+
+      const groupMercTypes = getGroupMercTypes(char);
+      groupMercTypes.forEach((type, i) => {
+        const merc = MERCENARY_TYPES[type];
+        if (!merc) return;
+        const id = 'merc-' + i;
+        const rec = syncPartyHpPool(id, getMercCombatMaxHp(type, i + 1));
+        activePoolIds.push(id);
+        units.push({
+          id, unitId: id, type: 'merc', mercIndex: i, mercType: type,
+          name: getGroupMercDisplayName(char, i), displayName: getGroupMercDisplayName(char, i), cls: merc.class, race: merc.race || 'Human',
+          level: Math.max(1, Number(char.level || 1)), hp: rec.hp, maxHp: rec.maxHp,
+          def: Math.max(1, Math.floor((char.def || 1) * 0.66 + (char.level || 1) * 0.7)),
+          setHp(v) { rec.hp = Math.max(0, Math.min(rec.maxHp, Math.floor(Number(v) || 0))); this.hp = rec.hp; }
+        });
+      });
+
+      getGroupMemberSlotIndices().forEach(idx => {
+        const member = slots[idx];
+        if (!member) return;
+        coerceLocalMemberVitals(member);
+        units.push({
+          id: 'group-' + idx, unitId: 'group-' + idx, type: 'group', slotIdx: idx,
+          name: member.name || 'Group Member', displayName: member.name || 'Group Member', cls: member.cls, race: member.race || 'Human',
+          level: Math.max(1, Number(member.level || 1)), hp: Math.max(0, Number(member.hp || 0)), maxHp: Math.max(1, Number(member.maxHp || 1)),
+          def: Math.max(0, Number(member.def || 0)),
+          setHp(v) { member.hp = Math.max(0, Math.min(member.maxHp || 1, Math.floor(Number(v) || 0))); this.hp = member.hp; }
+        });
+      });
+
+      getLfgParty(char).forEach((hero, i) => {
+        const id = 'lfg-' + i;
+        const rec = syncPartyHpPool(id, getLfgCombatMaxHp(hero));
+        activePoolIds.push(id);
+        units.push({
+          id, unitId: id, type: 'lfg', lfgIndex: i,
+          name: hero.name || 'LFG Hero', displayName: (hero.name || 'LFG Hero') + ' ⓛ', cls: hero.class || hero.cls, race: hero.race || 'Human',
+          level: Math.max(1, Number(hero.level || char.level || 1)), hp: rec.hp, maxHp: rec.maxHp,
+          def: Math.max(1, Number(hero.def || Math.floor((char.def || 1) * 0.75))),
+          setHp(v) { rec.hp = Math.max(0, Math.min(rec.maxHp, Math.floor(Number(v) || 0))); this.hp = rec.hp; }
+        });
+      });
+
+      prunePartyHpPools(activePoolIds, char);
+      return includeDowned ? units.slice(0, MAX_GROUP_SIZE) : units.filter(u => u.hp > 0).slice(0, MAX_GROUP_SIZE);
+    }
+
+    function getPartyCombatantById(unitId) {
+      return getPartyCombatants({ includeDowned: true }).find(u => u.unitId === unitId || u.id === unitId) || null;
+    }
+
+    function getBestPartyHealTarget(thresholdPct = 0.999, includeDowned = true) {
+      const units = getPartyCombatants({ includeDowned: true })
+        .filter(u => u && u.maxHp > 0 && u.hp < u.maxHp && (includeDowned || u.hp > 0));
+      if (!units.length) return null;
+      units.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+      const best = units[0];
+      return (best.hp / best.maxHp) <= thresholdPct ? best : null;
+    }
+
+    function applyPartyHeal(unit, amount) {
+      if (!unit || typeof unit.setHp !== 'function') return 0;
+      const heal = Math.max(0, Math.floor(Number(amount || 0)));
+      const before = Math.max(0, Number(unit.hp || 0));
+      unit.setHp(Math.min(unit.maxHp, before + heal));
+      return Math.max(0, Math.floor(Number(unit.hp || 0) - before));
+    }
+
+    function applyPartyDamage(unit, amount) {
+      if (!unit || typeof unit.setHp !== 'function') return 0;
+      const dmg = Math.max(0, Math.floor(Number(amount || 0)));
+      const before = Math.max(0, Number(unit.hp || 0));
+      unit.setHp(Math.max(0, before - dmg));
+      return Math.max(0, before - Math.max(0, Number(unit.hp || 0)));
+    }
+
+    function pickEnemyPartyTarget() {
+      const units = getPartyCombatants({ includeDowned: false }).filter(u => u.hp > 0);
+      if (!units.length) return null;
+      // Give the main character a slightly higher chance to hold threat, but
+      // allow every living party member to be targeted.
+      const weighted = [];
+      units.forEach(u => {
+        let weight = 1;
+        if (u.isPlayer) weight = 2;
+        if (u.type === 'merc-main' || u.type === 'merc') weight = 1.25;
+        for (let i = 0; i < Math.max(1, Math.round(weight * 4)); i++) weighted.push(u);
+      });
+      return weighted[Math.floor(Math.random() * weighted.length)] || units[0];
+    }
+
+    function rollPartyUnitDodge(unit) {
+      if (!unit || unit.isPlayer) return rollPlayerDodge();
+      const dex = Number((unit.slotIdx !== undefined && slots[unit.slotIdx] && slots[unit.slotIdx].abilities) ? slots[unit.slotIdx].abilities.dex : 10);
+      const levelBonus = Math.min(0.06, Math.max(0, (Number(unit.level || 1) - 1) * 0.001));
+      const dexBonus = Math.max(0, Math.min(0.05, (dex - 10) * 0.003));
+      return Math.random() < Math.min(0.18, PHASE1.playerDodge + levelBonus + dexBonus);
+    }
+
+    function resolveMobStrikeAgainstParty(attacker, opts = {}) {
+      if (!attacker || !char || char.hp <= 0) return { killedPlayer: false, damage: 0, hit: false, target: null };
+      const target = opts.target || pickEnemyPartyTarget();
+      if (!target) return { killedPlayer: false, damage: 0, hit: false, target: null };
+      const delay = Number.isFinite(Number(opts.delay)) ? Number(opts.delay) : 780;
+      const popupKind = opts.popupKind || 'dmg';
+
+      if (rollPartyUnitDodge(target)) {
+        log([
+          { text: attacker.name, cls: 'combat-log-mob' },
+          opts.assist ? ' joins the attack, but ' : ' tries to hit ',
+          getPartyUnitLogPart(target, true),
+          ' dodges!'
+        ], 'info');
+        addDamageMeterDodge();
+        setTimeout(() => battlePopup(target.unitId, 'MISS', 'miss'), delay);
+        return { killedPlayer: false, damage: 0, hit: false, target };
+      }
+
+      const atkScale = Number.isFinite(Number(opts.atkScale)) ? Number(opts.atkScale) : 1;
+      const attackValue = Math.max(1, Math.floor((attacker.atk || 1) * atkScale));
+      const targetDef = Math.max(1, Math.floor(Number(target.def || 1)));
+      const defMitFraction = attackValue / (attackValue + targetDef);
+      const baseVariance = Math.floor(Math.random() * (opts.assist ? 3 : 4)) - (opts.assist ? 0 : 1);
+      let dmg = Math.max(1, Math.round(attackValue * defMitFraction) + baseVariance);
+
+      const aa = getAACombatModifiers(char);
+      const prestige = getPrestigeModifiers(char);
+      const event = opts.event || getActiveZoneEvent(char.zone);
+      const fx = opts.fx || getStatusEffectModifiers(char);
+      const dungeonMod = opts.dungeonMod || (char.dungeon && char.dungeon.active ? getDungeonModifierData(char.dungeon.modifier) : getDungeonModifierData('balanced'));
+      const rawMobDamageMult = aa.mobDamageMult * prestige.mobDamageMult * ((event && event.mobDamageMult) || 1) * ((fx && fx.mobDamageMult) || 1) * ((dungeonMod && dungeonMod.mobDamageMult) || 1);
+      dmg = Math.max(1, Math.floor(dmg * Math.max(0.35, rawMobDamageMult)));
+
+      const lvlDiff = (Number(target.level || char.level || 1)) - (Number(attacker.level || 1));
+      const lvlMult = lvlDiff >= 0 ? Math.max(0.2, 1 - lvlDiff * 0.04) : Math.min(2.5, 1 + (-lvlDiff) * 0.05);
+      dmg = Math.max(1, Math.floor(dmg * lvlMult));
+
+      const critRoll = rollMobCrit(dmg);
+      dmg = critRoll.dmg;
+      if (target.isPlayer && opts.allowTankRedirect !== false) dmg = applyMercTankRedirect(dmg);
+      if (target.isPlayer) {
+        const abil = getAbilityModifiers(char);
+        if (abil.mitigation > 0) dmg = Math.max(1, dmg - abil.mitigation);
+      }
+      if (opts.maxHpCapPct) dmg = Math.min(dmg, Math.max(1, Math.floor((target.maxHp || 100) * opts.maxHpCapPct)));
+
+      if (dmg <= 0) {
+        log([
+          { text: attacker.name, cls: 'combat-log-mob' },
+          opts.assist ? ' joins the attack, but misses!' : ' tries to hit ',
+          opts.assist ? '' : getPartyUnitLogPart(target, true),
+          opts.assist ? '' : ', but misses!'
+        ], 'info');
+        setTimeout(() => battlePopup(target.unitId, 'MISS', 'miss'), delay);
+        return { killedPlayer: false, damage: 0, hit: false, target };
+      }
+
+      const dealt = applyPartyDamage(target, dmg);
+      addDamageMeterEntry('taken', dealt);
+      setTimeout(() => {
+        battleHitAnim(target.unitId);
+        battlePopup(target.unitId, fmt(dealt), critRoll.crit ? 'crit' : popupKind);
+        renderBattleScene();
+      }, delay);
+
+      log([
+        { text: attacker.name, cls: 'combat-log-attacker' },
+        ' hits ',
+        getPartyUnitLogPart(target, true),
+        ' for ',
+        { text: fmt(dealt), cls: 'combat-log-damage' },
+        ' points of damage.' + (critRoll.crit ? ' (Critical Hit)' : '')
+      ], 'dmg');
+
+      if (!target.isPlayer && target.hp <= 0) {
+        log([getPartyUnitLogPart(target, false), ' is knocked out!'], 'info');
+      }
+      return { killedPlayer: target.isPlayer && char.hp <= 0, damage: dealt, hit: true, target };
+    }
+
     function getGroupSize() {
       if (!char) return 0;
       return 1 + getActiveMercenaryCount(char) + getGroupMemberSlotIndices().length + getLfgParty(char).length;
@@ -14515,17 +15152,22 @@
         const damageSpells = known.filter(sp => sp.kind === 'damage' || sp.kind === 'damage_weaken');
         const healSpells = known.filter(sp => sp.kind === 'heal');
 
-        // Healer behavior: top off the player when low.
-        if (healSpells.length && char.hp < Math.floor(char.maxHp * 0.55)) {
+        // Healer behavior: top off the most wounded party member, not only the leader.
+        const selfUnit = getPartyCombatantById(unitId);
+        if (selfUnit && selfUnit.hp <= 0) return 'skipped';
+        const healTarget = healSpells.length ? getBestPartyHealTarget(0.55, true) : null;
+        if (healTarget) {
           const sp = healSpells[Math.floor(Math.random() * healSpells.length)];
           const pct = Number(sp.healPct || 0.25);
-          const healAmt = Math.min(char.maxHp - char.hp, Math.max(4, Math.floor(char.maxHp * pct * 0.8 + level)));
-          if (healAmt > 0) {
-            char.hp = Math.min(char.maxHp, char.hp + healAmt);
+          const healAmt = Math.max(4, Math.floor(healTarget.maxHp * pct * 0.8 + level));
+          const healed = applyPartyHeal(healTarget, healAmt);
+          if (healed > 0) {
             log([
               { text: memberName, cls: 'combat-log-merc' },
-              ' casts ' + sp.name + ' and heals you for ',
-              { text: fmt(healAmt), cls: 'combat-log-heal-amt' },
+              ' casts ' + sp.name + ' and heals ',
+              getPartyUnitLogPart(healTarget, false),
+              ' for ',
+              { text: fmt(healed), cls: 'combat-log-heal-amt' },
               ' hit points.'
             ], 'heal');
             return 'acted';
@@ -14620,8 +15262,89 @@
     let _lfgBrowserPage = 0;
     let _lfgBrowserSearch = '';
     const LFG_BROWSER_PAGE_SIZE = 8;
+    const LFG_USAGE_STALE_MS = 20 * 60 * 1000;
+    const LFG_USAGE_REFRESH_MS = 60 * 1000;
+    const LFG_USAGE_COUNT_TTL_MS = 30 * 1000;
+    let _lfgUsageCounts = {};
+    let _lfgUsageCountsLoadedAt = 0;
+    let _lfgUsageCountsLoading = false;
+    let _lfgUsageHeartbeatTimer = null;
+    let _lfgUsageSessionId = null;
 
     function lfgHeroKey(h) { return (h.user_id || h.userId || '') + ':' + (h.char_key != null ? h.char_key : h.charKey); }
+
+    function getLfgUsageSessionId() {
+      if (_lfgUsageSessionId) return _lfgUsageSessionId;
+      const key = 'EmberQuest_lfgUsageSessionId_v164';
+      try { _lfgUsageSessionId = localStorage.getItem(key) || ''; } catch (e) { _lfgUsageSessionId = ''; }
+      if (!_lfgUsageSessionId) {
+        const rand = (window.crypto && crypto.getRandomValues)
+          ? Array.from(crypto.getRandomValues(new Uint32Array(4))).map(n => n.toString(36)).join('')
+          : (Date.now().toString(36) + Math.random().toString(36).slice(2));
+        _lfgUsageSessionId = 'lfg-' + rand;
+        try { localStorage.setItem(key, _lfgUsageSessionId); } catch (e) {}
+      }
+      return _lfgUsageSessionId;
+    }
+
+    function getCurrentLfgUsageCount() {
+      const key = String(Math.max(0, Math.floor(Number(activeSlot || 0))));
+      return Object.prototype.hasOwnProperty.call(_lfgUsageCounts, key) ? _lfgUsageCounts[key] : null;
+    }
+
+    function renderLfgUsageIndicatorHtml() {
+      if (!char || !char.lfg) return '';
+      const count = getCurrentLfgUsageCount();
+      const cloudOk = !!(typeof Cloud !== 'undefined' && Cloud.ready);
+      if (!cloudOk) {
+        return '<span class="lfg-usage-pill-v164 warn" title="Cloud connection is required for live LFG usage tracking">👥 In use: offline</span>';
+      }
+      if (Cloud && Cloud._lfgUsageUnavailable) {
+        return '<span class="lfg-usage-pill-v164 warn" title="Install the v1.6.4 lfg_usage SQL table to enable live borrower counts">👥 In use: SQL</span>';
+      }
+      if (count === null || _lfgUsageCountsLoading) {
+        return '<span class="lfg-usage-pill-v164" title="Counting active borrowers from the last 20 minutes">👥 In use: …</span>';
+      }
+      return '<span class="lfg-usage-pill-v164' + (count > 0 ? ' active' : '') + '" title="Active unique borrowers seen in the last 20 minutes">👥 In use: ' + count + '</span>';
+    }
+
+    async function refreshLfgUsageCounts(force = false) {
+      if (!char || !char.lfg || !(typeof Cloud !== 'undefined' && Cloud.ready) || _lfgUsageCountsLoading) return;
+      if (!force && (Date.now() - _lfgUsageCountsLoadedAt) < LFG_USAGE_COUNT_TTL_MS) return;
+      _lfgUsageCountsLoading = true;
+      try {
+        const counts = await Cloud.fetchMyLfgUsageCounts();
+        if (counts) {
+          _lfgUsageCounts = counts;
+          _lfgUsageCountsLoadedAt = Date.now();
+        }
+      } finally {
+        _lfgUsageCountsLoading = false;
+        const section = document.getElementById('lfg-section');
+        if (section && char) section.innerHTML = renderLfgSectionHtml();
+      }
+    }
+
+    function syncCurrentLfgUsagePresence() {
+      if (!(typeof Cloud !== 'undefined' && Cloud.ready) || !char || activeSlot < 0) return;
+      const heroes = getLfgParty(char);
+      Cloud.syncLfgUsageForParty(heroes, activeSlot, char.name).catch(e => console.warn('lfg usage heartbeat failed', e));
+    }
+
+    function startLfgUsageHeartbeat() {
+      stopLfgUsageHeartbeat(false);
+      if (!(typeof Cloud !== 'undefined' && Cloud.ready) || !char || activeSlot < 0) return;
+      syncCurrentLfgUsagePresence();
+      _lfgUsageHeartbeatTimer = setInterval(syncCurrentLfgUsagePresence, LFG_USAGE_REFRESH_MS);
+    }
+
+    function stopLfgUsageHeartbeat(clearRows) {
+      if (_lfgUsageHeartbeatTimer) clearInterval(_lfgUsageHeartbeatTimer);
+      _lfgUsageHeartbeatTimer = null;
+      if (clearRows && typeof Cloud !== 'undefined' && Cloud.ready && activeSlot >= 0) {
+        Cloud.clearMyLfgUsageForSlot(activeSlot).catch(e => console.warn('lfg usage clear failed', e));
+      }
+    }
 
     function isHeroBorrowed(h) {
       if (!char || !Array.isArray(char.lfgParty)) return false;
@@ -14723,6 +15446,7 @@
       const borrowed = Array.isArray(char.lfgParty) ? char.lfgParty : [];
       const partyHeroCount = getGroupMemberSlotIndices().length + getLfgParty(char).length;
       const cloudOk = !!(typeof Cloud !== 'undefined' && Cloud.ready);
+      if (on && cloudOk) setTimeout(() => refreshLfgUsageCounts(false), 0);
       let html = '<div style="font-weight:600;margin-bottom:6px">🌐 Looking For Group</div>';
 
       // Availability toggle for THIS hero
@@ -14735,9 +15459,12 @@
             + '</div>'
             + '<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">When on, other players can add this hero to their group. There is no limit on how many groups can use you at once. You earn XP &amp; gold whenever a borrower\'s group makes a kill — collect it next time you log in.</div>'
           + '</div>'
-          + '<button class="btn' + (on ? ' active' : '') + '" onclick="toggleLfgAvailability()"' + (cloudOk ? '' : ' disabled title="Cloud unavailable — sign in to use LFG"') + ' style="white-space:nowrap">'
-            + (on ? '🌐 LFG: On' : '🔌 LFG: Off')
-          + '</button>'
+          + '<div class="lfg-share-actions-v164">'
+            + renderLfgUsageIndicatorHtml()
+            + '<button class="btn' + (on ? ' active' : '') + '" onclick="toggleLfgAvailability()"' + (cloudOk ? '' : ' disabled title="Cloud unavailable — sign in to use LFG"') + ' style="white-space:nowrap">'
+              + (on ? '🌐 LFG: On' : '🔌 LFG: Off')
+            + '</button>'
+          + '</div>'
         + '</div></div>';
 
       const canAdd = getGroupSize() < MAX_GROUP_SIZE;
@@ -14925,6 +15652,10 @@
       _lfgBusy = false;
       if (res && res.ok) {
         char.lfg = next;
+        if (next) {
+          _lfgUsageCountsLoadedAt = 0;
+          refreshLfgUsageCounts(true);
+        }
         log(next ? '🌐 ' + char.name + ' is now Looking For Group — other players can add you.' : '🔌 ' + char.name + ' is no longer shared for LFG.', 'info');
         saveSlots();
       } else {
@@ -14953,6 +15684,7 @@
       if (getGroupSize() >= MAX_GROUP_SIZE) { log('Group is full (max ' + MAX_GROUP_SIZE + ').', 'info'); return; }
       char.lfgParty.push(hero);
       log('Added ' + hero.name + ' (LFG) to your group.', 'info');
+      syncCurrentLfgUsagePresence();
       saveSlots();
       renderGroupTab(); renderCompactGroup(); renderLfgBorrowedHeroesPopout();
     }
@@ -14963,6 +15695,7 @@
       if (!hero) return;
       char.lfgParty.splice(idx, 1);
       log('Removed ' + hero.name + ' (LFG) from your group.', 'info');
+      syncCurrentLfgUsagePresence();
       saveSlots();
       renderGroupTab(); renderCompactGroup(); renderLfgBorrowedHeroesPopout();
     }
@@ -15110,6 +15843,8 @@
         const merc = MERCENARY_TYPES[type];
         if (!merc) continue;
         const label = getGroupMercDisplayName(char, i);
+        const mercUnit = getPartyCombatantById('merc-' + i);
+        if (mercUnit && mercUnit.hp <= 0) continue;
         const behavior = merc.behavior || 'damage';
         const gearMult = getGroupMercDamageBonusMult(char, i);
 
@@ -15143,14 +15878,16 @@
             ' points of damage and weakens it.'
           ], 'dmg');
         } else if (behavior === 'heal') {
-          const hurt = char.maxHp - char.hp;
-          if (hurt > Math.floor(char.maxHp * 0.1)) {
-            const healAmt = Math.min(hurt, Math.max(5, Math.floor(char.maxHp * 0.06 + level * 0.9 + Math.random() * 6)));
-            char.hp = Math.min(char.maxHp, char.hp + healAmt);
+          const healTarget = getBestPartyHealTarget(0.9, true);
+          if (healTarget) {
+            const healAmt = Math.max(5, Math.floor(healTarget.maxHp * 0.06 + level * 0.9 + Math.random() * 6));
+            const healed = applyPartyHeal(healTarget, healAmt);
             log([
               { text: label, cls: 'combat-log-merc' },
-              ' heals you for ',
-              { text: fmt(healAmt), cls: 'combat-log-heal-amt' },
+              ' heals ',
+              getPartyUnitLogPart(healTarget, false),
+              ' for ',
+              { text: fmt(healed), cls: 'combat-log-heal-amt' },
               ' hit points.'
             ], 'heal');
           } else {
@@ -15239,14 +15976,17 @@
         return row;
       }
 
-      function makeMercRow(name, role) {
+      function makeMercRow(name, role, unitId) {
         const row = document.createElement('div');
         row.style.cssText = 'padding:3px 6px;background:var(--bg-secondary);border-radius:4px;border:0.5px solid var(--border)';
+        const unit = unitId && typeof getPartyCombatantById === 'function' ? getPartyCombatantById(unitId) : null;
+        const hpPct = unit ? Math.max(0, Math.min(100, (unit.hp / Math.max(1, unit.maxHp)) * 100)) : 100;
         row.innerHTML =
           '<div style="display:flex;align-items:center;justify-content:space-between;font-size:11px">' +
             '<span style="color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">' + name + '</span>' +
-            '<span style="color:var(--text-secondary);font-size:10px">' + role + '</span>' +
-          '</div>';
+            '<span style="color:var(--text-secondary);font-size:10px">' + (unit && unit.hp <= 0 ? 'KO' : (Math.round(hpPct) + '% · ' + role)) + '</span>' +
+          '</div>' +
+          makeBar(hpPct, unit && unit.hp <= 0 ? '#ef4444' : '#22c55e');
         return row;
       }
 
@@ -15259,15 +15999,15 @@
       const mainMercType = char.mercenary && char.mercenary.type && char.mercenary.type !== 'none' ? char.mercenary.type : null;
       if (mainMercType && MERCENARY_TYPES[mainMercType]) {
         const merc = MERCENARY_TYPES[mainMercType];
-        list.appendChild(makeMercRow(escapeHtml(getMercenaryDisplayName(char)), merc.class || merc.role));
+        list.appendChild(makeMercRow(escapeHtml(getMercenaryDisplayName(char)), merc.class || merc.role, 'merc-main'));
       }
 
       // Group mercs
       const groupMercTypes = getGroupMercTypes(char);
-      groupMercTypes.forEach(type => {
+      groupMercTypes.forEach((type, i) => {
         const merc = MERCENARY_TYPES[type];
         if (!merc) return;
-        list.appendChild(makeMercRow(escapeHtml(merc.name || type), merc.class || merc.role));
+        list.appendChild(makeMercRow(escapeHtml(getGroupMercDisplayName(char, i)), merc.class || merc.role, 'merc-' + i));
       });
 
       // Grouped characters
@@ -16220,6 +16960,8 @@
       if (!char || !char.mercenary || char.mercenary.type === 'none') return incomingDmg;
       const merc = MERCENARY_TYPES[char.mercenary.type];
       if (!merc) return incomingDmg;
+      const mercUnit = (typeof getPartyCombatantById === 'function') ? getPartyCombatantById('merc-main') : null;
+      if (mercUnit && mercUnit.hp <= 0) return incomingDmg;
       if (Math.random() >= PHASE1.mercTankAbsorbChance) return incomingDmg;
       const span = PHASE1.mercTankAbsorbMax - PHASE1.mercTankAbsorbMin;
       const absorbed = Math.max(1, Math.floor(incomingDmg * (PHASE1.mercTankAbsorbMin + Math.random() * span)));
@@ -17623,14 +18365,17 @@
       const pet = getActivePet(char);
       if (!pet) return false;
       if (pet.kind !== 'damage' && pet.kind !== 'utility') {
-        if (pet.kind === 'support' && char.hp < char.maxHp) {
+        const healTarget = pet.kind === 'support' ? getBestPartyHealTarget(0.999, true) : null;
+        if (healTarget) {
           if (Math.random() < PHASE5.petActionChance * 0.5) {
-            const heal = Math.max(1, Math.floor(char.maxHp * 0.04));
-            char.hp = Math.min(char.maxHp, char.hp + heal);
+            const heal = Math.max(1, Math.floor((healTarget.maxHp || char.maxHp) * 0.04));
+            const healed = applyPartyHeal(healTarget, heal);
             log([
               { text: pet.name, cls: 'combat-log-merc' },
-              ' heals you for ',
-              { text: String(heal), cls: 'combat-log-heal-amt' },
+              ' heals ',
+              getPartyUnitLogPart(healTarget, false),
+              ' for ',
+              { text: String(healed), cls: 'combat-log-heal-amt' },
               ' hit points.'
             ], 'heal');
             return true;
@@ -18276,7 +19021,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.5.22';
+    const CURRENT_VERSION = '1.6.5';
     function syncCurrentVersionDisplay() {
       const version = CURRENT_VERSION;
       try { window.VERSION = version; } catch (_) {}
@@ -19225,6 +19970,7 @@
     function saveSlots(options = {}) {
       if (char && activeSlot >= 0) {
         if (typeof window.ensurePinnedQuestKeys === 'function') window.ensurePinnedQuestKeys();
+        if (window.V16 && V16.ensureCharacterFields) V16.ensureCharacterFields(char);
         char.autoUseSkills = autoUseSkills !== false;
         char.autoSkillSlots = autoSkillSlots.slice(0, 6).map(v => v !== false);
         char.autoUseHpPotions = autoUseHpPotions !== false;
@@ -19253,12 +19999,15 @@
         return;
       }
       createVersionedBackup(false, { kind: 'auto' });
-      Cloud.queueSync();
+      if (window.setSaveIndicator) window.setSaveIndicator('saving');
+      Cloud.queueSync(options || {});
       flashSaved();
     }
 
     function manualSave() {
-      saveSlots();
+      saveSlots({ critical: true, reason: 'manual' });
+      if (typeof Cloud === 'object' && Cloud.flushSync) Cloud.flushSync({ reason: 'manual', critical: true });
+      showToast('Manual save started.', 'info', 1500);
     }
 
     // ── Shared Bank ─────────────────────────────
@@ -20160,8 +20909,13 @@ async function exportSlotsToFile(options = {}) {
     }
 
     function flashSaved() {
+      if (window.setSaveIndicator) {
+        window.setSaveIndicator('saved');
+        return;
+      }
       const el = document.getElementById('save-indicator');
-      el.innerHTML = '<i class="ti ti-check"></i> Saved';
+      if (!el) return;
+      el.innerHTML = '<i class="ti ti-check"></i> Saved ✓';
       el.className = 'save-indicator saved';
       setTimeout(() => { el.innerHTML = '<i class="ti ti-device-floppy"></i> Saved'; el.className = 'save-indicator'; }, 2000);
     }
@@ -22160,6 +22914,7 @@ async function exportSlotsToFile(options = {}) {
       // First-session guided tour (only shows once, ever, per browser).
       if (typeof maybeStartTour === 'function') maybeStartTour();
       if (typeof maybeShowWhatsNewV1514 === 'function') maybeShowWhatsNewV1514();
+      if (typeof startLfgUsageHeartbeat === 'function') startLfgUsageHeartbeat();
     }
 
     function deleteSlot(i) {
@@ -22183,6 +22938,7 @@ async function exportSlotsToFile(options = {}) {
     function goToCharSelect() {
       clearTimeout(saveTimer);
       saveTimer = null;
+      if (typeof stopLfgUsageHeartbeat === 'function') stopLfgUsageHeartbeat(true);
       if (char) {
         if (afkOn) {
           char.afkEnabled = true;
@@ -22460,77 +23216,18 @@ async function exportSlotsToFile(options = {}) {
 
     // Build the list of party combatants (player + mercs + grouped + LFG).
     function getBattlePartyUnits() {
-      const units = [];
-      if (!char) return units;
-      const clsColor = (CLASS_COLORS && CLASS_COLORS[char.cls]) || '#3B8AC4';
-      const clsIcon = (CLASS_ICONS && CLASS_ICONS[char.cls]) || 'ti-user';
-      units.push({
-        id: 'player',
-        name: char.name,
-        icon: clsIcon,
-        color: clsColor,
-        race: char.race || 'Human',
-        hpPct: Math.min(100, (char.hp / (char.maxHp || 1)) * 100)
-      });
-
-      // Contracted (main) mercenary
-      const mainMercType = (char.mercenary && char.mercenary.type && char.mercenary.type !== 'none') ? char.mercenary.type : null;
-      if (mainMercType && MERCENARY_TYPES[mainMercType]) {
-        const merc = MERCENARY_TYPES[mainMercType];
-        units.push({
-          id: 'merc-main',
-          name: (typeof getMercenaryDisplayName === 'function') ? getMercenaryDisplayName(char) : (merc.name || 'Mercenary'),
-          icon: (CLASS_ICONS && CLASS_ICONS[merc.class]) || 'ti-sword',
-          color: (CLASS_COLORS && CLASS_COLORS[merc.class]) || '#9A6B35',
-          race: merc.race || 'Human',
-          hpPct: 100
-        });
-      }
-
-      // Group mercenaries
-      const groupMercTypes = (typeof getGroupMercTypes === 'function') ? getGroupMercTypes(char) : [];
-      groupMercTypes.forEach((type, i) => {
-        const merc = MERCENARY_TYPES[type];
-        if (!merc) return;
-        units.push({
-          id: 'merc-' + i,
-          name: (typeof getGroupMercDisplayName === 'function') ? getGroupMercDisplayName(char, i) : (merc.name || type),
-          icon: (CLASS_ICONS && CLASS_ICONS[merc.class]) || 'ti-sword',
-          color: (CLASS_COLORS && CLASS_COLORS[merc.class]) || '#8A7445',
-          race: merc.race || 'Human',
-          hpPct: 100
-        });
-      });
-
-      // Grouped alt characters
-      const groupSlots = (typeof getGroupMemberSlotIndices === 'function') ? getGroupMemberSlotIndices() : [];
-      groupSlots.forEach(idx => {
-        const member = slots[idx];
-        if (!member) return;
-        units.push({
-          id: 'group-' + idx,
-          name: member.name,
-          icon: (CLASS_ICONS && CLASS_ICONS[member.cls]) || 'ti-user',
-          color: (CLASS_COLORS && CLASS_COLORS[member.cls]) || '#548A37',
-          race: member.race || 'Human',
-          hpPct: Math.min(100, ((member.hp || 0) / (member.maxHp || 1)) * 100)
-        });
-      });
-
-      // Borrowed LFG heroes
-      const lfgHeroes = (typeof getLfgParty === 'function') ? getLfgParty(char) : [];
-      lfgHeroes.forEach((hero, i) => {
-        units.push({
-          id: 'lfg-' + i,
-          name: hero.name + ' ⓛ',
-          icon: (CLASS_ICONS && CLASS_ICONS[hero.class || hero.cls]) || 'ti-user',
-          color: (CLASS_COLORS && CLASS_COLORS[hero.class || hero.cls]) || '#7cc6ff',
-          race: hero.race || 'Human',
-          hpPct: 100
-        });
-      });
-
-      return units.slice(0, 6); // max group size
+      if (!char) return [];
+      return getPartyCombatants({ includeDowned: true }).map(u => {
+        const cls = u.cls || (u.type === 'merc-main' || u.type === 'merc' ? 'Warrior' : char.cls);
+        return {
+          id: u.unitId,
+          name: u.displayName || u.name,
+          icon: (CLASS_ICONS && CLASS_ICONS[cls]) || 'ti-user',
+          color: (CLASS_COLORS && CLASS_COLORS[cls]) || (u.isPlayer ? '#3B8AC4' : '#548A37'),
+          race: u.race || 'Human',
+          hpPct: Math.min(100, Math.max(0, (Number(u.hp || 0) / Math.max(1, Number(u.maxHp || 1))) * 100))
+        };
+      }).slice(0, 6);
     }
 
     function hpMiniClass(pct) {
@@ -27299,11 +27996,17 @@ async function exportSlotsToFile(options = {}) {
           return true;
         }
       } else if (sp.kind === 'heal') {
-        const healAmt = Math.floor((char.maxHp * (sp.healPct || 0.25) + Math.random() * (sp.variance || 8)) * aa.healMult * (event.healMult || 1) * (fx.healMult || 1) * (dungeonMod.healMult || 1));
-        char.hp = Math.min(char.maxHp, char.hp + healAmt);
+        const healTarget = getBestPartyHealTarget(0.999, true) || getPartyCombatantById('player');
+        const healBaseHp = healTarget ? healTarget.maxHp : char.maxHp;
+        const healAmt = Math.floor((healBaseHp * (sp.healPct || 0.25) + Math.random() * (sp.variance || 8)) * aa.healMult * (event.healMult || 1) * (fx.healMult || 1) * (dungeonMod.healMult || 1));
+        const healed = applyPartyHeal(healTarget, healAmt);
         log([
-          'You have been healed for ',
-          { text: fmt(healAmt), cls: 'combat-log-heal-amt' },
+          'Your ',
+          { text: sp.name, cls: 'combat-log-attacker' },
+          ' heals ',
+          getPartyUnitLogPart(healTarget, false),
+          ' for ',
+          { text: fmt(healed), cls: 'combat-log-heal-amt' },
           ' hit points.'
         ], 'heal');
       } else if (sp.kind === 'mana') {
@@ -27842,57 +28545,35 @@ async function exportSlotsToFile(options = {}) {
 
       let total = 0;
       let swings = 0;
+      const names = [];
       pack.slice(1).forEach((ally, offset) => {
         if (!ally || ally.hp <= 0 || char.hp <= 0) return;
         if (Math.random() > 0.42) return;
 
         const unitId = 'enemy-' + (offset + 1);
         setTimeout(() => battleAttackAnim(unitId), 620 + offset * 120);
-
-        if (rollPlayerDodge()) {
-          log([
-            { text: ally.name, cls: 'combat-log-mob' },
-            ' joins the attack, but YOU dodge!'
-          ], 'info');
-          setTimeout(() => battlePopup('player', 'MISS', 'miss'), 820 + offset * 120);
-          return;
+        const result = resolveMobStrikeAgainstParty(ally, {
+          event, fx, dungeonMod,
+          assist: true,
+          atkScale: 0.34,
+          maxHpCapPct: 0.08,
+          attackerUnitId: unitId,
+          delay: 820 + offset * 120,
+          allowTankRedirect: true
+        });
+        if (result.hit) {
+          total += result.damage;
+          swings += 1;
+          names.push(getPartyUnitPlainName(result.target, true));
         }
-
-        const assistAtk = Math.max(1, Math.floor((ally.atk || 1) * 0.34));
-        const defMitFraction = assistAtk / (assistAtk + Math.max(1, playerDef || 1));
-        let dmg = Math.max(1, Math.round(assistAtk * defMitFraction) + Math.floor(Math.random() * 3));
-        const aa = getAACombatModifiers(char);
-        const prestige = getPrestigeModifiers(char);
-        const rawMobDamageMult = aa.mobDamageMult * prestige.mobDamageMult * ((event && event.mobDamageMult) || 1) * ((fx && fx.mobDamageMult) || 1) * ((dungeonMod && dungeonMod.mobDamageMult) || 1);
-        dmg = Math.max(1, Math.floor(dmg * Math.max(0.35, rawMobDamageMult)));
-        dmg = Math.min(dmg, Math.max(1, Math.floor((char.maxHp || 100) * 0.08)));
-        dmg = applyMercTankRedirect(dmg);
-
-        if (dmg <= 0) {
-          log([
-            { text: ally.name, cls: 'combat-log-mob' },
-            ' joins the attack, but misses!'
-          ], 'info');
-          setTimeout(() => battlePopup('player', 'MISS', 'miss'), 820 + offset * 120);
-          return;
-        }
-
-        char.hp -= dmg;
-        total += dmg;
-        swings += 1;
-        addDamageMeterEntry('taken', dmg);
-        setTimeout(() => {
-          battleHitAnim('player');
-          battlePopup('player', fmt(dmg), 'dmg');
-          renderBattleScene();
-        }, 820 + offset * 120);
       });
 
-      if (swings > 0) {
+      if (swings > 1) {
+        const uniqueTargets = Array.from(new Set(names)).join(', ');
         log([
-          'The extra enemies harry YOU for ',
+          'The extra enemies harry the party for ',
           { text: fmt(total), cls: 'combat-log-damage' },
-          ' total damage.'
+          ' total damage' + (uniqueTargets ? ' across ' + uniqueTargets : '') + '.'
         ], 'dmg');
       }
       return char.hp <= 0;
@@ -28050,77 +28731,29 @@ async function exportSlotsToFile(options = {}) {
       // Enemy steps forward to retaliate, just after the hero recovers.
       setTimeout(() => battleAttackAnim('enemy'), 560);
 
-      // Player dodge
-      if (rollPlayerDodge()) {
-        log([
-          { text: mob.name, cls: 'combat-log-mob' },
-          ' tries to hit YOU, but YOU dodge!'
-        ], 'info');
-        addDamageMeterDodge();
-        setTimeout(() => battlePopup('player', 'MISS', 'miss'), 780);
-        renderAll();
-        return false;
-      }
+      const retaliate = resolveMobStrikeAgainstParty(mob, {
+        event, fx, dungeonMod,
+        attackerUnitId: 'enemy',
+        delay: 780,
+        allowTankRedirect: true
+      });
+      if (retaliate.killedPlayer) { die(); return true; }
 
-      // DEF gives diminishing returns: each point of DEF reduces damage by less as DEF grows.
-      // Formula: damage = mobAtk * (mobAtk / (mobAtk + playerDef)), with a variance roll on top.
-      // This guarantees a hit always lands for a meaningful fraction of mob ATK regardless of DEF.
-      const defMitFraction = mob.atk / (mob.atk + playerDef);
-      const baseVariance = Math.floor(Math.random() * 4) - 1;
-      let md = Math.max(1, Math.round(mob.atk * defMitFraction) + baseVariance);
-      // Cap stacked incoming-damage reduction at 65% (floor multiplier at 0.35)
-      const rawMobDamageMult = aa.mobDamageMult * prestige.mobDamageMult * (event.mobDamageMult || 1) * (fx.mobDamageMult || 1) * (dungeonMod.mobDamageMult || 1);
-      const clampedMobDamageMult = Math.max(0.35, rawMobDamageMult);
-      md = Math.max(1, Math.floor(md * clampedMobDamageMult));
-      // Level-difference scaling: a mob far below the player can barely scratch them;
-      // a mob far above hits harder. -4%/lvl below player (floor 0.2x), +5%/lvl above (cap 2.5x).
-      {
-        const _lvlDiff = (Number(char.level) || 1) - (Number(mob.level) || 1);
-        const _mobLvlMult = _lvlDiff >= 0
-          ? Math.max(0.2, 1 - _lvlDiff * 0.04)
-          : Math.min(2.5, 1 + (-_lvlDiff) * 0.05);
-        md = Math.max(1, Math.floor(md * _mobLvlMult));
-      }
-      // Mob crit roll
-      const mobCritRoll = rollMobCrit(md);
-      md = mobCritRoll.dmg;
-      // Tank-merc damage redirect
-      md = applyMercTankRedirect(md);
-      if (md <= 0) {
-        log([
-          { text: mob.name, cls: 'combat-log-mob' },
-          ' tries to hit YOU, but misses!'
-        ], 'info');
-        setTimeout(() => battlePopup('player', 'MISS', 'miss'), 780);
-        renderAll();
-        return false;
-      }
-      // Constitution damage reduction (point-of-use; a landed hit still deals ≥1).
-      if (abil.mitigation > 0) md = Math.max(1, md - abil.mitigation);
-      char.hp -= md;
-      addDamageMeterEntry('taken', md);
-      // Player recoils as the enemy strike connects.
-      (function(_md, _crit){
-        setTimeout(() => {
-          battleHitAnim('player');
-          battlePopup('player', fmt(_md), _crit ? 'crit' : 'dmg');
-          renderBattleScene();
-        }, 780);
-      })(md, mobCritRoll.crit);
-      log([
-        { text: mob.name, cls: 'combat-log-attacker' },
-        ' hits YOU for ',
-        { text: fmt(md), cls: 'combat-log-damage' },
-        ' points of damage.' + (mobCritRoll.crit ? ' (Critical Hit)' : '')
-      ], 'dmg');
-
-      if (mob.namedMechanic && mob.namedMechanic.id === 'venom' && Math.random() < 0.35 && char.hp > 0) {
+      if (mob.namedMechanic && mob.namedMechanic.id === 'venom' && Math.random() < 0.35 && retaliate.target && retaliate.target.hp > 0) {
         const venomDmg = Math.max(1, Math.floor(mob.level * 0.8 + Math.random() * 6));
-        char.hp -= venomDmg;
+        const burned = applyPartyDamage(retaliate.target, venomDmg);
         log([
           { text: mob.name, cls: 'combat-log-mob' },
-          ' venom burns for ' + fmt(venomDmg) + ' extra damage.'
+          ' venom burns ',
+          getPartyUnitLogPart(retaliate.target, false),
+          ' for ',
+          { text: fmt(burned), cls: 'combat-log-damage' },
+          ' extra damage.'
         ], 'dmg');
+        if (!retaliate.target.isPlayer && retaliate.target.hp <= 0) {
+          log([getPartyUnitLogPart(retaliate.target, false), ' is knocked out!'], 'info');
+        }
+        if (retaliate.target.isPlayer && char.hp <= 0) { die(); return true; }
       }
 
       if (mob.namedMechanic && mob.namedMechanic.id === 'ward' && mob.turnCount % 3 === 0 && mob.hp > 0) {
@@ -28144,12 +28777,14 @@ async function exportSlotsToFile(options = {}) {
 
     function healSelf() {
       if (char.mp < 15) { log('Insufficient mana to cast this spell!', 'info'); return; }
-      const amt = Math.floor(char.maxHp * 0.3 + Math.random() * 10);
+      const target = getBestPartyHealTarget(0.999, true) || getPartyCombatantById('player');
+      const amt = Math.floor((target?.maxHp || char.maxHp) * 0.3 + Math.random() * 10);
       char.mp = Math.max(0, char.mp - 15);
-      char.hp = Math.min(char.maxHp, char.hp + amt);
+      const healed = applyPartyHeal(target, amt);
       log([
-        'You have been healed for ',
-        { text: String(amt), cls: 'combat-log-heal-amt' },
+        getPartyUnitLogPart(target, true),
+        ' ' + (target && target.isPlayer ? 'have' : 'has') + ' been healed for ',
+        { text: String(healed), cls: 'combat-log-heal-amt' },
         ' hit points.'
       ], 'heal'); renderAll(); autoSave();
     }
@@ -28538,7 +29173,7 @@ async function exportSlotsToFile(options = {}) {
     function fleeCombat() {
       if (!mob) { log('Nothing to flee from.', 'info'); return; }
       if (Math.random() < 0.6) { log('You have fled from combat.', 'info'); mob = null; renderMob(); }
-      else { const d = Math.floor(mob.atk * 0.7); char.hp -= d; log([{ text: mob.name, cls: 'combat-log-mob' }, ' hits YOU for ', { text: String(d), cls: 'combat-log-damage' }, ' points of damage as you attempt to flee!'], 'dmg'); if (char.hp <= 0) die(); renderAll(); }
+      else { const result = resolveMobStrikeAgainstParty(mob, { attackerUnitId: 'enemy', delay: 220, atkScale: 0.7, allowTankRedirect: true }); if (result.hit) log('The failed escape leaves your party exposed!', 'info'); if (result.killedPlayer) die(); renderAll(); }
     }
 
 
@@ -30247,6 +30882,8 @@ async function exportSlotsToFile(options = {}) {
       const goalLabel = AFK_GOALS[goal] ? AFK_GOALS[goal].label : 'Balanced';
       const modeLabel = afkOn ? 'AFK On' : 'AFK Off';
       let msg = 'Goal: ' + goalLabel + ' · ' + modeLabel;
+      const planSummary = getAfkGoalPlanSummary(char, goal);
+      if (planSummary) msg += ' · ' + planSummary;
 
       // Smart-goal live progress (gold accrued / level reached vs target).
       if (AFK_GOALS[goal] && AFK_GOALS[goal].smart) {
@@ -30323,24 +30960,145 @@ async function exportSlotsToFile(options = {}) {
       autoSave();
     }
 
+    // v1.6.5: Core AFK goal planner. Live AFK ticks and offline AFK return
+    // both call applySmartAfkGoal(), so zone choice belongs here instead of
+    // being a one-off UI button patch. Each goal maps to a repeatable zone
+    // strategy and only moves when the current zone is not already correct.
+    function isZoneUnlockedForAfk(targetChar, zoneIdx) {
+      const z = ZONES[zoneIdx];
+      if (!targetChar || !z) return false;
+      const lvl = Math.max(1, Number(targetChar.level || 1));
+      return lvl >= Math.max(1, Number(z.minLvl || 1));
+    }
+
+    function getHighestUnlockedAfkZoneIndex(targetChar) {
+      if (!targetChar || !Array.isArray(ZONES) || !ZONES.length) return 0;
+      let bestIdx = Math.max(0, Math.min(ZONES.length - 1, Number(targetChar.zone || 0)));
+      let bestScore = -Infinity;
+      ZONES.forEach((z, i) => {
+        if (!z || !isZoneUnlockedForAfk(targetChar, i)) return;
+        // Highest required level wins; max level and index are stable tie-breakers.
+        const score = (Number(z.minLvl || 1) * 100000) + (Number(z.maxLvl || z.minLvl || 1) * 100) + i;
+        if (score > bestScore) { bestScore = score; bestIdx = i; }
+      });
+      return bestIdx;
+    }
+
+    function getBestGoldAfkZoneIndex(targetChar) {
+      if (!targetChar || !Array.isArray(ZONES) || !ZONES.length) return 0;
+      let bestIdx = getHighestUnlockedAfkZoneIndex(targetChar);
+      let bestScore = -Infinity;
+      ZONES.forEach((z, i) => {
+        if (!z || !isZoneUnlockedForAfk(targetChar, i)) return;
+        // Gold multiplier is the goal; level range breaks ties so endgame zones
+        // still win when multipliers are close or equal.
+        const score = (Number(z.goldMult || 1) * 1000000) + (Number(z.minLvl || 1) * 1000) + (Number(z.maxLvl || z.minLvl || 1) * 10) + i;
+        if (score > bestScore) { bestScore = score; bestIdx = i; }
+      });
+      return bestIdx;
+    }
+
+    function getBalancedAfkZoneIndex(targetChar) {
+      if (!targetChar || !Array.isArray(ZONES) || !ZONES.length) return 0;
+      const lvl = Math.max(1, Number(targetChar.level || 1));
+      let bestIdx = getHighestUnlockedAfkZoneIndex(targetChar);
+      let bestScore = -Infinity;
+      ZONES.forEach((z, i) => {
+        if (!z || !isZoneUnlockedForAfk(targetChar, i)) return;
+        const minLvl = Number(z.minLvl || 1);
+        const maxLvl = Number(z.maxLvl || minLvl);
+        const insideBand = lvl >= minLvl && lvl <= maxLvl;
+        const slightlyOver = lvl > maxLvl && lvl <= maxLvl + 4;
+        const score =
+          (insideBand ? 100000000 : (slightlyOver ? 50000000 : 0)) +
+          (minLvl * 100000) +
+          (Number(z.xpMult || 1) * 1000) +
+          maxLvl +
+          (i / 1000);
+        if (score > bestScore) { bestScore = score; bestIdx = i; }
+      });
+      return bestIdx;
+    }
+
+    function getAfkGoalPreferredZone(targetChar, goalId) {
+      if (!targetChar) return 0;
+      const def = AFK_GOALS[goalId] || AFK_GOALS.balanced;
+      const mode = def.zoneMode || 'balanced';
+      if (mode === 'highest') return getHighestUnlockedAfkZoneIndex(targetChar);
+      if (mode === 'gold') return getBestGoldAfkZoneIndex(targetChar);
+      if (mode === 'balanced') return getBalancedAfkZoneIndex(targetChar);
+      return Math.max(0, Math.min(ZONES.length - 1, Number(targetChar.zone || 0)));
+    }
+
+    function getAfkGoalPlanSummary(targetChar, goalId) {
+      if (!targetChar) return '';
+      const def = AFK_GOALS[goalId] || AFK_GOALS.balanced;
+      if ((def.zoneMode || '') === 'contract') {
+        const board = Array.isArray(targetChar.eliteContracts) ? targetChar.eliteContracts : [];
+        const pinIdx = Math.max(0, Math.min(board.length - 1, Number(targetChar.afkPinnedContractIdx || 0)));
+        const c = board[pinIdx] || getPrimaryContract(targetChar);
+        if (c && c.active && ZONES[c.zone]) return 'Plan: contract in ' + ZONES[c.zone].name;
+        return 'Plan: no active contract';
+      }
+      const zi = getAfkGoalPreferredZone(targetChar, goalId);
+      const z = ZONES[zi];
+      if (!z) return '';
+      const mode = def.zoneMode || 'balanced';
+      const modeLabel = mode === 'gold' ? 'best gold zone' : (mode === 'highest' ? 'highest unlocked zone' : 'recommended zone');
+      return 'Plan: ' + modeLabel + ' — ' + z.name + ' (Lv ' + z.minLvl + '-' + z.maxLvl + ')';
+    }
+
+    function moveToAfkGoalZone(goalId, silent = true) {
+      if (!char) return false;
+      const def = AFK_GOALS[goalId] || AFK_GOALS.balanced;
+      const mode = def.zoneMode || 'balanced';
+      if (mode === 'contract') return false;
+      const targetZone = getAfkGoalPreferredZone(char, goalId);
+      if (!ZONES[targetZone] || targetZone === char.zone || !isZoneUnlockedForAfk(char, targetZone)) return false;
+      if (char.dungeon && char.dungeon.active) {
+        char.dungeon.active = false;
+        char.dungeon.floor = 1;
+        if (!silent) log('AFK goal left the Endless Dungeon to hunt in normal zones.', 'info');
+      }
+      char.zone = targetZone;
+      mob = null;
+      ensureExtendedSystems(char);
+      if (goalId !== 'contract' && char.huntTargets && !ZONES[targetZone].mobs.includes(char.huntTargets[String(targetZone)])) {
+        delete char.huntTargets[String(targetZone)];
+      }
+      const action = mode === 'gold'
+        ? 'Moved to best unlocked gold zone: ' + ZONES[targetZone].name
+        : (mode === 'highest'
+          ? 'Moved to highest unlocked zone: ' + ZONES[targetZone].name
+          : 'Moved to recommended AFK zone: ' + ZONES[targetZone].name);
+      setAfkGoalAction(action);
+      if (!silent) log('AFK goal ' + action.charAt(0).toLowerCase() + action.slice(1) + '.', 'info');
+      return true;
+    }
+
     function applySmartAfkGoal(silent = true) {
       if (!char) return;
       ensureExtendedSystems(char);
       const goal = getAfkGoalState(char);
 
-      if (goal === 'level') {
+      if (goal === 'balanced') {
+        moveToAfkGoalZone(goal, silent);
+      } else if (goal === 'level') {
+        moveToAfkGoalZone(goal, silent);
         if (!autoUseSkills) {
           autoUseSkills = true;
           setAfkGoalAction('Enabled class skill casting');
         }
       } else if (goal === 'gold') {
+        moveToAfkGoalZone(goal, silent);
         const prevPreset = char.lootFilterPreset;
         applyLootFilterPreset('gold', true);
         if (prevPreset !== 'gold') {
           setAfkGoalAction('Applied Gold Farm loot preset');
         }
       } else if (goal === 'farm_until_gold') {
-        // Behaves like Gold Farm but auto-stops once the target is hit.
+        // Behaves like Gold Farm but keeps a visible target while farming.
+        moveToAfkGoalZone(goal, silent);
         const prevPreset = char.lootFilterPreset;
         applyLootFilterPreset('gold', true);
         if (prevPreset !== 'gold') {
@@ -30349,6 +31107,7 @@ async function exportSlotsToFile(options = {}) {
       } else if (goal === 'level_alts_to') {
         // Behaves like Level Push for the active char; alt hand-off happens
         // when the goal completes (see maybeCompleteSmartGoal).
+        moveToAfkGoalZone(goal, silent);
         if (!autoUseSkills) {
           autoUseSkills = true;
           setAfkGoalAction('Enabled class skill casting (target lvl ' + getAfkGoalTarget(char, 'level_alts_to') + ')');
@@ -30774,224 +31533,52 @@ async function exportSlotsToFile(options = {}) {
     }
 
     function useHpPotion() {
-      // Check if health is already maximized
-      if (char.hp == char.maxHp) {
-        log('Health already full!', 'info');
+      const target = getBestPartyHealTarget(0.999, true);
+      if (!target) {
+        log('Party health already full!', 'info');
         return;
       }
 
-      // Use the strongest available healing potion first.
+      let label = '';
+      let healAmt = 0;
       if (char.healpotions_legendary && char.healpotions_legendary > 0) {
         char.healpotions_legendary -= 1;
-        const healAmt = Math.floor(potionHealAmount_legendary_Health * getAlchemyHealMultiplier());
-        char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a legendary healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
-      }
-      else if (char.healpotions_epic && char.healpotions_epic > 0) {
+        label = 'legendary healing potion';
+        healAmt = Math.floor(potionHealAmount_legendary_Health * getAlchemyHealMultiplier());
+      } else if (char.healpotions_epic && char.healpotions_epic > 0) {
         char.healpotions_epic -= 1;
-        const healAmt = Math.floor(potionHealAmount_epic_Health * getAlchemyHealMultiplier());
-        char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used an epic healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
-      }
-      else if (char.healpotions_heroic && char.healpotions_heroic > 0) {
+        label = 'epic healing potion';
+        healAmt = Math.floor(potionHealAmount_epic_Health * getAlchemyHealMultiplier());
+      } else if (char.healpotions_heroic && char.healpotions_heroic > 0) {
         char.healpotions_heroic -= 1;
-        const healAmt = Math.floor(potionHealAmount_heroic_Health * getAlchemyHealMultiplier());
-        char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a heroic healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
-      }
-      else if (char.healpotions_shp && char.healpotions_shp > 0) {
+        label = 'heroic healing potion';
+        healAmt = Math.floor(potionHealAmount_heroic_Health * getAlchemyHealMultiplier());
+      } else if (char.healpotions_shp && char.healpotions_shp > 0) {
         char.healpotions_shp -= 1;
-        const healAmt = Math.floor(potionHealAmount_shp_Health * getAlchemyHealMultiplier());
-        char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a superior healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
-      }
-      else if (char.healpotions_ghp && char.healpotions_ghp > 0) {
+        label = 'superior healing potion';
+        healAmt = Math.floor(potionHealAmount_shp_Health * getAlchemyHealMultiplier());
+      } else if (char.healpotions_ghp && char.healpotions_ghp > 0) {
         char.healpotions_ghp -= 1;
-        const healAmt = Math.floor(potionHealAmount_ghp_Health * getAlchemyHealMultiplier());
-        char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a greater healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
-      }
-      else if (char.healpotions_lhp && char.healpotions_lhp > 0) {
+        label = 'greater healing potion';
+        healAmt = Math.floor(potionHealAmount_ghp_Health * getAlchemyHealMultiplier());
+      } else if (char.healpotions_lhp && char.healpotions_lhp > 0) {
         char.healpotions_lhp -= 1;
-        const healAmt = Math.floor(potionHealAmount_lhp_Health * getAlchemyHealMultiplier());
-        char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a light healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
-      }
-      // Fallback to Minor Healing Potion
-      else if (char.healpotions && char.healpotions > 0) {
+        label = 'light healing potion';
+        healAmt = Math.floor(potionHealAmount_lhp_Health * getAlchemyHealMultiplier());
+      } else if (char.healpotions && char.healpotions > 0) {
         char.healpotions -= 1;
-        const healAmt = Math.floor(potionHealAmount_Health * getAlchemyHealMultiplier());
-        char.hp = Math.min(char.maxHp, char.hp + healAmt);
-        log('Used a healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
-      }
-      // Out of all potions
-      else {
+        label = 'healing potion';
+        healAmt = Math.floor(potionHealAmount_Health * getAlchemyHealMultiplier());
+      } else {
         log('Out of HP potions.', 'info');
         return;
       }
 
+      const healed = applyPartyHeal(target, healAmt);
+      log(['Used a ' + label + ' on ', getPartyUnitLogPart(target, false), ' for ', { text: fmt(healed), cls: 'combat-log-heal-amt' }, ' HP.'], 'heal');
       renderAll();
       autoSave();
     }
-
-    function useMpPotion() {
-      // Check if mana is already maximized
-      if (char.mp == char.maxMp) {
-        log('Mana already full!', 'info');
-        return;
-      }
-
-      // Use the strongest available mana potion first.
-      if (char.manapotions_legendary && char.manapotions_legendary > 0) {
-        char.manapotions_legendary -= 1;
-        const healAmt = Math.floor(potionHealAmount_legendary_Mana * getAlchemyHealMultiplier());
-        char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a legendary mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
-      }
-      else if (char.manapotions_epic && char.manapotions_epic > 0) {
-        char.manapotions_epic -= 1;
-        const healAmt = Math.floor(potionHealAmount_epic_Mana * getAlchemyHealMultiplier());
-        char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used an epic mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
-      }
-      else if (char.manapotions_heroic && char.manapotions_heroic > 0) {
-        char.manapotions_heroic -= 1;
-        const healAmt = Math.floor(potionHealAmount_heroic_Mana * getAlchemyHealMultiplier());
-        char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a heroic mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
-      }
-      else if (char.manapotions_smp && char.manapotions_smp > 0) {
-        char.manapotions_smp -= 1;
-        const healAmt = Math.floor(potionHealAmount_smp_Mana * getAlchemyHealMultiplier());
-        char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a superior mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
-      }
-      else if (char.manapotions_gmp && char.manapotions_gmp > 0) {
-        char.manapotions_gmp -= 1;
-        const healAmt = Math.floor(potionHealAmount_gmp_Mana * getAlchemyHealMultiplier());
-        char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a greater mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
-      }
-      else if (char.manapotions_lmp && char.manapotions_lmp > 0) {
-        char.manapotions_lmp -= 1;
-        const healAmt = Math.floor(potionHealAmount_lmp_Mana * getAlchemyHealMultiplier());
-        char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a light mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
-      }
-      // Fallback to Minor Mana Potion
-      else if (char.manapotions && char.manapotions > 0) {
-        char.manapotions -= 1;
-        const healAmt = Math.floor(potionHealAmount_Mana * getAlchemyHealMultiplier());
-        char.mp = Math.min(char.maxMp, char.mp + healAmt);
-        log('Used a mana potion for ' + fmt(healAmt) + ' MP.', 'heal');
-      }
-      // Out of all potions
-      else {
-        log('Out of MP potions.', 'info');
-        return;
-      }
-
-      renderAll();
-      autoSave();
-    }
-
-    // Light Potions
-    function buyHpPotion_LHP() {
-      const cost = getMerchantPrice(SHOP_BASE_PRICES.hpLight);
-      if (char.gold < cost) {
-        log('Not enough gold.', 'info');
-        return;
-      }
-
-      char.gold -= cost;
-      char.healpotions_lhp += 1;
-
-      log('Bought a light healing potion.', 'loot');
-
-      renderAll();
-      autoSave();
-    }
-
-    function buyHpPotion_LHP_10() {
-      const cost = getMerchantPrice(SHOP_BASE_PRICES.hpLight) * 10;
-      if (char.gold < cost) {
-        log('Not enough gold.', 'info');
-        return;
-      }
-
-      char.gold -= cost;
-      char.healpotions_lhp += 10;
-
-      log('Bought a healing potion x10.', 'loot');
-
-      renderAll();
-      autoSave();
-    }
-
-    function buyMpPotion_LMP() {
-      const cost = getMerchantPrice(SHOP_BASE_PRICES.mpLight);
-      if (char.gold < cost) {
-        log('Not enough gold.', 'info');
-        return;
-      }
-
-      char.gold -= cost;
-      char.manapotions_lmp += 1;
-
-      log('Bought a light mana potion.', 'loot');
-
-      renderAll();
-      autoSave();
-    }
-
-    function buyMpPotion_LMP_10() {
-      const cost = getMerchantPrice(SHOP_BASE_PRICES.mpLight) * 10;
-      if (char.gold < cost) {
-        log('Not enough gold.', 'info');
-        return;
-      }
-
-      char.gold -= cost;
-      char.manapotions_lmp += 10;
-
-      log('Bought a light mana potion x10.', 'loot');
-
-      renderAll();
-      autoSave();
-    }
-
-    // ── Greater / Superior potions (higher-level tiers) ──
-    function buyPotionStock(ownedKey, priceKey, qty) {
-      if (!char) return;
-      const cost = getMerchantPrice(SHOP_BASE_PRICES[priceKey]) * qty;
-      if (char.gold < cost) { log('Not enough gold.', 'info'); return; }
-      char.gold -= cost;
-      char[ownedKey] = Number(char[ownedKey] || 0) + qty;
-      log('Bought ' + qty + ' potion' + (qty === 1 ? '' : 's') + '.', 'loot');
-      renderAll();
-      autoSave();
-    }
-    function buyHpPotion_GHP() { buyPotionStock('healpotions_ghp', 'hpGreater', 1); }
-    function buyHpPotion_GHP_10() { buyPotionStock('healpotions_ghp', 'hpGreater', 10); }
-    function buyMpPotion_GMP() { buyPotionStock('manapotions_gmp', 'mpGreater', 1); }
-    function buyMpPotion_GMP_10() { buyPotionStock('manapotions_gmp', 'mpGreater', 10); }
-    function buyHpPotion_SHP() { buyPotionStock('healpotions_shp', 'hpSuperior', 1); }
-    function buyHpPotion_SHP_10() { buyPotionStock('healpotions_shp', 'hpSuperior', 10); }
-    function buyMpPotion_SMP() { buyPotionStock('manapotions_smp', 'mpSuperior', 1); }
-    function buyMpPotion_SMP_10() { buyPotionStock('manapotions_smp', 'mpSuperior', 10); }
-    function buyHpPotion_HEROIC() { buyPotionStock('healpotions_heroic', 'hpHeroic', 1); }
-    function buyHpPotion_HEROIC_10() { buyPotionStock('healpotions_heroic', 'hpHeroic', 10); }
-    function buyMpPotion_HEROIC() { buyPotionStock('manapotions_heroic', 'mpHeroic', 1); }
-    function buyMpPotion_HEROIC_10() { buyPotionStock('manapotions_heroic', 'mpHeroic', 10); }
-    function buyHpPotion_EPIC() { buyPotionStock('healpotions_epic', 'hpEpic', 1); }
-    function buyHpPotion_EPIC_10() { buyPotionStock('healpotions_epic', 'hpEpic', 10); }
-    function buyMpPotion_EPIC() { buyPotionStock('manapotions_epic', 'mpEpic', 1); }
-    function buyMpPotion_EPIC_10() { buyPotionStock('manapotions_epic', 'mpEpic', 10); }
-    function buyHpPotion_LEGENDARY() { buyPotionStock('healpotions_legendary', 'hpLegendary', 1); }
-    function buyHpPotion_LEGENDARY_10() { buyPotionStock('healpotions_legendary', 'hpLegendary', 10); }
-    function buyMpPotion_LEGENDARY() { buyPotionStock('manapotions_legendary', 'mpLegendary', 1); }
-    function buyMpPotion_LEGENDARY_10() { buyPotionStock('manapotions_legendary', 'mpLegendary', 10); }
-
     function totalHpPotions(c) {
       c = c || char;
       return Math.max(0, Number(c.healpotions || 0) + Number(c.healpotions_lhp || 0) + Number(c.healpotions_ghp || 0) + Number(c.healpotions_shp || 0) + Number(c.healpotions_heroic || 0) + Number(c.healpotions_epic || 0) + Number(c.healpotions_legendary || 0));
@@ -31006,18 +31593,18 @@ async function exportSlotsToFile(options = {}) {
         log('Out of Light Healing potions.', 'info');
         return;
       }
-      if (char.hp == char.maxHp) {
-        log('Health already full!', 'info');
+      const target = getBestPartyHealTarget(0.999, true);
+      if (!target) {
+        log('Party health already full!', 'info');
         return;
       }
 
       char.healpotions_lhp -= 1;
 
       const healAmt = Math.floor(potionHealAmount_lhp_Health * getAlchemyHealMultiplier());
+      const healed = applyPartyHeal(target, healAmt);
 
-      char.hp = Math.min(char.maxHp, char.hp + healAmt);
-
-      log('Used a light healing potion for ' + fmt(healAmt) + ' HP.', 'heal');
+      log(['Used a light healing potion on ', getPartyUnitLogPart(target, false), ' for ', { text: fmt(healed), cls: 'combat-log-heal-amt' }, ' HP.'], 'heal');
 
       renderAll();
       autoSave();
@@ -33196,7 +33783,7 @@ async function exportSlotsToFile(options = {}) {
           const { data, error } = await sb
             .from('chat_messages')
             .select('id,channel,user_id,display_name,character_name,message,created_at')
-            .eq('channel', this.channel)
+            .eq('channel', this.getStorageChannel ? this.getStorageChannel() : this.channel)
             .order('created_at', { ascending: false })
             .limit(CHAT_PAGE_SIZE);
           if (error) throw error;
@@ -33302,7 +33889,7 @@ async function exportSlotsToFile(options = {}) {
           const { data, error } = await sb
             .from('chat_messages')
             .select('id,channel,user_id,display_name,character_name,message,created_at')
-            .eq('channel', this.channel)
+            .eq('channel', this.getStorageChannel ? this.getStorageChannel() : this.channel)
             .lt('created_at', this.oldestLoadedAt)
             .order('created_at', { ascending: false })
             .limit(CHAT_PAGE_SIZE);
@@ -33697,7 +34284,7 @@ async function exportSlotsToFile(options = {}) {
               event: 'INSERT',
               schema: 'public',
               table: 'chat_messages',
-              filter: 'channel=eq.' + ch
+              filter: 'channel=eq.' + (this.getStorageChannelFor ? this.getStorageChannelFor(ch) : ch)
             }, payload => this.handleRealtimeMessage(payload.new))
             .subscribe(status => {
               if (ch === this.channel) {
@@ -33924,7 +34511,7 @@ async function exportSlotsToFile(options = {}) {
             return;
           }
           const row = {
-            channel: this.channel,
+            channel: (this.getStorageChannel ? this.getStorageChannel() : this.channel),
             user_id: currentUser.id,
             display_name: this.getDisplayName(),
             character_name: char && char.name ? String(char.name).slice(0, 48) : null,
@@ -34363,9 +34950,9 @@ async function exportSlotsToFile(options = {}) {
       wrap.innerHTML = '<div class="whats-new-card-v1514" role="dialog" aria-modal="true" aria-labelledby="whats-new-title-v1514">' +
         '<div class="whats-new-head-v1514"><strong id="whats-new-title-v1514">What\'s New in v' + escapeHtmlSafe(CURRENT_VERSION) + '</strong><button class="btn" onclick="closeWhatsNewV1514()">Close</button></div>' +
         '<div class="whats-new-body-v1514" style="padding:14px;font-size:12px;line-height:1.55">' +
-          '<p><strong>Mobile UI v2</strong> is now the default on narrow screens: top HUD, bottom nav, swipe navigation, and bottom-sheet panels.</p>' +
-          '<p><strong>Bestiary Codex</strong> tracks kills and creature discoveries. <strong>Alchemy</strong> now keeps brewable recipes in its own panel instead of the Combat HUD.</p>' +
-          '<p><strong>Objective HUD</strong> keeps your next daily, contract, or class quest visible during combat, now with quick buttons to travel to the target zone and lock the needed mob.</p>' +
+          '<p><strong>LFG usage indicator</strong> now appears beside the LFG On/Off button when your hero is shared.</p>' +
+          '<p><strong>Active borrower counts</strong> are tracked through the core LFG add/remove and heartbeat paths instead of a one-off UI edit.</p>' +
+          '<p><strong>Safe fallback</strong> keeps LFG working if the optional v1.6.4 usage table has not been installed yet.</p>' +
           '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn active" onclick="openPopup(\'about\');closeWhatsNewV1514()">Open Changelog</button><button class="btn" onclick="openPopup(\'codex\');closeWhatsNewV1514()">Open Codex</button></div>' +
         '</div></div>';
       document.body.appendChild(wrap);
@@ -37096,6 +37683,960 @@ async function exportSlotsToFile(options = {}) {
         }
       });
     })();
+
+    // ══════════════════════════════════════════════
+    //  v1.6.0 runtime layer — installed before Cloud.start()
+    // ══════════════════════════════════════════════
+    (function installV160Runtime(){
+      const V16_VERSION = '1.6.0';
+      const oldCloud = {
+        fetchAllSlots: Cloud.fetchAllSlots ? Cloud.fetchAllSlots.bind(Cloud) : null,
+        pushAll: Cloud.pushAll ? Cloud.pushAll.bind(Cloud) : null,
+        queueSync: Cloud.queueSync ? Cloud.queueSync.bind(Cloud) : null,
+        publishLeaderboard: Cloud.publishLeaderboard ? Cloud.publishLeaderboard.bind(Cloud) : null,
+        fetchLeaderboard: Cloud.fetchLeaderboard ? Cloud.fetchLeaderboard.bind(Cloud) : null,
+        fetchMyGuild: Cloud.fetchMyGuild ? Cloud.fetchMyGuild.bind(Cloud) : null,
+        afterLogin: Cloud.afterLogin ? Cloud.afterLogin.bind(Cloud) : null,
+        showLogin: Cloud.showLogin ? Cloud.showLogin.bind(Cloud) : null,
+        signOut: Cloud.signOut ? Cloud.signOut.bind(Cloud) : null
+      };
+
+      window.setSaveIndicator = function setSaveIndicator(state, detail) {
+        const el = document.getElementById('save-indicator');
+        if (!el) return;
+        const s = String(state || 'saved');
+        if (s === 'saving') {
+          el.innerHTML = '<i class="ti ti-loader-2"></i> Saving…';
+          el.className = 'save-indicator saving';
+        } else if (s === 'failed') {
+          el.innerHTML = '<i class="ti ti-alert-triangle"></i> Cloud sync failed (retrying)';
+          el.className = 'save-indicator error';
+          if (detail) el.title = String(detail);
+        } else {
+          el.innerHTML = '<i class="ti ti-check"></i> Saved ✓';
+          el.className = 'save-indicator saved';
+          setTimeout(() => {
+            if (!el || el.classList.contains('error')) return;
+            el.innerHTML = '<i class="ti ti-device-floppy"></i> Saved';
+            el.className = 'save-indicator';
+            el.title = '';
+          }, 2200);
+        }
+      };
+
+      const V16 = {
+        version: V16_VERSION,
+        leaderboardScope: (() => { try { return localStorage.getItem('emberquest_lb_scope_v160') || 'lifetime'; } catch(e) { return 'lifetime'; } })(),
+        settings: {},
+        news: [],
+        guildId: null,
+        guildInfo: null,
+        dismissedNews: new Set(),
+        _newsLoadedAt: 0,
+        ensureCharacterFields(c) {
+          if (!c || typeof c !== 'object') return c;
+          if (!c.v16) c.v16 = {};
+          if (!c.v16.weeklyBaselines) c.v16.weeklyBaselines = {};
+          if (!c.v16.achievementSeen) c.v16.achievementSeen = {};
+          if (!c.v16.createdAt) c.v16.createdAt = new Date().toISOString();
+          if (!c.accountAchievementsLocal) c.accountAchievementsLocal = {};
+          if (!c.titles) c.titles = Array.isArray(c.titles) ? c.titles : [];
+          return c;
+        },
+        weekStartIso(date = new Date()) {
+          const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+          const day = d.getUTCDay() || 7;
+          d.setUTCDate(d.getUTCDate() - day + 1);
+          return d.toISOString().slice(0, 10);
+        },
+        async encodeSaveBlob(obj) {
+          const json = JSON.stringify(obj || null);
+          const checksum = await this.sha256Hex(json);
+          let bytes = new TextEncoder().encode(json);
+          let prefix = 'json:';
+          if (window.pako && typeof pako.deflate === 'function') {
+            try { bytes = pako.deflate(json); prefix = 'pako:'; } catch (e) { bytes = new TextEncoder().encode(json); prefix = 'json:'; }
+          }
+          return { blob: prefix + this.bytesToB64(bytes), checksum, byteSize: new TextEncoder().encode(json).length, json };
+        },
+        async decodeSaveBlob(blob) {
+          const raw = String(blob || '');
+          let mode = 'json';
+          let b64 = raw;
+          if (raw.startsWith('pako:')) { mode = 'pako'; b64 = raw.slice(5); }
+          else if (raw.startsWith('json:')) { mode = 'json'; b64 = raw.slice(5); }
+          const bytes = this.b64ToBytes(b64);
+          let json = '';
+          if (mode === 'pako' && window.pako && typeof pako.inflate === 'function') {
+            json = pako.inflate(bytes, { to: 'string' });
+          } else {
+            json = new TextDecoder().decode(bytes);
+          }
+          return JSON.parse(json);
+        },
+        bytesToB64(bytes) {
+          let out = '';
+          const chunk = 0x8000;
+          for (let i = 0; i < bytes.length; i += chunk) {
+            out += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+          }
+          return btoa(out);
+        },
+        b64ToBytes(b64) {
+          const bin = atob(String(b64 || ''));
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          return bytes;
+        },
+        async sha256Hex(text) {
+          try {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(text || '')));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+          } catch (e) {
+            let h = 0x811c9dc5;
+            const s = String(text || '');
+            for (let i = 0; i < s.length; i++) {
+              h ^= s.charCodeAt(i);
+              h = Math.imul(h, 0x01000193);
+            }
+            return ('fallback-' + (h >>> 0).toString(16).padStart(8, '0'));
+          }
+        },
+        safeMarkdown(md) {
+          let s = escapeHtmlSafe(String(md || ''));
+          s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+          s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+          s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+          s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+          return s.split(/\n{2,}/).map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
+        },
+        getDismissedNews() {
+          try {
+            const ids = (this.settings && Array.isArray(this.settings.dismissed_news_ids)) ? this.settings.dismissed_news_ids : JSON.parse(localStorage.getItem('emberquest_dismissed_news_v160') || '[]');
+            this.dismissedNews = new Set((ids || []).map(String));
+          } catch (e) { this.dismissedNews = new Set(); }
+          return this.dismissedNews;
+        },
+        persistDismissedNews() {
+          const ids = Array.from(this.dismissedNews || []);
+          try { localStorage.setItem('emberquest_dismissed_news_v160', JSON.stringify(ids)); } catch (e) {}
+          if (sb && currentUser) {
+            this.saveAccountSetting('dismissed_news_ids', ids);
+          }
+        },
+        async loadAccountSettings() {
+          if (!sb || !currentUser) return {};
+          try {
+            const { data, error } = await sb.from('account_settings').select('*').eq('user_id', currentUser.id).maybeSingle();
+            if (error && error.code !== '42P01') throw error;
+            this.settings = data || {};
+            this.getDismissedNews();
+            return this.settings;
+          } catch (e) {
+            console.warn('account settings load failed', e);
+            return this.settings || {};
+          }
+        },
+        async saveAccountSetting(key, value) {
+          if (!sb || !currentUser || !key) return;
+          try {
+            const row = { user_id: currentUser.id, updated_at: new Date().toISOString() };
+            row[key] = value;
+            const { error } = await sb.from('account_settings').upsert(row, { onConflict: 'user_id' });
+            if (error && error.code !== '42P01') throw error;
+            this.settings = Object.assign({}, this.settings || {}, row);
+          } catch (e) { console.warn('account setting save failed', e); }
+        },
+        async loadNews(force) {
+          const now = Date.now();
+          if (!force && now - (this._newsLoadedAt || 0) < 60000) { this.renderNews(); return; }
+          this._newsLoadedAt = now;
+          this.getDismissedNews();
+          if (!sb) { this.renderNews(); return; }
+          try {
+            const { data, error } = await sb.from('news_posts')
+              .select('id,category,title,body_md,is_pinned,published_at,expires_at')
+              .eq('is_published', true)
+              .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
+              .order('is_pinned', { ascending: false })
+              .order('published_at', { ascending: false })
+              .limit(5);
+            if (error && error.code !== '42P01') throw error;
+            this.news = data || [];
+          } catch (e) {
+            console.warn('news load failed', e);
+            this.news = [];
+          }
+          this.renderNews();
+        },
+        renderNews() {
+          const targets = ['login-news-v160', 'charselect-news-v160'];
+          const dismissed = this.getDismissedNews();
+          const visible = (this.news || []).filter(n => !dismissed.has(String(n.id))).slice(0, 5);
+          const html = visible.length ? (
+            '<div class="v16-news-title"><span>🗞 Latest News</span><span class="v16-pill">v1.6</span></div>' +
+            '<div class="v16-news-list">' + visible.map(n => {
+              const icon = ({ patch:'🛠', discord:'💬', event:'✨', bug:'🐞', reset:'♻' })[n.category] || '🗞';
+              const when = n.published_at ? new Date(n.published_at).toLocaleDateString() : '';
+              return '<div class="v16-news-card">' +
+                '<strong>' + icon + ' ' + escapeHtmlSafe(n.title || 'News') + '</strong>' +
+                '<div class="v16-news-meta">' + escapeHtmlSafe((n.category || 'news') + (when ? ' · ' + when : '')) + '</div>' +
+                '<div class="v16-news-actions">' +
+                  '<button type="button" onclick="V16.openNews(\'' + escapeHtmlSafe(String(n.id)) + '\')">Read</button>' +
+                  '<button type="button" onclick="V16.dismissNews(\'' + escapeHtmlSafe(String(n.id)) + '\')">Dismiss</button>' +
+                '</div></div>';
+            }).join('') + '</div>'
+          ) : '<div class="v16-news-title"><span>🗞 Latest News</span><span class="v16-pill">No current posts</span></div>';
+          targets.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = html; });
+        },
+        openNews(id) {
+          const post = (this.news || []).find(n => String(n.id) === String(id));
+          if (!post) return;
+          const body = this.safeMarkdown(post.body_md || '');
+          const wrap = document.createElement('div');
+          wrap.className = 'modal-backdrop open';
+          wrap.onclick = ev => { if (ev.target === wrap) wrap.remove(); };
+          wrap.innerHTML = '<div class="modal-card" role="dialog" aria-modal="true" aria-label="News post">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">' +
+            '<div class="modal-title">' + escapeHtmlSafe(post.title || 'News') + '</div>' +
+            '<button class="btn" type="button" aria-label="Close news" onclick="this.closest(\'.modal-backdrop\').remove()">Close</button></div>' +
+            '<div style="font-size:12px;line-height:1.55">' + body + '</div></div>';
+          document.body.appendChild(wrap);
+        },
+        dismissNews(id) {
+          this.dismissedNews.add(String(id));
+          this.persistDismissedNews();
+          this.renderNews();
+        },
+        setLeaderboardScope(scope) {
+          this.leaderboardScope = scope === 'weekly' ? 'weekly' : 'lifetime';
+          try { localStorage.setItem('emberquest_lb_scope_v160', this.leaderboardScope); } catch (e) {}
+          if (typeof renderLeaderboardTab === 'function') renderLeaderboardTab();
+        },
+        decorateLeaderboard() {
+          const el = document.getElementById('leaderboard-list');
+          if (!el || el.querySelector('.v16-scope-toggle')) return;
+          const bar = document.createElement('div');
+          bar.className = 'v16-scope-toggle';
+          const mk = (scope, label) => '<button type="button" class="btn' + (this.leaderboardScope === scope ? ' active' : '') + '" onclick="V16.setLeaderboardScope(\'' + scope + '\')">' + label + '</button>';
+          bar.innerHTML = mk('lifetime', 'Lifetime') + mk('weekly', 'Weekly');
+          el.insertBefore(bar, el.firstChild);
+        },
+        weeklyRowsFromSlots() {
+          const rows = [];
+          const week = this.weekStartIso();
+          for (let i = 0; i < MAX_SLOTS; i++) {
+            const c = (i === activeSlot && char) ? char : slots[i];
+            if (!c || typeof c !== 'object' || typeof computeLeaderboardStats !== 'function') continue;
+            this.ensureCharacterFields(c);
+            const s = computeLeaderboardStats(c);
+            const baseKey = 'week_' + week + '_' + i;
+            const base = c.v16.weeklyBaselines[baseKey] || null;
+            if (!base) {
+              c.v16.weeklyBaselines[baseKey] = {
+                xp: Number(c.totalXp || c.xp || 0),
+                goldEarned: Number(s.goldEarned || c.goldEarned || 0),
+                kills: Number(s.kills || c.kills || 0),
+                dungeons: Number(c.dungeonsCleared || c.dungeonClears || 0)
+              };
+            }
+            const b = c.v16.weeklyBaselines[baseKey];
+            const xpNow = Number(c.totalXp || c.xp || 0);
+            const goldNow = Number(s.goldEarned || c.goldEarned || 0);
+            const killsNow = Number(s.kills || c.kills || 0);
+            const dungeonNow = Number(c.dungeonsCleared || c.dungeonClears || 0);
+            rows.push({
+              user_id: currentUser.id,
+              character_slot: i,
+              display: s.name,
+              level: s.level,
+              xp_this_week: Math.max(0, Math.floor(xpNow - Number(b.xp || 0))),
+              gold_earned_this_week: Math.max(0, Math.floor(goldNow - Number(b.goldEarned || 0))),
+              mobs_killed_this_week: Math.max(0, Math.floor(killsNow - Number(b.kills || 0))),
+              dungeons_cleared_this_week: Math.max(0, Math.floor(dungeonNow - Number(b.dungeons || 0))),
+              week_start: week,
+              updated_at: new Date().toISOString()
+            });
+          }
+          return rows;
+        },
+        async publishWeeklyLeaderboard() {
+          if (!sb || !currentUser) return;
+          const rows = this.weeklyRowsFromSlots();
+          if (!rows.length) return;
+          try {
+            const { error } = await sb.from('leaderboard_weekly').upsert(rows, { onConflict: 'user_id,character_slot,week_start' });
+            if (error && error.code !== '42P01') throw error;
+          } catch (e) { console.warn('weekly leaderboard publish failed', e); }
+        },
+        normalizeWeeklyRows(rows) {
+          return (rows || []).map(r => ({
+            user_id: r.user_id,
+            name: r.display || 'Adventurer',
+            race: '',
+            cls: '',
+            class: '',
+            level: Number(r.level || 1),
+            prestige: 0,
+            power: Number(r.xp_this_week || 0) + Number(r.gold_earned_this_week || 0) + Number(r.mobs_killed_this_week || 0) * 10 + Number(r.dungeons_cleared_this_week || 0) * 250,
+            hardcore: false,
+            atk: 0, def: 0, hp: 0, mp: 0, aa: 0,
+            gold: Number(r.gold_earned_this_week || 0),
+            kills: Number(r.mobs_killed_this_week || 0),
+            named_kills: 0, elite_kills: 0, boss_kills: 0, deaths: 0,
+            gold_earned: Number(r.gold_earned_this_week || 0),
+            weekly_xp: Number(r.xp_this_week || 0),
+            isYou: currentUser && r.user_id === currentUser.id
+          }));
+        },
+        async grantAchievement(code, delta, target) {
+          if (!code) return;
+          const amount = Number(delta || 1);
+          if (char) {
+            this.ensureCharacterFields(char);
+            char.accountAchievementsLocal[code] = Math.max(Number(char.accountAchievementsLocal[code] || 0), amount);
+          }
+          if (!sb || !currentUser) return;
+          try {
+            const { data: existing } = await sb.from('account_achievement_progress')
+              .select('progress,completed_at')
+              .eq('user_id', currentUser.id)
+              .eq('code', code)
+              .maybeSingle();
+            const progress = Math.max(Number(existing && existing.progress || 0), amount);
+            const completed = (target && progress >= target) ? (existing && existing.completed_at ? existing.completed_at : new Date().toISOString()) : (existing && existing.completed_at || null);
+            const { error } = await sb.from('account_achievement_progress').upsert({
+              user_id: currentUser.id, code, progress, completed_at: completed
+            }, { onConflict: 'user_id,code' });
+            if (error && error.code !== '42P01') throw error;
+            if (completed && (!existing || !existing.completed_at)) showToast('Achievement unlocked: ' + code.replace(/_/g, ' '), 'success', 3200);
+          } catch (e) { console.warn('achievement update failed', e); }
+        },
+        evaluateAchievements() {
+          if (!char || typeof computeLeaderboardStats !== 'function') return;
+          const s = computeLeaderboardStats(char);
+          const checks = [
+            ['combat_kills_100', Number(s.kills || 0), 100],
+            ['combat_kills_1000', Number(s.kills || 0), 1000],
+            ['combat_boss_25', Number(s.bossKills || 0), 25],
+            ['economy_gold_100k', Number(s.goldEarned || 0), 100000],
+            ['collection_mythic_found', Number(char.mythicFound || char.mythicItemsFound || 0), 1],
+            ['meta_level_50', Number(s.level || 1), 50],
+            ['meta_level_100', Number(s.level || 1), 100]
+          ];
+          checks.forEach(([code, progress, target]) => {
+            if (progress >= target) this.grantAchievement(code, progress, target);
+          });
+        },
+        decorateTopbar() {
+          const el = document.getElementById('char-name-disp');
+          if (!el || !char) return;
+          const active = (this.settings && this.settings.active_title) || char.activeTitle || '';
+          const base = char.name || 'Adventurer';
+          el.textContent = active ? (base + ' «' + active + '»') : base;
+        },
+        nextGuildLevelXp(level) {
+          return Math.max(1, Math.floor(1000 * Math.pow(Math.max(1, Number(level || 1)), 1.6)));
+        },
+        async renderGuildExpansion(info) {
+          const host = document.getElementById('guild-content');
+          if (!host || !info || !info.guild || host.querySelector('#v16-guild-expansion')) return;
+          const g = info.guild;
+          const level = Number(g.level || 1);
+          const xp = Number(g.xp || 0);
+          const next = this.nextGuildLevelXp(level);
+          const pct = Math.max(0, Math.min(100, Math.floor((xp / next) * 100)));
+          const motdNew = g.motd_updated_at && (Date.now() - new Date(g.motd_updated_at).getTime() < 24 * 3600 * 1000);
+          const canEdit = info.me && ['owner','officer'].includes(String(info.me.role || ''));
+          const wrap = document.createElement('div');
+          wrap.id = 'v16-guild-expansion';
+          wrap.style.marginTop = '0';
+          wrap.style.marginBottom = '12px';
+          wrap.innerHTML =
+            '<div class="v16-card">' +
+              '<h4>Guild Level ' + level + ' ' + (motdNew ? '<span class="v16-pill">New MOTD</span>' : '') + '</h4>' +
+              '<div class="v16-progress"><span style="width:' + pct + '%"></span></div>' +
+              '<div style="color:var(--text-secondary);font-size:11px">' + fmt(xp) + ' / ' + fmt(next) + ' guild XP toward level ' + (level + 1) + '</div>' +
+            '</div>' +
+            '<div class="v16-guild-grid">' +
+              '<div class="v16-card" style="flex:1 1 240px"><h4>📜 MOTD</h4><div id="v16-guild-motd">' + escapeHtmlSafe(g.motd || (level >= 2 ? 'No message set.' : 'Unlocks at guild level 2.')) + '</div>' +
+                (canEdit && level >= 2 ? '<button class="btn" style="margin-top:8px" onclick="V16.promptGuildMotd()">Edit MOTD</button>' : '') + '</div>' +
+              '<div class="v16-card" style="flex:1 1 240px"><h4>🏦 Bank Summary</h4><div id="v16-guild-bank-summary">Loading…</div></div>' +
+              '<div class="v16-card" style="flex:1 1 240px"><h4>🐉 Weekly Raid</h4><div id="v16-guild-raid">Loading…</div></div>' +
+              '<div class="v16-card" style="flex:1 1 240px"><h4>🏆 Achievements</h4><div id="v16-guild-achievements">Loading…</div></div>' +
+              '<div class="v16-card" style="flex:1 1 240px"><h4>🗓 Contributed Today</h4><div id="v16-guild-today">Loading…</div></div>' +
+              '<div class="v16-card" style="flex:1 1 240px"><h4>🕳 Guild Dungeon</h4><div>' + (level >= 7 ? 'Unlocked. Choose Normal, Heroic, or Mythic from the co-op tab once the SQL/RPCs are installed.' : 'Unlocks at guild level 7.') + '</div></div>' +
+            '</div>';
+          const subtabBody = host.querySelector('#guild-subtab-body');
+          const subtabNav = subtabBody && subtabBody.previousElementSibling;
+          if (subtabNav && subtabNav.parentNode === host) host.insertBefore(wrap, subtabNav);
+          else if (subtabBody) host.insertBefore(wrap, subtabBody);
+          else if (host.firstChild) host.insertBefore(wrap, host.firstChild);
+          else host.appendChild(wrap);
+          this.loadGuildWidgets(g.id);
+        },
+        async promptGuildMotd() {
+          const info = this.guildInfo || (Cloud.fetchMyGuild ? await Cloud.fetchMyGuild() : null);
+          if (!info || !info.guild) return;
+          const text = prompt('Guild message of the day:', info.guild.motd || '');
+          if (text === null) return;
+          try {
+            const { error } = await sb.rpc('set_guild_motd', { p_guild_id: info.guild.id, p_motd: String(text).slice(0, 500) });
+            if (error) throw error;
+            showToast('Guild MOTD updated.', 'success');
+            renderGuildTab();
+          } catch (e) {
+            console.warn('MOTD update failed', e);
+            showToast('MOTD update failed. Check v1.6 SQL/RLS.', 'error');
+          }
+        },
+        async loadGuildWidgets(guildId) {
+          if (!sb || !guildId) return;
+          try {
+            const [bank, raid, ach, today] = await Promise.allSettled([
+              sb.from('guild_bank_log').select('action,item_id,qty,gold,created_at').eq('guild_id', guildId).order('created_at', { ascending:false }).limit(20),
+              sb.from('guild_raid_bosses').select('*').eq('guild_id', guildId).order('week_start', { ascending:false }).limit(1),
+              sb.from('guild_achievement_progress').select('achievement_code,progress,completed_at').eq('guild_id', guildId).limit(12),
+              sb.rpc('guild_contributions_today', { p_guild_id: guildId })
+            ]);
+            const bankEl = document.getElementById('v16-guild-bank-summary');
+            if (bankEl) {
+              const rows = bank.status === 'fulfilled' && !bank.value.error ? (bank.value.data || []) : [];
+              const gold = rows.reduce((s,r)=>s+Number(r.gold||0),0);
+              bankEl.innerHTML = '<span class="v16-pill">Recent gold ' + fmt(gold) + '</span> <span class="v16-pill">' + rows.length + ' recent actions</span>';
+            }
+            const raidEl = document.getElementById('v16-guild-raid');
+            if (raidEl) {
+              const row = raid.status === 'fulfilled' && !raid.value.error ? (raid.value.data || [])[0] : null;
+              if (!row) raidEl.textContent = 'No active raid boss yet.';
+              else {
+                const hp = Number(row.hp_remaining || 0), total = Math.max(1, Number(row.hp_total || 1));
+                raidEl.innerHTML = '<strong>' + escapeHtmlSafe(row.boss_name || 'Raid Boss') + '</strong><div class="v16-progress"><span style="width:' + Math.max(0,Math.min(100,Math.floor((1-hp/total)*100))) + '%"></span></div><div>' + fmt(hp) + ' / ' + fmt(total) + ' HP remaining</div><button class="btn" style="margin-top:6px" onclick="V16.strikeRaidBoss(\'' + escapeHtmlSafe(row.id) + '\')">Strike the boss</button>';
+              }
+            }
+            const achEl = document.getElementById('v16-guild-achievements');
+            if (achEl) {
+              const rows = ach.status === 'fulfilled' && !ach.value.error ? (ach.value.data || []) : [];
+              achEl.innerHTML = rows.length ? rows.map(r => '<span class="v16-pill">' + escapeHtmlSafe(r.achievement_code) + (r.completed_at ? ' ✓' : ' ' + fmt(r.progress || 0)) + '</span>').join(' ') : 'No guild achievements yet.';
+            }
+            const todayEl = document.getElementById('v16-guild-today');
+            if (todayEl) {
+              const rows = today.status === 'fulfilled' && !today.value.error ? (today.value.data || []) : [];
+              todayEl.innerHTML = rows.length ? rows.map(r => '<div>' + escapeHtmlSafe(r.display || r.user_id || 'Member') + ': ' + fmt(r.total || 0) + '</div>').join('') : 'No contributions today yet.';
+            }
+          } catch (e) { console.warn('guild widgets failed', e); }
+        },
+        async strikeRaidBoss(id) {
+          if (!sb || !id) return;
+          try {
+            const weaponDps = Math.max(1, Number((char && (char.atk || char.level)) || 1));
+            const damage = Math.max(1, Math.min(250000, Math.floor(Number(char && char.level || 1) * weaponDps)));
+            const { error } = await sb.rpc('strike_guild_raid_boss', { p_boss_id: id, p_damage: damage });
+            if (error) throw error;
+            showToast('You strike the raid boss for ' + fmt(damage) + ' damage.', 'success');
+            if (typeof renderGuildTab === 'function') renderGuildTab();
+          } catch (e) {
+            console.warn('raid strike failed', e);
+            showToast('Raid strike failed. You may have already attacked today.', 'error');
+          }
+        },
+        syncGuildChatVisibility() {
+          const hasGuild = !!this.guildId;
+          document.querySelectorAll('[data-chat-channel="guild"]').forEach(el => {
+            el.style.display = hasGuild ? '' : 'none';
+          });
+          const opt = document.querySelector('#chat-channel-select option[value="guild"]');
+          if (opt) opt.hidden = !hasGuild;
+          if (!hasGuild && window.Chat && Chat.channel === 'guild') Chat.setChannel('global');
+        }
+      };
+      window.V16 = V16;
+      window.grantAchievement = function(code, delta, target) { return V16.grantAchievement(code, delta, target); };
+
+      Object.assign(Cloud, {
+        syncTimer: null,
+        syncMaxTimer: null,
+        lastCloudPullAt: 0,
+        _characterSavesUnavailable: false,
+        _cloudConflictOpen: false,
+        _cloudSyncInFlight: false,
+        _lastSyncOptions: null,
+        async _fetchCharacterSaveRows() {
+          if (!sb || !currentUser || this._characterSavesUnavailable) return [];
+          try {
+            const { data, error } = await sb.from('character_saves')
+              .select('slot_id,save_blob,updated_at')
+              .eq('user_id', currentUser.id);
+            if (error) {
+              if (error.code === '42P01' || (error.message && /character_saves/i.test(error.message))) {
+                this._characterSavesUnavailable = true;
+                return [];
+              }
+              throw error;
+            }
+            return data || [];
+          } catch (e) {
+            console.warn('character_saves load failed; falling back to legacy saves', e);
+            if (window.setSaveIndicator) setSaveIndicator('failed', e.message || e);
+            return [];
+          }
+        },
+        async _fetchLegacySaveRows() {
+          if (!sb || !currentUser) return [];
+          try {
+            const { data, error } = await sb.from('saves')
+              .select('slot,data,updated_at')
+              .eq('user_id', currentUser.id);
+            if (!error) return data || [];
+            // Very old installs may not expose updated_at to this client. Fall back
+            // to the old reader shape instead of making login fail.
+            const { data: fallback, error: fallbackError } = await sb.from('saves')
+              .select('slot,data')
+              .eq('user_id', currentUser.id);
+            if (fallbackError) throw fallbackError;
+            return (fallback || []).map(r => Object.assign({ updated_at: null }, r));
+          } catch (e) {
+            console.warn('legacy saves load failed', e);
+            return [];
+          }
+        },
+        async _latestLegacySaveAt() {
+          const rows = await this._fetchLegacySaveRows();
+          let newest = 0;
+          for (const r of rows || []) {
+            const t = r && r.updated_at ? new Date(r.updated_at).getTime() : 0;
+            if (Number.isFinite(t)) newest = Math.max(newest, t);
+          }
+          return newest;
+        },
+        async fetchAllSlots() {
+          const out = new Array(MAX_SLOTS).fill(null);
+          if (!sb || !currentUser) return out;
+
+          // Migration-safe loader: old v1.5.x tabs continue writing public.saves,
+          // while v1.6 writes public.character_saves. Compare both tables by slot
+          // and use the newest row so unrefreshed tabs do not lose progress.
+          const legacyRows = await this._fetchLegacySaveRows();
+          const characterRows = await this._fetchCharacterSaveRows();
+          const bySlot = new Map();
+          let newest = 0;
+
+          const consider = (slot, value, updatedAt, source) => {
+            slot = Number(slot);
+            if (!(slot >= 0 && slot < MAX_SLOTS) || !value) return;
+            let t = updatedAt ? new Date(updatedAt).getTime() : 0;
+            if (!Number.isFinite(t)) t = 0;
+            newest = Math.max(newest, t);
+            const prev = bySlot.get(slot);
+            // If a legacy row has no timestamp, only use it when no v1.6 row exists.
+            if (!prev || t > prev.t || (t === prev.t && source === 'character_saves')) {
+              bySlot.set(slot, { value, t, source });
+            }
+          };
+
+          for (const r of legacyRows || []) {
+            consider(r.slot, r.data, r.updated_at, 'saves');
+          }
+          for (const r of characterRows || []) {
+            const slot = Number(r.slot_id);
+            if (!(slot >= 0 && slot < MAX_SLOTS) || !r.save_blob) continue;
+            try {
+              const decoded = await V16.decodeSaveBlob(r.save_blob);
+              consider(slot, decoded, r.updated_at, 'character_saves');
+            } catch (e) {
+              console.warn('save blob decode failed', e);
+            }
+          }
+
+          for (const [slot, row] of bySlot.entries()) out[slot] = row.value;
+          this.lastCloudPullAt = newest || Date.now();
+          this._lastLoadedSaveSource = Array.from(bySlot.values()).some(r => r.source === 'saves') ? 'mixed-or-legacy' : 'character_saves';
+          return out;
+        },
+
+        queueSync(options = {}) {
+          if (!sb || !currentUser) return;
+          this._lastSyncOptions = Object.assign({}, this._lastSyncOptions || {}, options || {});
+          clearTimeout(this.syncTimer);
+          if (options && options.critical) {
+            this.flushSync(options);
+            return;
+          }
+          this.syncTimer = setTimeout(() => this.pushAll(this._lastSyncOptions || {}), 4000);
+          if (!this.syncMaxTimer) {
+            this.syncMaxTimer = setTimeout(() => {
+              this.syncMaxTimer = null;
+              clearTimeout(this.syncTimer);
+              this.pushAll(this._lastSyncOptions || { reason: 'max_wait' });
+            }, 30000);
+          }
+        },
+        flushSync(options = {}) {
+          if (!sb || !currentUser) return;
+          clearTimeout(this.syncTimer);
+          clearTimeout(this.syncMaxTimer);
+          this.syncTimer = null;
+          this.syncMaxTimer = null;
+          this._lastSyncOptions = Object.assign({}, this._lastSyncOptions || {}, options || {});
+          this.pushAll(this._lastSyncOptions || options);
+        },
+        async _hasRemoteConflict() {
+          if (!this.lastCloudPullAt) return false;
+          let latest = 0;
+          if (!this._characterSavesUnavailable) {
+            try {
+              const { data, error } = await sb.from('character_saves')
+                .select('updated_at')
+                .eq('user_id', currentUser.id)
+                .order('updated_at', { ascending: false })
+                .limit(1);
+              if (error) {
+                if (error.code === '42P01') this._characterSavesUnavailable = true;
+              } else {
+                const t = data && data[0] && data[0].updated_at ? new Date(data[0].updated_at).getTime() : 0;
+                if (Number.isFinite(t)) latest = Math.max(latest, t);
+              }
+            } catch (e) {}
+          }
+          // Also watch the legacy table because an already-open v1.5.x tab can
+          // keep saving there after v1.6 has been deployed.
+          try {
+            latest = Math.max(latest, await this._latestLegacySaveAt());
+          } catch (e) {}
+          return latest && latest > (this.lastCloudPullAt + 2000);
+        },
+
+        _showCloudConflictToast() {
+          if (this._cloudConflictOpen) return;
+          this._cloudConflictOpen = true;
+          const host = document.getElementById('toast-host');
+          if (!host) {
+            if (confirm('Newer cloud save found. Reload it? Press Cancel to overwrite on next save.')) location.reload();
+            else this.pushAll({ overwrite: true, reason: 'overwrite_conflict' });
+            return;
+          }
+          const toast = document.createElement('div');
+          toast.className = 'toast error show';
+          toast.innerHTML = '<div class="toast-content"><i class="toast-icon ti ti-alert-triangle"></i><span class="toast-message">Newer cloud save found. Reload it or overwrite with this device?</span></div>' +
+            '<div class="v16-conflict-actions"><button class="btn" type="button" data-v16-reload>Reload</button><button class="btn danger" type="button" data-v16-overwrite>Overwrite</button></div>';
+          host.appendChild(toast);
+          toast.querySelector('[data-v16-reload]').onclick = () => { location.reload(); };
+          toast.querySelector('[data-v16-overwrite]').onclick = () => {
+            this._cloudConflictOpen = false;
+            toast.remove();
+            this.pushAll({ overwrite: true, reason: 'overwrite_conflict' });
+          };
+        },
+        async pushAll(options = {}) {
+          if (!sb || !currentUser) return;
+          if (this._cloudSyncInFlight && !(options && options.critical)) return;
+          this._cloudSyncInFlight = true;
+          if (window.setSaveIndicator) setSaveIndicator('saving');
+          try {
+            if (!options.overwrite && await this._hasRemoteConflict()) {
+              this._showCloudConflictToast();
+              if (window.setSaveIndicator) setSaveIndicator('failed', 'Remote save is newer.');
+              return;
+            }
+            if (this._characterSavesUnavailable) {
+              if (oldCloud.pushAll) await oldCloud.pushAll(options);
+              if (window.setSaveIndicator) setSaveIndicator('saved');
+              return;
+            }
+            const rows = [];
+            const historyRows = [];
+            const deletes = [];
+            const now = new Date().toISOString();
+            for (let i = 0; i < MAX_SLOTS; i++) {
+              const c = (i === activeSlot && char) ? char : slots[i];
+              if (c && typeof c === 'object') {
+                V16.ensureCharacterFields(c);
+                const packed = await V16.encodeSaveBlob(c);
+                rows.push({
+                  user_id: currentUser.id,
+                  slot_id: i,
+                  save_blob: packed.blob,
+                  save_version: CURRENT_VERSION,
+                  checksum: packed.checksum,
+                  byte_size: packed.byteSize,
+                  character_name: String(c.name || '').slice(0, 80) || null,
+                  character_level: Math.floor(Number(c.level || 1)),
+                  character_class: String(c.cls || '').slice(0, 40) || null,
+                  updated_at: now
+                });
+                historyRows.push({
+                  user_id: currentUser.id,
+                  slot_id: i,
+                  save_blob: packed.blob,
+                  save_version: CURRENT_VERSION,
+                  checksum: packed.checksum,
+                  byte_size: packed.byteSize,
+                  reason: options.reason || (options.critical ? 'critical_event' : 'autosave')
+                });
+              } else {
+                deletes.push(i);
+              }
+            }
+            if (rows.length) {
+              const { error } = await sb.from('character_saves').upsert(rows, { onConflict: 'user_id,slot_id' });
+              if (error) {
+                if (error.code === '42P01') {
+                  this._characterSavesUnavailable = true;
+                  if (oldCloud.pushAll) await oldCloud.pushAll(options);
+                  return;
+                }
+                throw error;
+              }
+              try { await sb.from('character_save_history').insert(historyRows); } catch (e) { if (!(e && e.code === '42P01')) console.warn('save history insert failed', e); }
+            }
+            if (deletes.length) {
+              await sb.from('character_saves').delete().eq('user_id', currentUser.id).in('slot_id', deletes);
+            }
+            this.lastCloudPullAt = Date.now();
+            this.publishLeaderboard();
+            this.publishPvpSnapshots && this.publishPvpSnapshots();
+            this.refreshSharedLfg && this.refreshSharedLfg();
+            this.maybeAutoVersion && this.maybeAutoVersion();
+            if (window.setSaveIndicator) setSaveIndicator('saved');
+          } catch (e) {
+            console.warn('cloud sync error', e);
+            if (window.setSaveIndicator) setSaveIndicator('failed', e.message || e);
+            clearTimeout(this.syncTimer);
+            this.syncTimer = setTimeout(() => this.pushAll(options), 12000);
+          } finally {
+            this._cloudSyncInFlight = false;
+            clearTimeout(this.syncMaxTimer);
+            this.syncMaxTimer = null;
+          }
+        },
+        async publishLeaderboard() {
+          if (oldCloud.publishLeaderboard) await oldCloud.publishLeaderboard();
+          await V16.publishWeeklyLeaderboard();
+        },
+        async fetchLeaderboard(limit = null) {
+          if (V16.leaderboardScope !== 'weekly') return oldCloud.fetchLeaderboard ? oldCloud.fetchLeaderboard(limit) : null;
+          if (!sb) return null;
+          try {
+            const week = V16.weekStartIso();
+            const { data, error } = await sb.from('leaderboard_weekly')
+              .select('user_id,character_slot,display,level,xp_this_week,gold_earned_this_week,mobs_killed_this_week,dungeons_cleared_this_week,week_start,updated_at')
+              .eq('week_start', week)
+              .order('xp_this_week', { ascending: false })
+              .limit(limit || 1000);
+            if (error) { console.warn('weekly leaderboard fetch failed', error); return null; }
+            return V16.normalizeWeeklyRows(data || []);
+          } catch (e) { console.warn('weekly leaderboard fetch error', e); return null; }
+        },
+        async fetchMyGuild() {
+          if (!sb || !currentUser) return null;
+          try {
+            const { data: mem, error: mErr } = await sb.from('guild_members')
+              .select('guild_id,role,contribution,contribution_week,lifetime_contribution,display')
+              .eq('user_id', currentUser.id).maybeSingle();
+            if (mErr || !mem) { V16.guildId = null; V16.guildInfo = null; V16.syncGuildChatVisibility(); return null; }
+            const { data: g, error: gErr } = await sb.from('guilds')
+              .select('id,name,tag,owner_id,goal_kind,goal_target,goal_progress,week_start,motd,motd_updated_at,motd_updated_by,xp,level')
+              .eq('id', mem.guild_id).single();
+            if (gErr || !g) throw gErr || new Error('guild missing');
+            const { data: roster } = await sb.from('guild_members')
+              .select('user_id,display,role,contribution,contribution_week,lifetime_contribution,level,class,race,last_online_at')
+              .eq('guild_id', g.id)
+              .order('lifetime_contribution', { ascending: false })
+              .limit(100);
+            const info = { guild: g, me: mem, roster: roster || [] };
+            V16.guildId = g.id;
+            V16.guildInfo = info;
+            V16.syncGuildChatVisibility();
+            return info;
+          } catch (e) {
+            const fallback = oldCloud.fetchMyGuild ? await oldCloud.fetchMyGuild() : null;
+            V16.guildId = fallback && fallback.guild ? fallback.guild.id : null;
+            V16.guildInfo = fallback;
+            V16.syncGuildChatVisibility();
+            return fallback;
+          }
+        },
+        async afterLogin() {
+          // v1.6.0 hotfix: login must never be blocked by optional cloud extras.
+          // A missing/new SQL table, slow RPC, or RLS mistake should not leave the
+          // player stuck on the login screen after Supabase auth succeeds.
+          const withTimeout = (promise, ms, label) => Promise.race([
+            Promise.resolve(promise),
+            new Promise((_, reject) => setTimeout(() => reject(new Error((label || 'cloud step') + ' timed out')), ms))
+          ]);
+          let loadedSlots = new Array(MAX_SLOTS).fill(null);
+          let usedFallback = false;
+
+          try {
+            await withTimeout(this.refreshAdminFlag(), 5000, 'admin check');
+          } catch (e) {
+            usedFallback = true;
+            console.warn('admin check failed during login; continuing without blocking login', e);
+            try { updateAdminVisibility(); } catch (_) {}
+          }
+
+          try {
+            loadedSlots = await withTimeout(this.fetchAllSlots(), 9000, 'cloud save load');
+          } catch (e) {
+            usedFallback = true;
+            console.warn('cloud save load failed during login; using local cache', e);
+          }
+
+          let localSlots = [];
+          try { localSlots = JSON.parse(localStorage.getItem(SAVE_KEY)) || []; } catch (e) { localSlots = []; }
+          const cloudHasAny = Array.isArray(loadedSlots) && loadedSlots.some(Boolean);
+          const localHasAny = Array.isArray(localSlots) && localSlots.some(Boolean);
+
+          if (!cloudHasAny && localHasAny) {
+            slots = localSlots.slice();
+            while (slots.length < MAX_SLOTS) slots.push(null);
+            // Do not await this. Saving/migrating cloud rows is useful, but it must
+            // not keep the player on the login screen.
+            try { this.pushAll({ reason: 'login_local_fallback' }); } catch (e) { console.warn('login fallback push failed', e); }
+          } else {
+            slots = Array.isArray(loadedSlots) ? loadedSlots.slice() : [];
+            while (slots.length < MAX_SLOTS) slots.push(null);
+          }
+
+          try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
+          const badge = document.getElementById('cs-user-email');
+          if (badge && currentUser) badge.textContent = currentUser.email || '';
+          showScreen('screen-charselect');
+          try { renderSlots(); } catch (e) { console.error('character select render failed', e); }
+
+          if (usedFallback && typeof showToast === 'function') {
+            showToast('Signed in. Some cloud extras loaded in safe mode; saves will retry automatically.', 'info');
+          }
+
+          // Non-blocking post-login cloud extras.
+          setTimeout(() => {
+            try { this.publishLeaderboard && this.publishLeaderboard(); } catch (e) { console.warn('leaderboard publish failed after login', e); }
+            try { this.publishPvpSnapshots && this.publishPvpSnapshots(); } catch (e) { console.warn('pvp snapshot publish failed after login', e); }
+            try {
+              if (this.collectLfgRewards) this.collectLfgRewards().then(earned => {
+                if (Array.isArray(earned) && earned.length && typeof showLfgRewardSummary === 'function') showLfgRewardSummary(earned);
+              }).catch(e => console.warn('LFG reward collection failed after login', e));
+            } catch (e) { console.warn('LFG reward collection failed after login', e); }
+            try { this.fetchVersions && this.fetchVersions().then(() => { if (typeof setSnapshotStatus === 'function') setSnapshotStatus('idle'); }).catch(() => {}); } catch (e) {}
+            try { V16.loadAccountSettings().catch(e => console.warn('account settings load failed after login', e)); } catch (e) {}
+            try { V16.loadNews(true).catch(e => console.warn('news load failed after login', e)); } catch (e) {}
+            try { V16.syncGuildChatVisibility(); } catch (e) {}
+          }, 0);
+        },
+        showLogin() {
+          if (oldCloud.showLogin) oldCloud.showLogin();
+          setTimeout(() => V16.loadNews(true), 50);
+        },
+        async signOut() {
+          V16.guildId = null;
+          V16.guildInfo = null;
+          V16.settings = {};
+          if (oldCloud.signOut) return oldCloud.signOut();
+        }
+      });
+
+      if (window.Chat) {
+        Chat.getStorageChannelFor = function(ch) {
+          const clean = String(ch || this.channel || 'global').toLowerCase();
+          if (clean === 'guild') return V16.guildId ? ('guild:' + V16.guildId) : 'guild:none';
+          return clean;
+        };
+        Chat.getStorageChannel = function() { return this.getStorageChannelFor(this.channel); };
+        const oldSync = Chat.syncControls ? Chat.syncControls.bind(Chat) : null;
+        Chat.syncControls = function() {
+          if (oldSync) oldSync();
+          V16.syncGuildChatVisibility();
+        };
+        const oldSet = Chat.setChannel ? Chat.setChannel.bind(Chat) : null;
+        Chat.setChannel = function(channel) {
+          const ch = String(channel || 'global').toLowerCase();
+          if (ch === 'guild' && !V16.guildId) {
+            if (Cloud && Cloud.fetchMyGuild) Cloud.fetchMyGuild().then(info => {
+              if (info && info.guild && oldSet) oldSet('guild');
+              else showToast('Join a guild to use guild chat.', 'info');
+            });
+            return;
+          }
+          if (oldSet) oldSet(channel);
+        };
+        const oldDisplay = Chat.getDisplayName ? Chat.getDisplayName.bind(Chat) : null;
+        Chat.getDisplayName = function() {
+          const base = oldDisplay ? oldDisplay() : 'Adventurer';
+          const active = (V16.settings && V16.settings.active_title) || (char && char.activeTitle) || '';
+          return active ? (base + ' «' + active + '»') : base;
+        };
+      }
+
+      const oldRenderLeaderboardContent = renderLeaderboardContent;
+      renderLeaderboardContent = function() {
+        oldRenderLeaderboardContent();
+        V16.decorateLeaderboard();
+      };
+      const oldRenderLeaderboardTab = renderLeaderboardTab;
+      renderLeaderboardTab = function() {
+        oldRenderLeaderboardTab();
+        V16.decorateLeaderboard();
+      };
+      const oldRenderAll = renderAll;
+      renderAll = function() {
+        oldRenderAll();
+        V16.decorateTopbar();
+      };
+      const oldSaveSlots = saveSlots;
+      saveSlots = function(options) {
+        if (char) V16.ensureCharacterFields(char);
+        const res = oldSaveSlots(options || {});
+        try {
+          V16.evaluateAchievements();
+          V16.publishWeeklyLeaderboard();
+        } catch (e) {}
+        return res;
+      };
+      const oldRenderMyGuild = (typeof renderMyGuild === 'function') ? renderMyGuild : null;
+      if (oldRenderMyGuild) {
+        renderMyGuild = function(el, info) {
+          oldRenderMyGuild(el, info);
+          V16.guildInfo = info || null;
+          V16.guildId = info && info.guild ? info.guild.id : null;
+          V16.syncGuildChatVisibility();
+          V16.renderGuildExpansion(info);
+        };
+      }
+      const oldMaybeWhats = (typeof maybeShowWhatsNewV1514 === 'function') ? maybeShowWhatsNewV1514 : null;
+      if (oldMaybeWhats) {
+        maybeShowWhatsNewV1514 = function() {
+          try {
+            const key = 'EmberQuest_seenVersion';
+            if (localStorage.getItem(key) === CURRENT_VERSION) return;
+          } catch (e) {}
+          oldMaybeWhats();
+          setTimeout(() => {
+            const body = document.querySelector('#whats-new-modal-v1514 .whats-new-body-v1514');
+            if (body) {
+              body.innerHTML =
+                '<p><strong>Cloud saves are stronger:</strong> v1.6 adds compressed character_saves rows, checksum validation, save history, conflict warnings, and clearer sync states.</p>' +
+                '<p><strong>Guilds grew up:</strong> MOTD, level/XP, enhanced roster, daily contribution, raid boss, achievements, guild dungeon hooks, and guild-scoped chat are wired for the new SQL.</p>' +
+                '<p><strong>Weekly leaderboards, account achievements, titles, news posts, and cross-device settings</strong> are now part of the Supabase-backed progression layer.</p>' +
+                '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn active" onclick="openPopup(\'leaderboard\');closeWhatsNewV1514()">Open Leaderboard</button><button class="btn" onclick="openPopup(\'guild\');closeWhatsNewV1514()">Open Guild</button></div>';
+            }
+          }, 0);
+        };
+      }
+
+      window.addEventListener('pagehide', () => { try { Cloud.flushSync({ reason:'pagehide', critical:true }); } catch(e) {} });
+      window.addEventListener('beforeunload', () => { try { Cloud.flushSync({ reason:'beforeunload', critical:true }); } catch(e) {} });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          try { Cloud.flushSync({ reason:'visibility_hidden', critical:true }); } catch(e) {}
+        }
+      });
+      document.addEventListener('DOMContentLoaded', () => {
+        V16.loadNews(true);
+        V16.syncGuildChatVisibility();
+      });
+    })();
+
+
     Cloud.start();
 
     // Populate version strings from single source of truth
