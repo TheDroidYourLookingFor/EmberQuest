@@ -8719,6 +8719,10 @@
                 step="1"
                 onchange="setAfkGoalTargetFromUI()"
                 style="width:84px;font-size:11px;padding:4px 6px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
+              <select
+                id="afk-goal-zone-select"
+                onchange="setAfkGoalTargetFromUI()"
+                style="display:none;font-size:11px;padding:4px 6px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);max-width:200px"></select>
             </span>
           </div>
           <div
@@ -13311,7 +13315,8 @@
       // Smart goal automation — these carry a numeric target stored on
       // char.afkGoalTargets and drive target/progress behavior on completion.
       farm_until_gold: { label: 'Farm Until X Gold', smart: true, target: 'gold', targetLabel: 'Target gold', defaultTarget: 100000, zoneMode: 'gold', desc: 'Gold Farm behavior with a visible target.' },
-      level_alts_to: { label: 'Level Alts to N', smart: true, target: 'level', targetLabel: 'Target level', defaultTarget: 20, zoneMode: 'highest', desc: 'Level the active character in the highest unlocked zone, then hand off to the next alt.' }
+      level_alts_to: { label: 'Level Alts to N', smart: true, target: 'level', targetLabel: 'Target level', defaultTarget: 20, zoneMode: 'highest', desc: 'Level the active character in the highest unlocked zone, then hand off to the next alt.' },
+      farm_zone: { label: 'Farm This Zone', smart: true, target: 'zone', targetLabel: 'Zone', defaultTarget: 0, zoneMode: 'farmZone', desc: 'Travel to the chosen unlocked zone and keep farming it.' }
     };
 
     const DUNGEON_MODIFIERS = {
@@ -13933,14 +13938,28 @@
     function getAfkGoalTarget(targetChar, goalId) {
       if (!targetChar || !AFK_GOALS[goalId] || !AFK_GOALS[goalId].smart) return 0;
       ensureExtendedSystems(targetChar);
+      const def = AFK_GOALS[goalId];
       const raw = Number(targetChar.afkGoalTargets && targetChar.afkGoalTargets[goalId]);
-      return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : AFK_GOALS[goalId].defaultTarget;
+      // Zone targets are valid at index 0, unlike gold/level which must be > 0.
+      if (def.target === 'zone') {
+        const max = Math.max(0, (Array.isArray(ZONES) ? ZONES.length : 1) - 1);
+        const fallback = Math.max(0, Math.min(max, Number(targetChar.zone || 0)));
+        return Number.isFinite(raw) && raw >= 0 ? Math.min(max, Math.floor(raw)) : fallback;
+      }
+      return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : def.defaultTarget;
     }
 
     function setAfkGoalTarget(targetChar, goalId, value) {
       if (!targetChar || !AFK_GOALS[goalId] || !AFK_GOALS[goalId].smart) return;
       ensureExtendedSystems(targetChar);
-      const v = Math.max(1, Math.floor(Number(value) || AFK_GOALS[goalId].defaultTarget));
+      const def = AFK_GOALS[goalId];
+      if (def.target === 'zone') {
+        const max = Math.max(0, (Array.isArray(ZONES) ? ZONES.length : 1) - 1);
+        const v = Math.max(0, Math.min(max, Math.floor(Number(value))));
+        targetChar.afkGoalTargets[goalId] = Number.isFinite(v) ? v : 0;
+        return;
+      }
+      const v = Math.max(1, Math.floor(Number(value) || def.defaultTarget));
       targetChar.afkGoalTargets[goalId] = v;
     }
 
@@ -13951,6 +13970,7 @@
       const target = getAfkGoalTarget(targetChar, goalId);
       if (def.target === 'gold') return Number(targetChar.gold || 0) >= target;
       if (def.target === 'level') return Number(targetChar.level || 0) >= target;
+      // Zone goal is open-ended: keep farming forever.
       return false;
     }
 
@@ -14007,7 +14027,19 @@
       c.chainStep = Math.max(1, Math.floor(Number(c.chainStep || 1)));
       c.chainTotal = Math.max(2, Math.floor(Number(c.chainTotal || CONTRACT_CHAIN_TOTAL)));
       c.bossStep = !!c.bossStep || c.chainStep >= c.chainTotal;
-      c.target = c.bossStep ? 'Named or Elite' : (typeof c.target === 'string' && c.target ? c.target : ZONES[c.zone].mobs[0]);
+      // Ensure the target actually belongs to this zone. Otherwise stale
+      // contracts (saved before zone mob tables changed, or generated from a
+      // fallback zone) keep pointing at mobs the player can never find here.
+      const zoneMobs = (ZONES[c.zone] && Array.isArray(ZONES[c.zone].mobs)) ? ZONES[c.zone].mobs : [];
+      if (c.bossStep) {
+        c.target = 'Named or Elite';
+      } else if (typeof c.target === 'string' && c.target && zoneMobs.includes(c.target)) {
+        // keep current target
+      } else if (zoneMobs.length) {
+        c.target = zoneMobs[Math.floor(Math.random() * zoneMobs.length)];
+      } else {
+        c.target = 'Named or Elite';
+      }
       return c;
     }
 
@@ -14087,14 +14119,15 @@
         if (!z || !Array.isArray(z.mobs) || !z.mobs.length) continue;
         const minLvl = Math.max(1, Math.floor(Number(z.minLvl || 1)));
         const maxLvl = Math.max(minLvl, Math.floor(Number(z.maxLvl || minLvl)));
-        if (minLvl <= lvl + 2 && maxLvl >= lvl - 8) out.push(i);
+        // Only offer zones the player has actually unlocked (level >= minLvl).
+        if (minLvl <= lvl && maxLvl >= lvl - 8) out.push(i);
       }
       if (!out.length) {
         for (let i = 0; i < ZONES.length; i++) {
           const z = ZONES[i];
           if (!z || !Array.isArray(z.mobs) || !z.mobs.length) continue;
           const minLvl = Math.max(1, Math.floor(Number(z.minLvl || 1)));
-          if (minLvl <= lvl + 2) out.push(i);
+          if (minLvl <= lvl) out.push(i);
         }
       }
       if (!out.length) out.push(0);
@@ -14125,7 +14158,10 @@
     }
 
     function generateEliteContract(targetZone = null, tier = null, chainStep = 1, chainTotal = CONTRACT_CHAIN_TOTAL) {
-      const zoneIdx = targetZone === null ? (char ? char.zone : 0) : targetZone;
+      const rawZoneIdx = targetZone === null ? (char ? char.zone : 0) : targetZone;
+      // Clamp to a real zone so the stored `zone` index always matches the
+      // mob list we pick the target from.
+      const zoneIdx = Math.max(0, Math.min(ZONES.length - 1, Math.floor(Number(rawZoneIdx) || 0)));
       const zone = ZONES[zoneIdx] || ZONES[0];
       const chosenTier = tier || (char && char.contractTierPref) || 'normal';
       const tierData = getContractTierData(chosenTier);
@@ -14396,6 +14432,13 @@
       Object.entries(AFK_GOALS).forEach(([id, def]) => {
         if (!def.smart) return;
         const raw = Number(targetChar.afkGoalTargets[id]);
+        if (def.target === 'zone') {
+          const max = Math.max(0, (Array.isArray(ZONES) ? ZONES.length : 1) - 1);
+          targetChar.afkGoalTargets[id] = Number.isFinite(raw) && raw >= 0
+            ? Math.min(max, Math.floor(raw))
+            : Math.max(0, Math.min(max, Number(targetChar.zone || 0)));
+          return;
+        }
         targetChar.afkGoalTargets[id] = Number.isFinite(raw) && raw > 0
           ? Math.floor(raw)
           : def.defaultTarget;
@@ -23514,8 +23557,23 @@ async function exportSlotsToFile(options = {}) {
     function renderMob() {
       const mc = document.getElementById('mob-card'), nm = document.getElementById('no-mob-msg');
       renderBattleScene();
-      if (!mob) { mc.style.display = 'none'; nm.style.display = 'block'; return; }
-      mc.style.display = 'block'; nm.style.display = 'none';
+      // Keep the mob card (and therefore the HP bar) mounted at all times so it
+      // doesn't visibly disappear between fights. When there's no current
+      // target, render a placeholder instead of hiding the card.
+      if (mc) mc.style.display = 'block';
+      if (nm) nm.style.display = 'none';
+      if (!mob) {
+        document.getElementById('mob-name').textContent = 'No target';
+        document.getElementById('mob-level').textContent = '';
+        document.getElementById('mob-hp-bar').style.width = '0%';
+        document.getElementById('mob-hp-disp').textContent = '0/0 HP';
+        const badgeEmpty = document.getElementById('mob-badge');
+        if (badgeEmpty) { badgeEmpty.textContent = ''; badgeEmpty.className = 'badge'; }
+        const actionsEmpty = document.getElementById('mob-pack-actions');
+        if (actionsEmpty) { actionsEmpty.style.display = 'none'; actionsEmpty.innerHTML = ''; }
+        requestAnimationFrame(syncCombatLogSize);
+        return;
+      }
       document.getElementById('mob-name').textContent = mob.name;
       document.getElementById('mob-level').textContent = 'Level ' + mob.level;
       document.getElementById('mob-hp-bar').style.width = Math.max(0, mob.hp / mob.maxHp * 100) + '%';
@@ -30930,6 +30988,7 @@ async function exportSlotsToFile(options = {}) {
     function syncAfkGoalTargetUI() {
       const wrap = document.getElementById('afk-goal-target-wrap');
       const input = document.getElementById('afk-goal-target');
+      const zoneSel = document.getElementById('afk-goal-zone-select');
       const label = document.getElementById('afk-goal-target-label');
       if (!wrap || !input || !char) return;
       const goal = getAfkGoalState(char);
@@ -30937,8 +30996,32 @@ async function exportSlotsToFile(options = {}) {
       if (def && def.smart) {
         wrap.style.display = 'inline-flex';
         if (label) label.textContent = (def.targetLabel || 'Target') + ':';
-        input.value = getAfkGoalTarget(char, goal);
-        input.step = def.target === 'level' ? '1' : '1000';
+        if (def.target === 'zone' && zoneSel) {
+          // Rebuild option list each time so newly-unlocked zones appear, and
+          // any locked zones get pruned out.
+          zoneSel.innerHTML = '';
+          ZONES.forEach((z, i) => {
+            if (!z || !isZoneUnlockedForAfk(char, i)) return;
+            const opt = document.createElement('option');
+            opt.value = String(i);
+            opt.textContent = z.name + ' (Lv ' + z.minLvl + '-' + z.maxLvl + ')';
+            zoneSel.appendChild(opt);
+          });
+          if (!zoneSel.options.length) {
+            const opt = document.createElement('option');
+            opt.value = '0';
+            opt.textContent = (ZONES[0] && ZONES[0].name) || 'Zone 1';
+            zoneSel.appendChild(opt);
+          }
+          zoneSel.value = String(getAfkGoalTarget(char, goal));
+          zoneSel.style.display = 'inline-block';
+          input.style.display = 'none';
+        } else {
+          if (zoneSel) zoneSel.style.display = 'none';
+          input.style.display = 'inline-block';
+          input.value = getAfkGoalTarget(char, goal);
+          input.step = def.target === 'level' ? '1' : '1000';
+        }
       } else {
         wrap.style.display = 'none';
       }
@@ -30949,6 +31032,21 @@ async function exportSlotsToFile(options = {}) {
       const goal = getAfkGoalState(char);
       const def = AFK_GOALS[goal];
       if (!def || !def.smart) return;
+      if (def.target === 'zone') {
+        const sel = document.getElementById('afk-goal-zone-select');
+        if (!sel) return;
+        setAfkGoalTarget(char, goal, sel.value);
+        const v = getAfkGoalTarget(char, goal);
+        sel.value = String(v);
+        const zName = (ZONES[v] && ZONES[v].name) || ('Zone ' + (v + 1));
+        setAfkGoalAction('Farm zone set to ' + zName);
+        log('AFK ' + def.label + ' target set to ' + zName + '.', 'info');
+        // Re-apply so the move happens immediately on selection change.
+        applySmartAfkGoal(false);
+        renderAfkGoalStatus();
+        autoSave();
+        return;
+      }
       const input = document.getElementById('afk-goal-target');
       if (!input) return;
       setAfkGoalTarget(char, goal, input.value);
@@ -31027,6 +31125,12 @@ async function exportSlotsToFile(options = {}) {
       if (mode === 'highest') return getHighestUnlockedAfkZoneIndex(targetChar);
       if (mode === 'gold') return getBestGoldAfkZoneIndex(targetChar);
       if (mode === 'balanced') return getBalancedAfkZoneIndex(targetChar);
+      if (mode === 'farmZone') {
+        const chosen = getAfkGoalTarget(targetChar, goalId);
+        // Fall back to current zone if the chosen zone isn't actually unlocked.
+        if (ZONES[chosen] && isZoneUnlockedForAfk(targetChar, chosen)) return chosen;
+        return Math.max(0, Math.min(ZONES.length - 1, Number(targetChar.zone || 0)));
+      }
       return Math.max(0, Math.min(ZONES.length - 1, Number(targetChar.zone || 0)));
     }
 
@@ -31044,7 +31148,9 @@ async function exportSlotsToFile(options = {}) {
       const z = ZONES[zi];
       if (!z) return '';
       const mode = def.zoneMode || 'balanced';
-      const modeLabel = mode === 'gold' ? 'best gold zone' : (mode === 'highest' ? 'highest unlocked zone' : 'recommended zone');
+      const modeLabel = mode === 'gold' ? 'best gold zone'
+        : (mode === 'highest' ? 'highest unlocked zone'
+          : (mode === 'farmZone' ? 'chosen zone' : 'recommended zone'));
       return 'Plan: ' + modeLabel + ' — ' + z.name + ' (Lv ' + z.minLvl + '-' + z.maxLvl + ')';
     }
 
@@ -31070,7 +31176,9 @@ async function exportSlotsToFile(options = {}) {
         ? 'Moved to best unlocked gold zone: ' + ZONES[targetZone].name
         : (mode === 'highest'
           ? 'Moved to highest unlocked zone: ' + ZONES[targetZone].name
-          : 'Moved to recommended AFK zone: ' + ZONES[targetZone].name);
+          : (mode === 'farmZone'
+            ? 'Moved to chosen farm zone: ' + ZONES[targetZone].name
+            : 'Moved to recommended AFK zone: ' + ZONES[targetZone].name));
       setAfkGoalAction(action);
       if (!silent) log('AFK goal ' + action.charAt(0).toLowerCase() + action.slice(1) + '.', 'info');
       return true;
@@ -31112,6 +31220,10 @@ async function exportSlotsToFile(options = {}) {
           autoUseSkills = true;
           setAfkGoalAction('Enabled class skill casting (target lvl ' + getAfkGoalTarget(char, 'level_alts_to') + ')');
         }
+      } else if (goal === 'farm_zone') {
+        // Travel to the chosen zone and keep farming it. No completion
+        // condition — the goal stays active until the player changes it.
+        moveToAfkGoalZone(goal, silent);
       } else if (goal === 'contract') {
         const board = Array.isArray(char.eliteContracts) ? char.eliteContracts : [];
         const pinIdx = Math.max(0, Math.min(board.length - 1, Number(char.afkPinnedContractIdx || 0)));
