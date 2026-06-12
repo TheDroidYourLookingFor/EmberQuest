@@ -9478,8 +9478,6 @@
             showLfgRewardSummary(earned);
           }
         } catch (e) { /* non-fatal */ }
-        const badge = document.getElementById('cs-user-email');
-        if (badge && currentUser) badge.textContent = currentUser.email || '';
         showScreen('screen-charselect');
         renderSlots();
         // Seed the snapshot status pill from the newest cloud version (non-fatal).
@@ -17573,8 +17571,6 @@
     function setInventoryFilter(filter) {
       invView.filter = filter || 'all';
       invView.armorSlot = 'all';
-      const slotSel = document.getElementById('inv-armorslot-select');
-      if (slotSel) { slotSel.style.display = filter === 'armor' ? '' : 'none'; slotSel.value = 'all'; }
       renderInv();
     }
     function setArmorSlotFilter(slot) {
@@ -19917,9 +19913,17 @@
       el.title = 'Last cloud snapshot: ' + new Date(ts).toLocaleString();
     }
 
-    function renderCloudVersionList() {
+    function renderCloudVersionList(state) {
       const el = document.getElementById('settings-cloud-version-list');
       if (!el) return;
+      if (state === 'saving') {
+        el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Saving snapshot…</div>';
+        return;
+      }
+      if (state === 'restoring') {
+        el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Restoring…</div>';
+        return;
+      }
       if (!currentUser || !sb) {
         el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Sign in to enable cloud version history.</div>';
         return;
@@ -19970,8 +19974,7 @@
       if (!currentUser || !sb) { log('Sign in to use cloud version history.', 'info'); return; }
       if (Cloud._versionsUnavailable) { log('Cloud version history is not set up for this account.', 'info'); return; }
       const label = (window.prompt('Label this snapshot (optional):', '') || '').trim().slice(0, 40);
-      const btnHint = document.getElementById('settings-cloud-version-list');
-      if (btnHint) btnHint.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Saving snapshot…</div>';
+      renderCloudVersionList('saving');
       Cloud.pushVersion(label, 'manual').then(res => {
         if (res && res.ok) log('Cloud snapshot saved.', 'info');
         else log('Could not save cloud snapshot.', 'info');
@@ -19982,8 +19985,7 @@
     function restoreCloudVersion(id) {
       if (!currentUser || !sb) return;
       if (!window.confirm('Restore this cloud version? Your current characters will be replaced (a safety snapshot of the current state is saved first).')) return;
-      const el = document.getElementById('settings-cloud-version-list');
-      if (el) el.innerHTML = '<div style="font-size:10px;color:var(--text-secondary)">Restoring…</div>';
+      renderCloudVersionList('restoring');
       setSnapshotStatus('restoring');
       Cloud.restoreVersion(id).then(res => {
         if (res && res.ok) {
@@ -21921,6 +21923,9 @@ async function exportSlotsToFile(options = {}) {
       // Keep legacy hidden container empty
       const legacy = document.getElementById('slot-grid');
       if (legacy) legacy.innerHTML = '';
+
+      const badge = document.getElementById('cs-user-email');
+      if (badge) badge.textContent = (currentUser && currentUser.email) || '';
 
       const list = document.getElementById('cs-slotlist');
       if (!list) return;
@@ -38611,8 +38616,6 @@ async function exportSlotsToFile(options = {}) {
           }
 
           try { localStorage.setItem(SAVE_KEY, JSON.stringify(slots)); } catch (e) {}
-          const badge = document.getElementById('cs-user-email');
-          if (badge && currentUser) badge.textContent = currentUser.email || '';
           showScreen('screen-charselect');
           try { renderSlots(); } catch (e) { console.error('character select render failed', e); }
 
