@@ -35262,19 +35262,10 @@ async function exportSlotsToFile(options = {}) {
                     const bdr = enabled ? '#a855f7' : 'var(--border-md)';
                     return `<button class="btn${enabled?' active':''}" style="font-size:11px;margin-left:4px;border-color:${bdr};color:${col}" onclick="toggleAutoBrewRecipe('${recipe.id}')" title="Toggle auto-brew for this recipe">${label}</button>`;
                   })() : ''}
+                  <button class="btn${affordable?' active':''}" style="font-size:12px" onclick="brewPotion('${recipe.id}')" ${!affordable?'disabled':''} title="Brew 1 ${recipe.name}">Brew</button>
                   ${skill >= 15 ? `<button class="btn${canBatchAfford(recipe,10)?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',10)" ${!canBatchAfford(recipe,10)?'disabled':''}>×10</button>` : ''}
                   ${skill >= 40 ? `<button class="btn${canBatchAfford(recipe,50)?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',50)" ${!canBatchAfford(recipe,50)?'disabled':''}>×50</button>` : ''}
                   ${skill >= 70 ? `<button class="btn${canBatchAfford(recipe,100)?' active':''}" style="font-size:12px" onclick="brewBatch('${recipe.id}',100)" ${!canBatchAfford(recipe,100)?'disabled':''}>×100</button>` : ''}
-                  ${ab ? (() => {
-                    const enabled = a.autoBrewEnabled[recipe.id] !== false;
-                    const isNext = nextAutoId === recipe.id;
-                    const label = isNext
-                      ? `⚙ Auto: brewing ${ab.count > 1 ? ab.count + '× ' : ''}every ${ab.intervalMs/1000}s`
-                      : `⚙ Auto: ${enabled ? 'On' : 'Off'}`;
-                    const col = enabled ? '#a855f7' : 'var(--text-secondary)';
-                    const bdr = enabled ? '#a855f7' : 'var(--border-md)';
-                    return `<button class="btn${enabled?' active':''}" style="font-size:11px;margin-left:4px;border-color:${bdr};color:${col}" onclick="toggleAutoBrewRecipe('${recipe.id}')" title="Toggle auto-brew for this recipe">${label}</button>`;
-                  })() : ''}
                 ` : ''}
               </div>
             </div>
