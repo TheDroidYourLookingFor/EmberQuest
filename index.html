@@ -6076,64 +6076,6 @@
 
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     EmberQuest RPG — v1.5.21
-     Changes from v1.5.13:
-     UI FIXES:
-       - Removed stray duplicate <body> tag right after the real one
-         (HTML had two opening <body> elements; only the first is
-         kept now).
-       - #ux-more-backdrop-v1494: bottom-sheet anchor now triggers at
-         <=820px (was <=520px), so the More menu sits flush at the
-         viewport bottom on phones and small tablets and stops
-         clipping off-screen at narrow widths. Card gets
-         max-height: 65vh with internal scroll.
-       - #screen-game.ui-layout-mobile #battle-stage: height floor
-         raised from 150px to 200px so the 6-enemy pyramid never
-         clips on mobile.
-       - .mob-pack-actions: flex-wrap + scroll guard so 4-6 enemy
-         action rows wrap gracefully instead of overflowing the
-         mob-card on narrow widths.
-       - .battle-enemies.multi-enemy .battle-label max-width clamped
-         with min-width:0 so labels for 4-6 enemies don't push the
-         pyramid wider than the stage.
-       - Mobile touch-target floor: #screen-game.ui-layout-mobile
-         .btn / .tab / .popup-btn / .mob-pack-actions .btn raised
-         to min-height: 36px (popup buttons stay 40px). Approaches
-         the 44px ideal without breaking the dense top-bar layout.
-       - min-width: 0 explicitly applied to flex/grid children that
-         could blow out the layout (#game-grid > div, .tab-bar,
-         .mob-pack-actions, .eq-inventory-layout, .eq-bag-grid).
-       - Combat log auto-scrolls into all layout modes (mobile +
-         desktop normal/fit/focus + cinematic) — overflow-y: auto
-         applied consistently.
-       - Z-index pass: toast-host z-index raised so toasts sit
-         above the More backdrop bottom-sheet on phones.
-       - fetchLfgPool(): added missing !currentUser guard so the
-         "lfg fetch failed [object Object]" console warning stops
-         firing during offline / not-signed-in play. The sibling
-         LFG functions (submitLfgRewardBatch, collectLfgRewards)
-         already had this guard; fetchLfgPool was the only one
-         missing it.
-     ENCOUNTER SCALING:
-       - spawnMob(): replaced flat 3-max pack table with zone-tier
-         aware scaling. Tier is derived from the active zone's
-         minLvl (Early <18, Mid 18-94, High 95-169, End-game >=170).
-       - End-game zones (minLvl >= 170): guaranteed minimum pack of
-         2 outdoors, up to 6 enemies per encounter. Distribution
-         follows the table in EmberQuest_Upgrade_Prompt.md.
-       - Boss-like, named, forced hunt-target, and dungeon-boss
-         encounters remain solo (unchanged).
-     BATTLE STAGE:
-       - Enemy sprite row supports up to 6 slots; the existing
-         applyPyramidFormation already laid out 1-6 in 1/2/3 rows
-         and is unchanged. Stage CSS comment updated from
-         "max enemies is 3" to "max enemies is 6".
-       - Battle stage heights (240/300/360 px) confirmed adequate
-         for a 6-enemy pyramid (max content ~146px) — left as-is
-         on desktop; mobile floor bumped to 200px.
-     ═══════════════════════════════════════════════════════════════ -->
-
   <div
     id="toast-host"
     class="toast-host"
@@ -18334,7 +18276,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.5.21';
+    const CURRENT_VERSION = '1.5.22';
     function syncCurrentVersionDisplay() {
       const version = CURRENT_VERSION;
       try { window.VERSION = version; } catch (_) {}
