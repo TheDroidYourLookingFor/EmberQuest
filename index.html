@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>EmberQuest RPG - Version 1.6.5</title>
+  <title>EmberQuest RPG - Version 1.6.7</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
@@ -162,7 +162,7 @@
       margin-top: 2px;
     }
 
-    /* The character "avatar" — a stylized SVG figure where EQ shows the 3D model */
+    /* The character "avatar" — a stylized SVG figure where the RPG UI shows the 3D model */
     #charselect-avatar {
       position: absolute;
       left: 50%;
@@ -236,7 +236,7 @@
       gap: 6px;
     }
 
-    /* The slot list (vertical, 8 rows like EQ) */
+    /* The slot list (vertical, 8 rows like a classic RPG UI) */
     .cs-slotlist {
       display: flex;
       flex-direction: column;
@@ -258,7 +258,7 @@
     }
 
     /* Classic stone button */
-    .eq-btn {
+    .rpg-btn {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -284,23 +284,23 @@
       white-space: nowrap;
     }
 
-    .eq-btn:hover {
+    .rpg-btn:hover {
       filter: brightness(1.12);
     }
 
-    .eq-btn:active {
+    .rpg-btn:active {
       transform: translateY(1px);
       filter: brightness(0.9);
     }
 
-    .eq-btn.eq-charslot {
+    .rpg-btn.rpg-charslot {
       width: 100%;
       min-height: 34px;
       font-size: 14px;
     }
 
     /* The currently-selected character slot — yellow text, sunken look */
-    .eq-btn.eq-charslot.selected {
+    .rpg-btn.rpg-charslot.selected {
       color: #ffe14a;
       background: linear-gradient(180deg, #2c344a 0%, #1c2236 100%);
       box-shadow:
@@ -309,13 +309,13 @@
       text-shadow: 1px 1px 2px #000, 0 0 6px rgba(255, 200, 60, 0.4);
     }
 
-    .eq-btn.eq-charslot.empty {
+    .rpg-btn.rpg-charslot.empty {
       color: #c9c0a3;
       font-style: italic;
       font-weight: 500;
     }
 
-    .eq-btn.eq-small {
+    .rpg-btn.rpg-small {
       font-size: 12px;
       padding: 5px 4px;
       min-height: 26px;
@@ -328,7 +328,7 @@
       gap: 8px;
     }
 
-    .eq-btn.eq-primary {
+    .rpg-btn.rpg-primary {
       background: linear-gradient(180deg, #7a8298 0%, #565f7c 50%, #3c4560 100%);
       color: #fff7d6;
     }
@@ -446,6 +446,94 @@
       display: flex;
       gap: 8px;
     }
+
+    /* ── character appearance step ── */
+    .appearance-layout {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 540px) {
+      .appearance-layout { grid-template-columns: 1fr; }
+      .appearance-preview { margin: 0 auto; }
+    }
+    .appearance-preview {
+      width: 130px;
+      height: 280px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: linear-gradient(160deg, #2a2418 0%, #4a3a22 60%, #6b4f28 100%);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .appearance-preview svg { width: 100%; height: 100%; display: block; }
+    .appearance-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+    .appearance-row {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .appearance-row > label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .appearance-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .appearance-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+      transition: transform .12s, border-color .12s;
+    }
+    .appearance-swatch:hover { transform: scale(1.12); }
+    .appearance-swatch.selected {
+      border-color: #185FA5;
+      transform: scale(1.12);
+    }
+    @media (prefers-color-scheme: dark) {
+      .appearance-swatch.selected { border-color: #6ab8ff; }
+    }
+    .appearance-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .appearance-pill {
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-primary);
+      cursor: pointer;
+      color: var(--text-primary);
+      font-family: var(--font);
+      transition: border-color .12s, background .12s;
+    }
+    .appearance-pill:hover { background: var(--bg-secondary); }
+    .appearance-pill.selected {
+      border-color: #185FA5;
+      background: #E6F1FB;
+    }
+    @media (prefers-color-scheme: dark) {
+      .appearance-pill.selected { background: #042C53; border-color: #378ADD; }
+    }
+    .appearance-pill[disabled] { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
 
     /* ── game layout ── */
     #game-topbar {
@@ -1268,7 +1356,7 @@
         font-size: 12px;
       }
 
-      .eq-item-actions {
+      .rpg-item-actions {
         gap: 8px;
       }
 
@@ -1280,11 +1368,11 @@
         height: 28px;
       }
 
-      .eq-inventory-layout {
+      .rpg-inventory-layout {
         grid-template-columns: 1fr;
       }
 
-      .eq-bag-grid {
+      .rpg-bag-grid {
         grid-template-columns: 1fr;
       }
 
@@ -1310,8 +1398,8 @@
       }
     }
 
-    /* ── EQ inventory ── */
-    .eq-inventory-layout {
+    /* ── RPG inventory ── */
+    .rpg-inventory-layout {
       display: grid;
       grid-template-columns: minmax(200px, 230px) minmax(0, 1fr);
       gap: 14px;
@@ -1319,7 +1407,7 @@
     }
 
     /* Paperdoll panel */
-    .eq-paperdoll {
+    .rpg-paperdoll {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
@@ -1328,7 +1416,7 @@
       top: 0;
     }
 
-    .eq-paperdoll > h3 {
+    .rpg-paperdoll > h3 {
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
@@ -1337,13 +1425,13 @@
       margin-bottom: 8px;
     }
 
-    .eq-paperdoll-grid {
+    .rpg-paperdoll-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 5px;
     }
 
-    .eq-slot {
+    .rpg-slot {
       background: var(--bg-primary);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
@@ -1357,14 +1445,14 @@
 
     /* Compact slots must not clip their action popover, and the open one sits
        above its neighbours so the menu is fully visible. */
-    .eq-slot.is-compact { overflow: visible; }
-    .eq-slot.is-open { overflow: visible; z-index: 20; }
+    .rpg-slot.is-compact { overflow: visible; }
+    .rpg-slot.is-open { overflow: visible; z-index: 20; }
 
-    .eq-slot:has(.eq-item-name) {
+    .rpg-slot:has(.rpg-item-name) {
       border-color: var(--border-md);
     }
 
-    .eq-slot-name {
+    .rpg-slot-name {
       font-size: 9px;
       font-weight: 700;
       color: var(--text-secondary);
@@ -1375,29 +1463,29 @@
       gap: 4px;
     }
 
-    .eq-slot-item {
+    .rpg-slot-item {
       font-size: 11px;
       font-weight: 500;
       width: 100%;
     }
 
     /* Stat chips inside equipped slots */
-    .eq-slot .eq-item-stats-grid {
+    .rpg-slot .rpg-item-stats-grid {
       margin-top: 3px;
     }
 
-    .eq-slot .eq-stat-chip {
+    .rpg-slot .rpg-stat-chip {
       font-size: 9px;
       padding: 1px 4px;
     }
 
-    .eq-slot-stats {
+    .rpg-slot-stats {
       font-size: 10px;
       color: #378ADD;
       margin-top: 2px;
     }
 
-    .eq-slot-actions {
+    .rpg-slot-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
@@ -1405,14 +1493,14 @@
       width: 100%;
     }
 
-    .eq-slot-actions .btn {
+    .rpg-slot-actions .btn {
       font-size: 10px;
       padding: 3px 7px;
       flex: 1 1 auto;
       white-space: nowrap;
     }
 
-    .eq-total-stats {
+    .rpg-total-stats {
       display: flex;
       gap: 4px;
       flex-wrap: nowrap;
@@ -1422,7 +1510,7 @@
       font-size: 10px;
     }
 
-    .eq-total-chip {
+    .rpg-total-chip {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1438,8 +1526,8 @@
       color: var(--text-secondary);
       white-space: nowrap;
     }
-    .eq-total-chip i { flex: 0 0 auto; }
-    .eq-total-chip > span { overflow: hidden; text-overflow: ellipsis; }
+    .rpg-total-chip i { flex: 0 0 auto; }
+    .rpg-total-chip > span { overflow: hidden; text-overflow: ellipsis; }
 
     .shop-section-btn {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1454,7 +1542,7 @@
     .shop-section-sub { font-size: 10px; color: var(--text-secondary); }
 
     /* Bag area */
-    .eq-bag-area {
+    .rpg-bag-area {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
@@ -1462,7 +1550,7 @@
       min-width: 0;
     }
 
-    .eq-bag-area > h3 {
+    .rpg-bag-area > h3 {
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
@@ -1518,23 +1606,23 @@
       border-radius: var(--radius-md);
     }
 
-    .eq-bag-grid {
+    .rpg-bag-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
       gap: 8px;
       min-width: 0;
     }
 
-    /* ── Compact EverQuest-style item tiles (v1.3.63) ──
+    /* ── Compact RPG-style item tiles (v1.3.63) ──
        Items in the backpack now render as small icon slots. Stats are hidden
        and only revealed in the hover tooltip, saving a lot of vertical space.
        Clicking a tile opens its action menu. */
-    #inv-list.eq-bag-grid {
+    #inv-list.rpg-bag-grid {
       grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
       gap: 6px;
     }
 
-    .eq-item-tile {
+    .rpg-item-tile {
       position: relative;
       aspect-ratio: 1 / 1;
       background: var(--bg-primary);
@@ -1551,13 +1639,13 @@
       transition: border-color .12s, box-shadow .12s, transform .08s;
       box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
     }
-    .eq-item-tile:hover {
+    .rpg-item-tile:hover {
       border-color: var(--border-md);
       box-shadow: 0 2px 12px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,0.04);
       transform: translateY(-1px);
       z-index: 2;
     }
-    .eq-item-tile.is-open {
+    .rpg-item-tile.is-open {
       border-color: var(--border-md);
       box-shadow: 0 0 0 2px var(--border-md);
       z-index: 5;
@@ -1568,21 +1656,21 @@
        menu to the bottom-right whenever the cursor was still hovering the tile.
        Force transform:none while open (overriding :hover) so the fixed menu is
        positioned relative to the viewport as intended. */
-    .eq-item-tile.is-open,
-    .eq-item-tile.is-open:hover {
+    .rpg-item-tile.is-open,
+    .rpg-item-tile.is-open:hover {
       transform: none;
     }
 
     /* Rarity accent: glowing border colour per rarity */
-    .eq-item-tile.rarity-border-magic,
-    .eq-item-tile.rarity-border-uncommon { border-color: #22C55E; }
-    .eq-item-tile.rarity-border-rare     { border-color: #3B82F6; }
-    .eq-item-tile.rarity-border-epic     { border-color: #A855F7; }
-    .eq-item-tile.rarity-border-legendary{ border-color: #F97316; }
-    .eq-item-tile.rarity-border-mythic   { border-color: #EF4444; }
-    .eq-item-tile.rarity-border-runeword { border-color: #EAB308; }
+    .rpg-item-tile.rarity-border-magic,
+    .rpg-item-tile.rarity-border-uncommon { border-color: #22C55E; }
+    .rpg-item-tile.rarity-border-rare     { border-color: #3B82F6; }
+    .rpg-item-tile.rarity-border-epic     { border-color: #A855F7; }
+    .rpg-item-tile.rarity-border-legendary{ border-color: #F97316; }
+    .rpg-item-tile.rarity-border-mythic   { border-color: #EF4444; }
+    .rpg-item-tile.rarity-border-runeword { border-color: #EAB308; }
 
-    .eq-tile-icon {
+    .rpg-tile-icon {
       font-size: 28px;
       line-height: 1;
       display: flex;
@@ -1594,7 +1682,7 @@
       color: var(--text-primary);
     }
 
-    .eq-tile-name {
+    .rpg-tile-name {
       font-size: 9px;
       line-height: 1.15;
       text-align: center;
@@ -1609,7 +1697,7 @@
     }
 
     /* Badges in the corners of a tile */
-    .eq-tile-badges {
+    .rpg-tile-badges {
       position: absolute;
       top: 2px;
       right: 3px;
@@ -1618,7 +1706,7 @@
       font-size: 9px;
       pointer-events: none;
     }
-    .eq-tile-qty {
+    .rpg-tile-qty {
       position: absolute;
       bottom: 2px;
       right: 4px;
@@ -1630,7 +1718,7 @@
       padding: 0 3px;
       pointer-events: none;
     }
-    .eq-tile-socket-dot {
+    .rpg-tile-socket-dot {
       position: absolute;
       bottom: 3px;
       left: 4px;
@@ -1638,16 +1726,16 @@
       gap: 2px;
       pointer-events: none;
     }
-    .eq-tile-socket-dot i {
+    .rpg-tile-socket-dot i {
       width: 6px; height: 6px;
       border-radius: 50%;
       display: inline-block;
       background: #888;
       box-shadow: 0 0 2px rgba(0,0,0,0.6);
     }
-    .eq-tile-socket-dot i.filled { background: #EAB308; }
+    .rpg-tile-socket-dot i.filled { background: #EAB308; }
 
-    .eq-tile-compare {
+    .rpg-tile-compare {
       position: absolute;
       top: 2px;
       left: 2px;
@@ -1655,12 +1743,12 @@
       font-weight: 700;
       pointer-events: none;
     }
-    .eq-tile-compare.upgrade { color: #22C55E; }
-    .eq-tile-compare.downgrade { color: #EF4444; }
-    .eq-tile-compare.equal { color: #999; }
+    .rpg-tile-compare.upgrade { color: #22C55E; }
+    .rpg-tile-compare.downgrade { color: #EF4444; }
+    .rpg-tile-compare.equal { color: #999; }
 
     /* Per-tile action popover (opens on click) */
-    .eq-tile-actions {
+    .rpg-tile-actions {
       position: absolute;
       left: 50%;
       top: calc(100% + 4px);
@@ -1677,21 +1765,21 @@
       gap: 5px;
       z-index: 30;
     }
-    .eq-item-tile.is-open .eq-tile-actions,
-    .eq-slot.is-open .eq-tile-actions { display: flex; }
-    .eq-tile-actions .eq-tile-act-name {
+    .rpg-item-tile.is-open .rpg-tile-actions,
+    .rpg-slot.is-open .rpg-tile-actions { display: flex; }
+    .rpg-tile-actions .rpg-tile-act-name {
       font-size: 11px;
       font-weight: 700;
       line-height: 1.25;
       margin-bottom: 1px;
     }
-    .eq-tile-actions .eq-tile-act-type {
+    .rpg-tile-actions .rpg-tile-act-type {
       font-size: 9px;
       color: var(--text-secondary);
       margin-bottom: 4px;
       line-height: 1.3;
     }
-    .eq-tile-act-stats {
+    .rpg-tile-act-stats {
       display: flex;
       flex-direction: column;
       gap: 1px;
@@ -1705,37 +1793,37 @@
        narrower than the hover tooltip, so long labels (e.g. "DEX (Crit & dodge)")
        wrap. Align the value to the first line and keep it in a tight, non-wrapping
        right-hand column so rows line up cleanly like the hover tooltip. */
-    .eq-tile-act-stats .tt-stat {
+    .rpg-tile-act-stats .tt-stat {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
       gap: 10px;
     }
-    .eq-tile-act-stats .tt-stat > span:first-child {
+    .rpg-tile-act-stats .tt-stat > span:first-child {
       flex: 1 1 auto;
       min-width: 0;
     }
-    .eq-tile-act-stats .tt-stat > span:last-child {
+    .rpg-tile-act-stats .tt-stat > span:last-child {
       flex: 0 0 auto;
       white-space: nowrap;
       text-align: right;
     }
-    .eq-tile-act-stats .tt-up { color: #1D9E75; }
-    .eq-tile-act-stats .tt-down { color: #c44; }
-    .eq-tile-act-stats .tt-section {
+    .rpg-tile-act-stats .tt-up { color: #1D9E75; }
+    .rpg-tile-act-stats .tt-down { color: #c44; }
+    .rpg-tile-act-stats .tt-section {
       margin-top: 4px;
       padding-top: 4px;
       border-top: 1px dashed var(--border);
     }
-    .eq-tile-actions .btn { width: 100%; font-size: 11px; padding: 5px 8px; }
-    .eq-tile-actions select { width: 100%; font-size: 11px; padding: 4px 7px; border:0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--bg-primary); color: var(--text-primary); }
+    .rpg-tile-actions .btn { width: 100%; font-size: 11px; padding: 5px 8px; }
+    .rpg-tile-actions select { width: 100%; font-size: 11px; padding: 4px 7px; border:0.5px solid var(--border-md); border-radius: var(--radius-md); background: var(--bg-primary); color: var(--text-primary); }
 
-    #screen-game.ui-layout-mobile #inv-list.eq-bag-grid {
+    #screen-game.ui-layout-mobile #inv-list.rpg-bag-grid {
       grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)) !important;
     }
 
     /* Empty slots match the compact tile footprint in the backpack grid */
-    #inv-list .eq-empty-slot {
+    #inv-list .rpg-empty-slot {
       min-height: 0;
       aspect-ratio: 1 / 1;
       font-size: 8px;
@@ -1746,18 +1834,18 @@
     /* ── Compact equipped paperdoll tiles (v1.3.63) ──
        Equipped slots now mirror the backpack: an emoji icon + small name,
        with stats on hover and actions in a click-to-open popover. */
-    .eq-slot.is-compact {
+    .rpg-slot.is-compact {
       position: relative;
       padding: 5px 5px 4px;
       align-items: center;
       gap: 3px;
       cursor: default;
     }
-    .eq-slot .eq-slot-name {
+    .rpg-slot .rpg-slot-name {
       width: 100%;
       justify-content: center;
     }
-    .eq-slot-tile {
+    .rpg-slot-tile {
       position: relative;
       width: 100%;
       display: flex;
@@ -1769,10 +1857,10 @@
       cursor: pointer;
       transition: background .12s;
     }
-    .eq-slot-tile:hover { background: rgba(255,255,255,0.04); }
-    .eq-slot-tile.is-empty { cursor: default; opacity: .5; }
-    .eq-slot-tile .eq-tile-icon { font-size: 26px; }
-    .eq-slot-tile .eq-tile-name {
+    .rpg-slot-tile:hover { background: rgba(255,255,255,0.04); }
+    .rpg-slot-tile.is-empty { cursor: default; opacity: .5; }
+    .rpg-slot-tile .rpg-tile-icon { font-size: 26px; }
+    .rpg-slot-tile .rpg-tile-name {
       font-size: 9px;
       line-height: 1.15;
       text-align: center;
@@ -1784,17 +1872,17 @@
       word-break: break-word;
     }
     /* The slot itself carries the rarity-coloured border when filled */
-    .eq-slot.rarity-border-magic, .eq-slot.rarity-border-uncommon { border-color: #22C55E; }
-    .eq-slot.rarity-border-rare      { border-color: #3B82F6; }
-    .eq-slot.rarity-border-epic      { border-color: #A855F7; }
-    .eq-slot.rarity-border-legendary { border-color: #F97316; }
-    .eq-slot.rarity-border-mythic    { border-color: #EF4444; }
-    .eq-slot.rarity-border-runeword  { border-color: #EAB308; }
-    .eq-slot.is-open { box-shadow: 0 0 0 2px var(--border-md); z-index: 5; }
-    .eq-slot-tile .eq-tile-socket-dot { position: static; margin-top: 1px; }
+    .rpg-slot.rarity-border-magic, .rpg-slot.rarity-border-uncommon { border-color: #22C55E; }
+    .rpg-slot.rarity-border-rare      { border-color: #3B82F6; }
+    .rpg-slot.rarity-border-epic      { border-color: #A855F7; }
+    .rpg-slot.rarity-border-legendary { border-color: #F97316; }
+    .rpg-slot.rarity-border-mythic    { border-color: #EF4444; }
+    .rpg-slot.rarity-border-runeword  { border-color: #EAB308; }
+    .rpg-slot.is-open { box-shadow: 0 0 0 2px var(--border-md); z-index: 5; }
+    .rpg-slot-tile .rpg-tile-socket-dot { position: static; margin-top: 1px; }
 
     /* Item cards */
-    .eq-item-card {
+    .rpg-item-card {
       background: var(--bg-primary);
       border: 1px solid var(--border);
       border-left-width: 3px;
@@ -1805,34 +1893,34 @@
       flex-direction: column;
       transition: border-color .15s, box-shadow .15s;
     }
-    .eq-item-card.rarity-border-magic    { border-left-color: #22C55E; }
-    .eq-item-card.rarity-border-rare     { border-left-color: #3B82F6; }
-    .eq-item-card.rarity-border-epic   { border-left-color: #A855F7; }
-    .eq-item-card.rarity-border-legendary{ border-left-color: #F97316; }
-    .eq-item-card.rarity-border-mythic   { border-left-color: #EF4444; }
-    .eq-item-card.rarity-border-runeword { border-left-color: #EAB308; }
+    .rpg-item-card.rarity-border-magic    { border-left-color: #22C55E; }
+    .rpg-item-card.rarity-border-rare     { border-left-color: #3B82F6; }
+    .rpg-item-card.rarity-border-epic   { border-left-color: #A855F7; }
+    .rpg-item-card.rarity-border-legendary{ border-left-color: #F97316; }
+    .rpg-item-card.rarity-border-mythic   { border-left-color: #EF4444; }
+    .rpg-item-card.rarity-border-runeword { border-left-color: #EAB308; }
 
-    .eq-item-card:hover {
+    .rpg-item-card:hover {
       border-color: var(--border-md);
       box-shadow: 0 2px 10px rgba(0,0,0,.12);
     }
 
     /* Rarity accent bar on left of card */
-    .eq-item-card .eq-item-inner {
+    .rpg-item-card .rpg-item-inner {
       padding: 9px 10px 8px;
       flex: 1;
       display: flex;
       flex-direction: column;
     }
 
-    .eq-item-top {
+    .rpg-item-top {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 8px;
     }
 
-    .eq-item-name {
+    .rpg-item-name {
       font-size: 12px;
       font-weight: 600;
       line-height: 1.3;
@@ -2044,7 +2132,7 @@
       margin-top: 2px;
     }
 
-    .eq-item-type {
+    .rpg-item-type {
       font-size: 10px;
       color: var(--text-secondary);
       margin-top: 2px;
@@ -2052,20 +2140,20 @@
     }
 
     /* Legacy flat bonus line (kept for non-grid contexts) */
-    .eq-item-bonus {
+    .rpg-item-bonus {
       font-size: 10px;
       color: #1D9E75;
       margin-top: 5px;
     }
 
-    .eq-item-stats-grid {
+    .rpg-item-stats-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 3px;
       margin-top: 7px;
     }
 
-    .eq-stat-chip {
+    .rpg-stat-chip {
       font-size: 10px;
       font-weight: 700;
       color: #1D9E75;
@@ -2078,7 +2166,7 @@
     }
 
     @media (prefers-color-scheme: dark) {
-      .eq-stat-chip {
+      .rpg-stat-chip {
         background: rgba(29, 158, 117, 0.13);
         border-color: rgba(29, 158, 117, 0.38);
         color: #2bc997;
@@ -2086,7 +2174,7 @@
     }
 
     /* Socket row */
-    .eq-socket-row {
+    .rpg-socket-row {
       display: flex;
       flex-wrap: wrap;
       gap: 3px;
@@ -2095,7 +2183,7 @@
       border-top: 1px dashed var(--border);
     }
 
-    .eq-rune-chip {
+    .rpg-rune-chip {
       font-size: 10px;
       font-weight: 600;
       border: 1px solid;
@@ -2105,37 +2193,37 @@
       letter-spacing: .01em;
     }
 
-    .eq-rune-filled {
+    .rpg-rune-filled {
       background: rgba(0,0,0,.06);
     }
 
     @media (prefers-color-scheme: dark) {
-      .eq-rune-filled {
+      .rpg-rune-filled {
         background: rgba(255,255,255,.05);
       }
     }
 
-    .eq-rune-empty {
+    .rpg-rune-empty {
       color: var(--text-secondary);
       border-color: var(--border);
       border-style: dashed;
       opacity: .6;
     }
 
-    .eq-item-owned {
+    .rpg-item-owned {
       font-size: 15px;
       color: #ffffff;
       margin-top: 5px;
     }
 
     /* Action button bar — pinned to card bottom */
-    .eq-item-actions {
+    .rpg-item-actions {
       display: flex;
       gap: 6px;
       margin-top: 8px;
     }
 
-    .eq-item-actions.compact {
+    .rpg-item-actions.compact {
       flex-wrap: wrap;
       gap: 3px;
       margin-top: auto;
@@ -2144,13 +2232,13 @@
       background: var(--bg-secondary);
     }
 
-    .eq-item-actions.compact .btn {
+    .rpg-item-actions.compact .btn {
       font-size: 10px;
       padding: 3px 7px;
     }
 
     /* Primary action (Equip) stands out */
-    .eq-item-actions.compact .btn:first-child {
+    .rpg-item-actions.compact .btn:first-child {
       background: rgba(55, 138, 221, 0.12);
       border-color: rgba(55, 138, 221, 0.4);
       color: #378ADD;
@@ -2158,19 +2246,19 @@
     }
 
     @media (prefers-color-scheme: dark) {
-      .eq-item-actions.compact .btn:first-child {
+      .rpg-item-actions.compact .btn:first-child {
         background: rgba(55, 138, 221, 0.18);
         border-color: rgba(55, 138, 221, 0.5);
         color: #7abfff;
       }
     }
 
-    .eq-empty-bag {
+    .rpg-empty-bag {
       font-size: 12px;
       color: var(--text-secondary);
     }
 
-    .eq-empty-slot {
+    .rpg-empty-slot {
       border: 1px dashed var(--border);
       border-radius: var(--radius-md);
       min-height: 96px;
@@ -2191,7 +2279,7 @@
        (and other screens) keep their existing look.
     ══════════════════════════════════════════════════ */
     #screen-game {
-      /* The murky stone backdrop you see in EQ — slight purple/gray gradient
+      /* The murky stone backdrop you see in a classic RPG UI — slight purple/gray gradient
          meant to evoke a cave-temple environment behind the windows. */
       background:
         radial-gradient(ellipse at 30% 20%, #3a3550 0%, transparent 55%),
@@ -2206,7 +2294,7 @@
       font-family: 'Georgia', 'Times New Roman', serif;
     }
 
-    /* Topbar becomes an EQ window title bar */
+    /* Topbar becomes an RPG window title bar */
     #screen-game #game-topbar {
       background: linear-gradient(180deg, #2a2e3a 0%, #161823 100%);
       border: 1px solid #0a0c14;
@@ -2228,7 +2316,7 @@
     }
 
     /* Generic stone-panel "window" — semi-transparent dark with engraved
-       inner border. Mirrors EQ's translucent panels stacked on the world. */
+       inner border. Mirrors the classic RPG UI's translucent panels stacked on the world. */
     #screen-game .panel {
       background: linear-gradient(180deg,
           rgba(28, 30, 42, 0.92) 0%,
@@ -2291,7 +2379,7 @@
       padding-bottom: 8px;
     }
 
-    /* Tabs: classic EQ raised stone slabs */
+    /* Tabs: classic raised stone slabs */
     #screen-game .tab-bar {
       gap: 1px;
       margin: 0;
@@ -2374,7 +2462,7 @@
       color: #ffd0c0;
     }
 
-    /* Stat rows — EQ-style right-aligned green values */
+    /* Stat rows — RPG-style right-aligned green values */
     #screen-game .stat-row {
       display: flex;
       justify-content: space-between;
@@ -2756,7 +2844,7 @@
       font-family: 'Georgia', 'Times New Roman', serif;
     }
 
-    /* Form inputs in EQ skin */
+    /* Form inputs in RPG skin */
     #screen-game input[type=text],
     #screen-game input[type=number],
     #screen-game select,
@@ -2790,7 +2878,7 @@
       text-shadow: 1px 1px 2px #000;
     }
 
-    /* Save indicator: subtle gold ticker like EQ system text */
+    /* Save indicator: subtle gold ticker like RPG system text */
     #screen-game .save-indicator {
       color: #c8c0a8;
       font-size: 11px;
@@ -2872,8 +2960,8 @@
     }
 
     /* Inventory paperdoll and bag area — match the panel stone aesthetic */
-    #screen-game .eq-paperdoll,
-    #screen-game .eq-bag-area {
+    #screen-game .rpg-paperdoll,
+    #screen-game .rpg-bag-area {
       background: rgba(8, 8, 12, 0.55);
       border: 1px solid #0a0c14;
       box-shadow: inset 0 0 0 1px #3a3f55;
@@ -2881,8 +2969,8 @@
     }
 
     /* Equipment slot squares — sunken stone */
-    #screen-game .eq-slot,
-    #screen-game .eq-empty-slot {
+    #screen-game .rpg-slot,
+    #screen-game .rpg-empty-slot {
       background: linear-gradient(180deg, #18192a 0%, #0c0d18 100%);
       border: 1px solid #0a0c14;
       box-shadow: inset 0 0 0 1px #3a3f55, inset 0 2px 4px rgba(0, 0, 0, 0.7);
@@ -2890,31 +2978,31 @@
       color: #c8c0a8;
     }
 
-    #screen-game .eq-slot-name {
+    #screen-game .rpg-slot-name {
       color: #b8b0a0;
       text-shadow: 1px 1px 1px #000;
     }
 
-    #screen-game .eq-slot-item {
+    #screen-game .rpg-slot-item {
       color: #e8dfc4;
       text-shadow: 1px 1px 1px #000;
     }
 
-    #screen-game .eq-slot-stats {
+    #screen-game .rpg-slot-stats {
       color: #6fdc6f;
     }
 
-    #screen-game .eq-total-stats {
+    #screen-game .rpg-total-stats {
       border-top-color: #2a2f3e;
     }
 
-    #screen-game .eq-total-chip {
+    #screen-game .rpg-total-chip {
       background: rgba(8,8,12,0.55);
       border-color: #3a3f55;
       color: #c8c0a8;
     }
 
-    /* Bag tab buttons — small EQ-style pill tabs */
+    /* Bag tab buttons — small RPG-style pill tabs */
     #screen-game .bag-tab-btn {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 11px;
@@ -2937,7 +3025,7 @@
       color: #c8c0a8;
     }
 
-    #screen-game .eq-empty-bag {
+    #screen-game .rpg-empty-bag {
       color: #c8c0a8;
     }
 
@@ -3132,8 +3220,8 @@
     }
 
     /* Inventory / bag grids stay single-column inside the narrow center pane. */
-    #screen-game.ui-layout-mobile .eq-inventory-layout,
-    #screen-game.ui-layout-mobile .eq-bag-grid {
+    #screen-game.ui-layout-mobile .rpg-inventory-layout,
+    #screen-game.ui-layout-mobile .rpg-bag-grid {
       grid-template-columns: 1fr;
     }
 
@@ -3216,7 +3304,7 @@
   
 
     /* v1.4.12 UI polish: cleaner tabs, focus mode, density presets */
-    :root { --eq-ui-radius: var(--radius-md); }
+    :root { --rpg-ui-radius: var(--radius-md); }
     #game-topbar.ui-sticky-enabled,
     #screen-game.ui-sticky-tabs #game-topbar {
       position: sticky;
@@ -3365,8 +3453,8 @@
       font-size: 10.5px !important;
     }
     #screen-game.ui-card-panels .panel,
-    #screen-game.ui-card-panels .eq-paperdoll,
-    #screen-game.ui-card-panels .eq-bag-area,
+    #screen-game.ui-card-panels .rpg-paperdoll,
+    #screen-game.ui-card-panels .rpg-bag-area,
     #screen-game.ui-card-panels #mob-area,
     #screen-game.ui-card-panels .quest,
     #screen-game.ui-card-panels .shop-section-btn {
@@ -3401,7 +3489,7 @@
     }
     .btn:focus-visible,
     .tab:focus-visible,
-    .eq-btn:focus-visible,
+    .rpg-btn:focus-visible,
     .popup-btn:focus-visible {
       outline: 2px solid #f4d68a;
       outline-offset: 2px;
@@ -3437,13 +3525,13 @@
       grid-template-columns: minmax(0, 1fr);
       max-width: 980px;
     }
-    #screen-game.ui-dense-inventory #inv-list.eq-bag-grid {
+    #screen-game.ui-dense-inventory #inv-list.rpg-bag-grid {
       grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
       gap: 5px;
     }
-    #screen-game.ui-dense-inventory .eq-item-tile { padding: 4px 3px 3px; }
-    #screen-game.ui-dense-inventory .eq-tile-icon { font-size: 24px; }
-    #screen-game.ui-dense-inventory .eq-tile-name { font-size: 8px; max-height: 19px; }
+    #screen-game.ui-dense-inventory .rpg-item-tile { padding: 4px 3px 3px; }
+    #screen-game.ui-dense-inventory .rpg-tile-icon { font-size: 24px; }
+    #screen-game.ui-dense-inventory .rpg-tile-name { font-size: 8px; max-height: 19px; }
     #screen-game.ui-low-motion *,
     #screen-game.ui-low-motion *::before,
     #screen-game.ui-low-motion *::after {
@@ -5687,8 +5775,8 @@
 #screen-game.ui-layout-mobile  #center-panel,
 #screen-game .tab-bar,
 .mob-pack-actions,
-.eq-inventory-layout,
-.eq-bag-grid {
+.rpg-inventory-layout,
+.rpg-bag-grid {
   min-width: 0;
 }
 
@@ -5779,6 +5867,8 @@
   
 
 /* ═══════════════════════════════════════════════════════════════════
+   v1.6.7 — Change Appearance modal z-index fix, leaderboard parity (weekly vs lifetime), Trends drop current gold
+   v1.6.6 — Character creation appearance customization (hair, facial hair, eyes, skin, clothing colors)
    v1.6.5 — AFK goals now use core automation to pick useful zones and live/offline AFK share the same targeting logic
    v1.6.4 — LFG usage presence indicator for shared heroes
    v1.6.3 — Party combat targeting: enemies can attack group members, and heals automatically target wounded allies
@@ -5973,9 +6063,9 @@
 #screen-game.ui-layout-mobile-v2 #combat-action-row { display:grid !important; grid-template-columns: repeat(4, 1fr); gap:6px; margin-bottom:0 !important; }
 #screen-game.ui-layout-mobile-v2 #combat-action-row .btn { min-height:42px; justify-content:center; padding:7px 6px; font-size:11px; }
 #screen-game.ui-layout-mobile-v2 #combat-action-row .btn:nth-child(n+5) { display:none; }
-#screen-game.ui-layout-mobile-v2 #tab-inv .eq-inventory-layout,
-#screen-game.ui-layout-mobile-v2 #tab-bank .eq-inventory-layout { grid-template-columns:1fr !important; }
-#screen-game.ui-layout-mobile-v2 .eq-paperdoll { position:static; }
+#screen-game.ui-layout-mobile-v2 #tab-inv .rpg-inventory-layout,
+#screen-game.ui-layout-mobile-v2 #tab-bank .rpg-inventory-layout { grid-template-columns:1fr !important; }
+#screen-game.ui-layout-mobile-v2 .rpg-paperdoll { position:static; }
 #screen-game.ui-layout-mobile-v2 #popup-backdrop.open,
 #screen-game.ui-layout-mobile-v2 .modal-backdrop.open,
 #screen-game.ui-layout-mobile-v2 #help-backdrop.open,
@@ -6077,6 +6167,8 @@
 
   
 /* ═══════════════════════════════════════════════════════════════════
+   v1.6.7 — Change Appearance modal z-index fix, leaderboard parity (weekly vs lifetime), Trends drop current gold
+   v1.6.6 — Character creation appearance customization (hair, facial hair, eyes, skin, clothing colors)
    v1.6.5 — AFK goals now choose useful unlocked zones instead of only toggling settings
    v1.6.4 — LFG usage presence indicator for shared heroes
    v1.6.3 — Party damage/healing support for mercenaries, grouped alts, and borrowed LFG heroes
@@ -6246,7 +6338,7 @@
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     EmberQuest RPG — v1.6.5
+     EmberQuest RPG — v1.6.7
      Changes from v1.5.13:
      UI FIXES:
        - Removed stray duplicate <body> tag right after the real one
@@ -6272,7 +6364,7 @@
          the 44px ideal without breaking the dense top-bar layout.
        - min-width: 0 explicitly applied to flex/grid children that
          could blow out the layout (#game-grid > div, .tab-bar,
-         .mob-pack-actions, .eq-inventory-layout, .eq-bag-grid).
+         .mob-pack-actions, .rpg-inventory-layout, .rpg-bag-grid).
        - Combat log auto-scrolls into all layout modes (mobile +
          desktop normal/fit/focus + cinematic) — overflow-y: auto
          applied consistently.
@@ -6513,7 +6605,7 @@
       </svg>
     </div>
 
-    <!-- The character "model" — vector silhouette where EQ shows a 3D model -->
+    <!-- The character "model" — vector silhouette where the RPG UI shows a 3D model -->
     <!-- Race-aware character avatar — populated by buildAvatarSvg() -->
     <div
       id="charselect-avatar"
@@ -6555,17 +6647,17 @@
       <div
         class="cs-toprow">
         <div
-          class="eq-btn eq-small"
+          class="rpg-btn rpg-small"
           onclick="csExplore()">
           Explore
         </div>
         <div
-          class="eq-btn eq-small"
+          class="rpg-btn rpg-small"
           onclick="csDelete()">
           Delete
         </div>
         <div
-          class="eq-btn eq-small"
+          class="rpg-btn rpg-small"
           onclick="csRotate()">
           Rotate
         </div>
@@ -6579,11 +6671,11 @@
       <div
         class="cs-bottomrow">
         <div
-          class="eq-btn"
+          class="rpg-btn"
           onclick="csQuit()">
           Quit</div>
         <div
-          class="eq-btn eq-primary"
+          class="rpg-btn rpg-primary"
           onclick="csEnterWorld()">
           Enter
           World
@@ -6627,11 +6719,30 @@
         </div>
       </div>
 
-      <!-- STEP 3: Name -->
+      <!-- STEP 3: Appearance -->
+      <div id="create-step-appearance" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <div style="font-size:12px;color:var(--text-secondary);font-weight:500">Customize your look.</div>
+          <button class="btn" style="font-size:11px;padding:4px 10px" onclick="goBackToClassSelection()"><i class="ti ti-arrow-left"></i> Back</button>
+        </div>
+        <div id="create-appearance-summary" style="font-size:11px;color:var(--text-secondary);margin-bottom:10px"></div>
+        <div class="appearance-layout">
+          <div class="appearance-preview" id="appearance-preview" aria-hidden="true"></div>
+          <div class="appearance-options" id="appearance-options"></div>
+        </div>
+        <div class="form-btns" style="margin-top:12px">
+          <button class="btn" type="button" onclick="randomizeAppearance()" title="Roll a random look"><i class="ti ti-dice-5"></i> Randomize</button>
+          <button class="btn" type="button" onclick="resetAppearanceToRaceDefaults()" title="Reset to your race's defaults">Reset</button>
+          <button class="btn active" onclick="confirmAppearance()" style="font-size:13px;padding:7px 20px"><i class="ti ti-arrow-right"></i> Next</button>
+          <button class="btn" onclick="cancelCreate()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Name -->
       <div id="create-step-name" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
           <div style="font-size:12px;color:var(--text-secondary);font-weight:500">Name your hero.</div>
-          <button class="btn" style="font-size:11px;padding:4px 10px" onclick="goBackToClassSelection()"><i class="ti ti-arrow-left"></i> Back</button>
+          <button class="btn" style="font-size:11px;padding:4px 10px" onclick="goBackToAppearanceSelection()"><i class="ti ti-arrow-left"></i> Back</button>
         </div>
         <div id="create-name-summary" style="font-size:11px;color:var(--text-secondary);margin-bottom:10px"></div>
         <div class="name-row">
@@ -6966,6 +7077,31 @@
             onclick="closeReforgeModal()">
             Close
           </button>
+        </div>
+      </div>
+    </div>
+    <div
+      id="appearance-edit-modal"
+      class="modal-backdrop"
+      style="z-index:120"
+      onclick="if(event.target===this)closeAppearanceEditor()">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="appearance-edit-title"
+        style="max-width:560px">
+        <div class="modal-title" id="appearance-edit-title">Change Appearance</div>
+        <div class="modal-subtitle" id="appearance-edit-subtitle">Pick a new look for your hero.</div>
+        <div class="appearance-layout">
+          <div class="appearance-preview" id="appearance-edit-preview" aria-hidden="true"></div>
+          <div class="appearance-options" id="appearance-edit-options"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" type="button" onclick="randomizeAppearanceEditor()"><i class="ti ti-dice-5"></i> Randomize</button>
+          <button class="btn" type="button" onclick="resetAppearanceEditor()">Reset to Race Defaults</button>
+          <button class="btn" type="button" onclick="closeAppearanceEditor()">Cancel</button>
+          <button class="btn active" type="button" onclick="confirmAppearanceEditor()">Save &amp; Use Token</button>
         </div>
       </div>
     </div>
@@ -7504,7 +7640,7 @@
             <div class="admin-manage-box">
               <div style="font-weight:700;margin-bottom:5px">Internal Admin Change Notes</div>
               <div class="admin-internal-notes">
-                <div><strong>v1.6.5</strong> upgrades AFK goals so Level Push and Level Alts move to the highest unlocked zone, Gold goals pick the best unlocked gold zone, and live/offline AFK use the same core goal planner.<br><strong>v1.6.4</strong> adds a live LFG usage indicator showing how many active borrowers are using your shared hero.<br><strong>v1.6.3</strong> adds party-wide enemy targeting and party-aware heals so mercenaries, grouped alts, and LFG heroes can take damage and receive healing.<br><strong>v1.4.137</strong> fixes remaining desktop Fit/Focus/Normal sizing, restores full-width Fit, and removes stale version overrides.<br><strong>v1.4.136</strong> hardens Fit / Focus / Normal mode switching so all buttons and Settings write to the same real UI preference object.<br><strong>v1.4.135</strong> repairs Fit / Focus / Normal layout modes so they behave as exclusive view modes and no longer stack cramped saved states.<br><strong>v1.4.134</strong> keeps the combat action button row visible by reserving bottom controls in the combat flex layout.<br><strong>v1.4.133</strong> restores Search Log beside Timestamps and keeps the combat-log tools hidden behind it until opened.<br><strong>v1.4.123</strong> makes the More button appear immediately after entering the world instead of waiting for a delayed UI refresh.<br><strong>v1.4.123</strong> tucks the combat-log copy/export/clear/mark/history tools behind Search Log and places Search Log after Timestamps.<br><strong>v1.4.123</strong> fixes the More menu recent-panels list so it tracks and shows the last 10 places visited.<br><strong>v1.4.123</strong> adds keybinds for spell gems 4–6 and keeps combat-log search hidden until Search Log is clicked.<br><strong>v1.4.123</strong> removed UI Rescue from More, moved Admin next to the version, removed the ? tab button, and added tab help inside About.<br><strong>v1.4.123</strong> fixed center-panel fit, settings single-list alignment, topbar Settings/UI/More order, and Save indicator order.<br><strong>v1.4.101</strong> fixed combat bottom controls, More-menu toggling, settings collapsibles/alignment, Stats, and UI/More order.<br><strong>v1.4.100</strong> removed the center-panel quick action/context bar from every tab.<br><strong>v1.4.99</strong> removed the unwanted center-panel quick action/context bar that appeared under the tabs.<br><strong>v1.4.98</strong> performance hotfix: heavy UI observers and recurring injectors now sleep on login/character select and only run while the game screen is active.<br><strong>v1.4.97</strong> UX cleanup: Nav moved into More, Rescue/Backup tools moved into Settings, Layout left-aligned in UI, Tiny Topbar fixed, and combat Stats were restyled.<br><strong>v1.4.95</strong> UX cleanup: removed Command Palette, moved Rescue into Settings, and moved Layout into the UI menu.<br><strong>v1.4.92</strong> Added UI Rescue Center, error watchdog, bug-report export, and safe layout presets.<br><strong>v1.4.91</strong> Added backup manager, combat session history, log markers, and recovery shortcuts.<br><strong>v1.4.90</strong> Added combat log search/export/copy/clear tools and improved session reset controls.<br><strong>v1.4.89</strong> Fixed Layout Diagnostics so it no longer renders at the bottom unless opened.<br><strong>v1.4.88</strong> Added inventory search/extra filters, optimize gear, save diagnostics/export, and UI sanity tools.<br><strong>v1.4.87</strong> Added side-by-side item compare, compact topbar toggle, inventory quick actions, and accessibility shortcuts.<br><strong>v1.4.85</strong> Fixed UI menu open/close spacing so panels no longer jump into the top bar.</div>
+                <div><strong>v1.6.7</strong> fixes the Change Appearance modal hiding behind the shop popup, makes Weekly and Lifetime leaderboard rows show consistent stats for your own characters, and removes Current Gold from the Trends panel.<br><strong>v1.6.6</strong> adds character appearance customization at creation: pick hair style/color, facial hair, eye color, skin tone, and tunic/pants colors that persist on the save and render on the character-select avatar and in battle. A "Change Appearance Token" service in the shop lets existing characters restyle later for gold.<br><strong>v1.6.5</strong> upgrades AFK goals so Level Push and Level Alts move to the highest unlocked zone, Gold goals pick the best unlocked gold zone, and live/offline AFK use the same core goal planner.<br><strong>v1.6.4</strong> adds a live LFG usage indicator showing how many active borrowers are using your shared hero.<br><strong>v1.6.3</strong> adds party-wide enemy targeting and party-aware heals so mercenaries, grouped alts, and LFG heroes can take damage and receive healing.<br><strong>v1.4.137</strong> fixes remaining desktop Fit/Focus/Normal sizing, restores full-width Fit, and removes stale version overrides.<br><strong>v1.4.136</strong> hardens Fit / Focus / Normal mode switching so all buttons and Settings write to the same real UI preference object.<br><strong>v1.4.135</strong> repairs Fit / Focus / Normal layout modes so they behave as exclusive view modes and no longer stack cramped saved states.<br><strong>v1.4.134</strong> keeps the combat action button row visible by reserving bottom controls in the combat flex layout.<br><strong>v1.4.133</strong> restores Search Log beside Timestamps and keeps the combat-log tools hidden behind it until opened.<br><strong>v1.4.123</strong> makes the More button appear immediately after entering the world instead of waiting for a delayed UI refresh.<br><strong>v1.4.123</strong> tucks the combat-log copy/export/clear/mark/history tools behind Search Log and places Search Log after Timestamps.<br><strong>v1.4.123</strong> fixes the More menu recent-panels list so it tracks and shows the last 10 places visited.<br><strong>v1.4.123</strong> adds keybinds for spell gems 4–6 and keeps combat-log search hidden until Search Log is clicked.<br><strong>v1.4.123</strong> removed UI Rescue from More, moved Admin next to the version, removed the ? tab button, and added tab help inside About.<br><strong>v1.4.123</strong> fixed center-panel fit, settings single-list alignment, topbar Settings/UI/More order, and Save indicator order.<br><strong>v1.4.101</strong> fixed combat bottom controls, More-menu toggling, settings collapsibles/alignment, Stats, and UI/More order.<br><strong>v1.4.100</strong> removed the center-panel quick action/context bar from every tab.<br><strong>v1.4.99</strong> removed the unwanted center-panel quick action/context bar that appeared under the tabs.<br><strong>v1.4.98</strong> performance hotfix: heavy UI observers and recurring injectors now sleep on login/character select and only run while the game screen is active.<br><strong>v1.4.97</strong> UX cleanup: Nav moved into More, Rescue/Backup tools moved into Settings, Layout left-aligned in UI, Tiny Topbar fixed, and combat Stats were restyled.<br><strong>v1.4.95</strong> UX cleanup: removed Command Palette, moved Rescue into Settings, and moved Layout into the UI menu.<br><strong>v1.4.92</strong> Added UI Rescue Center, error watchdog, bug-report export, and safe layout presets.<br><strong>v1.4.91</strong> Added backup manager, combat session history, log markers, and recovery shortcuts.<br><strong>v1.4.90</strong> Added combat log search/export/copy/clear tools and improved session reset controls.<br><strong>v1.4.89</strong> Fixed Layout Diagnostics so it no longer renders at the bottom unless opened.<br><strong>v1.4.88</strong> Added inventory search/extra filters, optimize gear, save diagnostics/export, and UI sanity tools.<br><strong>v1.4.87</strong> Added side-by-side item compare, compact topbar toggle, inventory quick actions, and accessibility shortcuts.<br><strong>v1.4.85</strong> Fixed UI menu open/close spacing so panels no longer jump into the top bar.</div>
                 <div><strong>v1.4.84</strong> Moved Fit/Focus/Panels/Preset into the UI menu and right-aligned top-bar controls.</div>
                 <div><strong>v1.4.83</strong> Fixed real screen id mismatch (#screen-charselect) and made loadSlot activate the game screen directly.</div>
                 <div><strong>v1.4.82</strong> Fixed world entry showing nothing by force-restoring the game screen, topbar, and main layout after character load.</div>
@@ -7849,7 +7985,7 @@
           </div>
           <div
             id="rune-stash-list"
-            class="eq-bag-grid"
+            class="rpg-bag-grid"
             style="margin-bottom:10px">
           </div>
           <h3
@@ -7859,7 +7995,7 @@
           </h3>
           <div
             id="runeword-compendium"
-            class="eq-bag-grid"
+            class="rpg-bag-grid"
             style="margin-bottom:10px">
           </div>
           <h3 style="margin-bottom:6px">Focused Transmutes</h3>
@@ -7868,7 +8004,7 @@
           </div>
           <div
             id="focused-transmute-list"
-            class="eq-bag-grid"
+            class="rpg-bag-grid"
             style="margin-bottom:10px">
           </div>
           <div
@@ -7949,16 +8085,16 @@
             </select>
             <button class="btn" onclick="depositAllBankableItems()">Deposit All</button>
           </div>
-          <div class="eq-inventory-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="rpg-inventory-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div>
               <div style="font-weight:600;margin-bottom:6px">Character Inventory</div>
               <div id="bank-inv-meta" class="bag-meta" style="margin-bottom:6px"></div>
-              <div id="bank-inv-list" class="eq-bag-grid"></div>
+              <div id="bank-inv-list" class="rpg-bag-grid"></div>
             </div>
             <div>
               <div style="font-weight:600;margin-bottom:6px">Shared Bank</div>
               <div id="bank-list-meta" class="bag-meta" style="margin-bottom:6px"></div>
-              <div id="bank-list" class="eq-bag-grid"></div>
+              <div id="bank-list" class="rpg-bag-grid"></div>
             </div>
           </div>
         </div>
@@ -8487,51 +8623,51 @@
           </div>
 
           <div
-            class="eq-inventory-layout">
+            class="rpg-inventory-layout">
 
             <div
-              class="eq-paperdoll">
+              class="rpg-paperdoll">
               <h3>Equipped</h3>
 
-              <div class="eq-total-stats" id="eq-total-stats-bar">
-                <span class="eq-total-chip" id="eq-total-atk" title="Total ATK from gear"><span style="font-size:10px">⚔️</span> <span>—</span></span>
-                <span class="eq-total-chip" id="eq-total-def" title="Total DEF from gear"><span style="font-size:10px">🛡️</span> <span>—</span></span>
-                <span class="eq-total-chip" id="eq-total-hp" title="Total HP from gear"><span style="font-size:10px">❤️</span> <span>—</span></span>
-                <span class="eq-total-chip" id="eq-total-mp" title="Total MP from gear"><span style="font-size:10px">💧</span> <span>—</span></span>
+              <div class="rpg-total-stats" id="rpg-total-stats-bar">
+                <span class="rpg-total-chip" id="rpg-total-atk" title="Total ATK from gear"><span style="font-size:10px">⚔️</span> <span>—</span></span>
+                <span class="rpg-total-chip" id="rpg-total-def" title="Total DEF from gear"><span style="font-size:10px">🛡️</span> <span>—</span></span>
+                <span class="rpg-total-chip" id="rpg-total-hp" title="Total HP from gear"><span style="font-size:10px">❤️</span> <span>—</span></span>
+                <span class="rpg-total-chip" id="rpg-total-mp" title="Total MP from gear"><span style="font-size:10px">💧</span> <span>—</span></span>
               </div>
 
               <div
-                class="eq-paperdoll-grid">
-                <div class="eq-slot">
-                  <div class="eq-slot-name">⚔️ Weapon</div>
-                  <div id="slot-weapon" class="eq-slot-item">Empty</div>
+                class="rpg-paperdoll-grid">
+                <div class="rpg-slot">
+                  <div class="rpg-slot-name">⚔️ Weapon</div>
+                  <div id="slot-weapon" class="rpg-slot-item">Empty</div>
                 </div>
-                <div class="eq-slot">
-                  <div class="eq-slot-name">🛡️ Offhand</div>
-                  <div id="slot-offhand" class="eq-slot-item">Empty</div>
+                <div class="rpg-slot">
+                  <div class="rpg-slot-name">🛡️ Offhand</div>
+                  <div id="slot-offhand" class="rpg-slot-item">Empty</div>
                 </div>
-                <div class="eq-slot">
-                  <div class="eq-slot-name">🥋 Chest</div>
-                  <div id="slot-chest" class="eq-slot-item">Empty</div>
+                <div class="rpg-slot">
+                  <div class="rpg-slot-name">🥋 Chest</div>
+                  <div id="slot-chest" class="rpg-slot-item">Empty</div>
                 </div>
-                <div class="eq-slot">
-                  <div class="eq-slot-name">👖 Legs</div>
-                  <div id="slot-legs" class="eq-slot-item">Empty</div>
+                <div class="rpg-slot">
+                  <div class="rpg-slot-name">👖 Legs</div>
+                  <div id="slot-legs" class="rpg-slot-item">Empty</div>
                 </div>
-                <div class="eq-slot">
-                  <div class="eq-slot-name">🥾 Feet</div>
-                  <div id="slot-feet" class="eq-slot-item">Empty</div>
+                <div class="rpg-slot">
+                  <div class="rpg-slot-name">🥾 Feet</div>
+                  <div id="slot-feet" class="rpg-slot-item">Empty</div>
                 </div>
-                <div class="eq-slot">
-                  <div class="eq-slot-name">💎 Charm</div>
-                  <div id="slot-charm" class="eq-slot-item">Empty</div>
+                <div class="rpg-slot">
+                  <div class="rpg-slot-name">💎 Charm</div>
+                  <div id="slot-charm" class="rpg-slot-item">Empty</div>
                 </div>
               </div>
 
             </div>
 
             <div
-              class="eq-bag-area">
+              class="rpg-bag-area">
               <h3>Backpack</h3>
               <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
                 <select id="inv-sort-select" onchange="setInventorySort(this.value)" style="font-size:11px;padding:4px 9px;border:1px solid var(--border-md);border-radius:20px;background:var(--bg-primary);color:var(--text-primary);cursor:pointer">
@@ -8592,7 +8728,7 @@
               </div>
               <div
                 id="inv-list"
-                class="eq-bag-grid">
+                class="rpg-bag-grid">
               </div>
             </div>
 
@@ -11291,7 +11427,8 @@
       occultistReforge: 80,
       occultistSocket: 65,
       nameChangeToken: 25000,
-      raceChangeToken: 100000
+      raceChangeToken: 100000,
+      appearanceChangeToken: 5000
     };
     const MAX_SHOP_SELLBACK_RATE = 0.5;
 
@@ -14901,6 +15038,7 @@
       units.push({
         id: 'player', unitId: 'player', type: 'player', isPlayer: true,
         name: char.name || 'You', displayName: char.name || 'You', cls: char.cls, race: char.race || 'Human',
+        appearance: char.appearance || null,
         level: Math.max(1, Number(char.level || 1)), hp: Math.max(0, Number(char.hp || 0)), maxHp: Math.max(1, Number(char.maxHp || 1)),
         def: Math.max(0, Number(char.def || 0)),
         setHp(v) { char.hp = Math.max(0, Math.min(char.maxHp || 1, Math.floor(Number(v) || 0))); this.hp = char.hp; }
@@ -14943,6 +15081,7 @@
         units.push({
           id: 'group-' + idx, unitId: 'group-' + idx, type: 'group', slotIdx: idx,
           name: member.name || 'Group Member', displayName: member.name || 'Group Member', cls: member.cls, race: member.race || 'Human',
+          appearance: member.appearance || null,
           level: Math.max(1, Number(member.level || 1)), hp: Math.max(0, Number(member.hp || 0)), maxHp: Math.max(1, Number(member.maxHp || 1)),
           def: Math.max(0, Number(member.def || 0)),
           setHp(v) { member.hp = Math.max(0, Math.min(member.maxHp || 1, Math.floor(Number(v) || 0))); this.hp = member.hp; }
@@ -16244,11 +16383,11 @@
       const petSection = document.createElement('div');
       petSection.style.cssText = 'margin-top:16px';
       let petHtml = '<div style="font-weight:600;margin-bottom:6px">Pet Stable</div>'
-        + '<div class="eq-bag-grid">'
-        + `<div class="eq-item-card">
-            <div class="eq-item-name">Active Pet</div>
-            <div class="eq-item-type">Your active companion aids you in combat or grants passive bonuses.</div>
-            <div class="eq-item-actions compact" style="margin-top:6px">
+        + '<div class="rpg-bag-grid">'
+        + `<div class="rpg-item-card">
+            <div class="rpg-item-name">Active Pet</div>
+            <div class="rpg-item-type">Your active companion aids you in combat or grants passive bonuses.</div>
+            <div class="rpg-item-actions compact" style="margin-top:6px">
               <select onchange="setActivePet(this.value)" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">
                 <option value="none"${activePetId === 'none' ? ' selected' : ''}>None</option>
                 ${char.pets.owned.map(id => `<option value="${id}"${activePetId === id ? ' selected' : ''}>${PETS[id].name}</option>`).join('')}
@@ -16259,12 +16398,12 @@
         const owned = char.pets.owned.includes(p.id);
         const cost = PHASE5.petTameGoldCost[p.id] || 1000;
         petHtml += `
-          <div class="eq-item-card">
-            <div class="eq-item-name"><i class="ti ${p.icon}"></i> ${p.name}${owned ? ' ✓' : ''}</div>
-            <div class="eq-item-type">${p.kind === 'damage' ? 'Combat Companion' : (p.kind === 'support' ? 'Support Companion' : 'Utility Companion')}</div>
-            <div class="eq-item-bonus">${p.desc}</div>
-            <div class="eq-item-bonus">${owned ? 'Owned' : (cost + ' Gold to tame')}</div>
-            <div class="eq-item-actions">
+          <div class="rpg-item-card">
+            <div class="rpg-item-name"><i class="ti ${p.icon}"></i> ${p.name}${owned ? ' ✓' : ''}</div>
+            <div class="rpg-item-type">${p.kind === 'damage' ? 'Combat Companion' : (p.kind === 'support' ? 'Support Companion' : 'Utility Companion')}</div>
+            <div class="rpg-item-bonus">${p.desc}</div>
+            <div class="rpg-item-bonus">${owned ? 'Owned' : (cost + ' Gold to tame')}</div>
+            <div class="rpg-item-actions">
               ${owned
                 ? (activePetId === p.id
                   ? '<button class="btn active" disabled>Active</button>'
@@ -16297,20 +16436,20 @@
         let mwHtml = '<div style="font-weight:600;margin-bottom:6px">Mercenary Weapons</div>'
           + '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">Each ATK on an issued weapon adds '
           + (PHASE5.mercGearAtkDamageBonusPerPoint * 100).toFixed(1) + '% to that mercenary\'s damage.</div>'
-          + '<div class="eq-bag-grid">';
+          + '<div class="rpg-bag-grid">';
         mwTargets.forEach(tg => {
           const w = tg.weapon;
           const stats = w && typeof getItemEffectiveStats === 'function' ? getItemEffectiveStats(w) : null;
           const atk = stats && stats.atk ? stats.atk : 0;
           const selId = 'merc-weap-sel-' + tg.key;
           mwHtml += `
-            <div class="eq-item-card">
-              <div class="eq-item-name">${escapeHtml(tg.name)}'s Weapon</div>
-              <div class="eq-item-bonus">${w ? (escapeHtml(w.name || 'Weapon') + ' (+' + atk + ' ATK, +' + Math.round(atk * PHASE5.mercGearAtkDamageBonusPerPoint * 100) + '% dmg)') : 'No weapon issued.'}</div>
-              <div class="eq-item-actions compact" style="margin-top:6px;flex-wrap:wrap">
+            <div class="rpg-item-card">
+              <div class="rpg-item-name">${escapeHtml(tg.name)}'s Weapon</div>
+              <div class="rpg-item-bonus">${w ? (escapeHtml(w.name || 'Weapon') + ' (+' + atk + ' ATK, +' + Math.round(atk * PHASE5.mercGearAtkDamageBonusPerPoint * 100) + '% dmg)') : 'No weapon issued.'}</div>
+              <div class="rpg-item-actions compact" style="margin-top:6px;flex-wrap:wrap">
                 ${mwInvWeapons.length
                   ? `<select id="${selId}" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">${mwWeaponOpts}</select><button class="btn" onclick="issueMercWeapon('${tg.key}', Number(document.getElementById('${selId}').value))">Issue</button>`
-                  : '<span class="eq-item-type" style="font-size:10px">No weapons in inventory.</span>'}
+                  : '<span class="rpg-item-type" style="font-size:10px">No weapons in inventory.</span>'}
                 ${w ? `<button class="btn" onclick="recoverMercWeapon('${tg.key}')">Recover</button>` : ''}
               </div>
             </div>`;
@@ -17437,7 +17576,7 @@
     // there's never a frame where it appears at a stale/default location before
     // being placed. It's revealed only once its final coordinates are set.
     function positionTileMenu(tileEl) {
-      const menu = tileEl.querySelector('.eq-tile-actions');
+      const menu = tileEl.querySelector('.rpg-tile-actions');
       if (!menu) return;
       const margin = 8;
 
@@ -17490,14 +17629,14 @@
     }
     // Click anywhere else closes open tile menus.
     document.addEventListener('click', (e) => {
-      if (e.target.closest && (e.target.closest('.eq-item-tile') || e.target.closest('.eq-slot.is-compact'))) return;
+      if (e.target.closest && (e.target.closest('.rpg-item-tile') || e.target.closest('.rpg-slot.is-compact'))) return;
       closeItemTileMenus();
     });
 
     // True while any backpack/equipped action popover is open, so the periodic
     // game-loop re-render can skip rebuilding the inventory and avoid wiping it.
     function isItemTileOpen() {
-      return !!document.querySelector('.eq-item-tile.is-open, .eq-slot.is-open');
+      return !!document.querySelector('.rpg-item-tile.is-open, .rpg-slot.is-open');
     }
 
     // Close any open action popover. Terminal actions (equip, unequip, sell)
@@ -17506,10 +17645,10 @@
     // inline fixed-position styles applied by positionTileMenu so a menu can
     // never momentarily reappear at a stale location before being re-placed.
     function closeItemTileMenus() {
-      document.querySelectorAll('.eq-item-tile.is-open, .eq-slot.is-open').forEach(t => {
+      document.querySelectorAll('.rpg-item-tile.is-open, .rpg-slot.is-open').forEach(t => {
         t.classList.remove('is-open');
         t.style.transform = '';
-        const m = t.querySelector('.eq-tile-actions');
+        const m = t.querySelector('.rpg-tile-actions');
         if (m) {
           m.style.position = '';
           m.style.left = '';
@@ -17532,11 +17671,11 @@
     function reopenTileMenu(target) {
       let tileEl = null;
       if (typeof target === 'number') {
-        const inner = document.querySelector('.eq-item-tile[data-inv-index="' + target + '"]');
+        const inner = document.querySelector('.rpg-item-tile[data-inv-index="' + target + '"]');
         tileEl = inner;
       } else if (typeof target === 'string') {
         const slotInner = document.getElementById('slot-' + target);
-        tileEl = slotInner ? slotInner.closest('.eq-slot') : null;
+        tileEl = slotInner ? slotInner.closest('.rpg-slot') : null;
       }
       if (tileEl) toggleItemTile(tileEl);
     }
@@ -18322,6 +18461,7 @@
       pendingHardcore = !!on;
     }
     let pendingHardcore = false;
+    let pendingAppearance = null;
 
     // ────────────────────────────────────────────────────────────────────────
     // PHASE 5 — Companions, merc gear, faction gates, recipe scrolls.
@@ -19060,7 +19200,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.6.5';
+    const CURRENT_VERSION = '1.6.7';
     function syncCurrentVersionDisplay() {
       const version = CURRENT_VERSION;
       try { window.VERSION = version; } catch (_) {}
@@ -20144,20 +20284,20 @@
           itemType += ' · ' + tag.join(' · ');
         }
         const card = document.createElement('div');
-        card.className = 'eq-item-card';
+        card.className = 'rpg-item-card';
         card.innerHTML = `
-          <div class="eq-item-top">
+          <div class="rpg-item-top">
             <div>
-              <div class="eq-item-name ${rarityClass}">${name}</div>
-              <div class="eq-item-type">${itemType}${qualityTag}</div>
+              <div class="rpg-item-name ${rarityClass}">${name}</div>
+              <div class="rpg-item-type">${itemType}${qualityTag}</div>
             </div>
           </div>
-          <div class="eq-item-stats-grid">${bonus ? bonus.trim().split(' ').reduce((acc, tok) => {
+          <div class="rpg-item-stats-grid">${bonus ? bonus.trim().split(' ').reduce((acc, tok) => {
         // Rebuild into individual stat chips: each "+N STAT" becomes a pill
         if (tok.startsWith('+')) { acc.push(tok); } else if (acc.length) { acc[acc.length-1] += ' ' + tok; }
         return acc;
-      }, []).map(chip => '<span class="eq-stat-chip">' + chip + '</span>').join('') : '<span style="color:var(--text-secondary);font-size:11px">No stats</span>'}</div>
-          <div class="eq-item-actions compact">
+      }, []).map(chip => '<span class="rpg-stat-chip">' + chip + '</span>').join('') : '<span style="color:var(--text-secondary);font-size:11px">No stats</span>'}</div>
+          <div class="rpg-item-actions compact">
             <button class="btn" ${disabled ? 'disabled' : ''}>${label}</button>
           </div>
         `;
@@ -20174,7 +20314,7 @@
       });
       if (char.inventory.length === 0) {
         const empty = document.createElement('div');
-        empty.className = 'eq-empty-slot';
+        empty.className = 'rpg-empty-slot';
         empty.textContent = 'Inventory empty';
         invList.appendChild(empty);
       }
@@ -20184,7 +20324,7 @@
       });
       if (sharedBank.length === 0) {
         const empty = document.createElement('div');
-        empty.className = 'eq-empty-slot';
+        empty.className = 'rpg-empty-slot';
         empty.textContent = 'Bank empty';
         bankList.appendChild(empty);
       }
@@ -20699,11 +20839,13 @@ async function exportSlotsToFile(options = {}) {
       const transmuteModal = document.getElementById('transmute-confirm-modal');
       const runeInsertModal = document.getElementById('rune-insert-modal');
       const reforgeModal = document.getElementById('reforge-modal');
+      const appearanceEditModal = document.getElementById('appearance-edit-modal');
       const importOpen = importModal && importModal.classList.contains('open');
       const transmuteOpen = transmuteModal && transmuteModal.classList.contains('open');
       const runeInsertOpen = runeInsertModal && runeInsertModal.classList.contains('open');
       const reforgeOpen = reforgeModal && reforgeModal.classList.contains('open');
-      if (!importOpen && !transmuteOpen && !runeInsertOpen && !reforgeOpen) return;
+      const appearanceEditOpen = appearanceEditModal && appearanceEditModal.classList.contains('open');
+      if (!importOpen && !transmuteOpen && !runeInsertOpen && !reforgeOpen && !appearanceEditOpen) return;
 
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -20711,6 +20853,7 @@ async function exportSlotsToFile(options = {}) {
         if (transmuteOpen) closeTransmuteConfirm();
         if (runeInsertOpen) closeRuneInsertModal();
         if (reforgeOpen) closeReforgeModal();
+        if (appearanceEditOpen) closeAppearanceEditor();
         return;
       }
 
@@ -21833,20 +21976,25 @@ async function exportSlotsToFile(options = {}) {
     function setCreateStep(step) {
       const raceStep = document.getElementById('create-step-race');
       const classStep = document.getElementById('create-step-class');
+      const appearanceStep = document.getElementById('create-step-appearance');
       const nameStep = document.getElementById('create-step-name');
-      if (!raceStep || !classStep || !nameStep) return;
+      if (!raceStep || !classStep || !appearanceStep || !nameStep) return;
       raceStep.style.display = step === 'race' ? 'block' : 'none';
       classStep.style.display = step === 'class' ? 'block' : 'none';
+      appearanceStep.style.display = step === 'appearance' ? 'block' : 'none';
       nameStep.style.display = step === 'name' ? 'block' : 'none';
 
       const title = document.getElementById('create-step-title');
       if (title) {
         title.textContent = step === 'race' ? 'Choose Your Race'
           : step === 'class' ? 'Choose Your Class'
-            : 'Name Your Hero';
+            : step === 'appearance' ? 'Customize Appearance'
+              : 'Name Your Hero';
       }
 
-      if (step === 'name') {
+      if (step === 'appearance') {
+        openAppearanceStep();
+      } else if (step === 'name') {
         const summary = document.getElementById('create-name-summary');
         if (summary) summary.textContent = (selectedRace || '?') + ' · ' + (selectedClass || '?');
         const nameInput = document.getElementById('pname');
@@ -21942,7 +22090,7 @@ async function exportSlotsToFile(options = {}) {
       for (let i = 0; i < DISPLAY_ROWS; i++) {
         const s = slots[i];
         const row = document.createElement('div');
-        row.className = 'eq-btn eq-charslot' + (s ? '' : ' empty') + (i === csSelectedSlot && s ? ' selected' : '');
+        row.className = 'rpg-btn rpg-charslot' + (s ? '' : ' empty') + (i === csSelectedSlot && s ? ' selected' : '');
 
         if (s) {
           row.textContent = s.name;
@@ -21994,9 +22142,247 @@ async function exportSlotsToFile(options = {}) {
       return RACE_AVATAR_CONFIG[race] || RACE_AVATAR_CONFIG['Human'];
     }
 
-    // Build a full SVG portrait given a race name.
-    function buildAvatarSvg(race, uid) {
+    // ══════════════════════════════════════════════
+    //  CHARACTER APPEARANCE CUSTOMIZATION (v1.6.6)
+    // ══════════════════════════════════════════════
+    // Saved on each character as `appearance`. Fields are optional; any
+    // missing field falls back to the race default in buildAvatarSvg().
+    const APPEARANCE_PALETTES = {
+      skin: ['#f4d9b8', '#e9c39b', '#d7b189', '#c8956a', '#a87148', '#80502c', '#5a3b22', '#8a9a5b', '#5a8a3a', '#7a6da8', '#6aa848', '#a89a5a'],
+      hair: ['#1a1208', '#3a2814', '#5a3a1c', '#7a4d18', '#a13218', '#c89a55', '#e8d27a', '#e8e8f4', '#b8b8c8', '#3a4a78', '#5a1818', '#1a3a1a'],
+      eye:  ['#2a1f12', '#3d6b3d', '#3aa8d8', '#185fa5', '#7a4d18', '#e8c828', '#e84848', '#6a3aa8', '#c8c8c8'],
+      cloth:['#4a5d4a', '#3a5a2a', '#3a4a78', '#2a1a4a', '#5a3a78', '#7a3a2a', '#7a2a3a', '#5a4a2a', '#704a2a', '#3a2f25', '#c9a13a', '#1a1a1a', '#8a8a8a', '#5a8a3a'],
+      pants:['#3a2f25', '#1f1812', '#3a2418', '#1c100a', '#241948', '#3a2c14', '#2a3a1a', '#1a1230', '#e8d8a8', '#5a3a1a', '#3a1818', '#0f0a08']
+    };
+    const APPEARANCE_HAIR_STYLES = [
+      { id: 'short',  label: 'Short' },
+      { id: 'long',   label: 'Long' },
+      { id: 'mohawk', label: 'Mohawk' },
+      { id: 'braids', label: 'Braids' },
+      { id: 'bald',   label: 'Bald' }
+    ];
+    const APPEARANCE_FACIAL_HAIR = [
+      { id: 'none',   label: 'None' },
+      { id: 'goatee', label: 'Goatee' },
+      { id: 'beard',  label: 'Full Beard' }
+    ];
+
+    // Some races have non-humanoid heads or fixed coverings; appearance
+    // sliders that wouldn't read on those models are disabled.
+    function getAppearanceCapabilities(race) {
       const cfg = getRaceAvatarConfig(race);
+      const frogOrSnout = !!(cfg.frogHead || cfg.snout);
+      // Hood-wearing races (Aasimar) cover the hair entirely.
+      const wearsHood = !!cfg.hood;
+      // Tabaxi mane and Aasimar hood take over the head silhouette.
+      const canChooseHair = !wearsHood && !frogOrSnout && cfg.hairStyle !== 'mane';
+      const canChooseFacialHair = !frogOrSnout && !wearsHood && cfg.hairStyle !== 'mane';
+      const canChooseEyes = !cfg.frogHead;
+      return { canChooseHair, canChooseFacialHair, canChooseEyes };
+    }
+
+    function getDefaultAppearance(race) {
+      const cfg = getRaceAvatarConfig(race);
+      return {
+        skinTone:        cfg.skin ? cfg.skin[0] : '#e9c39b',
+        hairStyle:       cfg.hairStyle || 'short',
+        hairColor:       cfg.hair || '#5a3a1c',
+        facialHair:      cfg.beard ? 'beard' : 'none',
+        facialHairColor: cfg.hair || '#5a3a1c',
+        eyeColor:        (race === 'Dark Elf') ? '#e84848'
+                          : (race === 'High Elf') ? '#3aa8d8'
+                          : (race === 'Lizardfolk') ? '#e8c828'
+                          : '#2a1f12',
+        tunicColor:      cfg.tunic ? cfg.tunic[0] : '#4a5d4a',
+        pantsColor:      cfg.pants ? cfg.pants[0] : '#3a2f25'
+      };
+    }
+
+    // Darken a hex color by a percent — used to derive the body/clothing
+    // shadow color from the primary tone the player picked.
+    function shadeHex(hex, percent) {
+      const h = String(hex || '').replace('#', '');
+      if (h.length !== 6) return hex;
+      const num = parseInt(h, 16);
+      const r = Math.max(0, Math.min(255, ((num >> 16) & 0xff) + Math.round(255 * percent / 100)));
+      const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + Math.round(255 * percent / 100)));
+      const b = Math.max(0, Math.min(255, (num & 0xff) + Math.round(255 * percent / 100)));
+      return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+    }
+
+    function applyAppearanceToConfig(cfg, appearance, race) {
+      if (!appearance) return cfg;
+      const out = Object.assign({}, cfg);
+      const caps = getAppearanceCapabilities(race);
+      if (appearance.skinTone) {
+        out.skin = [appearance.skinTone, shadeHex(appearance.skinTone, -35)];
+      }
+      if (appearance.tunicColor) {
+        out.tunic = [appearance.tunicColor, shadeHex(appearance.tunicColor, -40)];
+      }
+      if (appearance.pantsColor) {
+        out.pants = [appearance.pantsColor, shadeHex(appearance.pantsColor, -45)];
+      }
+      if (caps.canChooseHair) {
+        if (appearance.hairStyle) {
+          out.hairStyle = appearance.hairStyle === 'bald' ? 'none' : appearance.hairStyle;
+        }
+        if (appearance.hairColor && appearance.hairStyle !== 'bald') {
+          out.hair = appearance.hairColor;
+        } else if (appearance.hairStyle === 'bald') {
+          out.hair = null;
+        }
+      }
+      if (caps.canChooseFacialHair) {
+        if (appearance.facialHair && appearance.facialHair !== 'none') {
+          out.beard = true;
+          out.beardStyle = appearance.facialHair;
+          out.beardColor = appearance.facialHairColor || out.hair || '#5a3a1c';
+        } else {
+          out.beard = false;
+          out.beardStyle = 'none';
+        }
+      }
+      if (caps.canChooseEyes && appearance.eyeColor) {
+        out.eyeColor = appearance.eyeColor;
+      }
+      return out;
+    }
+
+    function openAppearanceStep() {
+      if (!selectedRace) return;
+      if (!pendingAppearance) {
+        pendingAppearance = getDefaultAppearance(selectedRace);
+      }
+      const summary = document.getElementById('create-appearance-summary');
+      if (summary) summary.textContent = (selectedRace || '?') + ' · ' + (selectedClass || '?');
+      renderAppearanceForm();
+      updateAppearancePreview();
+    }
+
+    // Shared renderer used by the creation flow and the in-game shop editor.
+    // ctx: { race, state, optionsId, previewId, previewUid }
+    function renderAppearanceControls(ctx) {
+      const container = document.getElementById(ctx.optionsId);
+      if (!container || !ctx.race || !ctx.state) return;
+      const caps = getAppearanceCapabilities(ctx.race);
+      const A = ctx.state;
+
+      const swatchRow = (label, paletteKey, field) => {
+        const swatches = APPEARANCE_PALETTES[paletteKey].map(c => {
+          const sel = (A[field] && A[field].toLowerCase() === c.toLowerCase()) ? ' selected' : '';
+          return '<span class="appearance-swatch' + sel + '" style="background:' + c + '" data-color="' + c + '" data-field="' + field + '"></span>';
+        }).join('');
+        return '<div class="appearance-row"><label>' + label + '</label><div class="appearance-swatches">' + swatches + '</div></div>';
+      };
+
+      const pillRow = (label, options, field, disabled) => {
+        const pills = options.map(opt => {
+          const sel = (A[field] === opt.id) ? ' selected' : '';
+          const dis = disabled ? ' disabled' : '';
+          return '<button type="button" class="appearance-pill' + sel + '" data-pill="' + opt.id + '" data-field="' + field + '"' + dis + '>' + opt.label + '</button>';
+        }).join('');
+        return '<div class="appearance-row"><label>' + label + '</label><div class="appearance-pills">' + pills + '</div></div>';
+      };
+
+      let html = '';
+      html += swatchRow('Skin', 'skin', 'skinTone');
+      html += pillRow('Hair Style', APPEARANCE_HAIR_STYLES, 'hairStyle', !caps.canChooseHair);
+      html += swatchRow('Hair Color', 'hair', 'hairColor');
+      html += pillRow('Facial Hair', APPEARANCE_FACIAL_HAIR, 'facialHair', !caps.canChooseFacialHair);
+      html += swatchRow('Beard Color', 'hair', 'facialHairColor');
+      html += swatchRow('Eyes', 'eye', 'eyeColor');
+      html += swatchRow('Tunic', 'cloth', 'tunicColor');
+      html += swatchRow('Pants', 'pants', 'pantsColor');
+      container.innerHTML = html;
+
+      const refresh = () => {
+        renderAppearanceControls(ctx);
+        updateAppearancePreviewFor(ctx);
+      };
+      container.querySelectorAll('.appearance-swatch').forEach(el => {
+        el.addEventListener('click', () => {
+          const field = el.getAttribute('data-field');
+          const color = el.getAttribute('data-color');
+          if (!field || !color) return;
+          A[field] = color;
+          refresh();
+        });
+      });
+      container.querySelectorAll('.appearance-pill').forEach(el => {
+        el.addEventListener('click', () => {
+          const field = el.getAttribute('data-field');
+          const value = el.getAttribute('data-pill');
+          if (!field || !value) return;
+          A[field] = value;
+          refresh();
+        });
+      });
+    }
+
+    function updateAppearancePreviewFor(ctx) {
+      const preview = document.getElementById(ctx.previewId);
+      if (!preview || !ctx.race) return;
+      preview.innerHTML = buildAvatarSvg(ctx.race, ctx.previewUid || 'preview', ctx.state);
+    }
+
+    function randomizeAppearanceState(race, base) {
+      const caps = getAppearanceCapabilities(race);
+      const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+      const hairStyle = caps.canChooseHair ? pick(APPEARANCE_HAIR_STYLES).id : (base && base.hairStyle) || 'short';
+      return {
+        skinTone: pick(APPEARANCE_PALETTES.skin),
+        hairStyle,
+        hairColor: pick(APPEARANCE_PALETTES.hair),
+        facialHair: caps.canChooseFacialHair ? pick(APPEARANCE_FACIAL_HAIR).id : 'none',
+        facialHairColor: pick(APPEARANCE_PALETTES.hair),
+        eyeColor: caps.canChooseEyes ? pick(APPEARANCE_PALETTES.eye) : '#2a1f12',
+        tunicColor: pick(APPEARANCE_PALETTES.cloth),
+        pantsColor: pick(APPEARANCE_PALETTES.pants)
+      };
+    }
+
+    function renderAppearanceForm() {
+      renderAppearanceControls({
+        race: selectedRace,
+        state: pendingAppearance,
+        optionsId: 'appearance-options',
+        previewId: 'appearance-preview',
+        previewUid: 'preview'
+      });
+    }
+
+    function updateAppearancePreview() {
+      updateAppearancePreviewFor({
+        race: selectedRace,
+        state: pendingAppearance,
+        previewId: 'appearance-preview',
+        previewUid: 'preview'
+      });
+    }
+
+    function randomizeAppearance() {
+      if (!selectedRace) return;
+      pendingAppearance = randomizeAppearanceState(selectedRace, pendingAppearance);
+      renderAppearanceForm();
+      updateAppearancePreview();
+    }
+
+    function resetAppearanceToRaceDefaults() {
+      if (!selectedRace) return;
+      pendingAppearance = getDefaultAppearance(selectedRace);
+      renderAppearanceForm();
+      updateAppearancePreview();
+    }
+
+    function confirmAppearance() {
+      setCreateStep('name');
+    }
+
+    // Build a full SVG portrait given a race name.
+    function buildAvatarSvg(race, uid, appearance) {
+      const baseCfg = getRaceAvatarConfig(race);
+      const cfg = applyAppearanceToConfig(baseCfg, appearance, race);
 
       // Build proportions from body type
       // All coordinates target the same 200×460 viewBox.
@@ -22062,7 +22448,7 @@ async function exportSlotsToFile(options = {}) {
         head += `<ellipse cx="${cx}" cy="${ys.headCy}" rx="${b.headR}" ry="${b.headRy}" fill="url(#av-skin)" stroke="#3d2916" stroke-width="1"/>`;
         // Eyes
         const eyeY = ys.headCy - 2;
-        const eyeColor = (race === 'Dark Elf') ? '#e84848' : (race === 'High Elf' ? '#3aa8d8' : (race === 'Lizardfolk' ? '#e8c828' : '#2a1f12'));
+        const eyeColor = cfg.eyeColor || ((race === 'Dark Elf') ? '#e84848' : (race === 'High Elf' ? '#3aa8d8' : (race === 'Lizardfolk' ? '#e8c828' : '#2a1f12')));
         head += `<circle cx="${cx - 9}" cy="${eyeY}" r="2" fill="${eyeColor}"/>`;
         head += `<circle cx="${cx + 9}" cy="${eyeY}" r="2" fill="${eyeColor}"/>`;
 
@@ -22164,10 +22550,14 @@ async function exportSlotsToFile(options = {}) {
         hairBack += `<path d="M ${cx - b.headR - 6} ${ys.headCy + 4} Q ${cx - b.headR - 14} ${topY - 4} ${cx} ${topY - 10} Q ${cx + b.headR + 14} ${topY - 4} ${cx + b.headR + 6} ${ys.headCy + 4} Q ${cx + b.headR + 10} ${ys.headCy + 20} ${cx} ${ys.headCy + 18} Q ${cx - b.headR - 10} ${ys.headCy + 20} ${cx - b.headR - 6} ${ys.headCy + 4} Z" fill="${cfg.hair}" stroke="#1a0e08" stroke-width="0.6" opacity="0.85"/>`;
       }
 
-      // Beard (dwarf, goliath) — front, hanging from the face
+      // Beard (dwarf, goliath, or player-customized) — front, hanging from the face
       if (cfg.beard) {
-        const beardColor = cfg.hair || '#7a4d18';
-        hairFront += `<path d="M ${cx - 16} ${ys.headCy + 16} Q ${cx - 22} ${ys.headCy + 48} ${cx} ${ys.headCy + 52} Q ${cx + 22} ${ys.headCy + 48} ${cx + 16} ${ys.headCy + 16} Q ${cx} ${ys.headCy + 22} ${cx - 16} ${ys.headCy + 16} Z" fill="${beardColor}" stroke="#1a0e08" stroke-width="0.6"/>`;
+        const beardColor = cfg.beardColor || cfg.hair || '#7a4d18';
+        if (cfg.beardStyle === 'goatee') {
+          hairFront += `<path d="M ${cx - 7} ${ys.headCy + 16} Q ${cx} ${ys.headCy + 34} ${cx + 7} ${ys.headCy + 16} Q ${cx} ${ys.headCy + 20} ${cx - 7} ${ys.headCy + 16} Z" fill="${beardColor}" stroke="#1a0e08" stroke-width="0.6"/>`;
+        } else {
+          hairFront += `<path d="M ${cx - 16} ${ys.headCy + 16} Q ${cx - 22} ${ys.headCy + 48} ${cx} ${ys.headCy + 52} Q ${cx + 22} ${ys.headCy + 48} ${cx + 16} ${ys.headCy + 16} Q ${cx} ${ys.headCy + 22} ${cx - 16} ${ys.headCy + 16} Z" fill="${beardColor}" stroke="#1a0e08" stroke-width="0.6"/>`;
+        }
       }
 
       // Horns (Dragonborn) — sit on top of head, render in front
@@ -22263,7 +22653,7 @@ async function exportSlotsToFile(options = {}) {
         const zoneName = (typeof ZONES !== 'undefined' && ZONES[s.zone]) ? ZONES[s.zone].name : '';
         zoneEl.textContent = zoneName;
         if (avatar) {
-          avatar.innerHTML = buildAvatarSvg(s.race || 'Human');
+          avatar.innerHTML = buildAvatarSvg(s.race || 'Human', null, s.appearance);
           avatar.style.display = '';
         }
       } else {
@@ -22282,7 +22672,7 @@ async function exportSlotsToFile(options = {}) {
         if (typeof showToast === 'function') showToast('Select a character first.', 'info');
         return;
       }
-      // "Explore" in EQ lets you walk around — closest analog here is just entering the world.
+      // "Explore" in the original UI lets you walk around — closest analog here is just entering the world.
       csEnterWorld();
     }
 
@@ -22327,6 +22717,7 @@ async function exportSlotsToFile(options = {}) {
       pendingSlot = slotIdx;
       selectedRace = null;
       selectedClass = null;
+      pendingAppearance = null;
       pendingHardcore = false;
       const hc = document.getElementById('hardcore-toggle');
       if (hc) hc.checked = false;
@@ -22343,6 +22734,7 @@ async function exportSlotsToFile(options = {}) {
       pendingSlot = -1;
       selectedRace = null;
       selectedClass = null;
+      pendingAppearance = null;
       setCreateStep('race');
     }
 
@@ -22358,12 +22750,16 @@ async function exportSlotsToFile(options = {}) {
       }
       selectedClass = cls;
       renderClassOptions();
-      // Picking a class advances straight to the name step.
-      setCreateStep('name');
+      // Picking a class advances to appearance customization.
+      setCreateStep('appearance');
     }
 
     function goBackToClassSelection() {
       setCreateStep('class');
+    }
+
+    function goBackToAppearanceSelection() {
+      setCreateStep('appearance');
     }
 
     // Lightweight, race-flavored fantasy name generator.
@@ -22407,9 +22803,11 @@ async function exportSlotsToFile(options = {}) {
       if (!selectedClass) { showToast('Choose a class first.', 'error'); return; }
       const name = document.getElementById('pname').value.trim() || 'Adventurer';
       const base = CLASSES[selectedClass];
+      const appearance = pendingAppearance || getDefaultAppearance(selectedRace);
       const newChar = {
         version: CURRENT_VERSION,
         name, race: selectedRace, cls: selectedClass, level: 1, xp: 0, xpNext: 100,
+        appearance,
         hp: base.hp, maxHp: base.hp, mp: base.mp, maxMp: base.mp,
         atk: base.atk, def: base.def, mpRegen: base.mpRegen,
         gold: 0, faction: 0, healpotions: 3, manapotions: 3, healpotions_lhp: 0, manapotions_lmp: 0, healpotions_ghp: 0, manapotions_gmp: 0, healpotions_shp: 0, manapotions_smp: 0, healpotions_heroic: 0, manapotions_heroic: 0, healpotions_epic: 0, manapotions_epic: 0, healpotions_legendary: 0, manapotions_legendary: 0, zone: 0, inventory: [],
@@ -22464,6 +22862,7 @@ async function exportSlotsToFile(options = {}) {
         afkEnabled: false, lastAfkAt: null, lastSaved: Date.now()
       };
       pendingHardcore = false;
+      pendingAppearance = null;
       slots[pendingSlot] = newChar;
       saveSlots();
       loadSlot(pendingSlot);
@@ -23273,6 +23672,7 @@ async function exportSlotsToFile(options = {}) {
           icon: (CLASS_ICONS && CLASS_ICONS[cls]) || 'ti-user',
           color: (CLASS_COLORS && CLASS_COLORS[cls]) || (u.isPlayer ? '#3B8AC4' : '#548A37'),
           race: u.race || 'Human',
+          appearance: u.appearance || null,
           hpPct: Math.min(100, Math.max(0, (Number(u.hp || 0) / Math.max(1, Number(u.maxHp || 1))) * 100))
         };
       }).slice(0, 6);
@@ -23333,7 +23733,7 @@ async function exportSlotsToFile(options = {}) {
         // Use the same 3D-style character model shown on the character screen,
         // falling back to the flat class icon if the avatar builder is missing.
         const modelSvg = (typeof buildAvatarSvg === 'function')
-          ? '<div class="battle-model">' + buildAvatarSvg(u.race || 'Human', u.id) + '</div>'
+          ? '<div class="battle-model">' + buildAvatarSvg(u.race || 'Human', u.id, u.appearance) + '</div>'
           : '<i class="ti ' + u.icon + '"></i>';
         return '<div class="battle-unit" data-unit="' + u.id + '">' +
           '<div class="battle-sprite battle-sprite-model" style="background:linear-gradient(160deg,' + u.color + ',' + u.color + 'cc);">' +
@@ -23912,7 +24312,7 @@ async function exportSlotsToFile(options = {}) {
 
       slots.forEach(slot => {
         const el = document.getElementById('slot-' + slot);
-        const parent = el.closest('.eq-slot') || el.parentElement;
+        const parent = el.closest('.rpg-slot') || el.parentElement;
         const item = char.equipment[slot];
         el.onmouseenter = null;
         el.onmousemove = null;
@@ -23927,7 +24327,7 @@ async function exportSlotsToFile(options = {}) {
         }
 
         if (!item) {
-          el.innerHTML = '<div class="eq-slot-tile is-empty"><div class="eq-tile-icon" style="opacity:.4">＋</div><div class="eq-tile-name" style="opacity:.5">Empty</div></div>';
+          el.innerHTML = '<div class="rpg-slot-tile is-empty"><div class="rpg-tile-icon" style="opacity:.4">＋</div><div class="rpg-tile-name" style="opacity:.5">Empty</div></div>';
           return;
         }
 
@@ -23976,19 +24376,19 @@ async function exportSlotsToFile(options = {}) {
           const sockArr = Array.isArray(_sockObj.sockets) ? _sockObj.sockets.slice(0, maxSock) : [];
           let dots = '';
           for (let s = 0; s < maxSock; s++) dots += '<i class="' + (sockArr[s] ? 'filled' : '') + '"></i>';
-          socketDotsHtml = '<span class="eq-tile-socket-dot">' + dots + '</span>';
+          socketDotsHtml = '<span class="rpg-tile-socket-dot">' + dots + '</span>';
         }
 
-        const lockBadge = locked ? '<div class="eq-tile-badges"><span title="Locked">🔒</span></div>' : '';
+        const lockBadge = locked ? '<div class="rpg-tile-badges"><span title="Locked">🔒</span></div>' : '';
 
         // Stats shown inside the menu, matching the clean hover-tooltip layout.
         // No comparison arrows here since the item is already equipped.
-        const popStats = '<div class="eq-tile-act-stats">' + buildItemStatsHTML(item, { compare: false }) + '</div>';
+        const popStats = '<div class="rpg-tile-act-stats">' + buildItemStatsHTML(item, { compare: false }) + '</div>';
 
         const actionsHtml =
-          '<div class="eq-tile-actions" onclick="event.stopPropagation()">' +
-            '<div class="eq-tile-act-name ' + rarityClass + '">' + label + '</div>' +
-            '<div class="eq-tile-act-type">' + itemType + (quality !== 'Normal' ? ' • ' + getItemQualityLabel(item) : '') + (ilvl ? ' · iLvl ' + ilvl : '') + (setName ? ' · Set: ' + setName : '') + '</div>' +
+          '<div class="rpg-tile-actions" onclick="event.stopPropagation()">' +
+            '<div class="rpg-tile-act-name ' + rarityClass + '">' + label + '</div>' +
+            '<div class="rpg-tile-act-type">' + itemType + (quality !== 'Normal' ? ' • ' + getItemQualityLabel(item) : '') + (ilvl ? ' · iLvl ' + ilvl : '') + (setName ? ' · Set: ' + setName : '') + '</div>' +
             popStats +
             '<button class="btn" onclick="compareEquippedSlot(\'' + slot + '\')">Compare Best Bag Item</button>' +
             '<button class="btn" onclick="unequipItem(\'' + slot + '\')">Unequip</button>' +
@@ -23996,10 +24396,10 @@ async function exportSlotsToFile(options = {}) {
           '</div>';
 
         el.innerHTML =
-          '<div class="eq-slot-tile">' +
+          '<div class="rpg-slot-tile">' +
             lockBadge +
-            '<div class="eq-tile-icon">' + tileIcon + '</div>' +
-            '<div class="eq-tile-name ' + rarityClass + '">' + label + '</div>' +
+            '<div class="rpg-tile-icon">' + tileIcon + '</div>' +
+            '<div class="rpg-tile-name ' + rarityClass + '">' + label + '</div>' +
             socketDotsHtml +
             actionsHtml +
           '</div>';
@@ -24023,10 +24423,10 @@ async function exportSlotsToFile(options = {}) {
         });
         const fmtStat = v => v > 0 ? '+' + fmt(v) : '—';
         const upd = (id, val) => { const el = document.getElementById(id); if (el) { const sp = el.querySelector('span:last-child'); if (sp) sp.textContent = fmtStat(val); } };
-        upd('eq-total-atk', totals.atk);
-        upd('eq-total-def', totals.def);
-        upd('eq-total-hp',  totals.hp);
-        upd('eq-total-mp',  totals.mp);
+        upd('rpg-total-atk', totals.atk);
+        upd('rpg-total-def', totals.def);
+        upd('rpg-total-hp',  totals.hp);
+        upd('rpg-total-mp',  totals.mp);
       }
     }
 
@@ -24091,11 +24491,11 @@ async function exportSlotsToFile(options = {}) {
         const rune = RUNE_DATA[runeName];
         const socketVal = (typeof getRuneSocketValue === 'function') ? getRuneSocketValue(rune) : rune.value;
         const card = document.createElement('div');
-        card.className = 'eq-item-card';
+        card.className = 'rpg-item-card';
         card.innerHTML = `
-          <div class="eq-item-name rarity-magic">${runeName}</div>
-          <div class="eq-item-type">T${rune.tier} · Socketed: +${socketVal} ${rune.stat.toUpperCase()}</div>
-          <div class="eq-item-bonus">Owned: ${count}</div>
+          <div class="rpg-item-name rarity-magic">${runeName}</div>
+          <div class="rpg-item-type">T${rune.tier} · Socketed: +${socketVal} ${rune.stat.toUpperCase()}</div>
+          <div class="rpg-item-bonus">Owned: ${count}</div>
         `;
         runeList.appendChild(card);
       });
@@ -24110,12 +24510,12 @@ async function exportSlotsToFile(options = {}) {
           const found = char.discoveredRunewords.includes(recipe.name);
           const bonusText = describeRunewordBonus(recipe.bonus);
           const card = document.createElement('div');
-          card.className = 'eq-item-card';
+          card.className = 'rpg-item-card';
           card.innerHTML = `
-            <div class="eq-item-name ${found ? 'rarity-runeword' : ''}">${recipe.name}${found ? ' ✓' : ''}</div>
-            <div class="eq-item-type">${SLOT_LABELS[slot] || slot} · ${recipe.runes.map(r => RUNE_DATA[r] ? RUNE_DATA[r].id : r).join(' + ')}</div>
-            <div class="eq-item-bonus">${bonusText}</div>
-            <div class="eq-item-type" style="opacity:0.8">${found ? ('Evolves to T' + RUNEWORD_EVOLUTION_THRESHOLDS.length + ' (+' + (RUNEWORD_EVOLUTION_MULT_PER_TIER * 100) + '%/tier)') : 'Socket these runes into any ' + slot + ' item to forge.'}</div>
+            <div class="rpg-item-name ${found ? 'rarity-runeword' : ''}">${recipe.name}${found ? ' ✓' : ''}</div>
+            <div class="rpg-item-type">${SLOT_LABELS[slot] || slot} · ${recipe.runes.map(r => RUNE_DATA[r] ? RUNE_DATA[r].id : r).join(' + ')}</div>
+            <div class="rpg-item-bonus">${bonusText}</div>
+            <div class="rpg-item-type" style="opacity:0.8">${found ? ('Evolves to T' + RUNEWORD_EVOLUTION_THRESHOLDS.length + ' (+' + (RUNEWORD_EVOLUTION_MULT_PER_TIER * 100) + '%/tier)') : 'Socket these runes into any ' + slot + ' item to forge.'}</div>
           `;
           compendium.appendChild(card);
         });
@@ -24132,13 +24532,13 @@ async function exportSlotsToFile(options = {}) {
           const owned = runeCounts[sourceRune] || 0;
           const canCraft = owned >= 3 && char.gold >= cost;
           const card = document.createElement('div');
-          card.className = 'eq-item-card';
+          card.className = 'rpg-item-card';
           card.innerHTML = `
-            <div class="eq-item-inner">
-              <div class="eq-item-name rarity-magic">${sourceRune} → ${resultRune}</div>
-              <div class="eq-item-type">Requires 3× ${sourceRune}</div>
-              <div class="eq-item-bonus">Owned: ${owned} · Cost: ${cost.toLocaleString()} Gold</div>
-              <div class="eq-item-actions">
+            <div class="rpg-item-inner">
+              <div class="rpg-item-name rarity-magic">${sourceRune} → ${resultRune}</div>
+              <div class="rpg-item-type">Requires 3× ${sourceRune}</div>
+              <div class="rpg-item-bonus">Owned: ${owned} · Cost: ${cost.toLocaleString()} Gold</div>
+              <div class="rpg-item-actions">
                 <button class="btn${canCraft ? ' active' : ''}" onclick="openTransmuteConfirm('${sourceRune}')" ${canCraft ? '' : 'disabled'}>Transmute</button>
               </div>
             </div>
@@ -24281,7 +24681,7 @@ async function exportSlotsToFile(options = {}) {
         // ── Compact tile (v1.3.63) ──
         // Stats are intentionally NOT shown on the tile; they appear in the
         // hover tooltip. Action buttons live in a click-to-open popover so the
-        // grid stays dense like a classic EverQuest bag window.
+        // grid stays dense like a classic RPG bag window.
         const ilvl = getItemLevel(item);
         const rarityBorderClass = ({
           'rarity-legendary': 'rarity-border-legendary',
@@ -24297,7 +24697,7 @@ async function exportSlotsToFile(options = {}) {
 
         // Quantity badge for stacked entries (e.g. runes / consumables).
         const qty = (item && typeof item === 'object' && Number(item.qty) > 1) ? Number(item.qty) : 0;
-        const qtyBadge = qty ? '<span class="eq-tile-qty">×' + qty + '</span>' : '';
+        const qtyBadge = qty ? '<span class="rpg-tile-qty">×' + qty + '</span>' : '';
 
         // Socket dots (filled = has rune) shown small in the corner.
         let socketDotsHtml = '';
@@ -24306,17 +24706,17 @@ async function exportSlotsToFile(options = {}) {
           const sockArr = Array.isArray(item.sockets) ? item.sockets.slice(0, maxSock) : [];
           let dots = '';
           for (let s = 0; s < maxSock; s++) dots += '<i class="' + (sockArr[s] ? 'filled' : '') + '"></i>';
-          socketDotsHtml = '<span class="eq-tile-socket-dot">' + dots + '</span>';
+          socketDotsHtml = '<span class="rpg-tile-socket-dot">' + dots + '</span>';
         }
 
         const flagBadges = (locked || favorite)
-          ? '<div class="eq-tile-badges">' + (favorite ? '<span title="Favorite">⭐</span>' : '') + (locked ? '<span title="Locked">🔒</span>' : '') + '</div>'
+          ? '<div class="rpg-tile-badges">' + (favorite ? '<span title="Favorite">⭐</span>' : '') + (locked ? '<span title="Locked">🔒</span>' : '') + '</div>'
           : '';
 
         // Smart compare arrow for equippable items
         const compareArrow = isEquip ? getCompareArrowForItem(item) : '';
         const compareClass = compareArrow === '▲' ? 'upgrade' : (compareArrow === '▼' ? 'downgrade' : 'equal');
-        const compareBadge = compareArrow ? '<span class="eq-tile-compare ' + compareClass + '" title="Compared to equipped item">' + compareArrow + '</span>' : '';
+        const compareBadge = compareArrow ? '<span class="rpg-tile-compare ' + compareClass + '" title="Compared to equipped item">' + compareArrow + '</span>' : '';
 
         // Build the action popover (all interactions live here).
         const containerBtn = isContainer
@@ -24326,13 +24726,13 @@ async function exportSlotsToFile(options = {}) {
         // Stats shown inside the menu, matching the clean hover-tooltip layout
         // (aligned rows + socket section), with upgrade arrows vs equipped gear.
         const popStats = isEquip
-          ? '<div class="eq-tile-act-stats">' + buildItemStatsHTML(item, { compare: true }) + '</div>'
+          ? '<div class="rpg-tile-act-stats">' + buildItemStatsHTML(item, { compare: true }) + '</div>'
           : '';
 
         const actionsHtml =
-          '<div class="eq-tile-actions" onclick="event.stopPropagation()">' +
-            '<div class="eq-tile-act-name ' + rarityClass + '">' + itemName + '</div>' +
-            '<div class="eq-tile-act-type">' + itemType + qualityTag + (ilvl ? ' · iLvl ' + ilvl : '') + '</div>' +
+          '<div class="rpg-tile-actions" onclick="event.stopPropagation()">' +
+            '<div class="rpg-tile-act-name ' + rarityClass + '">' + itemName + '</div>' +
+            '<div class="rpg-tile-act-type">' + itemType + qualityTag + (ilvl ? ' · iLvl ' + ilvl : '') + '</div>' +
             popStats +
             (isEquip ? '<button class="btn" onclick="compareInventoryItem(' + absoluteIndex + ')">Compare</button>' : '') +
             containerBtn +
@@ -24343,13 +24743,13 @@ async function exportSlotsToFile(options = {}) {
           '</div>';
 
         const tile = document.createElement('div');
-        tile.className = 'eq-item-tile ' + rarityBorderClass;
+        tile.className = 'rpg-item-tile ' + rarityBorderClass;
         tile.dataset.invIndex = String(absoluteIndex);
         tile.innerHTML =
           compareBadge +
           flagBadges +
-          '<div class="eq-tile-icon">' + tileIcon + '</div>' +
-          '<div class="eq-tile-name ' + rarityClass + '">' + itemName + '</div>' +
+          '<div class="rpg-tile-icon">' + tileIcon + '</div>' +
+          '<div class="rpg-tile-name ' + rarityClass + '">' + itemName + '</div>' +
           socketDotsHtml +
           qtyBadge +
           actionsHtml;
@@ -24369,7 +24769,7 @@ async function exportSlotsToFile(options = {}) {
         : 0;
       for (let i = 0; i < emptyCount; i++) {
         const empty = document.createElement('div');
-        empty.className = 'eq-empty-slot';
+        empty.className = 'rpg-empty-slot';
         empty.textContent = 'Empty Slot';
         el.appendChild(empty);
       }
@@ -24437,7 +24837,7 @@ async function exportSlotsToFile(options = {}) {
       // Build fresh content div
       const div = document.createElement('div');
       div.id = 'shop-section-' + section;
-      div.className = 'eq-bag-grid';
+      div.className = 'rpg-bag-grid';
       if (section === 'sell' || section === 'lottery' || section === 'pachinko') {
         div.className = '';
         div.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:4px 0';
@@ -24459,7 +24859,7 @@ async function exportSlotsToFile(options = {}) {
         const sellPrice = getPotionSellPrice(SHOP_BASE_PRICES[basePriceKey]);
         const owned = Math.max(0, Number(char[ownedKey] || 0));
         const dis = owned > 0 ? '' : 'disabled';
-        return `<div class="eq-item-card"><div class="eq-item-name">${name}</div><div class="eq-item-type">${effectText}</div><div class="eq-item-bonus">Buy: ${price}g · Sell: ${sellPrice}g · Owned: ${owned}</div><div class="eq-item-actions compact"><button class="btn" onclick="${buyOneHandler}()">Buy</button><button class="btn" onclick="${buyTenHandler}()">Buy ×10</button><button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},false)" ${dis}>Sell 1</button><button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},true)" ${dis}>Sell All</button></div></div>`;
+        return `<div class="rpg-item-card"><div class="rpg-item-name">${name}</div><div class="rpg-item-type">${effectText}</div><div class="rpg-item-bonus">Buy: ${price}g · Sell: ${sellPrice}g · Owned: ${owned}</div><div class="rpg-item-actions compact"><button class="btn" onclick="${buyOneHandler}()">Buy</button><button class="btn" onclick="${buyTenHandler}()">Buy ×10</button><button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},false)" ${dis}>Sell 1</button><button class="btn" onclick="sellPotionStock('${ownedKey}','${name}',SHOP_BASE_PRICES.${basePriceKey},true)" ${dis}>Sell All</button></div></div>`;
       };
       if (section === 'potions') {
         let html = '<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.06em;padding:2px 0">❤ Healing Potions</div>';
@@ -24482,18 +24882,19 @@ async function exportSlotsToFile(options = {}) {
       } else if (section === 'gear') {
         const steelPrice = getMerchantPrice(SHOP_BASE_PRICES.steelLongsword);
         const chestPrice = getMerchantPrice(SHOP_BASE_PRICES.knightChestplate);
-        let html = `<div class="eq-item-card"><div class="eq-item-name">Steel Longsword</div><div class="eq-item-type">Weapon</div><div class="eq-item-bonus">+12 ATK · ${steelPrice}g</div><div class="eq-item-actions"><button class="btn" onclick="buyShopItem('Steel Longsword')">Buy</button></div></div><div class="eq-item-card"><div class="eq-item-name">Knight Chestplate</div><div class="eq-item-type">Armor</div><div class="eq-item-bonus">+18 DEF · +80 HP · ${chestPrice}g</div><div class="eq-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Knight Chestplate')}</div><div class="eq-item-actions"><button class="btn" onclick="buyShopItem('Knight Chestplate')" ${meetsFactionGate(SHOP_FACTION_GATES['Knight Chestplate'])?'':'disabled'}>Buy</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-rare">Recipe Scroll</div><div class="eq-item-type">Reveals one random unknown Runeword recipe.</div><div class="eq-item-bonus">${getMerchantPrice(PHASE5.recipeScrollPrice)}g</div><div class="eq-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Recipe Scroll')}</div><div class="eq-item-actions"><button class="btn" onclick="buyRecipeScroll()" ${meetsFactionGate(SHOP_FACTION_GATES['Recipe Scroll'])?'':'disabled'}>Buy &amp; Read</button></div></div>`;
-        Object.entries(CONTAINER_ITEMS).filter(([_,d])=>!d.starter).forEach(([name,data])=>{ html+=`<div class="eq-item-card"><div class="eq-item-name">${name}</div><div class="eq-item-type">Container (${data.slots} slots)</div><div class="eq-item-bonus">${getMerchantPrice(data.cost)}g</div><div class="eq-item-actions"><button class="btn" onclick="buyContainer('${name}')">Buy</button></div></div>`; });
+        let html = `<div class="rpg-item-card"><div class="rpg-item-name">Steel Longsword</div><div class="rpg-item-type">Weapon</div><div class="rpg-item-bonus">+12 ATK · ${steelPrice}g</div><div class="rpg-item-actions"><button class="btn" onclick="buyShopItem('Steel Longsword')">Buy</button></div></div><div class="rpg-item-card"><div class="rpg-item-name">Knight Chestplate</div><div class="rpg-item-type">Armor</div><div class="rpg-item-bonus">+18 DEF · +80 HP · ${chestPrice}g</div><div class="rpg-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Knight Chestplate')}</div><div class="rpg-item-actions"><button class="btn" onclick="buyShopItem('Knight Chestplate')" ${meetsFactionGate(SHOP_FACTION_GATES['Knight Chestplate'])?'':'disabled'}>Buy</button></div></div><div class="rpg-item-card"><div class="rpg-item-name rarity-rare">Recipe Scroll</div><div class="rpg-item-type">Reveals one random unknown Runeword recipe.</div><div class="rpg-item-bonus">${getMerchantPrice(PHASE5.recipeScrollPrice)}g</div><div class="rpg-item-type" style="font-size:10px;color:var(--text-secondary)">${getShopGateLabel('Recipe Scroll')}</div><div class="rpg-item-actions"><button class="btn" onclick="buyRecipeScroll()" ${meetsFactionGate(SHOP_FACTION_GATES['Recipe Scroll'])?'':'disabled'}>Buy &amp; Read</button></div></div>`;
+        Object.entries(CONTAINER_ITEMS).filter(([_,d])=>!d.starter).forEach(([name,data])=>{ html+=`<div class="rpg-item-card"><div class="rpg-item-name">${name}</div><div class="rpg-item-type">Container (${data.slots} slots)</div><div class="rpg-item-bonus">${getMerchantPrice(data.cost)}g</div><div class="rpg-item-actions"><button class="btn" onclick="buyContainer('${name}')">Buy</button></div></div>`; });
         container.innerHTML = html;
       } else if (section === 'services') {
         const mysticCost = Math.max(250, Math.floor(150+char.level*50));
         const nameTokenCost = getMerchantPrice(SHOP_BASE_PRICES.nameChangeToken);
         const raceTokenCost = getMerchantPrice(SHOP_BASE_PRICES.raceChangeToken);
+        const appearanceTokenCost = getMerchantPrice(SHOP_BASE_PRICES.appearanceChangeToken);
         const tributeCost = (typeof getTributeCost==='function') ? getTributeCost() : PHASE6.tributeBaseGold;
         const tributeLeft = (typeof getTributeRemainingToday==='function') ? getTributeRemainingToday() : PHASE6.tributeDailyCap;
         const tributeAtMax = Number(char.faction||0)>=PHASE6.tributeFactionMax;
         const tributeDisabled = (tributeLeft<=0)||tributeAtMax||(char.gold||0)<tributeCost;
-        container.innerHTML = `<div class="eq-item-card"><div class="eq-item-name">Crafting Bench</div><div class="eq-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Epic ${char.crafting.shards.epic}</div><div class="eq-item-bonus">Salvage gear &amp; reroll target slot using shards.</div><div class="eq-item-actions"><button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button></div><div class="eq-item-actions compact" style="margin-top:6px"><select id="craft-reroll-slot" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)"><option value="weapon">Weapon</option><option value="chest">Chest</option><option value="legs">Legs</option><option value="feet">Feet</option><option value="offhand">Offhand</option><option value="charm">Charm</option></select><button class="btn" onclick="craftTargetedRerollFromUI()">Targeted Reroll</button></div><div class="eq-item-bonus" style="margin-top:6px">Cost: 10 Common + 6 Magic + 2 Rare + 120g</div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Occultist Reforge</div><div class="eq-item-type">Rerolls one random non-epic gear piece in your inventory.</div><div class="eq-item-bonus">${occultistPrice}g</div><div class="eq-item-actions"><button class="btn" onclick="rerollRandomInventoryItem()">Reforge</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-rare">Mystic Reforge</div><div class="eq-item-type">Pick one stat on an item and reroll just that stat — as many times as you like. Cost climbs per reroll, then caps.</div><div class="eq-item-bonus">From ${getMerchantPrice(REFORGE_CONFIG.base + Math.floor((char.level||1)*REFORGE_CONFIG.levelPerPoint)).toLocaleString()}g</div><div class="eq-item-actions"><button class="btn active" onclick="openReforgeModal()">Reforge a Stat</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-epic">Mystic Chest</div><div class="eq-item-type">Pay to open a mysterious chest — chance for runes, shards, or gear.</div><div class="eq-item-bonus">${mysticCost}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseMysticChest()">Open</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-magic">Faction Tribute</div><div class="eq-item-type">Offer gold for +${PHASE6.tributeFactionPerDonation} faction (daily cap ${PHASE6.tributeDailyCap}).</div><div class="eq-item-bonus">${tributeCost}g · Remaining today: ${tributeLeft}${tributeAtMax?' · MAXED':''}</div><div class="eq-item-actions"><button class="btn${tributeDisabled?'':' active'}" onclick="donateFactionTribute()" ${tributeDisabled?'disabled':''}>Donate</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Name Change Token</div><div class="eq-item-type">Permanently change your character's name. Current: ${char.name}</div><div class="eq-item-bonus">${nameTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseNameChangeToken()" ${(char.gold||0)>=nameTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div><div class="eq-item-card"><div class="eq-item-name rarity-legendary">Race Change Token</div><div class="eq-item-type">Change your race. Must be compatible with ${char.cls}. Current: ${char.race}</div><div class="eq-item-bonus">${raceTokenCost.toLocaleString()}g</div><div class="eq-item-actions"><button class="btn" onclick="purchaseRaceChangeToken()" ${(char.gold||0)>=raceTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div>`;
+        container.innerHTML = `<div class="rpg-item-card"><div class="rpg-item-name">Crafting Bench</div><div class="rpg-item-type">Shards: Common ${char.crafting.shards.common} · Magic ${char.crafting.shards.magic} · Rare ${char.crafting.shards.rare} · Epic ${char.crafting.shards.epic}</div><div class="rpg-item-bonus">Salvage gear &amp; reroll target slot using shards.</div><div class="rpg-item-actions"><button class="btn" onclick="salvageInventoryGear()">Salvage Gear</button></div><div class="rpg-item-actions compact" style="margin-top:6px"><select id="craft-reroll-slot" style="font-size:11px;padding:5px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)"><option value="weapon">Weapon</option><option value="chest">Chest</option><option value="legs">Legs</option><option value="feet">Feet</option><option value="offhand">Offhand</option><option value="charm">Charm</option></select><button class="btn" onclick="craftTargetedRerollFromUI()">Targeted Reroll</button></div><div class="rpg-item-bonus" style="margin-top:6px">Cost: 10 Common + 6 Magic + 2 Rare + 120g</div></div><div class="rpg-item-card"><div class="rpg-item-name rarity-magic">Occultist Reforge</div><div class="rpg-item-type">Rerolls one random non-epic gear piece in your inventory.</div><div class="rpg-item-bonus">${occultistPrice}g</div><div class="rpg-item-actions"><button class="btn" onclick="rerollRandomInventoryItem()">Reforge</button></div></div><div class="rpg-item-card"><div class="rpg-item-name rarity-rare">Mystic Reforge</div><div class="rpg-item-type">Pick one stat on an item and reroll just that stat — as many times as you like. Cost climbs per reroll, then caps.</div><div class="rpg-item-bonus">From ${getMerchantPrice(REFORGE_CONFIG.base + Math.floor((char.level||1)*REFORGE_CONFIG.levelPerPoint)).toLocaleString()}g</div><div class="rpg-item-actions"><button class="btn active" onclick="openReforgeModal()">Reforge a Stat</button></div></div><div class="rpg-item-card"><div class="rpg-item-name rarity-epic">Mystic Chest</div><div class="rpg-item-type">Pay to open a mysterious chest — chance for runes, shards, or gear.</div><div class="rpg-item-bonus">${mysticCost}g</div><div class="rpg-item-actions"><button class="btn" onclick="purchaseMysticChest()">Open</button></div></div><div class="rpg-item-card"><div class="rpg-item-name rarity-magic">Faction Tribute</div><div class="rpg-item-type">Offer gold for +${PHASE6.tributeFactionPerDonation} faction (daily cap ${PHASE6.tributeDailyCap}).</div><div class="rpg-item-bonus">${tributeCost}g · Remaining today: ${tributeLeft}${tributeAtMax?' · MAXED':''}</div><div class="rpg-item-actions"><button class="btn${tributeDisabled?'':' active'}" onclick="donateFactionTribute()" ${tributeDisabled?'disabled':''}>Donate</button></div></div><div class="rpg-item-card"><div class="rpg-item-name rarity-magic">Change Appearance Token</div><div class="rpg-item-type">Restyle your hero — hair, beard, eyes, skin tone, and clothing colors.</div><div class="rpg-item-bonus">${appearanceTokenCost.toLocaleString()}g</div><div class="rpg-item-actions"><button class="btn" onclick="purchaseAppearanceChangeToken()" ${(char.gold||0)>=appearanceTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div><div class="rpg-item-card"><div class="rpg-item-name rarity-legendary">Name Change Token</div><div class="rpg-item-type">Permanently change your character's name. Current: ${char.name}</div><div class="rpg-item-bonus">${nameTokenCost.toLocaleString()}g</div><div class="rpg-item-actions"><button class="btn" onclick="purchaseNameChangeToken()" ${(char.gold||0)>=nameTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div><div class="rpg-item-card"><div class="rpg-item-name rarity-legendary">Race Change Token</div><div class="rpg-item-type">Change your race. Must be compatible with ${char.cls}. Current: ${char.race}</div><div class="rpg-item-bonus">${raceTokenCost.toLocaleString()}g</div><div class="rpg-item-actions"><button class="btn" onclick="purchaseRaceChangeToken()" ${(char.gold||0)>=raceTokenCost?'':'disabled'}>Purchase &amp; Use</button></div></div>`;
       } else if (section === 'lottery') {
         container.style.cssText = 'display:flex;flex-direction:column;gap:8px;padding:4px 0';
         renderLotterySection(container);
@@ -24679,18 +25080,18 @@ async function exportSlotsToFile(options = {}) {
         const canAfford = (char.gold || 0) >= ticket.cost;
         const rarityColorMap = { Common: '#aaa', Uncommon: '#4ade80', Rare: '#60a5fa', Epic: '#c084fc', Legendary: '#fb923c' };
         const rc = rarityColorMap[ticket.rarity] || '#aaa';
-        html += `<div class="eq-item-card" style="position:relative;overflow:hidden">
+        html += `<div class="rpg-item-card" style="position:relative;overflow:hidden">
           <div style="position:absolute;inset:0;opacity:0.12;background:${ticket.bg};border-radius:inherit;pointer-events:none"></div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
             <span style="font-size:28px">${ticket.emoji}</span>
             <div>
-              <div class="eq-item-name" style="color:${ticket.color}">${ticket.name}</div>
+              <div class="rpg-item-name" style="color:${ticket.color}">${ticket.name}</div>
               <div style="font-size:10px;font-weight:700;color:${rc};text-transform:uppercase;letter-spacing:.06em">${ticket.rarity}</div>
             </div>
           </div>
-          <div class="eq-item-type">${ticket.desc}</div>
-          <div class="eq-item-bonus">Cost: ${ticket.cost.toLocaleString()}g</div>
-          <div class="eq-item-actions">
+          <div class="rpg-item-type">${ticket.desc}</div>
+          <div class="rpg-item-bonus">Cost: ${ticket.cost.toLocaleString()}g</div>
+          <div class="rpg-item-actions">
             <button class="btn${canAfford ? ' active' : ''}" onclick="buyScratchTicket('${ticket.id}')" ${!canAfford ? 'disabled title="Not enough gold"' : ''}>
               🎟 Buy & Scratch
             </button>
@@ -25166,18 +25567,18 @@ async function exportSlotsToFile(options = {}) {
         // Top line win = best 5-of-a-kind paying symbol × line bet
         const topPay = Math.max(...m.symbols.map(s => (s.pays && s.pays['5']) || 0));
         const showcase = m.symbols.slice(0, 5).map(s => s.sym).join('');
-        html += `<div class="eq-item-card" style="position:relative;overflow:hidden;border-color:${m.color}44">
+        html += `<div class="rpg-item-card" style="position:relative;overflow:hidden;border-color:${m.color}44">
           <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,${m.glowColor},transparent 70%);pointer-events:none"></div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
             <span style="font-size:30px">${m.emoji}</span>
             <div>
-              <div class="eq-item-name" style="color:${m.color}">${m.name}</div>
+              <div class="rpg-item-name" style="color:${m.color}">${m.name}</div>
               <div style="font-size:10px;color:var(--text-secondary)">${SLOT_PAYLINES.length} lines · ${totalBet.toLocaleString()}g/spin · top line ×${topPay.toLocaleString()}</div>
             </div>
           </div>
-          <div class="eq-item-type">${m.desc}</div>
+          <div class="rpg-item-type">${m.desc}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;font-size:20px;letter-spacing:2px">${showcase}</div>
-          <div class="eq-item-actions">
+          <div class="rpg-item-actions">
             <button class="btn${canAfford ? ' active' : ''}"
               onclick="openSlotMachine('${m.id}')"
               ${!canAfford ? 'disabled title="Not enough gold"' : ''}>
@@ -25728,20 +26129,20 @@ async function exportSlotsToFile(options = {}) {
       PACHINKO_BOARDS.forEach(board => {
         const locked = false;
         const canAfford = gold >= board.cost;
-        html += `<div class="eq-item-card" style="position:relative;overflow:hidden;border-color:${board.color}44">
+        html += `<div class="rpg-item-card" style="position:relative;overflow:hidden;border-color:${board.color}44">
           <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,${board.glowColor},transparent 70%);pointer-events:none"></div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
             <span style="font-size:30px">${board.emoji}</span>
             <div>
-              <div class="eq-item-name" style="color:${board.color}">${board.name}</div>
+              <div class="rpg-item-name" style="color:${board.color}">${board.name}</div>
               <div style="font-size:10px;color:var(--text-secondary)">${board.cost.toLocaleString()}g per drop</div>
             </div>
           </div>
-          <div class="eq-item-type">${board.desc}</div>
+          <div class="rpg-item-type">${board.desc}</div>
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin:8px 0">
             ${board.buckets.map(b=>`<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${b.color}22;color:${b.color};border:1px solid ${b.color}44;font-weight:700">${b.label}</span>`).join('')}
           </div>
-          <div class="eq-item-actions">
+          <div class="rpg-item-actions">
             <button class="btn${canAfford ? ' active' : ''}"
               onclick="launchPachinko('${board.id}')"
               ${!canAfford ? 'disabled title="Not enough gold"' : ''}>
@@ -27712,39 +28113,39 @@ async function exportSlotsToFile(options = {}) {
         maxSlots + ' gem' + (maxSlots === 1 ? '' : 's') + ' active · These are cast in combat · Raise Arcane Capacity in AA for more slots'));
 
       const gemGrid = document.createElement('div');
-      gemGrid.className = 'eq-bag-grid';
+      gemGrid.className = 'rpg-bag-grid';
       gemGrid.style.marginBottom = '18px';
 
       for (let i = 0; i < maxSlots; i++) {
         const sp = getSpellById(char.memorizedSpells[i]);
         const card = document.createElement('div');
-        card.className = 'eq-item-card';
+        card.className = 'rpg-item-card';
         if (sp) {
           const cd = getSpellCooldownRemaining(sp.id);
           const statLine = getSpellStatLine(sp);
           card.innerHTML =
-            '<div class="eq-item-inner" style="border-left:3px solid ' + getSpellKindMeta(sp).color + ';padding-left:9px">'
+            '<div class="rpg-item-inner" style="border-left:3px solid ' + getSpellKindMeta(sp).color + ';padding-left:9px">'
             + '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px">'
             + '  <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary)">Gem ' + (i + 1) + '</div>'
             + '  ' + buildSpellKindBadge(sp)
             + '</div>'
-            + '<div class="eq-item-name" style="font-size:13px">' + sp.name + '</div>'
-            + '<div class="eq-item-type" style="margin-top:3px">' + sp.desc + '</div>'
+            + '<div class="rpg-item-name" style="font-size:13px">' + sp.name + '</div>'
+            + '<div class="rpg-item-type" style="margin-top:3px">' + sp.desc + '</div>'
             + (statLine ? '<div style="margin-top:5px;font-size:11px;font-weight:600;color:' + getSpellKindMeta(sp).color + '">' + statLine + '</div>' : '')
             + '<div style="display:flex;gap:10px;margin-top:5px;font-size:10px;color:var(--text-secondary)">'
             + '  <span>💧 ' + sp.mp + ' MP</span>'
             + '</div>'
             + buildCooldownBar(sp.cooldown, cd)
             + '</div>'
-            + '<div class="eq-item-actions compact">'
+            + '<div class="rpg-item-actions compact">'
             + '  <button class="btn" onclick="clearMemorizedSpell(' + i + ')">Remove from Gem</button>'
             + '</div>';
         } else {
           card.innerHTML =
-            '<div class="eq-item-inner" style="border-left:3px solid var(--border);padding-left:9px;opacity:.6">'
+            '<div class="rpg-item-inner" style="border-left:3px solid var(--border);padding-left:9px;opacity:.6">'
             + '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-secondary);margin-bottom:4px">Gem ' + (i + 1) + '</div>'
-            + '<div class="eq-item-name" style="color:var(--text-secondary)">Empty Slot</div>'
-            + '<div class="eq-item-type">Assign a spell from Known Spells below</div>'
+            + '<div class="rpg-item-name" style="color:var(--text-secondary)">Empty Slot</div>'
+            + '<div class="rpg-item-type">Assign a spell from Known Spells below</div>'
             + '</div>';
         }
         gemGrid.appendChild(card);
@@ -27757,11 +28158,11 @@ async function exportSlotsToFile(options = {}) {
       el.appendChild(section('Known Spells', 'Spells you own — assign them to gems to use in combat'));
 
       const knownCards = document.createElement('div');
-      knownCards.className = 'eq-bag-grid';
+      knownCards.className = 'rpg-bag-grid';
       knownCards.style.marginBottom = '18px';
 
       if (!char.knownSpells.length) {
-        knownCards.innerHTML = '<div class="eq-empty-bag" style="padding:12px">No spells learned yet — buy some from the Spell Vendor below.</div>';
+        knownCards.innerHTML = '<div class="rpg-empty-bag" style="padding:12px">No spells learned yet — buy some from the Spell Vendor below.</div>';
       }
 
       char.knownSpells.forEach(spellId => {
@@ -27782,22 +28183,22 @@ async function exportSlotsToFile(options = {}) {
         for (let i = 0; i < maxSlots; i++) opts += '<option value="' + i + '">Gem ' + (i + 1) + '</option>';
 
         const card = document.createElement('div');
-        card.className = 'eq-item-card';
+        card.className = 'rpg-item-card';
         card.innerHTML =
-          '<div class="eq-item-inner" style="border-left:3px solid ' + km.color + ';padding-left:9px">'
+          '<div class="rpg-item-inner" style="border-left:3px solid ' + km.color + ';padding-left:9px">'
           + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px">'
           + '  ' + buildSpellKindBadge(sp)
           + '  ' + gemBadge
           + '</div>'
-          + '<div class="eq-item-name" style="font-size:13px">' + sp.name + '</div>'
-          + '<div class="eq-item-type" style="margin-top:3px">' + sp.desc + '</div>'
+          + '<div class="rpg-item-name" style="font-size:13px">' + sp.name + '</div>'
+          + '<div class="rpg-item-type" style="margin-top:3px">' + sp.desc + '</div>'
           + (statLine ? '<div style="margin-top:5px;font-size:11px;font-weight:600;color:' + km.color + '">' + statLine + '</div>' : '')
           + '<div style="display:flex;gap:10px;margin-top:5px;font-size:10px;color:var(--text-secondary)">'
           + '  <span>💧 ' + sp.mp + ' MP</span>'
           + '</div>'
           + buildCooldownBar(sp.cooldown, cd)
           + '</div>'
-          + '<div class="eq-item-actions compact">'
+          + '<div class="rpg-item-actions compact">'
           + '  <select id="' + selId + '" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary)">' + opts + '</select>'
           + '  <button class="btn spell-mem-btn" data-sel="' + selId + '" data-spell="' + sp.id + '">Assign to Gem</button>'
           + '</div>';
@@ -27812,7 +28213,7 @@ async function exportSlotsToFile(options = {}) {
       el.appendChild(section('Spell Vendor', 'Spells available for your class — some require level or faction'));
 
       const vendorCards = document.createElement('div');
-      vendorCards.className = 'eq-bag-grid';
+      vendorCards.className = 'rpg-bag-grid';
 
       const allClassSpells = getClassSpellbook(char.cls);
       const knownSet = new Set(char.knownSpells);
@@ -27822,23 +28223,23 @@ async function exportSlotsToFile(options = {}) {
         if (knownSet.has(sp.id)) return;
 
         const card = document.createElement('div');
-        card.className = 'eq-item-card';
+        card.className = 'rpg-item-card';
 
         if (sp.epic) {
           const km = getSpellKindMeta(sp);
           const statLine = getSpellStatLine(sp);
           card.innerHTML =
-            '<div class="eq-item-inner" style="border-left:3px solid #a855f7;padding-left:9px">'
+            '<div class="rpg-item-inner" style="border-left:3px solid #a855f7;padding-left:9px">'
             + '<div style="margin-bottom:4px">'
             + '  <span style="font-size:10px;font-weight:700;color:#a855f7;background:#a855f718;border:1px solid #a855f740;border-radius:3px;padding:1px 6px">⭐ Epic Spell</span>'
             + '  ' + buildSpellKindBadge(sp)
             + '</div>'
-            + '<div class="eq-item-name rarity-epic" style="font-size:13px">' + sp.name + '</div>'
-            + '<div class="eq-item-type" style="margin-top:3px">' + sp.desc + '</div>'
+            + '<div class="rpg-item-name rarity-epic" style="font-size:13px">' + sp.name + '</div>'
+            + '<div class="rpg-item-type" style="margin-top:3px">' + sp.desc + '</div>'
             + (statLine ? '<div style="margin-top:5px;font-size:11px;font-weight:600;color:' + km.color + '">' + statLine + '</div>' : '')
             + '<div style="margin-top:5px;font-size:11px;color:#eab308">🏆 Complete your Class Epic Quest to unlock</div>'
             + '</div>'
-            + '<div class="eq-item-actions compact"><button class="btn" disabled>Quest Reward</button></div>';
+            + '<div class="rpg-item-actions compact"><button class="btn" disabled>Quest Reward</button></div>';
           vendorCards.appendChild(card);
           return;
         }
@@ -27858,14 +28259,14 @@ async function exportSlotsToFile(options = {}) {
         if (canBuyByLevel && canBuyByFaction && !canBuy) lockReasons.push('Need ' + fmt(price) + 'g');
 
         card.innerHTML =
-          '<div class="eq-item-inner" style="border-left:3px solid ' + (canBuy ? km.color : 'var(--border)') + ';padding-left:9px;' + (!canBuyByLevel || !canBuyByFaction ? 'opacity:.65' : '') + '">'
+          '<div class="rpg-item-inner" style="border-left:3px solid ' + (canBuy ? km.color : 'var(--border)') + ';padding-left:9px;' + (!canBuyByLevel || !canBuyByFaction ? 'opacity:.65' : '') + '">'
           + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap">'
           + '  ' + buildSpellKindBadge(sp)
           + (levelReq > 1 ? '<span style="font-size:10px;color:var(--text-secondary);font-weight:600">Lv ' + levelReq + '</span>' : '')
           + (factionReq > 0 ? '<span style="font-size:10px;color:var(--text-secondary);font-weight:600">Faction ' + factionReq + '+</span>' : '')
           + '</div>'
-          + '<div class="eq-item-name" style="font-size:13px">' + sp.name + '</div>'
-          + '<div class="eq-item-type" style="margin-top:3px">' + sp.desc + '</div>'
+          + '<div class="rpg-item-name" style="font-size:13px">' + sp.name + '</div>'
+          + '<div class="rpg-item-type" style="margin-top:3px">' + sp.desc + '</div>'
           + (statLine ? '<div style="margin-top:5px;font-size:11px;font-weight:600;color:' + km.color + '">' + statLine + '</div>' : '')
           + '<div style="display:flex;gap:10px;margin-top:5px;font-size:10px;color:var(--text-secondary)">'
           + '  <span>💧 ' + sp.mp + ' MP</span>'
@@ -27873,7 +28274,7 @@ async function exportSlotsToFile(options = {}) {
           + '</div>'
           + (lockReasons.length ? '<div style="margin-top:5px;font-size:10px;color:#ef4444">🔒 ' + lockReasons.join(' · ') + '</div>' : '')
           + '</div>'
-          + '<div class="eq-item-actions compact">'
+          + '<div class="rpg-item-actions compact">'
           + '  <button class="btn spell-buy-btn' + (canBuy ? ' active' : '') + '" data-spell="' + sp.id + '" ' + (canBuy ? '' : 'disabled') + '>'
           + (canBuy ? '✓ Buy — ' + fmt(price) + 'g' : fmt(price) + 'g') + '</button>'
           + '</div>';
@@ -27881,7 +28282,7 @@ async function exportSlotsToFile(options = {}) {
       });
 
       if (!vendorCards.children.length) {
-        vendorCards.innerHTML = '<div class="eq-empty-bag" style="padding:12px">All spells learned for your class!</div>';
+        vendorCards.innerHTML = '<div class="rpg-empty-bag" style="padding:12px">All spells learned for your class!</div>';
       }
 
       el.appendChild(vendorCards);
@@ -31904,6 +32305,93 @@ async function exportSlotsToFile(options = {}) {
       autoSave();
     }
 
+    // ── Appearance Change Token ──
+    let appearanceEditorState = null;
+
+    function purchaseAppearanceChangeToken() {
+      if (!char) return;
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.appearanceChangeToken);
+      if ((char.gold || 0) < cost) {
+        log('You need ' + cost.toLocaleString() + ' gold for a Change Appearance Token.', 'info');
+        return;
+      }
+      openAppearanceEditor();
+    }
+
+    function openAppearanceEditor() {
+      if (!char) return;
+      const race = char.race || 'Human';
+      appearanceEditorState = Object.assign(
+        getDefaultAppearance(race),
+        char.appearance || {}
+      );
+      const modal = document.getElementById('appearance-edit-modal');
+      if (!modal) return;
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.appearanceChangeToken);
+      const sub = document.getElementById('appearance-edit-subtitle');
+      if (sub) sub.textContent = char.race + ' · ' + char.cls + ' — Cost: ' + cost.toLocaleString() + 'g';
+      modal.classList.add('open');
+      renderAppearanceEditorForm();
+      updateAppearanceEditorPreview();
+    }
+
+    function closeAppearanceEditor() {
+      const modal = document.getElementById('appearance-edit-modal');
+      if (modal) modal.classList.remove('open');
+      appearanceEditorState = null;
+    }
+
+    function _appearanceEditorCtx() {
+      return {
+        race: (char && char.race) || 'Human',
+        state: appearanceEditorState,
+        optionsId: 'appearance-edit-options',
+        previewId: 'appearance-edit-preview',
+        previewUid: 'edit'
+      };
+    }
+
+    function renderAppearanceEditorForm() {
+      if (!appearanceEditorState) return;
+      renderAppearanceControls(_appearanceEditorCtx());
+    }
+
+    function updateAppearanceEditorPreview() {
+      if (!appearanceEditorState) return;
+      updateAppearancePreviewFor(_appearanceEditorCtx());
+    }
+
+    function randomizeAppearanceEditor() {
+      if (!char) return;
+      appearanceEditorState = randomizeAppearanceState(char.race || 'Human', appearanceEditorState);
+      renderAppearanceEditorForm();
+      updateAppearanceEditorPreview();
+    }
+
+    function resetAppearanceEditor() {
+      if (!char) return;
+      appearanceEditorState = getDefaultAppearance(char.race || 'Human');
+      renderAppearanceEditorForm();
+      updateAppearanceEditorPreview();
+    }
+
+    function confirmAppearanceEditor() {
+      if (!char || !appearanceEditorState) return;
+      const cost = getMerchantPrice(SHOP_BASE_PRICES.appearanceChangeToken);
+      if ((char.gold || 0) < cost) {
+        log('You need ' + cost.toLocaleString() + ' gold for a Change Appearance Token.', 'info');
+        return;
+      }
+      if (!window.confirm('Pay ' + cost.toLocaleString() + ' gold to update your appearance?')) return;
+      char.gold -= cost;
+      char.appearance = Object.assign({}, appearanceEditorState);
+      log('The Glamour-weaver restyles you to your liking.', 'lvl');
+      if (typeof showToast === 'function') showToast('Appearance updated.', 'success', 2400);
+      closeAppearanceEditor();
+      renderAll();
+      autoSave();
+    }
+
     function buyContainer(name) {
       const data = CONTAINER_ITEMS[name];
       if (!data || data.starter) {
@@ -32152,7 +32640,7 @@ async function exportSlotsToFile(options = {}) {
       }
 
       const classCount = {}, raceCount = {};
-      let totalKills = 0, totalNamedKills = 0, totalEliteKills = 0, totalDeaths = 0, totalGoldEarned = 0, totalGoldHeld = 0, totalBossKills = 0;
+      let totalKills = 0, totalNamedKills = 0, totalEliteKills = 0, totalDeaths = 0, totalGoldEarned = 0, totalBossKills = 0;
       let maxLevel = 0, maxPower = 0, maxPowerName = '';
 
       allChars.forEach(c => {
@@ -32165,7 +32653,6 @@ async function exportSlotsToFile(options = {}) {
         totalEliteKills  += Number(c.eliteKills || 0);
         totalBossKills   += Number(c.bossKills || 0);
         totalDeaths      += Number(c.deaths || 0);
-        totalGoldHeld    += Number(c.gold || 0);
         totalGoldEarned  += Math.max(Number(c.goldEarned || 0), Number(c.gold || 0));
         const lv = Number(c.level || 1);
         if (lv > maxLevel) maxLevel = lv;
@@ -32210,7 +32697,6 @@ async function exportSlotsToFile(options = {}) {
         + statBox('Named Kills', totalNamedKills, '#f97316')
         + statBox('Boss Kills', totalBossKills, '#a855f7')
         + statBox('Total Deaths', totalDeaths, '#64748b')
-        + statBox('Current Gold', totalGoldHeld, '#eab308')
         + statBox('Gold Earned', totalGoldEarned, '#f59e0b')
         + '</div>';
 
@@ -37016,7 +37502,7 @@ async function exportSlotsToFile(options = {}) {
         ['bank-inv-list','bank-list'].forEach(id => {
           const root = document.getElementById(id); if (!root) return;
           Array.from(root.children).forEach(card => {
-            if (!card.classList.contains('eq-item-card')) return;
+            if (!card.classList.contains('rpg-item-card')) return;
             const text = card.textContent.toLowerCase();
             const rarityHit = window.__eqBankFilter.rarity === 'all' || card.innerHTML.toLowerCase().includes('rarity-' + window.__eqBankFilter.rarity);
             const qHit = !window.__eqBankFilter.q || text.includes(window.__eqBankFilter.q);
@@ -38087,24 +38573,49 @@ async function exportSlotsToFile(options = {}) {
           } catch (e) { console.warn('weekly leaderboard publish failed', e); }
         },
         normalizeWeeklyRows(rows) {
-          return (rows || []).map(r => ({
-            user_id: r.user_id,
-            name: r.display || 'Adventurer',
-            race: '',
-            cls: '',
-            class: '',
-            level: Number(r.level || 1),
-            prestige: 0,
-            power: Number(r.xp_this_week || 0) + Number(r.gold_earned_this_week || 0) + Number(r.mobs_killed_this_week || 0) * 10 + Number(r.dungeons_cleared_this_week || 0) * 250,
-            hardcore: false,
-            atk: 0, def: 0, hp: 0, mp: 0, aa: 0,
-            gold: Number(r.gold_earned_this_week || 0),
-            kills: Number(r.mobs_killed_this_week || 0),
-            named_kills: 0, elite_kills: 0, boss_kills: 0, deaths: 0,
-            gold_earned: Number(r.gold_earned_this_week || 0),
-            weekly_xp: Number(r.xp_this_week || 0),
-            isYou: currentUser && r.user_id === currentUser.id
-          }));
+          // For the signed-in user's own rows, enrich with the local character's
+          // lifetime stats so the same character renders consistent
+          // race/class/ATK/DEF/HP/MP/AA chips on both Lifetime and Weekly views.
+          // The headline (kills/gold/power) still reflects this week's progress.
+          const localStatsBySlot = {};
+          if (currentUser && typeof computeLeaderboardStats === 'function' && Array.isArray(slots)) {
+            for (let i = 0; i < slots.length; i++) {
+              const c = (i === activeSlot && char) ? char : slots[i];
+              if (c && typeof c === 'object') {
+                try { localStatsBySlot[i] = computeLeaderboardStats(c); } catch (e) {}
+              }
+            }
+          }
+          return (rows || []).map(r => {
+            const mine = currentUser && r.user_id === currentUser.id;
+            const local = mine ? localStatsBySlot[Number(r.character_slot)] : null;
+            const weeklyKills = Number(r.mobs_killed_this_week || 0);
+            const weeklyGold = Number(r.gold_earned_this_week || 0);
+            const weeklyXp = Number(r.xp_this_week || 0);
+            const weeklyDungeons = Number(r.dungeons_cleared_this_week || 0);
+            return {
+              user_id: r.user_id,
+              name: r.display || (local && local.name) || 'Adventurer',
+              race: local ? local.race : '',
+              cls: local ? local.cls : '',
+              class: local ? local.cls : '',
+              level: local ? local.level : Number(r.level || 1),
+              prestige: local ? local.prestigeRank : 0,
+              power: weeklyXp + weeklyGold + weeklyKills * 10 + weeklyDungeons * 250,
+              hardcore: local ? local.hardcore : false,
+              atk: local ? local.atk : 0,
+              def: local ? local.def : 0,
+              hp: local ? local.maxHp : 0,
+              mp: local ? local.maxMp : 0,
+              aa: local ? local.aaSpent : 0,
+              gold: weeklyGold,
+              kills: weeklyKills,
+              named_kills: 0, elite_kills: 0, boss_kills: 0, deaths: 0,
+              gold_earned: weeklyGold,
+              weekly_xp: weeklyXp,
+              isYou: !!mine
+            };
+          });
         },
         async grantAchievement(code, delta, target) {
           if (!code) return;
