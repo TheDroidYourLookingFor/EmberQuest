@@ -10,7 +10,7 @@ EmberQuest is a love-letter to classic MMOs: 16 races, 16 classes, 24 zones span
 
 Join me on  [Discord](https://discord.gg/vj3W9eqjv3)!
 
-<iframe src="https://discord.com/widget?id=1514773974331031602&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+[![Discord](https://img.shields.io/discord/1514773974331031602?color=f97316&label=EmberQuest&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/YOURINVITEHERE)
 
 ## Features
 
