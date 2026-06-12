@@ -7,13 +7,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- ======================================================
-       CSS: v1.5.0 — Consolidated into one block.
-       (1) Login/charselect CSS
-       (2) Main game styles (from v1.4.146)
-       (3) v1.5.0 layout fix layer
-  ====================================================== -->
-  <style>/* Login screen */
+  <style>
+/* Login screen */
     #screen-login.active { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; background: linear-gradient(160deg, #2a2418 0%, #4a3a22 55%, #6b4f28 100%); padding: 16px; z-index: 50; }
     #screen-login .login-card { background: rgba(20,16,10,0.88); border: 1px solid rgba(255,220,160,0.25); border-radius: 12px; padding: 28px 26px; width: 100%; max-width: 360px; color: #f0e6cc; box-shadow: 0 10px 40px rgba(0,0,0,0.5); font-family: var(--font); }
     #screen-login h1 { font-family: 'Cinzel', serif; font-size: 28px; text-align: center; margin-bottom: 6px; letter-spacing: 2px; color: #f4d68a; }
@@ -2465,7 +2460,7 @@
           #5ea63f 70%,
           #3f7d2c 100%);
     }
-    #screen-game.ui-layout-mobile #battle-stage { height: clamp(150px, 22vh, 300px); }
+    #screen-game.ui-layout-mobile #battle-stage { height: clamp(200px, 28vh, 320px); }
 
     /* Faint scanline / parallax hills for retro texture */
     #battle-stage::before {
@@ -5524,9 +5519,12 @@
   overflow-y: auto !important;
 }
 
-/* ── Compact battle stage: size to the party, not the viewport (v1.5.6) ──
-   Max party is 6 and max enemies is 3, so the sprite columns only need a short
-   vertical strip. Earlier rules sized #battle-stage to 48–78vh, which left big
+/* ── Compact battle stage: size to the party, not the viewport (v1.5.6 / v1.5.13) ──
+   Max party is 6 and max enemies is 6 (v1.5.13 — was 3), so the sprite
+   columns can host a full 1-2-3 pyramid on either side without scrolling. A
+   6-unit pyramid contents about 146px of vertical space (back row of 3 at
+   ROW_GAP=56 + sprite=34), so the 240/300/360 px stage heights below stay
+   comfortable. Earlier rules sized #battle-stage to 48–78vh, which left big
    empty sky/grass bands above and below the sprites. Cap the stage to a content
    height in every desktop mode. Heights still differ a little by combat view
    size so the option keeps meaning. Each selector mirrors the original taller
@@ -5643,15 +5641,498 @@
   width: 100%; min-height: 34px; padding: 5px 30px 5px 2px;
   margin: -2px 0 6px; border-bottom: 0.5px solid var(--border); box-sizing: border-box;
 }
-#settings-modal .settings-card.settings-collapsed > div:first-child {
-  margin-bottom: -2px; border-bottom-color: transparent;
+/* ═══════════════════════════════════════════════════════════════════
+   v1.5.13 LAYOUT-FIX LAYER (mobile + desktop)
+   This block lives at the very end of <style> so each rule wins
+   against the original declarations of the same specificity. Every
+   selector below is a deliberate fix; do not reorder above earlier
+   layers without re-testing the original cases each one addressed.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Toasts must beat the More-menu bottom sheet on phones (z:85 → toasts z:90).
+   Otherwise a tap on the bottom sheet would obscure the loot/level-up popup. */
+.toast-host { z-index: 90; }
+
+/* ── More-menu bottom sheet kicks in at <=820px now (was <=520px), so
+   tablets-in-portrait and landscape phones also get the proper
+   anchored sheet instead of a corner drop-down that clipped off-screen. */
+@media (max-width: 820px) {
+  .ux-more-backdrop-v1494 {
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 12px !important;
+    background: rgba(0,0,0,0.32) !important;
+  }
+  .ux-more-card-v1494 {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 65vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+  }
+  .ux-more-grid-v1494 { grid-template-columns: 1fr !important; }
 }
+
+/* ── Flex/grid child overflow guard. Without min-width:0 a long word or
+   nowrap label can stretch the parent past its column, which then
+   stretches #game-grid and busts the layout. Apply where the grid
+   columns are minmax(0,1fr) so children honour the 0 lower bound. */
+#screen-game.ui-layout-desktop #game-grid > div,
+#screen-game.ui-layout-mobile  #game-grid > div,
+#screen-game.ui-layout-desktop #center-panel,
+#screen-game.ui-layout-mobile  #center-panel,
+#screen-game .tab-bar,
+.mob-pack-actions,
+.eq-inventory-layout,
+.eq-bag-grid {
+  min-width: 0;
+}
+
+/* ── Larger touch targets in mobile mode. The 30px tap targets fall
+   below the 44px iOS guideline; we raise the most-pressed controls
+   without breaking the dense top-bar layout (top-bar buttons stay
+   shorter so the title row still wraps onto one band). */
+#screen-game.ui-layout-mobile .btn:not(#game-topbar .btn),
+#screen-game.ui-layout-mobile .tab,
+#screen-game.ui-layout-mobile .popup-btn,
+#screen-game.ui-layout-mobile .mob-pack-actions .btn {
+  min-height: 36px;
+}
+#screen-game.ui-layout-mobile .popup-btn { min-height: 40px; }
+/* Icon-only buttons in the top-bar still need a comfortable hit area
+   even though they stay compact in height. */
+#screen-game.ui-layout-mobile #game-topbar .btn { min-width: 36px; }
+
+/* ── Mob-pack action row (Next/Weakest/Strongest/Sweep + threat note)
+   has to wrap cleanly for packs of 4-6. flex-wrap was already on but
+   it didn't bound the threat note width, which could push siblings
+   off the row. */
+.mob-pack-actions { flex-wrap: wrap; max-width: 100%; overflow: hidden; }
+.mob-pack-actions .btn { flex: 0 1 auto; }
+.mob-pack-actions .pack-threat { flex: 1 1 100%; min-width: 0; word-break: break-word; }
+#screen-game.ui-layout-mobile .mob-pack-actions .btn {
+  flex: 1 1 calc(50% - 6px);
+  min-width: 0;
+}
+
+/* ── Multi-enemy labels: cap width and let them ellipsize so a long
+   end-game name (e.g. "Tidewraith Sovereign") in a 6-pack doesn't
+   shove the formation past the stage edge. min-width:0 lets the
+   inner span actually clip. */
+.battle-enemies.multi-enemy .battle-unit { min-width: 0; }
+.battle-enemies.multi-enemy .battle-unit .battle-label {
+  max-width: clamp(72px, 18vw, 138px);
+  min-width: 0;
+  font-size: 9.5px;
+}
+.battle-enemies.multi-enemy .battle-label .battle-hp-mini { width: 56px; }
+#screen-game.ui-layout-mobile .battle-enemies.multi-enemy .battle-unit .battle-label {
+  max-width: clamp(60px, 22vw, 110px);
+  font-size: 9px;
+}
+#screen-game.ui-layout-mobile .battle-enemies.multi-enemy .battle-label .battle-hp-mini {
+  width: 48px;
+}
+
+/* ── Sprite floor for 6-pack legibility. Keeps the smallest sprite at
+   the recommended ~40px floor even when something else tries to
+   shrink it via the multi-enemy pyramid. */
+.battle-enemies .battle-sprite { min-width: 34px; min-height: 34px; }
+
+/* ── Combat log auto-scroll consistency across every layout mode.
+   The various #combat-log rules earlier in the cascade each set
+   overflow-y differently; this final pass guarantees scroll on all of
+   them and gives mobile a slightly larger floor so long pack messages
+   ("A group of 6 enemies moves to attack you!") stay readable. */
+#combat-log, #tab-combat > #combat-log { overflow-y: auto; }
+#screen-game.ui-layout-mobile #combat-log,
+#screen-game.ui-layout-mobile #tab-combat > #combat-log {
+  min-height: 130px;
+}
+
+/* ── #battle-stage horizontal guard. Pyramid units are absolutely
+   positioned, so an over-wide enemy formation could still poke past
+   the right edge. Stage was already overflow:hidden, but the parent
+   container also gets min-width:0 so it can shrink inside grid cells. */
+#battle-stage { min-width: 0; }
+#screen-game.ui-layout-mobile #battle-stage { min-width: 0; }
+
+/* ── Popup-toolbar wrap guard on phones — the per-popup tab row was
+   horizontally scrollable but the scrollbar took 4px out of the
+   already-tight column. Wrap onto two short rows instead. */
+#screen-game.ui-layout-mobile .popup-toolbar {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ── Settings modal mobile fallback: the existing @media (max-width:720px)
+   already collapses settings to one column. Reinforce the modal-card
+   width on truly narrow phones so it never overflows the viewport. */
+@media (max-width: 480px) {
+  #settings-modal .modal-card,
+  .modal-card { width: 100% !important; max-width: 100% !important; }
+}
+  
+
+/* ═══════════════════════════════════════════════════════════════════
+   v1.5.20 — Mobile UI v2 layout + objective quick travel + lightweight Discord community + epic quest target migration
+   Scoped so the desktop three-column layout remains untouched.
+   ═══════════════════════════════════════════════════════════════════ */
+#mobile-v2-hud,
+#mobile-v2-bottom-nav,
+#mobile-v2-more-backdrop,
+#mobile-v2-info-backdrop,
+#whats-new-modal-v1514 {
+  display: none;
+}
+
+.objective-hud-v1514 {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.objective-hud-v1514 .objective-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 700;
+  font-size: 10px;
+}
+.objective-hud-v1514 .objective-list { display: grid; gap: 4px; }
+.objective-hud-v1514 .objective-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 7px;
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  border: 0.5px solid var(--border);
+}
+.objective-hud-v1514 .objective-row strong { font-size: 11px; }
+.objective-hud-v1514 .objective-row span { color: var(--text-secondary); font-size: 10px; }
+.objective-hud-v1514 .objective-main-v1517 {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.objective-hud-v1514 .objective-main-v1517 strong,
+.objective-hud-v1514 .objective-main-v1517 span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.objective-zone-btn-v1517 {
+  flex: 0 0 auto;
+  min-height: 26px;
+  padding: 3px 8px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+@media (max-width: 460px) {
+  .objective-hud-v1514 .objective-row { align-items: stretch; }
+  .objective-zone-btn-v1517 { padding-inline: 7px; }
+}
+
+.codex-grid-v1514 { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.codex-card-v1514 {
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  padding: 9px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.codex-card-v1514 .codex-name { font-weight: 700; font-size: 13px; color: var(--text-primary); }
+.codex-card-v1514 .codex-meta { color: var(--text-secondary); margin-top: 2px; }
+.codex-card-v1514 .codex-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.codex-pill-v1514 { border:0.5px solid var(--border); background:var(--bg-primary); border-radius:999px; padding:1px 6px; font-size:10px; color:var(--text-secondary); }
+.craft-pinboard-v1514 { margin-top: 8px; padding: 8px; border:0.5px solid var(--border); border-radius:var(--radius-md); background:var(--bg-secondary); font-size:11px; }
+.craft-pinboard-v1514 .craft-ready { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:5px 7px; border-radius:var(--radius-md); background:var(--bg-primary); border:0.5px solid var(--border); margin-top:5px; }
+
+.discord-panel-v1518 { display:grid; gap:10px; }
+.discord-card-v1518 { border:0.5px solid var(--border); border-radius:var(--radius-md); background:var(--bg-secondary); padding:10px; font-size:12px; line-height:1.55; }
+.discord-actions-v1518 { display:flex; flex-wrap:wrap; gap:8px; }
+.discord-stats-v1520 { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin-top:10px; }
+.discord-stat-v1520 { border:0.5px solid var(--border); border-radius:var(--radius-md); background:var(--bg-primary); padding:10px; min-height:62px; display:flex; flex-direction:column; justify-content:center; gap:2px; }
+.discord-stat-v1520 strong { font-size:20px; line-height:1; color:var(--text-primary); }
+.discord-stat-v1520 span { font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+.discord-status-v1520 { font-size:11px; color:var(--text-secondary); line-height:1.4; margin-top:8px; }
+.discord-status-v1520.ok { color:#1D9E75; }
+.discord-status-v1520.error { color:#A32D2D; }
+@media (max-width: 420px) { .discord-stats-v1520 { grid-template-columns:1fr 1fr; } .discord-stat-v1520 { padding:8px; } }
+
+#screen-game.ui-layout-mobile-v2 {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  padding: 0;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(244, 214, 138, 0.18), transparent 38%),
+    linear-gradient(180deg, #17141c 0%, #101017 100%);
+}
+#screen-game.ui-layout-mobile-v2 #game-topbar,
+#screen-game.ui-layout-mobile-v2 #quick-ui-bar {
+  display: none !important;
+}
+#screen-game.ui-layout-mobile-v2 #mobile-v2-hud,
+#screen-game.ui-layout-mobile-v2 #mobile-v2-bottom-nav {
+  display: block;
+}
+#screen-game.ui-layout-mobile-v2 #mobile-v2-hud {
+  position: fixed;
+  z-index: 42;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 10px 8px;
+  background: rgba(18, 17, 24, 0.94);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  backdrop-filter: blur(12px);
+}
+.mobile-v2-toprow { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+.mobile-v2-title { min-width:0; }
+.mobile-v2-name { font-weight:800; font-size:14px; color:#f4d68a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mobile-v2-sub { font-size:10px; color:rgba(240,237,230,.72); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mobile-v2-resources { display:flex; align-items:center; gap:6px; flex-shrink:0; font-size:11px; color:#f0ede6; }
+.mobile-v2-chip { border:0.5px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06); border-radius:999px; padding:2px 7px; white-space:nowrap; }
+.mobile-v2-bars { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; }
+.mobile-v2-meter { position:relative; height:16px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,.08); border:0.5px solid rgba(255,255,255,.12); }
+.mobile-v2-meter > i { display:block; height:100%; width:0%; border-radius:999px; transition:width .25s ease; }
+.mobile-v2-meter.hp > i { background:#E24B4A; }
+.mobile-v2-meter.mp > i { background:#378ADD; }
+.mobile-v2-meter.xp > i { background:#639922; }
+.mobile-v2-meter > span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:9px; font-weight:800; text-shadow:0 1px 2px #000; }
+#screen-game.ui-layout-mobile-v2 #game-grid {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 82px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 68px);
+  left: 0;
+  right: 0;
+  display: block;
+  min-height: 0;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+#screen-game.ui-layout-mobile-v2 #game-grid > div:first-child,
+#screen-game.ui-layout-mobile-v2 #game-grid > div:last-child {
+  display: none !important;
+}
+#screen-game.ui-layout-mobile-v2 #center-panel {
+  height: 100% !important;
+  max-height: none !important;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+}
+#screen-game.ui-layout-mobile-v2 #center-panel > .tab-bar { display: none !important; }
+#screen-game.ui-layout-mobile-v2 #tab-combat,
+#screen-game.ui-layout-mobile-v2 #tab-zone,
+#screen-game.ui-layout-mobile-v2 #tab-inv,
+#screen-game.ui-layout-mobile-v2 #tab-shop,
+#screen-game.ui-layout-mobile-v2 #tab-casino,
+#screen-game.ui-layout-mobile-v2 #tab-chat {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  border: 0.5px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  background: var(--bg-primary);
+  padding: 10px;
+}
+#screen-game.ui-layout-mobile-v2 #tab-combat { display:flex; flex-direction:column; gap:8px; overflow:hidden; }
+#screen-game.ui-layout-mobile-v2 #mob-area { min-height: 178px; padding:8px; }
+#screen-game.ui-layout-mobile-v2 #battle-stage { min-height: 140px; height: clamp(140px, 24dvh, 230px); }
+#screen-game.ui-layout-mobile-v2 #combat-log { min-height: 90px; flex:1 1 0; font-size:11px; }
+#screen-game.ui-layout-mobile-v2 #combat-log-filters,
+#screen-game.ui-layout-mobile-v2 #combat-shortcut-hints { display:none !important; }
+#screen-game.ui-layout-mobile-v2 #combat-action-row { display:grid !important; grid-template-columns: repeat(4, 1fr); gap:6px; margin-bottom:0 !important; }
+#screen-game.ui-layout-mobile-v2 #combat-action-row .btn { min-height:42px; justify-content:center; padding:7px 6px; font-size:11px; }
+#screen-game.ui-layout-mobile-v2 #combat-action-row .btn:nth-child(n+5) { display:none; }
+#screen-game.ui-layout-mobile-v2 #tab-inv .eq-inventory-layout,
+#screen-game.ui-layout-mobile-v2 #tab-bank .eq-inventory-layout { grid-template-columns:1fr !important; }
+#screen-game.ui-layout-mobile-v2 .eq-paperdoll { position:static; }
+#screen-game.ui-layout-mobile-v2 #popup-backdrop.open,
+#screen-game.ui-layout-mobile-v2 .modal-backdrop.open,
+#screen-game.ui-layout-mobile-v2 #help-backdrop.open,
+#mobile-v2-more-backdrop.open,
+#mobile-v2-info-backdrop.open,
+#whats-new-modal-v1514.open {
+  display: flex;
+}
+#screen-game.ui-layout-mobile-v2 #popup-backdrop,
+#screen-game.ui-layout-mobile-v2 .modal-backdrop,
+#screen-game.ui-layout-mobile-v2 #help-backdrop,
+#mobile-v2-more-backdrop,
+#mobile-v2-info-backdrop,
+#whats-new-modal-v1514 {
+  position: fixed;
+  inset: 0;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: rgba(0,0,0,.52);
+  z-index: 82;
+}
+#screen-game.ui-layout-mobile-v2 #popup-window,
+#screen-game.ui-layout-mobile-v2 .modal-card,
+#screen-game.ui-layout-mobile-v2 #help-window,
+.mobile-v2-sheet,
+.whats-new-card-v1514 {
+  width: 100%;
+  max-width: 560px;
+  max-height: min(82dvh, 720px);
+  border-radius: 22px 22px 0 0;
+  border: 1px solid var(--border-md);
+  border-bottom: 0;
+  background: var(--bg-primary);
+  box-shadow: 0 -18px 40px rgba(0,0,0,.45);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  overflow: hidden;
+}
+#screen-game.ui-layout-mobile-v2 #popup-body,
+#screen-game.ui-layout-mobile-v2 #help-body,
+.mobile-v2-sheet-body,
+.whats-new-body-v1514 {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: calc(min(82dvh, 720px) - 54px);
+}
+.mobile-v2-sheet-head,
+.whats-new-head-v1514 { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:0.5px solid var(--border); }
+.mobile-v2-sheet-head strong,
+.whats-new-head-v1514 strong { font-size:15px; }
+.mobile-v2-sheet-body { padding: 12px 14px 16px; }
+.mobile-v2-more-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:8px; }
+.mobile-v2-more-grid .btn { min-height:42px; justify-content:center; }
+.mobile-v2-section-title { margin:12px 0 6px; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:var(--text-secondary); }
+.mobile-v2-info-card { border:0.5px solid var(--border); background:var(--bg-secondary); border-radius:var(--radius-md); padding:9px; font-size:12px; line-height:1.45; margin-bottom:8px; }
+#screen-game.ui-layout-mobile-v2 #mobile-v2-bottom-nav {
+  position: fixed;
+  z-index: 43;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 7px 8px calc(env(safe-area-inset-bottom, 0px) + 7px);
+  background: rgba(18, 17, 24, 0.96);
+  border-top: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 -8px 24px rgba(0,0,0,.35);
+  backdrop-filter: blur(12px);
+}
+.mobile-v2-nav-grid { display:grid; grid-template-columns: repeat(6, 1fr); gap:5px; }
+.mobile-v2-nav-btn {
+  min-width:0;
+  min-height:48px;
+  border:0.5px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,.06);
+  color: #f0ede6;
+  font: 600 10px/1.1 var(--font);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  cursor:pointer;
+  touch-action: manipulation;
+}
+.mobile-v2-nav-btn i { font-size:17px; }
+.mobile-v2-nav-btn.active { background:#185FA5; color:#E6F1FB; border-color:#378ADD; }
+.mobile-v2-badge { min-width:16px; border-radius:999px; padding:1px 5px; background:#A32D2D; color:#fff; font-size:9px; font-weight:800; margin-left:2px; }
+@media (orientation: landscape) and (max-height: 520px) {
+  #screen-game.ui-layout-mobile-v2 #mobile-v2-hud { padding-top: calc(env(safe-area-inset-top, 0px) + 5px); }
+  #screen-game.ui-layout-mobile-v2 #game-grid { top: calc(env(safe-area-inset-top, 0px) + 62px); bottom: calc(env(safe-area-inset-bottom, 0px) + 58px); }
+  .mobile-v2-sub { display:none; }
+  .mobile-v2-meter { height:12px; }
+  .mobile-v2-nav-btn { min-height:42px; }
+  #screen-game.ui-layout-mobile-v2 #battle-stage { height: 118px; min-height: 118px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #screen-game.ui-layout-mobile-v2 * { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
   </style>
 </head>
 
 <body>
 
-<body>
+<!-- ═══════════════════════════════════════════════════════════════
+     EmberQuest RPG — v1.5.20
+     Changes from v1.5.13:
+     UI FIXES:
+       - Removed stray duplicate <body> tag right after the real one
+         (HTML had two opening <body> elements; only the first is
+         kept now).
+       - #ux-more-backdrop-v1494: bottom-sheet anchor now triggers at
+         <=820px (was <=520px), so the More menu sits flush at the
+         viewport bottom on phones and small tablets and stops
+         clipping off-screen at narrow widths. Card gets
+         max-height: 65vh with internal scroll.
+       - #screen-game.ui-layout-mobile #battle-stage: height floor
+         raised from 150px to 200px so the 6-enemy pyramid never
+         clips on mobile.
+       - .mob-pack-actions: flex-wrap + scroll guard so 4-6 enemy
+         action rows wrap gracefully instead of overflowing the
+         mob-card on narrow widths.
+       - .battle-enemies.multi-enemy .battle-label max-width clamped
+         with min-width:0 so labels for 4-6 enemies don't push the
+         pyramid wider than the stage.
+       - Mobile touch-target floor: #screen-game.ui-layout-mobile
+         .btn / .tab / .popup-btn / .mob-pack-actions .btn raised
+         to min-height: 36px (popup buttons stay 40px). Approaches
+         the 44px ideal without breaking the dense top-bar layout.
+       - min-width: 0 explicitly applied to flex/grid children that
+         could blow out the layout (#game-grid > div, .tab-bar,
+         .mob-pack-actions, .eq-inventory-layout, .eq-bag-grid).
+       - Combat log auto-scrolls into all layout modes (mobile +
+         desktop normal/fit/focus + cinematic) — overflow-y: auto
+         applied consistently.
+       - Z-index pass: toast-host z-index raised so toasts sit
+         above the More backdrop bottom-sheet on phones.
+       - fetchLfgPool(): added missing !currentUser guard so the
+         "lfg fetch failed [object Object]" console warning stops
+         firing during offline / not-signed-in play. The sibling
+         LFG functions (submitLfgRewardBatch, collectLfgRewards)
+         already had this guard; fetchLfgPool was the only one
+         missing it.
+     ENCOUNTER SCALING:
+       - spawnMob(): replaced flat 3-max pack table with zone-tier
+         aware scaling. Tier is derived from the active zone's
+         minLvl (Early <18, Mid 18-94, High 95-169, End-game >=170).
+       - End-game zones (minLvl >= 170): guaranteed minimum pack of
+         2 outdoors, up to 6 enemies per encounter. Distribution
+         follows the table in EmberQuest_Upgrade_Prompt.md.
+       - Boss-like, named, forced hunt-target, and dungeon-boss
+         encounters remain solo (unchanged).
+     BATTLE STAGE:
+       - Enemy sprite row supports up to 6 slots; the existing
+         applyPyramidFormation already laid out 1-6 in 1/2/3 rows
+         and is unchanged. Stage CSS comment updated from
+         "max enemies is 3" to "max enemies is 6".
+       - Battle stage heights (240/300/360 px) confirmed adequate
+         for a 6-enemy pyramid (max content ~146px) — left as-is
+         on desktop; mobile floor bumped to 200px.
+     ═══════════════════════════════════════════════════════════════ -->
 
   <div
     id="toast-host"
@@ -6071,6 +6552,46 @@
       <button class="btn" onclick="setUiDensityPreference('compact')">Compact</button>
       <button class="btn" onclick="setUiBooleanPreference('readableLog', !uiPrefs.readableLog)">Log Text</button>
       <button class="btn" id="combat-stats-btn" onclick="toggleCombatStatsPanel()" title="Show session combat stats">Stats</button>
+    </div>
+    <div id="mobile-v2-hud" aria-label="Mobile status HUD">
+      <div class="mobile-v2-toprow">
+        <div class="mobile-v2-title">
+          <div id="mobile-v2-name" class="mobile-v2-name">EmberQuest</div>
+          <div id="mobile-v2-sub" class="mobile-v2-sub">Loading hero…</div>
+        </div>
+        <div class="mobile-v2-resources">
+          <span id="mobile-v2-afk" class="mobile-v2-chip">AFK Off</span>
+          <span id="mobile-v2-gold" class="mobile-v2-chip">0g</span>
+          <button class="btn" style="min-height:30px;padding:4px 8px;font-size:11px" onclick="openMobileV2More()" aria-label="Open mobile menu and layout switcher"><i class="ti ti-dots"></i><span style="font-size:10px">Menu</span></button>
+        </div>
+      </div>
+      <div class="mobile-v2-bars">
+        <div class="mobile-v2-meter hp" title="Health"><i id="mobile-v2-hp-fill"></i><span id="mobile-v2-hp-text">HP</span></div>
+        <div class="mobile-v2-meter mp" title="Mana"><i id="mobile-v2-mp-fill"></i><span id="mobile-v2-mp-text">MP</span></div>
+        <div class="mobile-v2-meter xp" title="Experience"><i id="mobile-v2-xp-fill"></i><span id="mobile-v2-xp-text">XP</span></div>
+      </div>
+    </div>
+    <div id="mobile-v2-bottom-nav" aria-label="Mobile navigation">
+      <div class="mobile-v2-nav-grid">
+        <button class="mobile-v2-nav-btn active" data-mobile-v2-tab="combat" onclick="openMobileV2Route('combat')"><i class="ti ti-sword"></i><span>Combat</span></button>
+        <button class="mobile-v2-nav-btn" data-mobile-v2-tab="zone" onclick="openMobileV2Route('zone')"><i class="ti ti-map"></i><span>Zones</span></button>
+        <button class="mobile-v2-nav-btn" data-mobile-v2-tab="inv" onclick="openMobileV2Route('inv')"><i class="ti ti-backpack"></i><span>Bag</span></button>
+        <button class="mobile-v2-nav-btn" data-mobile-v2-tab="quests" onclick="openMobileV2Route('quests')"><i class="ti ti-scroll"></i><span>Quests</span></button>
+        <button class="mobile-v2-nav-btn" data-mobile-v2-tab="chat" onclick="openMobileV2Route('chat')"><i class="ti ti-message-circle"></i><span>Chat <b id="mobile-v2-chat-badge" class="mobile-v2-badge" style="display:none">0</b></span></button>
+        <button class="mobile-v2-nav-btn" data-mobile-v2-tab="more" onclick="openMobileV2More()"><i class="ti ti-menu-2"></i><span>More</span></button>
+      </div>
+    </div>
+    <div id="mobile-v2-more-backdrop" onclick="if(event.target===this)closeMobileV2More()">
+      <div class="mobile-v2-sheet" role="dialog" aria-modal="true" aria-label="Mobile more menu">
+        <div class="mobile-v2-sheet-head"><strong>More</strong><button class="btn" onclick="closeMobileV2More()">Close</button></div>
+        <div id="mobile-v2-more-body" class="mobile-v2-sheet-body"></div>
+      </div>
+    </div>
+    <div id="mobile-v2-info-backdrop" onclick="if(event.target===this)closeMobileV2Info()">
+      <div class="mobile-v2-sheet" role="dialog" aria-modal="true" aria-label="Mobile detail sheet">
+        <div class="mobile-v2-sheet-head"><strong id="mobile-v2-info-title">Details</strong><button class="btn" onclick="closeMobileV2Info()">Close</button></div>
+        <div id="mobile-v2-info-body" class="mobile-v2-sheet-body"></div>
+      </div>
     </div>
     <input
       id="import-save-input"
@@ -6729,6 +7250,7 @@
           <div class="tab tab-right-start" id="tabbtn-leaderboard" onclick="openPopup('leaderboard')">🏅 Leaderboard</div>
           <div class="tab" id="tabbtn-arena" onclick="openPopup('arena')">⚔ Arena</div>
           <div class="tab" id="tabbtn-guild" onclick="openPopup('guild')">🛡 Guild</div>
+          <div class="tab" id="tabbtn-community" onclick="openPopup('community')">💬 Discord</div>
           <div class="tab" id="tabbtn-about-popup" onclick="openPopup('about')">ℹ About</div>
         </div>
         <!-- Shared popup modal -->
@@ -7036,6 +7558,16 @@
           </div>
         </div>
 <div
+          id="tab-codex"
+          style="display:none">
+          <h3>Bestiary Codex</h3>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.45;margin-bottom:10px">
+            Tracks creatures you have defeated on this character. The codex is local save data and grows naturally as you hunt.
+          </div>
+          <div id="codex-summary-v1514" class="bag-meta"></div>
+          <div id="codex-list-v1514" class="codex-grid-v1514"></div>
+        </div>
+<div
           id="tab-loot"
           style="display:none">
           <div
@@ -7296,6 +7828,42 @@
           </div>
           <div id="guild-content"></div>
         </div>
+<!-- FEATURE: Discord Community — keep social info discoverable without making the main game depend on heavy third-party embeds. -->
+<div
+          id="tab-community"
+          style="display:none">
+          <div class="discord-panel-v1518">
+            <div>
+              <h3 style="margin-bottom:4px">💬 EmberQuest Discord</h3>
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+                Join the community for patch notes, feedback, bug reports, balance talk, and player help. This panel intentionally avoids the full Discord iframe and only fetches lightweight count data when Discord allows it.
+              </div>
+            </div>
+            <div class="discord-card-v1518">
+              <strong>Community server</strong><br>
+              <span>Hop in for updates, bug reports, balance talk, and feature ideas.</span>
+              <div class="discord-stats-v1520" aria-live="polite">
+                <div class="discord-stat-v1520">
+                  <strong id="discord-online-v1520">—</strong>
+                  <span>Online now</span>
+                </div>
+                <div class="discord-stat-v1520">
+                  <strong id="discord-members-v1520">—</strong>
+                  <span>Total members</span>
+                </div>
+              </div>
+              <div id="discord-status-v1520" class="discord-status-v1520">Counts load when this panel opens.</div>
+            </div>
+            <div class="discord-actions-v1518">
+              <a class="btn active" href="https://discord.gg/vj3W9eqjv3" target="_blank" rel="noopener noreferrer">Join Discord</a>
+              <button class="btn" onclick="renderCommunityTab(true)">Refresh Counts</button>
+              <button class="btn" onclick="openPopup('about')">About EmberQuest</button>
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary);line-height:1.45">
+              Counts come from Discord's public invite/widget endpoints. If Discord blocks the request or the server disables public data, the join link still works.
+            </div>
+          </div>
+        </div>
 <div
           id="tab-tradeskill"
           style="display:none">
@@ -7337,6 +7905,11 @@
             <li>Configure the <strong>Auto-Battle</strong> panel on the right, and pin an elite contract from the Quests tab so AFK chases the target you want.</li>
           </ul>
 
+          <h4 style="margin:14px 0 6px">Community</h4>
+          <div style="font-size:12px;line-height:1.55;color:var(--text-secondary);margin-bottom:10px">
+            Need help, want to report a bug, or want to follow updates? Open the <button class="btn" style="font-size:11px;padding:3px 8px" onclick="openPopup('community')">Discord Community</button> panel for live counts and a direct join link.
+          </div>
+
           <h4 style="margin:14px 0 6px">Saving &amp; Backups</h4>
           <div style="font-size:12px;line-height:1.55;color:var(--text-secondary);margin-bottom:10px">
             Progress autosaves to your browser's local storage and syncs to the cloud when you're signed in. Clearing your browser data can erase local characters, so use <strong>Export</strong> on the topbar to download a backup; <strong>Import</strong> restores it, and Settings can export a full recovery bundle with local snapshots and diagnostics.
@@ -7345,11 +7918,12 @@
 
           <h4 id="version-whats-new" style="margin:14px 0 6px">What’s New</h4>
           <ul style="font-size:12px;line-height:1.6;color:var(--text-primary);margin:0 0 10px;padding-left:18px">
-            <li><strong>Combat controls restored.</strong> The Attack / Heal / Find Mob / Flee bottom button row now has a protected layout slot and no longer gets clipped by the combat log.</li>
-            <li><strong>Safer Enter World flow.</strong> Removed the last capture-phase force-open handler that could switch to the game screen before character loading finished.</li>
-            <li><strong>Less combat-log churn.</strong> Combat log sizing now runs once per log element instead of on every new line.</li>
-            <li><strong>Search-on-demand.</strong> Combat-log search no longer attaches a MutationObserver to every log append; it refreshes when search is opened or typed.</li>
-            <li><strong>Lower startup risk.</strong> This pass avoids adding another polling loop and keeps existing saves compatible.</li>
+            <li><strong>Discord Community.</strong> The About/desktop tabs/Mobile v2 More menu now expose a lightweight member-count card and direct join link instead of the oversized widget.</li>
+            <li><strong>Mobile UI v2.</strong> A new one-thumb portrait layout with persistent HP/MP/XP HUD, bottom navigation, safe-area support, swipe gestures, and bottom-sheet popups.</li>
+            <li><strong>Bestiary Codex.</strong> Defeated creatures are now recorded with kill counts, max level seen, zone, and notable traits.</li>
+            <li><strong>Objective HUD.</strong> Combat now surfaces your best next daily, class quest, elite contract, and craftable potion prompt.</li>
+            <li><strong>Crafting Pinboard.</strong> Alchemy recipes light up when your herb inventory can craft them, with direct shortcuts into Alchemy.</li>
+            <li><strong>Version notes modal.</strong> A short What’s New sheet appears once per version bump and links back here.</li>
           </ul>
 
           <h4 style="margin:14px 0 6px">Credits &amp; License</h4>
@@ -7423,6 +7997,10 @@
                 id="mob-hp-disp">
               </div>
             </div>
+          </div>
+          <div id="objective-hud-v1514" class="objective-hud-v1514" aria-live="polite">
+            <div class="objective-head"><span>Current Objectives</span><button class="popup-btn" onclick="openPopup('quests')">Open Quests</button></div>
+            <div id="objective-list-v1514" class="objective-list"></div>
           </div>
           <div
             id="combat-log">
@@ -7601,6 +8179,7 @@
                 class="ti ti-flame"></i>
               Hunt Boss</button>
             <button id="pbtn-quests" class="btn" onclick="openPopup('quests')" title="Quests"><i class="ti ti-scroll"></i> Quests</button>
+            <button id="pbtn-codex" class="btn" onclick="openPopup('codex')" title="Bestiary Codex"><i class="ti ti-book"></i> Codex</button>
             <button id="pbtn-dungeon" class="btn" onclick="openPopup('dungeon')" title="Dungeon"><i class="ti ti-stairs"></i> Dungeon</button>
           </div>
         </div>
@@ -8321,6 +8900,7 @@
     const AUDIO_KEY = 'EmberQuest_audio';
     const KEYBINDS_KEY = 'EmberQuest_keybinds';
     const UI_PREFS_KEY = 'EmberQuest_uiPrefs';
+    const MOBILE_V2_PREFS_KEY = 'EmberQuest_mobileV2Prefs';
 
     // ══════════════════════════════════════════════
     //  AUDIO ENGINE  (lightweight Web Audio SFX layer)
@@ -8980,7 +9560,12 @@
       // manually seeded/admin-created lfg_pool rows may omit it, and the UI
       // should still be able to display valid LFG entries.
       async fetchLfgPool(hardcore, limit = 100) {
-        if (!sb) return null;
+        // v1.5.13 — added !currentUser guard to match submitLfgRewardBatch
+        // and collectLfgRewards. Without a signed-in session, Supabase RLS
+        // on lfg_pool rejects the query and the catch path was firing the
+        // "lfg fetch failed [object Object]" warning during offline play.
+        // Returning null early is the same fallback the catch already used.
+        if (!sb || !currentUser) return null;
         try {
           let q = sb.from('lfg_pool')
             .select('user_id,char_key,name,class,race,level,atk,def,hp,mp,power,hardcore,known_spells,updated_at')
@@ -13285,6 +13870,8 @@
       if (typeof ensureWeeklyContractState === 'function') ensureWeeklyContractState(targetChar);
       if (typeof ensurePetState === 'function') ensurePetState(targetChar);
       if (typeof ensureAuditState === 'function') ensureAuditState(targetChar);
+      if (typeof ensureBestiaryCodexState === 'function') ensureBestiaryCodexState(targetChar);
+      if (typeof ensureCraftingPinboardState === 'function') ensureCraftingPinboardState(targetChar);
       // D&D ability scores: backfill from class+level for saves made before
       // this system existed, and repair any missing/invalid individual scores.
       if (!targetChar.abilities || typeof targetChar.abilities !== 'object') {
@@ -13380,17 +13967,7 @@
         targetChar.classQuest = createClassQuestState(targetChar.cls);
       }
       if (targetChar.classQuest) {
-        const cq = targetChar.classQuest;
-        const fallback = createClassQuestState(targetChar.cls);
-        cq.cls = targetChar.cls;
-        cq.name = typeof cq.name === 'string' && cq.name ? cq.name : fallback.name;
-        cq.desc = typeof cq.desc === 'string' && cq.desc ? cq.desc : fallback.desc;
-        cq.target = typeof cq.target === 'string' && cq.target ? cq.target : fallback.target;
-        cq.count = Math.max(1, Math.floor(Number(cq.count || fallback.count || 25)));
-        cq.progress = Math.max(0, Math.min(cq.count, Math.floor(Number(cq.progress || 0))));
-        cq.completed = !!cq.completed || cq.progress >= cq.count;
-        cq.claimed = !!cq.claimed;
-        cq.rewardSpellId = typeof cq.rewardSpellId === 'string' && cq.rewardSpellId ? cq.rewardSpellId : (fallback ? fallback.rewardSpellId : '');
+        normalizeClassQuestTargetToCurrentEpic(targetChar);
       }
 
       if (!targetChar.prestige || typeof targetChar.prestige !== 'object' || Array.isArray(targetChar.prestige)) {
@@ -17756,7 +18333,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.5.11';
+    const CURRENT_VERSION = '1.5.20';
     function syncCurrentVersionDisplay() {
       const version = CURRENT_VERSION;
       try { window.VERSION = version; } catch (_) {}
@@ -19810,7 +20387,7 @@ async function exportSlotsToFile(options = {}) {
     function getQuickNavTargets() {
       const seen = new Set();
       const out = [];
-      document.querySelectorAll('.tab, .popup-btn, #pbtn-quests, #pbtn-dungeon, #pbtn-loot, #pbtn-bank, #pbtn-runes, #pbtn-tradeskill, #pbtn-aa, #pbtn-spells, #pbtn-group, #pbtn-prestige').forEach(el => {
+      document.querySelectorAll('.tab, .popup-btn, #pbtn-quests, #pbtn-dungeon, #pbtn-loot, #pbtn-bank, #pbtn-runes, #pbtn-tradeskill, #pbtn-aa, #pbtn-spells, #pbtn-group, #pbtn-prestige, #pbtn-codex').forEach(el => {
         const onclick = el.getAttribute('onclick') || '';
         const match = onclick.match(/(?:switchTab|openPopup)\('([^']+)'\)/);
         if (!match) return;
@@ -19820,7 +20397,7 @@ async function exportSlotsToFile(options = {}) {
         const label = (el.textContent || el.title || id).replace(/\s+/g, ' ').trim() || id;
         out.push({ id, label, popup: onclick.indexOf('openPopup') !== -1 });
       });
-      const preferred = ['combat','zone','inv','shop','casino','quests','dungeon','spells','aa','prestige','group','runes','loot','bank','tradeskill','leaderboard','arena','guild','loadouts','about'];
+      const preferred = ['combat','zone','inv','shop','casino','quests','dungeon','spells','aa','prestige','group','runes','loot','bank','tradeskill','leaderboard','arena','guild','community','codex','loadouts','about'];
       out.sort((a,b) => {
         const ai = preferred.indexOf(a.id), bi = preferred.indexOf(b.id);
         return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.label.localeCompare(b.label);
@@ -19907,7 +20484,7 @@ async function exportSlotsToFile(options = {}) {
     }
 
     function normalizeUiLayoutMode(mode) {
-      return mode === 'mobile' ? 'mobile' : 'desktop';
+      return (mode === 'mobile' || mode === 'mobile-v2') ? mode : 'desktop';
     }
 
     function applyUiLayoutMode(mode, silent = false) {
@@ -19915,25 +20492,30 @@ async function exportSlotsToFile(options = {}) {
       const gameScreen = document.getElementById('screen-game');
       if (gameScreen) {
         gameScreen.classList.toggle('ui-layout-mobile', uiLayoutMode === 'mobile');
+        gameScreen.classList.toggle('ui-layout-mobile-v2', uiLayoutMode === 'mobile-v2');
         gameScreen.classList.toggle('ui-layout-desktop', uiLayoutMode === 'desktop');
       }
 
       const btn = document.getElementById('layout-mode-btn');
       if (btn) {
-        btn.textContent = 'Layout: ' + (uiLayoutMode === 'mobile' ? 'Mobile' : 'Desktop');
-        btn.classList.toggle('active', uiLayoutMode === 'mobile');
+        const label = uiLayoutMode === 'mobile-v2' ? 'Mobile v2' : (uiLayoutMode === 'mobile' ? 'Mobile' : 'Desktop');
+        btn.textContent = 'Layout: ' + label;
+        btn.classList.toggle('active', uiLayoutMode !== 'desktop');
       }
 
       try { localStorage.setItem(UI_LAYOUT_KEY, uiLayoutMode); } catch (e) { }
       requestAnimationFrame(syncCombatLogSize);
 
       if (!silent && char) {
-        log('Switched to ' + (uiLayoutMode === 'mobile' ? 'mobile' : 'desktop') + ' layout.', 'info');
+        const label = uiLayoutMode === 'mobile-v2' ? 'mobile v2' : (uiLayoutMode === 'mobile' ? 'mobile' : 'desktop');
+        log('Switched to ' + label + ' layout.', 'info');
       }
     }
 
     function toggleLayoutMode() {
-      return applyUILayoutState({ layoutMode: uiLayoutMode === 'mobile' ? 'desktop' : 'mobile' });
+      const order = ['desktop', 'mobile', 'mobile-v2'];
+      const idx = Math.max(0, order.indexOf(uiLayoutMode));
+      return applyUILayoutState({ layoutMode: order[(idx + 1) % order.length] });
     }
 
     function detectDefaultLayoutMode() {
@@ -19942,7 +20524,7 @@ async function exportSlotsToFile(options = {}) {
       // everything else stays desktop, so the normal UI is unaffected.
       try {
         const w = window.innerWidth || (window.screen && window.screen.width) || 9999;
-        if (w <= 820) return 'mobile';
+        if (w <= 820) return 'mobile-v2';
       } catch (e) {}
       return 'desktop';
     }
@@ -20480,7 +21062,7 @@ async function exportSlotsToFile(options = {}) {
     function loadUiLayoutPreference() {
       let saved = null;
       try { saved = localStorage.getItem(UI_LAYOUT_KEY); } catch (e) {}
-      const mode = (saved === 'mobile' || saved === 'desktop') ? saved : detectDefaultLayoutMode();
+      const mode = (saved === 'mobile' || saved === 'desktop' || saved === 'mobile-v2') ? saved : detectDefaultLayoutMode();
       applyUiLayoutMode(mode, true);
     }
 
@@ -21106,6 +21688,9 @@ async function exportSlotsToFile(options = {}) {
         activeLoadout: '',
         afkRules: { autoBuyPots: true, potMin: 5, autoAdvanceContract: true },
         crafting: { shards: { common: 0, magic: 0, rare: 0, epic: 0 } },
+        craftingPinboard: { muted: false, lastReadySig: '' },
+        codex: { mobs: {}, discoveredAt: Date.now() },
+        mobileV2Prefs: { haptics: true },
         contractTierPref: 'normal',
         eliteContract: generateEliteContract(0, 'normal', 1, CONTRACT_CHAIN_TOTAL),
         eliteContracts: [
@@ -21151,6 +21736,8 @@ async function exportSlotsToFile(options = {}) {
       'Velium Spear': 'Glacite Spear'
     };
     const RENAMED_MOBS = {
+      'Innoruuk Servant': 'Asmodean Servant',
+      "Innoruuk's Servant": 'Asmodean Servant',
       'Velium Stalker': 'Glacite Stalker',
       'Ssra Acolyte': 'Sythara Acolyte',
       'Shissar Inquisitor': 'Serathi Inquisitor',
@@ -21215,6 +21802,44 @@ async function exportSlotsToFile(options = {}) {
       });
     }
 
+    function isKnownZoneMobName(name) {
+      if (typeof name !== 'string' || !name) return false;
+      if (!Array.isArray(ZONES)) return false;
+      return ZONES.some(z => z && Array.isArray(z.mobs) && z.mobs.includes(name));
+    }
+
+    function normalizeClassQuestTargetToCurrentEpic(targetChar) {
+      if (!targetChar || typeof targetChar !== 'object') return;
+      if (!targetChar.classQuest || typeof targetChar.classQuest !== 'object') return;
+      const fallback = (typeof createClassQuestState === 'function') ? createClassQuestState(targetChar.cls) : null;
+      if (!fallback) return;
+
+      const cq = targetChar.classQuest;
+      const rawTarget = typeof cq.target === 'string' ? cq.target.trim() : '';
+      const renamedTarget = (rawTarget && RENAMED_MOBS[rawTarget]) ? RENAMED_MOBS[rawTarget] : rawTarget;
+      const targetStillExists = isKnownZoneMobName(renamedTarget);
+      const canonicalTarget = fallback.target || renamedTarget;
+
+      cq.cls = targetChar.cls;
+      cq.name = fallback.name || cq.name || 'Class Epic Trial';
+      cq.desc = fallback.desc || cq.desc || '';
+      cq.target = canonicalTarget || renamedTarget || '';
+      cq.count = Math.max(1, Math.floor(Number(fallback.count || cq.count || 25)));
+      cq.progress = Math.max(0, Math.min(cq.count, Math.floor(Number(cq.progress || 0))));
+      cq.completed = !!cq.completed || cq.progress >= cq.count;
+      cq.claimed = !!cq.claimed;
+      cq.rewardSpellId = fallback.rewardSpellId || cq.rewardSpellId || '';
+
+      // Compatibility note: old saves could contain valid strings that no
+      // longer exist in ZONES, such as "Innoruuk Servant". Even if a
+      // legacy name maps cleanly, class epics are deterministic per class,
+      // so the saved target is always re-synced to the current definition
+      // while preserving progress/completion/claim flags.
+      if (!targetStillExists || renamedTarget !== canonicalTarget) {
+        cq.legacyTargetMigratedV1519 = rawTarget || true;
+      }
+    }
+
     // Apply every legacy-name remap to a character object.
     function migrateRenamedReferences(targetChar) {
       if (!targetChar || typeof targetChar !== 'object') return;
@@ -21225,6 +21850,20 @@ async function exportSlotsToFile(options = {}) {
       applyItemRenames(targetChar.corpseLoot);
       applyMobRenamesToQuests(targetChar.quests);
       applyMobRenamesToQuests(targetChar.dailyQuests);
+      if (targetChar.classQuest && typeof targetChar.classQuest === 'object') {
+        if (typeof targetChar.classQuest.target === 'string' && RENAMED_MOBS[targetChar.classQuest.target]) {
+          targetChar.classQuest.target = RENAMED_MOBS[targetChar.classQuest.target];
+        }
+      }
+      if (Array.isArray(targetChar.eliteContracts)) {
+        targetChar.eliteContracts.forEach(c => {
+          if (c && typeof c.target === 'string' && RENAMED_MOBS[c.target]) c.target = RENAMED_MOBS[c.target];
+        });
+      }
+      if (targetChar.eliteContract && typeof targetChar.eliteContract.target === 'string' && RENAMED_MOBS[targetChar.eliteContract.target]) {
+        targetChar.eliteContract.target = RENAMED_MOBS[targetChar.eliteContract.target];
+      }
+      normalizeClassQuestTargetToCurrentEpic(targetChar);
     }
 
     function migrateSaveData(oldChar, silent = false) {
@@ -21486,6 +22125,24 @@ async function exportSlotsToFile(options = {}) {
         if (!silent) log('Upgraded save data to v1.3.61 (rebalanced DEF/HP/MP scaling).', 'info');
       }
 
+      if (oldChar.version === '1.5.13') {
+        if (typeof ensureBestiaryCodexState === 'function') ensureBestiaryCodexState(oldChar);
+        if (typeof ensureCraftingPinboardState === 'function') ensureCraftingPinboardState(oldChar);
+        oldChar.version = '1.5.20';
+        if (!silent) log('Upgraded save data to v1.5.20 (Mobile v2, codex, objective quick travel, lightweight community panel, and epic quest target migration).', 'info');
+      }
+
+      if (oldChar.version === '1.5.18') {
+        normalizeClassQuestTargetToCurrentEpic(oldChar);
+        oldChar.version = '1.5.20';
+        if (!silent) log('Upgraded save data to v1.5.20 (epic quest target migration and lightweight community panel).', 'info');
+      }
+
+      if (oldChar.version === '1.5.19') {
+        oldChar.version = '1.5.20';
+        if (!silent) log('Upgraded save data to v1.5.20 (lightweight Discord community panel).', 'info');
+      }
+
       if (oldChar.version != CURRENT_VERSION) {
         oldChar.version = CURRENT_VERSION;
         if (!silent) log('Upgraded save data to v' + CURRENT_VERSION + '.', 'info');
@@ -21559,6 +22216,7 @@ async function exportSlotsToFile(options = {}) {
 
       // First-session guided tour (only shows once, ever, per browser).
       if (typeof maybeStartTour === 'function') maybeStartTour();
+      if (typeof maybeShowWhatsNewV1514 === 'function') maybeShowWhatsNewV1514();
     }
 
     function deleteSlot(i) {
@@ -21756,6 +22414,7 @@ async function exportSlotsToFile(options = {}) {
       if (_visibleTab('aa')) renderAATab();
       if (_visibleTab('prestige')) renderPrestigeTab();
       if (_visibleTab('quests')) renderQuests();
+      if (_visibleTab('codex') && typeof renderCodexTab === 'function') renderCodexTab();
       if (_visibleTab('bank')) renderBank();
       const afkGoalSelect = document.getElementById('afk-goal-select');
       if (afkGoalSelect) {
@@ -21781,6 +22440,8 @@ async function exportSlotsToFile(options = {}) {
       renderStatusEffects();
       renderDamageMeter();
       if (typeof window.renderPinnedQuestTracker === 'function') window.renderPinnedQuestTracker();
+      if (typeof renderObjectiveHudV1514 === 'function') renderObjectiveHudV1514();
+      if (typeof renderMobileV2HUD === 'function') renderMobileV2HUD();
       if (typeof window.renderCombatStatsPanel === 'function') window.renderCombatStatsPanel();
       requestAnimationFrame(syncCombatLogSize);
     }
@@ -22054,36 +22715,53 @@ async function exportSlotsToFile(options = {}) {
       const ROW_GAP    = 56; // px between unit centers stacked within the field
       const SPRITE     = 34; // sprite box height (see .battle-sprite)
 
-      // Row sizes front→back (apex first). Hand-tuned so each count reads as a
-      // clean wedge with a single apex aimed at the foe and the widest row at the
-      // back. Falls back to a growing 1,2,3,… build for unexpected larger groups.
-      const PYRAMIDS = {
-        1: [1],
-        2: [1, 1],
-        3: [1, 2],
-        4: [1, 3],
-        5: [1, 2, 2],
-        6: [1, 2, 3]
-      };
-      let rows;
-      if (PYRAMIDS[n]) {
-        rows = PYRAMIDS[n];
+      // Fill order: backline (3 slots) fills first, then midline (2 slots),
+      // then frontline (1 slot). So at count 1 → only back has 1 unit; at
+      // count 3 → back is full (3); at count 5 → back(3)+mid(2); at count
+      // 6 → back(3)+mid(2)+front(1). rows[] is ordered front→back for depth
+      // assignment, but units are assigned in back→front order so early
+      // arrivals land in the deepest (back) row.
+      //
+      // rows[]: each entry is the unit count for that row, front→back.
+      // unitOrder[]: the index into `units` NodeList for each row slot,
+      //              arranged so backline gets the lowest indices.
+
+      // Determine row counts [front, mid, back] based on n
+      let frontCount = 0, midCount = 0, backCount = 0;
+      if (n <= 3) {
+        backCount = n;
+      } else if (n <= 5) {
+        backCount = 3;
+        midCount  = n - 3;
       } else {
-        rows = [];
-        let placed = 0, want = 1;
-        while (placed < n) {
-          const size = Math.min(want, n - placed);
-          rows.push(size);
-          placed += size;
-          want += 1;
-        }
+        backCount = 3;
+        midCount  = 2;
+        frontCount = n - 5;
       }
+
+      // rows front→back (apex first for depth computation)
+      const rows = [];
+      if (frontCount > 0) rows.push(frontCount);
+      if (midCount  > 0)  rows.push(midCount);
+      if (backCount > 0)  rows.push(backCount);
+
+      // Build a mapping: rowIndex (in rows[]) → which unit indices to use.
+      // Back row gets units 0…backCount-1, mid gets next, front gets last.
+      // rows is ordered front→back, so back row is rows[rows.length-1].
+      // We need to assign unit indices in back→mid→front order.
+      const rowUnitIndices = rows.map(() => []);
+      let unitIdx = 0;
+      // Fill back row first (last entry in rows[])
+      for (let k = 0; k < backCount;  k++) rowUnitIndices[rows.length - 1].push(unitIdx++);
+      // Fill mid row second (second-to-last, if it exists)
+      if (midCount > 0)   for (let k = 0; k < midCount;  k++) rowUnitIndices[rows.length - 2].push(unitIdx++);
+      // Fill front row last (first entry in rows[], if it exists)
+      if (frontCount > 0) for (let k = 0; k < frontCount; k++) rowUnitIndices[0].push(unitIdx++);
 
       const depthProp = side === 'party' ? 'right' : 'left';
       const offProp   = side === 'party' ? 'left' : 'right';
       const stageH = (containerEl.parentElement && containerEl.parentElement.clientHeight) || 240;
 
-      let idx = 0;
       rows.forEach((size, rowFromFront) => {
         // Front row is the apex: deepest into the field (furthest from this
         // side's own edge). Back row sits flush at the edge.
@@ -22091,16 +22769,17 @@ async function exportSlotsToFile(options = {}) {
         // Center this row's units vertically around the stage middle.
         const rowHeight = (size - 1) * ROW_GAP;
         const startY = (stageH - rowHeight) / 2 - SPRITE / 2;
-        for (let k = 0; k < size; k++) {
-          const u = units[idx++];
-          if (!u) break;
+        const indices = rowUnitIndices[rowFromFront] || [];
+        indices.forEach((unitIndex, k) => {
+          const u = units[unitIndex];
+          if (!u) return;
           u.style.position = 'absolute';
           u.style[depthProp] = depth + 'px';
           u.style[offProp] = '';
           u.style.top = Math.round(startY + k * ROW_GAP) + 'px';
           u.style.marginLeft = '';
           u.style.marginRight = '';
-        }
+        });
       });
     }
 
@@ -27080,12 +27759,47 @@ async function exportSlotsToFile(options = {}) {
       const bossLike = !!(first.named || first.boss || (inDungeon && floor % 5 === 0));
       let packSize = 1;
 
-      // Normal outdoor pulls sometimes bring friends. Dungeon trash has a
-      // smaller chance; named/boss/forced hunt targets stay solo for clarity.
+      // v1.5.13 — Zone-tier-aware pack scaling. Replaces the old flat
+      // 3-max table (which produced the same distribution from Newbie
+      // Yard to The Final Veil). Tier is derived from the active zone's
+      // minLvl so it doesn't depend on ZONES insertion order.
+      //
+      //   Early    : minLvl < 18           — mostly solo, rare trio
+      //   Mid      : minLvl 18 - 94        — duos + trios common, rare quad
+      //   High-end : minLvl 95 - 169       — duos/trios/quads, occasional 5
+      //   End-game : minLvl >= 170         — at least a duo outdoors,
+      //                                       up to a 6-mob ambush
+      //
+      // Each distribution is a cumulative-threshold array: walk it in
+      // order, take the first entry whose probability exceeds the roll.
+      // Named/boss/forced-hunt-target encounters stay solo for clarity;
+      // dungeon bosses (floor % 5 === 0) also stay solo via bossLike.
       if (!bossLike && !hasForcedTarget) {
+        const zoneMinLvl = (zone && Number.isFinite(zone.minLvl)) ? zone.minLvl : 1;
+        let tier;
+        if      (zoneMinLvl < 18)   tier = 'early';
+        else if (zoneMinLvl < 95)   tier = 'mid';
+        else if (zoneMinLvl < 170)  tier = 'high';
+        else                        tier = 'end';
+
+        // [maxSize, cumulativeProbability] pairs, evaluated in order.
+        // The last entry must end at >= 1.0 so Math.random() always
+        // resolves; .find() falls back to the last pair as a safety net.
+        let thresholds;
+        if (!inDungeon) {
+          if      (tier === 'early') thresholds = [[1, 0.65], [2, 0.90], [3, 1.00]];
+          else if (tier === 'mid')   thresholds = [[1, 0.45], [2, 0.75], [3, 0.93], [4, 1.00]];
+          else if (tier === 'high')  thresholds = [[1, 0.20], [2, 0.50], [3, 0.80], [4, 0.95], [5, 1.00]];
+          else /* end-game */        thresholds = [[2, 0.10], [3, 0.35], [4, 0.75], [5, 0.95], [6, 1.00]];
+        } else {
+          if      (tier === 'early') thresholds = [[1, 0.80], [2, 0.94], [3, 1.00]];
+          else if (tier === 'mid')   thresholds = [[1, 0.65], [2, 0.85], [3, 0.97], [4, 1.00]];
+          else if (tier === 'high')  thresholds = [[1, 0.45], [2, 0.70], [3, 0.90], [4, 0.98], [5, 1.00]];
+          else /* end-game */        thresholds = [[1, 0.20], [2, 0.45], [3, 0.70], [4, 0.90], [5, 0.98], [6, 1.00]];
+        }
         const roll = Math.random();
-        if (!inDungeon) packSize = roll < 0.10 ? 3 : (roll < 0.30 ? 2 : 1);
-        else packSize = roll < 0.06 ? 3 : (roll < 0.18 ? 2 : 1);
+        const pick = thresholds.find(p => roll < p[1]) || thresholds[thresholds.length - 1];
+        packSize = pick[0];
       }
 
       mobPack = [first];
@@ -27288,6 +28002,7 @@ async function exportSlotsToFile(options = {}) {
         dmg = critRoll.dmg;
         if (critRoll.crit) {
           try { if (window.SFX) SFX.crit(); } catch (e) {}
+          if (typeof mobileV2Vibrate === 'function') mobileV2Vibrate('crit');
           addDamageMeterCrit();
           // Chance to stun on crit
           if (Math.random() < PHASE1.stunOnCritChance) {
@@ -27557,6 +28272,7 @@ async function exportSlotsToFile(options = {}) {
       ensureExtendedSystems(char);
       if (typeof addDamageMeterKill === 'function') addDamageMeterKill();
       const wasBoss = !!mob.boss;
+      if (typeof recordBestiaryKill === 'function') recordBestiaryKill(mob, char.zone);
       bumpStat('kills', 1);
       if (typeof queueGuildKill === 'function') queueGuildKill(1);
       if (typeof queueGuildQuest === 'function') {
@@ -27729,6 +28445,7 @@ async function exportSlotsToFile(options = {}) {
       }
 
       if (typeof maybeDropHerb === 'function') maybeDropHerb();
+      if (typeof maybeNotifyCraftingPinboard === 'function') maybeNotifyCraftingPinboard();
       checkLevelUp(); renderQuests();
 
       // Multi-opponent encounter support: remove the defeated active target and
@@ -27791,6 +28508,7 @@ async function exportSlotsToFile(options = {}) {
         char.abilities = rollClassAbilities(char.cls, char.level);
         log('*** LEVEL UP! You are now level ' + char.level + '! ***', 'lvl');
         try { if (window.SFX) SFX.levelUp(); } catch (e) {}
+        if (typeof mobileV2Vibrate === 'function') mobileV2Vibrate('level');
         if (typeof showToast === 'function') showToast('⬆ Level ' + char.level + '! HP, MP and stats increased.', 'success', 3000);
         const _ov = document.getElementById('levelup-overlay');
         if (_ov) { _ov.classList.remove('active'); void _ov.offsetWidth; _ov.classList.add('active'); }
@@ -32288,12 +33006,74 @@ async function exportSlotsToFile(options = {}) {
       dungeon: '🏛 Dungeon', quests: '📜 Quests', aa: '✨ Alternate Ascension',
       prestige: '🏆 Prestige & Ascension', spells: '🔮 Spellbook', runes: '💎 Runes',
       loot: '🔍 Loot Filter', bank: '🏦 Shared Bank', group: '👥 Group',
-      tradeskill: '⚗️ Alchemy', leaderboard: '🏅 Leaderboard', about: 'ℹ About EmberQuest',
+      tradeskill: '⚗️ Alchemy', leaderboard: '🏅 Leaderboard', about: 'ℹ About EmberQuest', community: '💬 EmberQuest Discord',
       arena: '⚔ Arena', guild: '🛡 Guild', loadouts: '🎛 Combat Loadouts',
-      admin: '🛡 Admin Tools'
+      admin: '🛡 Admin Tools', codex: '📖 Bestiary Codex'
     };
     const POPUP_PANEL_IDS = new Set(Object.keys(POPUP_PANEL_TITLES));
     let _activePopup = null;
+
+    const DISCORD_INVITE_URL_V1520 = 'https://discord.gg/vj3W9eqjv3';
+    const DISCORD_INVITE_API_V1520 = 'https://discord.com/api/v10/invites/vj3W9eqjv3?with_counts=true&with_expiration=false';
+    const DISCORD_WIDGET_API_V1520 = 'https://discord.com/api/guilds/1514773974331031602/widget.json';
+    const DiscordCommunityV1520 = { loaded: false, loading: false };
+
+    function formatDiscordCountV1520(value) {
+      const n = Math.floor(Number(value));
+      return Number.isFinite(n) && n >= 0 ? n.toLocaleString() : '—';
+    }
+
+    function setDiscordTextV1520(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function setDiscordStatusV1520(message, kind = '') {
+      const el = document.getElementById('discord-status-v1520');
+      if (!el) return;
+      el.textContent = message;
+      el.classList.remove('ok', 'error');
+      if (kind) el.classList.add(kind);
+    }
+
+    async function renderCommunityTab(forceReload = false) {
+      if (!forceReload && DiscordCommunityV1520.loaded) return;
+      if (DiscordCommunityV1520.loading) return;
+      DiscordCommunityV1520.loading = true;
+      setDiscordStatusV1520('Checking Discord counts…');
+      setDiscordTextV1520('discord-online-v1520', '…');
+      setDiscordTextV1520('discord-members-v1520', '…');
+
+      try {
+        const inviteRes = await fetch(DISCORD_INVITE_API_V1520, { cache: 'no-store' });
+        if (!inviteRes.ok) throw new Error('Invite counts unavailable');
+        const invite = await inviteRes.json();
+        const online = invite.approximate_presence_count;
+        const members = invite.approximate_member_count;
+        setDiscordTextV1520('discord-online-v1520', formatDiscordCountV1520(online));
+        setDiscordTextV1520('discord-members-v1520', formatDiscordCountV1520(members));
+        setDiscordStatusV1520('Counts loaded from Discord. The join link opens a new tab.', 'ok');
+        DiscordCommunityV1520.loaded = true;
+        return;
+      } catch (inviteErr) {
+        try {
+          const widgetRes = await fetch(DISCORD_WIDGET_API_V1520, { cache: 'no-store' });
+          if (!widgetRes.ok) throw new Error('Widget counts unavailable');
+          const widget = await widgetRes.json();
+          setDiscordTextV1520('discord-online-v1520', formatDiscordCountV1520(widget.presence_count));
+          setDiscordTextV1520('discord-members-v1520', '—');
+          setDiscordStatusV1520('Online count loaded. Total members are hidden by Discord, but the join link still works.', 'ok');
+          DiscordCommunityV1520.loaded = true;
+          return;
+        } catch (widgetErr) {
+          setDiscordTextV1520('discord-online-v1520', '—');
+          setDiscordTextV1520('discord-members-v1520', '—');
+          setDiscordStatusV1520('Discord counts are unavailable right now. Use Join Discord to open the invite.', 'error');
+        }
+      } finally {
+        DiscordCommunityV1520.loading = false;
+      }
+    }
 
     function openPopup(name) {
       if (_activePopup === name) { closePopup(); return; }
@@ -32327,8 +33107,10 @@ async function exportSlotsToFile(options = {}) {
       if (name === 'about') renderHallOfFame();
       if (name === 'arena') renderArenaTab();
       if (name === 'guild') renderGuildTab();
+      if (name === 'community') renderCommunityTab();
       if (name === 'loadouts') renderLoadoutsTab();
       if (name === 'admin') renderAdminTab();
+      if (name === 'codex' && typeof renderCodexTab === 'function') renderCodexTab();
       if (typeof window.recordPanelUse === 'function') window.recordPanelUse(name);
     }
 
@@ -33228,8 +34010,430 @@ async function exportSlotsToFile(options = {}) {
       updateTabAccessibility();
       scrollActiveTabIntoView();
       if (typeof window.recordPanelUse === 'function') window.recordPanelUse(tab);
+      if (typeof setMobileV2NavActive === 'function') setMobileV2NavActive(tab);
       return tab;
     }
+
+    /* FEATURE: Mobile UI v2 — one-thumb phone play.
+       Rationale: the legacy mobile layout keeps the desktop column model, which
+       preserves content but makes a phone player pan and hunt. This layer keeps
+       the desktop DOM intact, hides side panels only under ui-layout-mobile-v2,
+       and adds a purpose-built HUD/bottom-nav/sheet controller around the
+       existing tabs and popups. */
+    function getMobileV2Prefs() {
+      const defaults = { haptics: true };
+      try {
+        const raw = localStorage.getItem(MOBILE_V2_PREFS_KEY);
+        return Object.assign(defaults, raw ? JSON.parse(raw) : {});
+      } catch (e) { return defaults; }
+    }
+    function saveMobileV2Prefs(prefs) {
+      try { localStorage.setItem(MOBILE_V2_PREFS_KEY, JSON.stringify(Object.assign({ haptics: true }, prefs || {}))); } catch (e) {}
+    }
+    function toggleMobileV2Haptics() {
+      const prefs = getMobileV2Prefs();
+      prefs.haptics = !prefs.haptics;
+      saveMobileV2Prefs(prefs);
+      renderMobileV2More();
+      if (typeof showToast === 'function') showToast('Mobile haptics: ' + (prefs.haptics ? 'On' : 'Off'), 'info');
+    }
+    function mobileV2Vibrate(kind) {
+      try {
+        const screen = document.getElementById('screen-game');
+        if (!screen || !screen.classList.contains('ui-layout-mobile-v2')) return;
+        if (!getMobileV2Prefs().haptics || !navigator.vibrate) return;
+        const pattern = kind === 'level' ? [30, 30, 60] : (kind === 'crit' ? [18, 24, 18] : 12);
+        navigator.vibrate(pattern);
+      } catch (e) {}
+    }
+    function setMobileV2NavActive(tab) {
+      document.querySelectorAll('[data-mobile-v2-tab]').forEach(btn => {
+        const active = btn.dataset.mobileV2Tab === tab;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-current', active ? 'page' : 'false');
+      });
+      const chatBadge = document.getElementById('mobile-v2-chat-badge');
+      const desktopBadge = document.getElementById('chat-unread-badge');
+      if (chatBadge && desktopBadge) {
+        chatBadge.textContent = desktopBadge.textContent || '0';
+        chatBadge.style.display = desktopBadge.style.display === 'none' ? 'none' : '';
+      }
+    }
+    function openMobileV2Route(route) {
+      closeMobileV2More();
+      closeMobileV2Info();
+      if (route === 'quests') { openPopup('quests'); setMobileV2NavActive('quests'); return false; }
+      if (route === 'more') { openMobileV2More(); return false; }
+      switchTab(route);
+      setMobileV2NavActive(route);
+      return false;
+    }
+    function renderMobileV2HUD() {
+      if (!char) return;
+      const name = document.getElementById('mobile-v2-name');
+      const sub = document.getElementById('mobile-v2-sub');
+      const gold = document.getElementById('mobile-v2-gold');
+      const afk = document.getElementById('mobile-v2-afk');
+      if (name) name.textContent = (char.activeTitle ? '[' + char.activeTitle + '] ' : '') + char.name;
+      if (sub) sub.textContent = 'Lv ' + char.level + ' ' + (char.race ? char.race + ' ' : '') + char.cls + ' · ' + ((ZONES[char.zone] || {}).name || 'Unknown Zone');
+      if (gold) gold.textContent = fmt(Math.max(0, Math.floor(Number(char.gold || 0)))) + 'g';
+      if (afk) afk.textContent = afkOn ? 'AFK On' : 'AFK Off';
+      const hpPct = char.maxHp ? Math.max(0, Math.min(100, char.hp / char.maxHp * 100)) : 0;
+      const mpPct = char.maxMp ? Math.max(0, Math.min(100, char.mp / char.maxMp * 100)) : 0;
+      const xpPct = char.xpNext ? Math.max(0, Math.min(100, char.xp / char.xpNext * 100)) : 0;
+      const setFill = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = pct + '%'; };
+      setFill('mobile-v2-hp-fill', hpPct); setFill('mobile-v2-mp-fill', mpPct); setFill('mobile-v2-xp-fill', xpPct);
+      const hpText = document.getElementById('mobile-v2-hp-text');
+      const mpText = document.getElementById('mobile-v2-mp-text');
+      const xpText = document.getElementById('mobile-v2-xp-text');
+      if (hpText) hpText.textContent = 'HP ' + Math.round(hpPct) + '%';
+      if (mpText) mpText.textContent = 'MP ' + Math.round(mpPct) + '%';
+      if (xpText) xpText.textContent = 'XP ' + Math.round(xpPct) + '%';
+      const active = Array.from(document.querySelectorAll('#center-panel .tab.active'))[0];
+      const onclick = active ? (active.getAttribute('onclick') || '') : '';
+      const match = onclick.match(/switchTab\('([^']+)'\)/);
+      if (match) setMobileV2NavActive(match[1]);
+    }
+    function setMobileV2LayoutMode(mode) {
+      const normalized = normalizeUiLayoutMode(mode);
+      closeMobileV2More();
+      closeMobileV2Info();
+      applyUILayoutState({ layoutMode: normalized }, { silent: true });
+      if (typeof showToast === 'function') {
+        const label = normalized === 'mobile-v2' ? 'Mobile v2' : (normalized === 'mobile' ? 'Mobile legacy' : 'Desktop');
+        showToast('Layout: ' + label, 'success', 1600);
+      }
+      return false;
+    }
+    function renderMobileV2More() {
+      const body = document.getElementById('mobile-v2-more-body');
+      if (!body || !char) return;
+      const prefs = getMobileV2Prefs();
+      const popupButton = (id, label) => '<button class="btn" onclick="openPopup(\'' + id + '\');closeMobileV2More()">' + label + '</button>';
+      const layoutButton = (mode, label) => '<button class="btn ' + (uiLayoutMode === mode ? 'active' : '') + '" onclick="setMobileV2LayoutMode(\'' + mode + '\')">' + label + '</button>';
+      body.innerHTML =
+        '<div class="mobile-v2-info-card"><strong>' + escapeHtmlSafe(char.name) + '</strong><br>Level ' + fmt(char.level) + ' ' + escapeHtmlSafe(char.cls) + ' · ' + escapeHtmlSafe((ZONES[char.zone] || {}).name || 'Unknown Zone') + '<br>' + fmt(char.gold || 0) + 'g · ' + (afkOn ? 'AFK running' : 'AFK stopped') + '</div>' +
+        '<div class="mobile-v2-section-title">Layout</div>' +
+        '<div class="mobile-v2-more-grid mobile-v2-layout-grid">' +
+          layoutButton('desktop', 'Desktop') +
+          layoutButton('mobile', 'Mobile legacy') +
+          layoutButton('mobile-v2', 'Mobile v2') +
+        '</div>' +
+        '<div class="mobile-v2-section-title">Quick actions</div>' +
+        '<div class="mobile-v2-more-grid">' +
+          '<button class="btn" onclick="openMobileV2Info(\'character\')">Character</button>' +
+          '<button class="btn" onclick="openMobileV2Info(\'auto\')">Auto-Battle</button>' +
+          '<button class="btn" onclick="openSettingsModal(event);closeMobileV2More()">Settings</button>' +
+          '<button class="btn" onclick="manualSave();closeMobileV2More()">Save Now</button>' +
+          '<button class="btn" onclick="toggleMobileV2Haptics()">Haptics: ' + (prefs.haptics ? 'On' : 'Off') + '</button>' +
+          '<button class="btn" onclick="goToCharSelect()">Characters</button>' +
+          '<button class="btn" onclick="promptImportSlots();closeMobileV2More()">Import Save</button>' +
+        '</div>' +
+        '<div class="mobile-v2-section-title">Panels</div>' +
+        '<div class="mobile-v2-more-grid">' +
+          popupButton('spells', '🔮 Spells') + popupButton('group', '👥 Group') + popupButton('loadouts', '🎛 Loadouts') + popupButton('aa', '✨ AA') +
+          popupButton('prestige', '🏆 Prestige') + popupButton('dungeon', '🏛 Dungeon') + popupButton('codex', '📖 Codex') + popupButton('loot', '🔍 Loot Filter') +
+          popupButton('bank', '🏦 Bank') + popupButton('runes', '💎 Runes') + popupButton('tradeskill', '⚗️ Alchemy') + popupButton('leaderboard', '🏅 Leaderboard') +
+          popupButton('arena', '⚔ Arena') + popupButton('guild', '🛡 Guild') + popupButton('community', '💬 Discord') + popupButton('about', 'ℹ About') +
+        '</div>';
+    }
+    function openMobileV2More() {
+      renderMobileV2More();
+      const el = document.getElementById('mobile-v2-more-backdrop');
+      if (el) el.classList.add('open');
+      setMobileV2NavActive('more');
+      return false;
+    }
+    function closeMobileV2More() {
+      document.getElementById('mobile-v2-more-backdrop')?.classList.remove('open');
+    }
+    function openMobileV2Info(kind) {
+      closeMobileV2More();
+      const title = document.getElementById('mobile-v2-info-title');
+      const body = document.getElementById('mobile-v2-info-body');
+      if (!title || !body || !char) return;
+      if (kind === 'auto') {
+        title.textContent = 'Auto-Battle';
+        const contract = (typeof getPrimaryContract === 'function') ? getPrimaryContract(char) : null;
+        body.innerHTML = '<div class="mobile-v2-info-card"><strong>Status</strong><br>' + (afkOn ? 'AFK is running.' : 'AFK is stopped.') + '<br>Goal: ' + escapeHtmlSafe(AFK_GOALS[char.afkGoal || 'balanced']?.label || char.afkGoal || 'Balanced') + '</div>' +
+          '<div class="mobile-v2-info-card"><strong>Current contract</strong><br>' + (contract && contract.active ? escapeHtmlSafe(contract.target) + ' · ' + fmt(contract.progress || 0) + '/' + fmt(contract.count || 0) : 'No active contract') + '</div>' +
+          '<div class="mobile-v2-more-grid"><button class="btn active" onclick="toggleAFK();renderMobileV2HUD();openMobileV2Info(\'auto\')">' + (afkOn ? 'Disable AFK' : 'Enable AFK') + '</button><button class="btn" onclick="openPopup(\'loadouts\');closeMobileV2Info()">Loadouts</button><button class="btn" onclick="openPopup(\'quests\');closeMobileV2Info()">Contracts</button><button class="btn" onclick="openPopup(\'group\');closeMobileV2Info()">Group</button></div>';
+      } else {
+        title.textContent = 'Character';
+        const aaPts = char.aa && Number.isFinite(Number(char.aa.points)) ? Math.floor(Number(char.aa.points)) : 0;
+        body.innerHTML = '<div class="mobile-v2-info-card"><strong>' + escapeHtmlSafe(char.name) + '</strong><br>Level ' + fmt(char.level) + ' ' + escapeHtmlSafe((char.race ? char.race + ' ' : '') + char.cls) + '<br>' + escapeHtmlSafe((ZONES[char.zone] || {}).name || 'Unknown Zone') + '</div>' +
+          '<div class="mobile-v2-info-card"><strong>Stats</strong><br>ATK ' + fmt(char.atk) + ' · DEF ' + fmt(char.def) + ' · AA ' + fmt(aaPts) + '<br>HP ' + fmt(char.hp) + '/' + fmt(char.maxHp) + ' · MP ' + fmt(char.mp) + '/' + fmt(char.maxMp) + '</div>' +
+          '<div class="mobile-v2-more-grid"><button class="btn" onclick="openPopup(\'prestige\');closeMobileV2Info()">Prestige</button><button class="btn" onclick="openPopup(\'aa\');closeMobileV2Info()">AA</button><button class="btn" onclick="openPopup(\'group\');closeMobileV2Info()">Group</button><button class="btn" onclick="openPopup(\'codex\');closeMobileV2Info()">Codex</button></div>';
+      }
+      document.getElementById('mobile-v2-info-backdrop')?.classList.add('open');
+    }
+    function closeMobileV2Info() { document.getElementById('mobile-v2-info-backdrop')?.classList.remove('open'); }
+
+    /* FEATURE: Objective HUD — reduce decision friction.
+       Rationale: the game already has daily quests, class quests, and elite
+       contracts, but they live in separate panels. This read-only tracker picks
+       the most actionable goals and shows them in combat, then links back to the
+       existing Quests panel for claiming or management. */
+    function findObjectiveZoneForMobV1517(mobName, preferredZone = null) {
+      if (!mobName || !Array.isArray(ZONES)) return -1;
+      const needle = String(mobName).trim().toLowerCase();
+      if (!needle) return -1;
+      const zoneHasMob = idx => {
+        const z = ZONES[idx];
+        return !!(z && Array.isArray(z.mobs) && z.mobs.some(m => String(m).trim().toLowerCase() === needle));
+      };
+      const pref = Math.floor(Number(preferredZone));
+      if (Number.isFinite(pref) && pref >= 0 && pref < ZONES.length && zoneHasMob(pref)) return pref;
+      if (char && zoneHasMob(char.zone)) return char.zone;
+      for (let i = 0; i < ZONES.length; i++) if (zoneHasMob(i)) return i;
+      return -1;
+    }
+    function buildObjectiveZoneButtonV1517(row) {
+      if (!char || !row || !Number.isFinite(Number(row.zoneIdx))) return '';
+      const zoneIdx = Math.max(0, Math.min(ZONES.length - 1, Math.floor(Number(row.zoneIdx))));
+      const zone = ZONES[zoneIdx];
+      if (!zone) return '';
+      const isCurrent = zoneIdx === char.zone;
+      const tooLow = char.level < Number(zone.minLvl || 1);
+      const target = row.mobName || '';
+      const jsTarget = escapeHtmlSafe(JSON.stringify(String(target || '')));
+      const zoneName = zone.name || 'Zone';
+      const label = isCurrent ? (target ? 'Hunt Target' : 'Here') : ('Go: ' + zoneName);
+      const title = tooLow
+        ? ('Requires level ' + zone.minLvl + ' to enter ' + zoneName + '.')
+        : (isCurrent ? (target ? 'Lock Find Mob to ' + target + ' in this zone.' : 'You are already in this zone.') : ('Travel to ' + zoneName + (target ? ' for ' + target : '') + '.'));
+      return '<button class="btn objective-zone-btn-v1517" title="' + escapeHtmlSafe(title) + '" onclick="travelToObjectiveZoneV1517(' + zoneIdx + ',' + jsTarget + ')" ' + (tooLow ? 'disabled' : '') + '>' + escapeHtmlSafe(label) + '</button>';
+    }
+    function travelToObjectiveZoneV1517(zoneIdx, mobName = '') {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const idx = Math.max(0, Math.min(ZONES.length - 1, Math.floor(Number(zoneIdx || 0))));
+      const zone = ZONES[idx];
+      if (!zone) { log('Objective zone is invalid.', 'info'); return; }
+      if (char.level < Number(zone.minLvl || 1)) {
+        log('You are too low level to enter ' + zone.name + '.', 'info');
+        return;
+      }
+      const target = String(mobName || '').trim();
+      const targetInZone = target && Array.isArray(zone.mobs) && zone.mobs.includes(target);
+      if (targetInZone) {
+        if (!char.huntTargets || typeof char.huntTargets !== 'object' || Array.isArray(char.huntTargets)) char.huntTargets = {};
+        char.huntTargets[String(idx)] = target;
+      }
+      if (idx !== char.zone) {
+        travelZone(idx);
+        if (targetInZone) log('Objective hunt target locked: ' + target + '.', 'info');
+      } else {
+        if (targetInZone) log('Objective hunt target locked: ' + target + ' in ' + zone.name + '.', 'info');
+        else log('You are already in ' + zone.name + '.', 'info');
+        switchTab('combat');
+        renderAll();
+        autoSave();
+      }
+    }
+    function getObjectiveRowsV1514() {
+      if (!char) return [];
+      ensureExtendedSystems(char);
+      const rows = [];
+      const contract = (typeof getPrimaryContract === 'function') ? getPrimaryContract(char) : null;
+      if (contract && contract.active) {
+        const contractZone = Number.isFinite(Number(contract.zone)) ? Math.max(0, Math.min(ZONES.length - 1, Math.floor(Number(contract.zone)))) : -1;
+        rows.push({
+          label: contract.complete ? 'Contract ready' : 'Elite contract',
+          text: (contract.bossStep ? 'Named/Elite' : contract.target) + ' · ' + fmt(contract.progress || 0) + '/' + fmt(contract.count || 0),
+          ready: !!contract.complete,
+          zoneIdx: contractZone,
+          mobName: contract.bossStep ? '' : (contract.target || '')
+        });
+      }
+      const daily = Array.isArray(char.dailyQuests) ? char.dailyQuests.find(q => q && !q.claimed && (q.done || (q.count && q.prog < q.count))) : null;
+      if (daily) {
+        const dailyMob = daily.mob || '';
+        rows.push({
+          label: daily.done ? 'Daily ready' : 'Daily',
+          text: daily.name.replace(/^Daily:\s*/, '') + ' · ' + fmt(daily.prog || 0) + '/' + fmt(daily.count || 0),
+          ready: !!daily.done,
+          zoneIdx: dailyMob ? findObjectiveZoneForMobV1517(dailyMob) : -1,
+          mobName: dailyMob
+        });
+      }
+      const cq = char.classQuest;
+      if (cq && !cq.claimed && !cq.rewardClaimed) {
+        rows.push({
+          label: cq.completed ? 'Class quest ready' : 'Class quest',
+          text: (cq.target || 'Epic target') + ' · ' + fmt(cq.progress || 0) + '/' + fmt(cq.count || 0),
+          ready: !!cq.completed,
+          zoneIdx: cq.target ? findObjectiveZoneForMobV1517(cq.target) : -1,
+          mobName: cq.target || ''
+        });
+      }
+      if (!rows.length) rows.push({ label: 'Next step', text: 'Pick a zone, find a mob, or enable AFK.', ready: false, zoneIdx: -1, mobName: '' });
+      return rows.slice(0, 3);
+    }
+    function renderObjectiveHudV1514() {
+      const list = document.getElementById('objective-list-v1514');
+      if (!list || !char) return;
+      const rows = getObjectiveRowsV1514();
+      list.innerHTML = rows.map(r => {
+        const action = (!r.ready && Number.isFinite(Number(r.zoneIdx)) && Number(r.zoneIdx) >= 0) ? buildObjectiveZoneButtonV1517(r) : '';
+        return '<div class="objective-row"><div class="objective-main-v1517"><strong>' + (r.ready ? '✅ ' : '') + escapeHtmlSafe(r.label) + '</strong><span>' + escapeHtmlSafe(r.text) + '</span></div>' + action + '</div>';
+      }).join('');
+      renderCraftingPinboardV1514();
+    }
+
+    /* FEATURE: Bestiary Codex — make repetition feel like discovery.
+       Rationale: EmberQuest is a grind-forward RPG. Tracking each defeated mob
+       gives long sessions a collectible history without changing combat balance
+       or requiring server schema changes. */
+    function ensureBestiaryCodexState(targetChar) {
+      if (!targetChar) return;
+      if (!targetChar.codex || typeof targetChar.codex !== 'object' || Array.isArray(targetChar.codex)) targetChar.codex = { mobs: {}, discoveredAt: Date.now() };
+      if (!targetChar.codex.mobs || typeof targetChar.codex.mobs !== 'object' || Array.isArray(targetChar.codex.mobs)) targetChar.codex.mobs = {};
+      Object.keys(targetChar.codex.mobs).forEach(k => {
+        const e = targetChar.codex.mobs[k];
+        if (!e || typeof e !== 'object') { delete targetChar.codex.mobs[k]; return; }
+        e.kills = Math.max(0, Math.floor(Number(e.kills || 0)));
+        e.maxLevel = Math.max(1, Math.floor(Number(e.maxLevel || 1)));
+        e.zone = Math.max(0, Math.floor(Number(e.zone || 0)));
+        e.named = !!e.named; e.elite = !!e.elite; e.boss = !!e.boss;
+      });
+    }
+    function recordBestiaryKill(deadMob, zoneIdx) {
+      if (!char || !deadMob) return;
+      ensureBestiaryCodexState(char);
+      const key = String(deadMob.baseName || deadMob.name || 'Unknown Creature');
+      const now = Date.now();
+      const entry = char.codex.mobs[key] || { name: key, kills: 0, firstSeen: now, lastSeen: 0, maxLevel: 1, zone: zoneIdx || 0, named: false, elite: false, boss: false };
+      entry.name = key;
+      entry.kills = Math.max(0, Math.floor(Number(entry.kills || 0))) + 1;
+      entry.lastSeen = now;
+      entry.maxLevel = Math.max(Number(entry.maxLevel || 1), Number(deadMob.level || 1));
+      entry.zone = Math.max(0, Math.floor(Number(zoneIdx || 0)));
+      entry.named = !!(entry.named || deadMob.named);
+      entry.elite = !!(entry.elite || deadMob.elite);
+      entry.boss = !!(entry.boss || deadMob.boss);
+      if (deadMob.namedMechanic && deadMob.namedMechanic.name) entry.mechanic = deadMob.namedMechanic.name;
+      char.codex.mobs[key] = entry;
+    }
+    function renderCodexTab() {
+      const list = document.getElementById('codex-list-v1514');
+      const summary = document.getElementById('codex-summary-v1514');
+      if (!list || !summary || !char) return;
+      ensureBestiaryCodexState(char);
+      const entries = Object.values(char.codex.mobs || {}).sort((a, b) => (b.kills || 0) - (a.kills || 0) || String(a.name).localeCompare(String(b.name)));
+      const totalKills = entries.reduce((s, e) => s + (Number(e.kills) || 0), 0);
+      summary.textContent = entries.length ? (entries.length + ' creature entries · ' + fmt(totalKills) + ' tracked kills') : 'No creatures recorded yet. Defeat mobs to fill the codex.';
+      if (!entries.length) { list.innerHTML = '<div class="codex-card-v1514"><div class="codex-name">Unknown pages</div><div class="codex-meta">The first kill of each creature type adds a page here.</div></div>'; return; }
+      list.innerHTML = entries.map(e => {
+        const zone = ZONES[e.zone] ? ZONES[e.zone].name : 'Unknown Zone';
+        const tags = [];
+        if (e.boss) tags.push('Boss');
+        if (e.named) tags.push('Named');
+        if (e.elite) tags.push('Elite');
+        if (e.mechanic) tags.push(e.mechanic);
+        return '<div class="codex-card-v1514">' +
+          '<div class="codex-name">' + escapeHtmlSafe(e.name || 'Unknown') + '</div>' +
+          '<div class="codex-meta">' + escapeHtmlSafe(zone) + ' · Max Lv ' + fmt(e.maxLevel || 1) + '</div>' +
+          '<div class="codex-meta">Kills: <strong>' + fmt(e.kills || 0) + '</strong></div>' +
+          '<div class="codex-tags">' + (tags.length ? tags.map(t => '<span class="codex-pill-v1514">' + escapeHtmlSafe(t) + '</span>').join('') : '<span class="codex-pill-v1514">Common</span>') + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    /* FEATURE: Crafting Pinboard — turn drops into obvious action.
+       Rationale: Alchemy already has recipes and herb drops, but the player must
+       open the tradeskill panel to know when something is craftable. The pinboard
+       reuses canBrew/ALCHEMY_RECIPES and only stores a tiny notification signature. */
+    function ensureCraftingPinboardState(targetChar) {
+      if (!targetChar) return;
+      if (!targetChar.craftingPinboard || typeof targetChar.craftingPinboard !== 'object' || Array.isArray(targetChar.craftingPinboard)) {
+        targetChar.craftingPinboard = { muted: false, lastReadySig: '' };
+      }
+      targetChar.craftingPinboard.muted = !!targetChar.craftingPinboard.muted;
+      targetChar.craftingPinboard.lastReadySig = String(targetChar.craftingPinboard.lastReadySig || '');
+    }
+    function getCraftableRecipesV1514() {
+      if (!char || typeof ALCHEMY_RECIPES === 'undefined' || typeof canBrew !== 'function') return [];
+      ensureAlchemyState(char);
+      return ALCHEMY_RECIPES.filter(r => canBrew(r)).slice(0, 4);
+    }
+    function renderCraftingPinboardV1514() {
+      const box = document.getElementById('craft-pinboard-v1514');
+      if (!box || !char) return;
+      const ready = getCraftableRecipesV1514();
+      if (!ready.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      box.style.display = '';
+      const inAlchemyPanel = !!box.closest('#tradeskill-panel');
+      box.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><strong>⚗️ Ready to Brew</strong>' +
+        (inAlchemyPanel ? '' : '<button class="popup-btn" onclick="openPopup(\'tradeskill\')">Alchemy</button>') + '</div>' +
+        ready.map(r => '<div class="craft-ready"><span>' + escapeHtmlSafe(r.emoji + ' ' + r.name) + '</span><button class="popup-btn" onclick="brewPotion(\'' + escapeHtmlSafe(r.id) + '\')">Brew</button></div>').join('');
+    }
+    function maybeNotifyCraftingPinboard() {
+      if (!char) return;
+      ensureCraftingPinboardState(char);
+      const ready = getCraftableRecipesV1514();
+      const sig = ready.map(r => r.id).join('|');
+      if (!sig || sig === char.craftingPinboard.lastReadySig || char.craftingPinboard.muted) return;
+      char.craftingPinboard.lastReadySig = sig;
+      if (typeof showToast === 'function') showToast('Alchemy ready: ' + ready[0].name + ' is ready to brew.', 'success', 3200);
+    }
+
+    /* FEATURE: What's New modal — lightweight version bump onboarding.
+       Rationale: large single-file upgrades can hide important changes. This
+       modal fires once per CURRENT_VERSION, keeps the summary short, and routes
+       to the About panel for the complete changelog. */
+    function maybeShowWhatsNewV1514() {
+      try {
+        const key = 'EmberQuest_seenVersion';
+        if (localStorage.getItem(key) === CURRENT_VERSION) return;
+        localStorage.setItem(key, CURRENT_VERSION);
+      } catch (e) {}
+      const existing = document.getElementById('whats-new-modal-v1514');
+      if (existing) existing.remove();
+      const wrap = document.createElement('div');
+      wrap.id = 'whats-new-modal-v1514';
+      wrap.className = 'open';
+      wrap.onclick = ev => { if (ev.target === wrap) closeWhatsNewV1514(); };
+      wrap.innerHTML = '<div class="whats-new-card-v1514" role="dialog" aria-modal="true" aria-labelledby="whats-new-title-v1514">' +
+        '<div class="whats-new-head-v1514"><strong id="whats-new-title-v1514">What\'s New in v' + escapeHtmlSafe(CURRENT_VERSION) + '</strong><button class="btn" onclick="closeWhatsNewV1514()">Close</button></div>' +
+        '<div class="whats-new-body-v1514" style="padding:14px;font-size:12px;line-height:1.55">' +
+          '<p><strong>Mobile UI v2</strong> is now the default on narrow screens: top HUD, bottom nav, swipe navigation, and bottom-sheet panels.</p>' +
+          '<p><strong>Bestiary Codex</strong> tracks kills and creature discoveries. <strong>Alchemy</strong> now keeps brewable recipes in its own panel instead of the Combat HUD.</p>' +
+          '<p><strong>Objective HUD</strong> keeps your next daily, contract, or class quest visible during combat, now with quick buttons to travel to the target zone and lock the needed mob.</p>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn active" onclick="openPopup(\'about\');closeWhatsNewV1514()">Open Changelog</button><button class="btn" onclick="openPopup(\'codex\');closeWhatsNewV1514()">Open Codex</button></div>' +
+        '</div></div>';
+      document.body.appendChild(wrap);
+    }
+    function closeWhatsNewV1514() { document.getElementById('whats-new-modal-v1514')?.classList.remove('open'); }
+
+    function setupMobileV2Gestures() {
+      const panel = document.getElementById('center-panel');
+      if (!panel || panel.__mobileV2Gestures) return;
+      panel.__mobileV2Gestures = true;
+      let sx = 0, sy = 0, st = 0;
+      panel.addEventListener('touchstart', ev => {
+        const t = ev.touches && ev.touches[0]; if (!t) return;
+        sx = t.clientX; sy = t.clientY; st = Date.now();
+      }, { passive: true });
+      panel.addEventListener('touchend', ev => {
+        const t = ev.changedTouches && ev.changedTouches[0]; if (!t) return;
+        const dx = t.clientX - sx, dy = t.clientY - sy;
+        if (Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.4 && Date.now() - st < 700) {
+          const order = ['combat', 'zone', 'inv', 'chat'];
+          const currentBtn = Array.from(document.querySelectorAll('[data-mobile-v2-tab].active')).find(b => order.includes(b.dataset.mobileV2Tab));
+          const cur = currentBtn ? currentBtn.dataset.mobileV2Tab : 'combat';
+          const idx = Math.max(0, order.indexOf(cur));
+          openMobileV2Route(order[(idx + (dx < 0 ? 1 : -1) + order.length) % order.length]);
+        }
+        const chat = document.getElementById('tab-chat');
+        if (chat && chat.style.display !== 'none' && dy > 70 && Math.abs(dx) < 60 && chat.scrollTop <= 2 && window.Chat) {
+          Chat.loadMessages(true);
+          if (typeof showToast === 'function') showToast('Chat refreshed.', 'info', 1200);
+        }
+      }, { passive: true });
+    }
+    setupMobileV2Gestures();
+
 
     function updateTabAccessibility() {
       document.querySelectorAll('.tab').forEach(el => {
@@ -35811,7 +37015,7 @@ async function exportSlotsToFile(options = {}) {
       const PANEL_LABELS = {
         combat:'Combat', zone:'Zones', inv:'Inventory', shop:'Shop', casino:'Casino', chat:'Chat',
         quests:'Quests', dungeon:'Dungeon', loot:'Loot', bank:'Bank', runes:'Runes', tradeskill:'Tradeskills',
-        aa:'AA', spells:'Spells', group:'Group', prestige:'Prestige', leaderboard:'Leaderboard', about:'About', admin:'Admin'
+        aa:'AA', spells:'Spells', group:'Group', prestige:'Prestige', leaderboard:'Leaderboard', community:'Discord', about:'About', admin:'Admin'
       };
       const parseList = key => {
         try {
