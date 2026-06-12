@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
+  <style>/*
 /* Login screen */
     #screen-login.active { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; background: linear-gradient(160deg, #2a2418 0%, #4a3a22 55%, #6b4f28 100%); padding: 16px; z-index: 50; }
     #screen-login .login-card { background: rgba(20,16,10,0.88); border: 1px solid rgba(255,220,160,0.25); border-radius: 12px; padding: 28px 26px; width: 100%; max-width: 360px; color: #f0e6cc; box-shadow: 0 10px 40px rgba(0,0,0,0.5); font-family: var(--font); }
@@ -5778,7 +5778,7 @@
   
 
 /* ═══════════════════════════════════════════════════════════════════
-   v1.5.20 — Mobile UI v2 layout + objective quick travel + lightweight Discord community + epic quest target migration
+   v1.5.21 — Discord chat bridge + Mobile UI v2 layout + objective quick travel + lightweight Discord community + epic quest target migration
    Scoped so the desktop three-column layout remains untouched.
    ═══════════════════════════════════════════════════════════════════ */
 #mobile-v2-hud,
@@ -6077,7 +6077,7 @@
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     EmberQuest RPG — v1.5.20
+     EmberQuest RPG — v1.5.21
      Changes from v1.5.13:
      UI FIXES:
        - Removed stray duplicate <body> tag right after the real one
@@ -9169,6 +9169,7 @@
     // ══════════════════════════════════════════════
     const SUPA_URL = 'https://vikrewfgxxkiyeqwpgio.supabase.co';
     const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3Jld2ZneHhraXllcXdwZ2lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMTYwNTEsImV4cCI6MjA5NTU5MjA1MX0.eezxLw6-0DMIXQsixWWFHXBqI4Lr5Iztw4vzGTKxeDo';
+    const DISCORD_CHAT_BRIDGE_FUNCTION = 'discord-chat-bridge';
     let sb = null;
     let currentUser = null;
     let currentUserIsAdmin = false;
@@ -18333,7 +18334,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.5.20';
+    const CURRENT_VERSION = '1.5.21';
     function syncCurrentVersionDisplay() {
       const version = CURRENT_VERSION;
       try { window.VERSION = version; } catch (_) {}
@@ -33220,6 +33221,24 @@ async function exportSlotsToFile(options = {}) {
       sanitizeMessage(message) {
         return String(message || '').replace(/\s+/g, ' ').trim().slice(0, 500);
       },
+      shouldBridgeDiscordChannel(channel) {
+        return ['global', 'trade', 'help'].includes(String(channel || '').toLowerCase());
+      },
+      queueDiscordBridge(messageId, channel) {
+        const cleanId = messageId ? String(messageId) : '';
+        const cleanChannel = String(channel || '').toLowerCase();
+        if (!cleanId || !this.shouldBridgeDiscordChannel(cleanChannel)) return;
+        if (!sb || !sb.functions || typeof sb.functions.invoke !== 'function') return;
+
+        // Fire-and-forget: Discord delivery should never block in-game chat.
+        sb.functions.invoke(DISCORD_CHAT_BRIDGE_FUNCTION, {
+          body: { message_id: cleanId }
+        }).then(({ error }) => {
+          if (error) console.warn('Discord chat bridge failed', error);
+        }).catch(e => {
+          console.warn('Discord chat bridge unavailable', e);
+        });
+      },
       async loadMessages(scrollToBottom = false) {
         const box = document.getElementById('chat-messages');
         if (!box) return;
@@ -33969,8 +33988,13 @@ async function exportSlotsToFile(options = {}) {
             character_name: char && char.name ? String(char.name).slice(0, 48) : null,
             message: clean
           };
-          const { error } = await sb.from('chat_messages').insert(row);
+          const { data, error } = await sb
+            .from('chat_messages')
+            .insert(row)
+            .select('id,channel')
+            .single();
           if (error) throw error;
+          this.queueDiscordBridge(data && data.id, row.channel);
           this.setStatus('Sent');
         } catch (e) {
           console.error('Chat send failed', e);
