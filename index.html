@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>EmberQuest RPG - Version 1.6.7</title>
+  <title>EmberQuest RPG - Version 1.6.8</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
@@ -5867,6 +5867,7 @@
   
 
 /* ═══════════════════════════════════════════════════════════════════
+   v1.6.8 — Fixed alchemy Sell All button, fixed Contract Mastery pinned quest going stale on level up
    v1.6.7 — Change Appearance modal z-index fix, leaderboard parity (weekly vs lifetime), Trends drop current gold
    v1.6.6 — Character creation appearance customization (hair, facial hair, eyes, skin, clothing colors)
    v1.6.5 — AFK goals now use core automation to pick useful zones and live/offline AFK share the same targeting logic
@@ -6167,6 +6168,7 @@
 
   
 /* ═══════════════════════════════════════════════════════════════════
+   v1.6.8 — Fixed alchemy Sell All button, fixed Contract Mastery pinned quest going stale on level up
    v1.6.7 — Change Appearance modal z-index fix, leaderboard parity (weekly vs lifetime), Trends drop current gold
    v1.6.6 — Character creation appearance customization (hair, facial hair, eyes, skin, clothing colors)
    v1.6.5 — AFK goals now choose useful unlocked zones instead of only toggling settings
@@ -6338,7 +6340,7 @@
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     EmberQuest RPG — v1.6.7
+     EmberQuest RPG — v1.6.8
      Changes from v1.5.13:
      UI FIXES:
        - Removed stray duplicate <body> tag right after the real one
@@ -7640,7 +7642,7 @@
             <div class="admin-manage-box">
               <div style="font-weight:700;margin-bottom:5px">Internal Admin Change Notes</div>
               <div class="admin-internal-notes">
-                <div><strong>v1.6.7</strong> fixes the Change Appearance modal hiding behind the shop popup, makes Weekly and Lifetime leaderboard rows show consistent stats for your own characters, and removes Current Gold from the Trends panel.<br><strong>v1.6.6</strong> adds character appearance customization at creation: pick hair style/color, facial hair, eye color, skin tone, and tunic/pants colors that persist on the save and render on the character-select avatar and in battle. A "Change Appearance Token" service in the shop lets existing characters restyle later for gold.<br><strong>v1.6.5</strong> upgrades AFK goals so Level Push and Level Alts move to the highest unlocked zone, Gold goals pick the best unlocked gold zone, and live/offline AFK use the same core goal planner.<br><strong>v1.6.4</strong> adds a live LFG usage indicator showing how many active borrowers are using your shared hero.<br><strong>v1.6.3</strong> adds party-wide enemy targeting and party-aware heals so mercenaries, grouped alts, and LFG heroes can take damage and receive healing.<br><strong>v1.4.137</strong> fixes remaining desktop Fit/Focus/Normal sizing, restores full-width Fit, and removes stale version overrides.<br><strong>v1.4.136</strong> hardens Fit / Focus / Normal mode switching so all buttons and Settings write to the same real UI preference object.<br><strong>v1.4.135</strong> repairs Fit / Focus / Normal layout modes so they behave as exclusive view modes and no longer stack cramped saved states.<br><strong>v1.4.134</strong> keeps the combat action button row visible by reserving bottom controls in the combat flex layout.<br><strong>v1.4.133</strong> restores Search Log beside Timestamps and keeps the combat-log tools hidden behind it until opened.<br><strong>v1.4.123</strong> makes the More button appear immediately after entering the world instead of waiting for a delayed UI refresh.<br><strong>v1.4.123</strong> tucks the combat-log copy/export/clear/mark/history tools behind Search Log and places Search Log after Timestamps.<br><strong>v1.4.123</strong> fixes the More menu recent-panels list so it tracks and shows the last 10 places visited.<br><strong>v1.4.123</strong> adds keybinds for spell gems 4–6 and keeps combat-log search hidden until Search Log is clicked.<br><strong>v1.4.123</strong> removed UI Rescue from More, moved Admin next to the version, removed the ? tab button, and added tab help inside About.<br><strong>v1.4.123</strong> fixed center-panel fit, settings single-list alignment, topbar Settings/UI/More order, and Save indicator order.<br><strong>v1.4.101</strong> fixed combat bottom controls, More-menu toggling, settings collapsibles/alignment, Stats, and UI/More order.<br><strong>v1.4.100</strong> removed the center-panel quick action/context bar from every tab.<br><strong>v1.4.99</strong> removed the unwanted center-panel quick action/context bar that appeared under the tabs.<br><strong>v1.4.98</strong> performance hotfix: heavy UI observers and recurring injectors now sleep on login/character select and only run while the game screen is active.<br><strong>v1.4.97</strong> UX cleanup: Nav moved into More, Rescue/Backup tools moved into Settings, Layout left-aligned in UI, Tiny Topbar fixed, and combat Stats were restyled.<br><strong>v1.4.95</strong> UX cleanup: removed Command Palette, moved Rescue into Settings, and moved Layout into the UI menu.<br><strong>v1.4.92</strong> Added UI Rescue Center, error watchdog, bug-report export, and safe layout presets.<br><strong>v1.4.91</strong> Added backup manager, combat session history, log markers, and recovery shortcuts.<br><strong>v1.4.90</strong> Added combat log search/export/copy/clear tools and improved session reset controls.<br><strong>v1.4.89</strong> Fixed Layout Diagnostics so it no longer renders at the bottom unless opened.<br><strong>v1.4.88</strong> Added inventory search/extra filters, optimize gear, save diagnostics/export, and UI sanity tools.<br><strong>v1.4.87</strong> Added side-by-side item compare, compact topbar toggle, inventory quick actions, and accessibility shortcuts.<br><strong>v1.4.85</strong> Fixed UI menu open/close spacing so panels no longer jump into the top bar.</div>
+                <div><strong>v1.6.8</strong> fixes the Sell All button on the Alchemy page, which previously did nothing, and fixes Contract Mastery getting stuck in the pinned-quest tracker — leveling it up no longer leaves a dead "Not currently active" copy behind, and the pin now tracks your current mastery level.<br><strong>v1.6.7</strong> fixes the Change Appearance modal hiding behind the shop popup, makes Weekly and Lifetime leaderboard rows show consistent stats for your own characters, and removes Current Gold from the Trends panel.<br><strong>v1.6.6</strong> adds character appearance customization at creation: pick hair style/color, facial hair, eye color, skin tone, and tunic/pants colors that persist on the save and render on the character-select avatar and in battle. A "Change Appearance Token" service in the shop lets existing characters restyle later for gold.<br><strong>v1.6.5</strong> upgrades AFK goals so Level Push and Level Alts move to the highest unlocked zone, Gold goals pick the best unlocked gold zone, and live/offline AFK use the same core goal planner.<br><strong>v1.6.4</strong> adds a live LFG usage indicator showing how many active borrowers are using your shared hero.<br><strong>v1.6.3</strong> adds party-wide enemy targeting and party-aware heals so mercenaries, grouped alts, and LFG heroes can take damage and receive healing.<br><strong>v1.4.137</strong> fixes remaining desktop Fit/Focus/Normal sizing, restores full-width Fit, and removes stale version overrides.<br><strong>v1.4.136</strong> hardens Fit / Focus / Normal mode switching so all buttons and Settings write to the same real UI preference object.<br><strong>v1.4.135</strong> repairs Fit / Focus / Normal layout modes so they behave as exclusive view modes and no longer stack cramped saved states.<br><strong>v1.4.134</strong> keeps the combat action button row visible by reserving bottom controls in the combat flex layout.<br><strong>v1.4.133</strong> restores Search Log beside Timestamps and keeps the combat-log tools hidden behind it until opened.<br><strong>v1.4.123</strong> makes the More button appear immediately after entering the world instead of waiting for a delayed UI refresh.<br><strong>v1.4.123</strong> tucks the combat-log copy/export/clear/mark/history tools behind Search Log and places Search Log after Timestamps.<br><strong>v1.4.123</strong> fixes the More menu recent-panels list so it tracks and shows the last 10 places visited.<br><strong>v1.4.123</strong> adds keybinds for spell gems 4–6 and keeps combat-log search hidden until Search Log is clicked.<br><strong>v1.4.123</strong> removed UI Rescue from More, moved Admin next to the version, removed the ? tab button, and added tab help inside About.<br><strong>v1.4.123</strong> fixed center-panel fit, settings single-list alignment, topbar Settings/UI/More order, and Save indicator order.<br><strong>v1.4.101</strong> fixed combat bottom controls, More-menu toggling, settings collapsibles/alignment, Stats, and UI/More order.<br><strong>v1.4.100</strong> removed the center-panel quick action/context bar from every tab.<br><strong>v1.4.99</strong> removed the unwanted center-panel quick action/context bar that appeared under the tabs.<br><strong>v1.4.98</strong> performance hotfix: heavy UI observers and recurring injectors now sleep on login/character select and only run while the game screen is active.<br><strong>v1.4.97</strong> UX cleanup: Nav moved into More, Rescue/Backup tools moved into Settings, Layout left-aligned in UI, Tiny Topbar fixed, and combat Stats were restyled.<br><strong>v1.4.95</strong> UX cleanup: removed Command Palette, moved Rescue into Settings, and moved Layout into the UI menu.<br><strong>v1.4.92</strong> Added UI Rescue Center, error watchdog, bug-report export, and safe layout presets.<br><strong>v1.4.91</strong> Added backup manager, combat session history, log markers, and recovery shortcuts.<br><strong>v1.4.90</strong> Added combat log search/export/copy/clear tools and improved session reset controls.<br><strong>v1.4.89</strong> Fixed Layout Diagnostics so it no longer renders at the bottom unless opened.<br><strong>v1.4.88</strong> Added inventory search/extra filters, optimize gear, save diagnostics/export, and UI sanity tools.<br><strong>v1.4.87</strong> Added side-by-side item compare, compact topbar toggle, inventory quick actions, and accessibility shortcuts.<br><strong>v1.4.85</strong> Fixed UI menu open/close spacing so panels no longer jump into the top bar.</div>
                 <div><strong>v1.4.84</strong> Moved Fit/Focus/Panels/Preset into the UI menu and right-aligned top-bar controls.</div>
                 <div><strong>v1.4.83</strong> Fixed real screen id mismatch (#screen-charselect) and made loadSlot activate the game screen directly.</div>
                 <div><strong>v1.4.82</strong> Fixed world entry showing nothing by force-restoring the game screen, topbar, and main layout after character load.</div>
@@ -19200,7 +19202,7 @@
     let afkGoalLastAction = '';
     let afkGoalLastActionAt = 0;
     let uiLayoutMode = 'desktop';
-    const CURRENT_VERSION = '1.6.7';
+    const CURRENT_VERSION = '1.6.8';
     function syncCurrentVersionDisplay() {
       const version = CURRENT_VERSION;
       try { window.VERSION = version; } catch (_) {}
@@ -36379,7 +36381,7 @@ async function exportSlotsToFile(options = {}) {
                 <span style="font-size:11px;color:var(--text-secondary);margin-left:8px">Stock: ${stock}</span>
                 ${unlocked && stock > 0 ? `
                   <button class="btn" style="font-size:10px;padding:1px 6px;margin-left:4px" onclick="sellAlchemyPotion('${recipe.id}',1)" title="Sell 1 for ${Math.max(1,Math.floor(getMerchantPrice(SHOP_BASE_PRICES[recipe._priceKey])*0.5))}g">Sell 1</button>
-                  <button class="btn" style="font-size:10px;padding:1px 6px" onclick="sellAlchemyPotion('${recipe.id}',stock)" title="Sell all ${stock} for ${Math.max(1,Math.floor(getMerchantPrice(SHOP_BASE_PRICES[recipe._priceKey])*0.5))*stock}g">Sell All</button>
+                  <button class="btn" style="font-size:10px;padding:1px 6px" onclick="sellAlchemyPotion('${recipe.id}',${stock})" title="Sell all ${stock} for ${Math.max(1,Math.floor(getMerchantPrice(SHOP_BASE_PRICES[recipe._priceKey])*0.5))*stock}g">Sell All</button>
                 ` : ''}
               </div>
               <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
@@ -37364,10 +37366,22 @@ async function exportSlotsToFile(options = {}) {
       function _ensurePinnedArray(){
         if (!char) return [];
         if (!Array.isArray(char.pinnedQuestKeys)) char.pinnedQuestKeys = [];
-        char.pinnedQuestKeys = char.pinnedQuestKeys.slice(0, 3).map(String);
+        // Normalize keys (collapses old "Contract Mastery Lv N" pins to a stable
+        // key) and drop duplicates that result from the migration.
+        const seen = new Set();
+        char.pinnedQuestKeys = char.pinnedQuestKeys
+          .map(k => _questKey(k))
+          .filter(k => k && !seen.has(k) && seen.add(k))
+          .slice(0, 3);
         return char.pinnedQuestKeys;
       }
-      function _questKey(label){ return String(label || '').replace(/\s+/g, ' ').trim().slice(0, 96); }
+      function _questKey(label){
+        let s = String(label || '').replace(/\s+/g, ' ').trim();
+        // Contract Mastery levels up, changing its display name ("Lv 3" → "Lv 4").
+        // Normalize to a stable, level-independent key so pins survive upgrades.
+        if (/^Contract Mastery\b/i.test(s)) s = 'Contract Mastery';
+        return s.slice(0, 96);
+      }
       function _collectQuestRows(){
         const rows = [];
         if (!char) return rows;
@@ -37375,6 +37389,13 @@ async function exportSlotsToFile(options = {}) {
           (char.quests || []).forEach(q => rows.push({ key:_questKey(q.name), name:q.name, detail:q.done ? 'Complete' : ((q.prog || 0) + '/' + (q.count || 0)), done:!!q.done }));
           (char.dailyQuests || []).forEach(q => rows.push({ key:_questKey(q.name), name:'📅 ' + q.name, detail:q.claimed ? 'Claimed' : ((q.prog || 0) + '/' + (q.count || 0)), done:!!(q.done || q.claimed) }));
           (char.eliteContracts || []).forEach((c, idx) => { if (c && c.active) rows.push({ key:_questKey('Contract #' + (idx + 1)), name:'Contract #' + (idx + 1) + ': ' + (c.target || 'Target'), detail:(c.progress || 0) + '/' + (c.count || 0), done:!!c.complete }); });
+          // Contract Mastery strip — keep a live row so the pin always tracks the
+          // current level instead of going stale when it upgrades.
+          if (typeof getContractMasteryState === 'function' && (char.eliteContracts || []).some(c => c && c.active)) {
+            const mastery = getContractMasteryState(char);
+            const need = (typeof getContractMasteryThreshold === 'function') ? getContractMasteryThreshold(mastery.level) : 0;
+            rows.push({ key:'Contract Mastery', name:'Contract Mastery Lv ' + mastery.level, detail:mastery.xp + '/' + need + ' · +' + (mastery.level * 5) + '%', done:false });
+          }
         } catch (_) {}
         return rows;
       }
@@ -38456,19 +38477,68 @@ async function exportSlotsToFile(options = {}) {
           this._newsLoadedAt = now;
           this.getDismissedNews();
           if (!sb) { this.renderNews(); return; }
+
+          // The Supabase SDK query for news can throw
+          // "DataCloneError: Headers object could not be cloned" in some
+          // browser environments (extensions / fetch wrappers that try to
+          // structuredClone the request). XMLHttpRequest sets headers as plain
+          // strings and returns plain text, so it has no clone surface and
+          // sidesteps the problem entirely. We try XHR first, then fall back to
+          // the SDK only if XHR is unavailable.
+          const nowIso = new Date().toISOString();
+          const restUrl = SUPA_URL + '/rest/v1/news_posts'
+            + '?select=' + encodeURIComponent('id,category,title,body_md,is_pinned,published_at,expires_at')
+            + '&is_published=eq.true'
+            + '&or=' + encodeURIComponent('(expires_at.is.null,expires_at.gt.' + nowIso + ')')
+            + '&order=' + encodeURIComponent('is_pinned.desc,published_at.desc')
+            + '&limit=5';
+
+          const xhrNews = () => new Promise((resolve, reject) => {
+            try {
+              const xhr = new XMLHttpRequest();
+              xhr.open('GET', restUrl, true);
+              xhr.setRequestHeader('apikey', SUPA_ANON);
+              xhr.setRequestHeader('Authorization', 'Bearer ' + SUPA_ANON);
+              xhr.setRequestHeader('Accept', 'application/json');
+              xhr.timeout = 15000;
+              xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                  try { resolve(JSON.parse(xhr.responseText || '[]') || []); }
+                  catch (pe) { reject(new Error('news parse failed: ' + pe.message)); }
+                } else {
+                  reject(new Error('news HTTP ' + xhr.status));
+                }
+              };
+              xhr.onerror = () => reject(new Error('news request failed (network)'));
+              xhr.ontimeout = () => reject(new Error('news request timed out'));
+              xhr.send();
+            } catch (xe) { reject(xe); }
+          });
+
           try {
-            const { data, error } = await sb.from('news_posts')
-              .select('id,category,title,body_md,is_pinned,published_at,expires_at')
-              .eq('is_published', true)
-              .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
-              .order('is_pinned', { ascending: false })
-              .order('published_at', { ascending: false })
-              .limit(5);
-            if (error && error.code !== '42P01') throw error;
-            this.news = data || [];
+            this.news = await xhrNews();
           } catch (e) {
-            console.warn('news load failed', e);
-            this.news = [];
+            // XHR path failed — try the SDK once as a last resort.
+            let recovered = false;
+            try {
+              const { data, error } = await sb.from('news_posts')
+                .select('id,category,title,body_md,is_pinned,published_at,expires_at')
+                .eq('is_published', true)
+                .or('expires_at.is.null,expires_at.gt.' + nowIso)
+                .order('is_pinned', { ascending: false })
+                .order('published_at', { ascending: false })
+                .limit(5);
+              if (!error || error.code === '42P01') { this.news = data || []; recovered = true; }
+            } catch (e2) { /* fall through */ }
+
+            if (!recovered) {
+              const msg0 = (e && (e.message || e.error_description || e.error)) || String(e);
+              // Stay quiet for expected "no news / not reachable" cases; news
+              // simply falls back to empty and the app keeps working.
+              const expected = /HTTP 401|HTTP 403|HTTP 404|timed out|network|Failed to fetch/i.test(msg0);
+              if (!expected) console.warn('news load failed:', msg0);
+              this.news = [];
+            }
           }
           this.renderNews();
         },
@@ -39145,7 +39215,7 @@ async function exportSlotsToFile(options = {}) {
             } catch (e) { console.warn('LFG reward collection failed after login', e); }
             try { this.fetchVersions && this.fetchVersions().then(() => { if (typeof setSnapshotStatus === 'function') setSnapshotStatus('idle'); }).catch(() => {}); } catch (e) {}
             try { V16.loadAccountSettings().catch(e => console.warn('account settings load failed after login', e)); } catch (e) {}
-            try { V16.loadNews(true).catch(e => console.warn('news load failed after login', e)); } catch (e) {}
+            try { V16.loadNews(true).catch(e => console.warn('news load failed after login:', (e && (e.message || e.error)) || e)); } catch (e) {}
             try { V16.syncGuildChatVisibility(); } catch (e) {}
           }, 0);
         },
