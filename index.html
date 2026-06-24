@@ -2798,6 +2798,7 @@
     #screen-game .mob-level {
       color: #c8c0a8;
       font-size: 11px;
+      min-height: 13px;
     }
 
     /* Combat log: classic black box with colored text by channel */
@@ -3787,6 +3788,12 @@
       padding: 3px 8px;
       font-size: 10.5px;
     }
+    .mob-pack-actions .btn:disabled {
+      opacity: 0.42;
+      filter: saturate(0.35);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
     .battle-enemies.multi-enemy .battle-unit.splash-hit .battle-sprite {
       animation: battle-hit 0.32s ease;
       box-shadow: 0 0 10px rgba(255,180,90,0.85), inset 0 0 0 2px rgba(255,255,255,0.25), inset 0 -8px 10px rgba(0,0,0,0.35) !important;
@@ -3801,6 +3808,12 @@
       padding: 3px 6px;
       border-radius: var(--radius-sm);
       background: rgba(0,0,0,0.12);
+    }
+    #screen-game.ui-layout-desktop .mob-pack-actions .pack-threat {
+      min-height: calc(1.35em + 6px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .mob-pack-actions .btn.pack-sweep-btn {
       border-color: rgba(244,214,138,0.55);
@@ -5015,159 +5028,6 @@
       border-color: rgba(244,214,138,0.45);
       color: #fff7d6;
     }
-
-    /* Normal, Fit, and Focus are exclusive desktop view modes. */
-    #screen-game.ui-layout-desktop.ui-normal-mode,
-    #screen-game.ui-layout-desktop.ui-screen-fit,
-    #screen-game.ui-layout-desktop.ui-focus-mode {
-      min-height: 100vh !important;
-      overflow: visible !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode),
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode),
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) {
-      width: 100% !important;
-      max-width: none !important;
-      margin: -12px !important;
-      padding: 8px !important;
-      height: auto !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #game-topbar,
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #quick-ui-bar,
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #game-grid,
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #game-topbar,
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #quick-ui-bar,
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #game-grid {
-      width: min(1600px, calc(100vw - 24px)) !important;
-      max-width: none !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
-    }
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #game-topbar,
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #quick-ui-bar,
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #game-grid {
-      width: calc(100vw - 24px) !important;
-      max-width: none !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #game-grid,
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #game-grid {
-      display: grid !important;
-      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) minmax(260px, 330px) !important;
-      gap: 10px !important;
-      min-height: 0 !important;
-      height: auto !important;
-      max-height: none !important;
-      align-items: start !important;
-      overflow: visible !important;
-    }
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #game-grid {
-      grid-template-columns: minmax(210px, 250px) minmax(0, 1fr) minmax(250px, 300px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #game-grid > div,
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #game-grid > div,
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #center-panel,
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #center-panel {
-      min-height: 0 !important;
-      height: auto !important;
-      max-height: none !important;
-      overflow: visible !important;
-    }
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #game-grid {
-      display: grid !important;
-      grid-template-columns: minmax(0, 1fr) !important;
-      gap: 10px !important;
-      min-height: 0 !important;
-      height: auto !important;
-      max-height: none !important;
-      overflow: visible !important;
-    }
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #center-panel {
-      display: block !important;
-      width: 100% !important;
-      min-height: 0 !important;
-      height: auto !important;
-      max-height: none !important;
-      overflow: visible !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #battle-stage {
-      height: clamp(360px, 48vh, 720px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #battle-stage {
-      height: clamp(420px, 56vh, 820px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #battle-stage {
-      height: clamp(520px, 66vh, 920px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #tab-combat > #combat-log,
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #tab-combat > #combat-log,
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #tab-combat > #combat-log {
-      min-height: 220px !important;
-      max-height: 440px !important;
-      overflow-y: auto !important;
-    }
-
-    #screen-game.ui-layout-desktop.ui-full-height-panels:not(.ui-screen-fit):not(.ui-fit-mode) {
-      display: flex !important;
-      flex-direction: column;
-      height: 100dvh !important;
-      min-height: 100dvh !important;
-      box-sizing: border-box;
-      overflow: hidden !important;
-    }
-    #screen-game.ui-layout-desktop.ui-full-height-panels:not(.ui-screen-fit):not(.ui-fit-mode) #game-topbar,
-    #screen-game.ui-layout-desktop.ui-full-height-panels:not(.ui-screen-fit):not(.ui-fit-mode) #quick-ui-bar {
-      flex: 0 0 auto;
-    }
-    #screen-game.ui-layout-desktop.ui-full-height-panels:not(.ui-screen-fit):not(.ui-fit-mode) #game-grid {
-      flex: 1 1 auto;
-      height: 0 !important;
-      min-height: 0 !important;
-      max-height: none !important;
-      align-items: stretch !important;
-      overflow: hidden !important;
-    }
-    #screen-game.ui-layout-desktop.ui-full-height-panels:not(.ui-screen-fit):not(.ui-fit-mode) #game-grid > div {
-      height: 100% !important;
-      min-height: 0 !important;
-      max-height: 100% !important;
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-    }
-    #screen-game.ui-layout-desktop.ui-full-height-panels:not(.ui-screen-fit):not(.ui-fit-mode) #center-panel {
-      display: flex !important;
-      flex-direction: column;
-      overflow: hidden !important;
-    }
-    #screen-game.ui-layout-desktop.ui-full-height-panels:not(.ui-screen-fit):not(.ui-fit-mode) #tab-combat {
-      min-height: 0 !important;
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode.ui-combat-large:not(.ui-screen-fit):not(.ui-focus-mode) #battle-stage,
-    #screen-game.ui-layout-desktop.ui-screen-fit.ui-combat-large:not(.ui-focus-mode) #battle-stage {
-      height: clamp(420px, 54vh, 760px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode.ui-combat-cinematic:not(.ui-screen-fit):not(.ui-focus-mode) #battle-stage,
-    #screen-game.ui-layout-desktop.ui-screen-fit.ui-combat-cinematic:not(.ui-focus-mode) #battle-stage {
-      height: clamp(520px, 66vh, 900px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-focus-mode.ui-combat-large:not(.ui-screen-fit) #battle-stage {
-      height: clamp(600px, 72vh, 960px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-focus-mode.ui-combat-cinematic:not(.ui-screen-fit) #battle-stage {
-      height: clamp(680px, 78vh, 1040px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode.ui-combat-large:not(.ui-screen-fit):not(.ui-focus-mode) #tab-combat > #combat-log,
-    #screen-game.ui-layout-desktop.ui-screen-fit.ui-combat-large:not(.ui-focus-mode) #tab-combat > #combat-log {
-      min-height: clamp(210px, 28vh, 430px) !important;
-    }
-    #screen-game.ui-layout-desktop.ui-normal-mode.ui-combat-cinematic:not(.ui-screen-fit):not(.ui-focus-mode) #tab-combat > #combat-log,
-    #screen-game.ui-layout-desktop.ui-screen-fit.ui-combat-cinematic:not(.ui-focus-mode) #tab-combat > #combat-log {
-      min-height: clamp(170px, 22vh, 340px) !important;
-    }
-
     /* Keep combat utility controls visible while the log takes flexible space. */
     #combat-action-row,
     #combat-shortcut-hints,
@@ -5358,40 +5218,10 @@
       .compare-grid { grid-template-columns: 1fr; }
       /* v1494 more-menu mobile overrides moved to the v1.5.0 layout fix layer. */
     }
-
-    /* ========================================================================
-       FIX (v1.4.143 hotfix): Combat panel went blank in Normal & Screen-Fit
-       layout modes.
-
-       Root cause: #tab-combat uses `flex: 1 1 0; height: 100%; overflow: hidden`,
-       but the desktop Normal/Fit overrides force #center-panel to
-       `height: auto`. A flex-basis of 0 with no growable parent height
-       collapses the child to 0px, and `overflow: hidden` clips every child
-       (battle stage, combat log, action row) out of view.
-
-       Fix: when the parent is auto-height, let #tab-combat size to its
-       content instead of trying to fill a height that doesn't exist.
-       The Full-Height-Panels mode (which DOES give a real height) is
-       left untouched so its scroll behavior keeps working.
-       ======================================================================== */
-    #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode):not(.ui-full-height-panels) #tab-combat,
-    #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode):not(.ui-full-height-panels) #tab-combat,
-    #screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit):not(.ui-full-height-panels) #tab-combat {
-      flex: 0 0 auto !important;
-      height: auto !important;
-      min-height: 0 !important;
-      overflow: visible !important;
-    }
-    /* Safety net: if no explicit layout-mode class is on #screen-game yet
-       (e.g. very early in boot before applyUILayoutState runs), still
-       allow tab-combat to show its content. */
-    #screen-game:not(.ui-full-height-panels) #tab-combat {
-      overflow: visible;
-    }
 /* ============================================================
-   v1.5.0 — LAYOUT FIX LAYER
-   Single source of truth for topbar, grid, and layout modes.
-   Replaces ~50 scattered hotfix overrides from prior patches.
+   v1.5.0 — BASE LAYOUT LAYER
+   Owns shared topbar, grid-column, and mode styling. The final v1.6.8
+   desktop block owns document scrolling and Normal/Fit behavior.
    ============================================================ */
 
 /* ── Topbar: deterministic flex layout, no jumping buttons ── */
@@ -5547,17 +5377,6 @@
 #screen-game.ui-layout-desktop.ui-full-height-panels:not(.ui-screen-fit) #tab-combat {
   min-height: 0 !important; overflow-y: auto !important; }
 
-/* ── Battle stage heights ── */
-#screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #battle-stage { height: clamp(360px,48vh,720px); }
-#screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #battle-stage { height: clamp(420px,56vh,820px); }
-#screen-game.ui-layout-desktop.ui-focus-mode:not(.ui-screen-fit) #battle-stage { height: clamp(520px,66vh,920px); }
-#screen-game.ui-layout-desktop.ui-normal-mode.ui-combat-large:not(.ui-screen-fit):not(.ui-focus-mode) #battle-stage,
-#screen-game.ui-layout-desktop.ui-screen-fit.ui-combat-large:not(.ui-focus-mode) #battle-stage { height: clamp(420px,54vh,760px); }
-#screen-game.ui-layout-desktop.ui-normal-mode.ui-combat-cinematic:not(.ui-screen-fit):not(.ui-focus-mode) #battle-stage,
-#screen-game.ui-layout-desktop.ui-screen-fit.ui-combat-cinematic:not(.ui-focus-mode) #battle-stage { height: clamp(520px,66vh,900px); }
-#screen-game.ui-layout-desktop.ui-focus-mode.ui-combat-large:not(.ui-screen-fit) #battle-stage { height: clamp(600px,72vh,960px); }
-#screen-game.ui-layout-desktop.ui-focus-mode.ui-combat-cinematic:not(.ui-screen-fit) #battle-stage { height: clamp(680px,78vh,1040px); }
-
 /* ── Combat log heights ── */
 #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #tab-combat > #combat-log,
 #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #tab-combat > #combat-log,
@@ -5568,57 +5387,13 @@
 #screen-game.ui-layout-desktop.ui-normal-mode.ui-combat-cinematic:not(.ui-screen-fit):not(.ui-focus-mode) #tab-combat > #combat-log,
 #screen-game.ui-layout-desktop.ui-screen-fit.ui-combat-cinematic:not(.ui-focus-mode) #tab-combat > #combat-log { min-height: clamp(170px,22vh,340px); }
 
-/* ── Fit mode: bound the center column to the viewport (v1.5.3) ──
-   Previously "Fit" only centered/widened the layout; battle-stage kept a fixed
-   clamp() height and the combat log added up to 440px more, so the column
-   overflowed the screen and forced scrolling. Here we cap the center panel to
-   the viewport and let the battle stage flex to fill the leftover space. */
-#screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode):not(.ui-full-height-panels) #center-panel {
-  display: flex !important;
-  flex-direction: column !important;
-  height: calc(100vh - 150px) !important;
-  max-height: calc(100vh - 150px) !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-}
-#screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode):not(.ui-full-height-panels) #tab-combat {
-  display: flex !important;
-  flex-direction: column !important;
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  height: auto !important;
-  overflow: hidden !important;
-}
-#screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode):not(.ui-full-height-panels) #tab-combat > #mob-area {
-  flex: 0 0 auto !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: visible !important;
-}
-#screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode):not(.ui-full-height-panels) #battle-stage {
-  /* v1.5.6: stage height is now fixed/compact in all modes (see the compact
-     battle stage block below); it no longer flex-grows in Fit mode. */
-  flex: 0 0 auto !important;
-}
-#screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode):not(.ui-full-height-panels) #tab-combat > #combat-log {
-  flex: 0 0 auto !important;
-  min-height: 120px !important;
-  max-height: 38vh !important;
-  overflow-y: auto !important;
-}
-
 /* ── Compact battle stage: size to the party, not the viewport (v1.5.6 / v1.5.13) ──
    Max party is 6 and max enemies is 6 (v1.5.13 — was 3), so the sprite
    columns can host a full 1-2-3 pyramid on either side without scrolling. A
    6-unit pyramid contents about 146px of vertical space (back row of 3 at
    ROW_GAP=56 + sprite=34), so the 240/300/360 px stage heights below stay
-   comfortable. Earlier rules sized #battle-stage to 48–78vh, which left big
-   empty sky/grass bands above and below the sprites. Cap the stage to a content
-   height in every desktop mode. Heights still differ a little by combat view
-   size so the option keeps meaning. Each selector mirrors the original taller
-   rule it replaces (identical specificity) and comes later in source order, so
-   it wins. */
+   comfortable. The stage is content-sized in every desktop mode; heights still
+   differ by combat view size so the option keeps meaning. */
 /* default combat size */
 #screen-game.ui-layout-desktop.ui-normal-mode:not(.ui-screen-fit):not(.ui-focus-mode) #battle-stage,
 #screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode) #battle-stage,
@@ -5646,17 +5421,6 @@
   max-height: 360px !important;
   flex: 0 0 auto !important;
 }
-/* In Fit mode the battle field keeps its fixed compact height (like Normal) and
-   the combat log fills whatever vertical space is left in the viewport-pinned
-   center panel, scrolling internally. The field no longer shrinks to feed the
-   log. */
-#screen-game.ui-layout-desktop.ui-screen-fit:not(.ui-focus-mode):not(.ui-full-height-panels) #tab-combat > #combat-log {
-  flex: 1 1 auto !important;
-  min-height: 140px !important;
-  max-height: none !important;
-  overflow-y: auto !important;
-}
-
 /* ── #tab-combat visibility fix (v1.4.143) ── */
 #screen-game.ui-layout-desktop:not(.ui-full-height-panels) #tab-combat {
   flex: 0 0 auto !important;
@@ -6333,6 +6097,243 @@
 #screen-game.ui-layout-mobile-v2 .v16-guild-grid,
 #screen-game.ui-layout-mobile-v2 .v16-admin-grid {
   flex-direction:column;
+}
+/* ========================================================================
+   v1.6.8 DESKTOP FIT SHELL
+   One viewport, stable navigation, independently scrolling side columns.
+   This final layer intentionally owns Desktop Fit sizing so older layout
+   hotfixes cannot reintroduce document-level scrolling or clipped tabs.
+   ======================================================================== */
+/* Utility destinations remain available from the topbar More menu. Keeping
+   the primary tab row focused prevents it from becoming a hidden horizontal
+   scroller as the side columns grow. */
+#screen-game.ui-layout-desktop #center-panel > .tab-bar #tabbtn-leaderboard,
+#screen-game.ui-layout-desktop #center-panel > .tab-bar #tabbtn-arena,
+#screen-game.ui-layout-desktop #center-panel > .tab-bar #tabbtn-guild,
+#screen-game.ui-layout-desktop #center-panel > .tab-bar #tabbtn-community,
+#screen-game.ui-layout-desktop #center-panel > .tab-bar #tabbtn-about-popup {
+  display: none !important;
+}
+#screen-game #desktop-log-tools-btn { display: none; }
+/* Auto-battle subpanels use their own disclosure control because they are
+   functional groups inside the larger Auto-Battle panel. */
+.autobattle-subpanel {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(0,0,0,.12);
+  overflow: hidden;
+}
+.autobattle-subpanel-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 0;
+  color: var(--text-primary);
+  background: linear-gradient(180deg, #343a4d, #222634);
+  cursor: pointer;
+  font: 600 11px/1.2 Georgia, serif;
+  text-align: left;
+}
+.autobattle-subpanel-content { padding: 8px; }
+.autobattle-subpanel.priority-queue-collapsed .autobattle-subpanel-content { display: none; }
+
+#right-objectives-panel .objective-hud-v1514 {
+  padding: 6px;
+  border: 0;
+  background: transparent;
+}
+#right-objectives-panel .objective-hud-v1514 .objective-list {
+  display: grid !important;
+  gap: 5px;
+  overflow: visible !important;
+}
+#right-objectives-panel .objective-hud-v1514 .objective-row {
+  min-width: 0 !important;
+  padding: 5px 6px;
+}
+
+/* v1.6.8 scroll model correction: the document scrolls; columns do not become
+   separate scroll traps. Combat stays compact through a bounded log instead. */
+@media (min-width: 821px) {
+  body.ui-desktop-viewport-active {
+    height: auto !important;
+    min-height: 100vh;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  /* Full-height panels are an explicit Normal-mode opt-in. Keep the document
+     fixed only for that preference; Fit and ordinary Normal use page scroll. */
+  body.ui-desktop-full-height-active {
+    height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.ui-desktop-viewport-active #screen-game.screen.active[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) {
+    position: relative !important;
+    inset: auto !important;
+    display: block !important;
+    width: 100vw !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    margin: -12px !important;
+    padding: 8px !important;
+    overflow: visible !important;
+  }
+
+  /* Normal is a centered reading layout; Fit deliberately uses the full
+     viewport. The two modes otherwise retain the same page-scroll model. */
+  #screen-game[data-layout="desktop"][data-view="normal"] #game-topbar,
+  #screen-game[data-layout="desktop"][data-view="normal"] #quick-ui-bar,
+  #screen-game[data-layout="desktop"][data-view="normal"] #game-grid {
+    width: min(1600px, calc(100vw - 24px)) !important;
+    max-width: 1600px !important;
+  }
+  #screen-game[data-layout="desktop"][data-view="fit"] #game-topbar,
+  #screen-game[data-layout="desktop"][data-view="fit"] #quick-ui-bar,
+  #screen-game[data-layout="desktop"][data-view="fit"] #game-grid {
+    width: calc(100vw - 24px) !important;
+    max-width: none !important;
+  }
+
+  body.ui-desktop-viewport-active #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #game-grid {
+    display: grid !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    align-items: start !important;
+    overflow: visible !important;
+  }
+
+  body.ui-desktop-viewport-active #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #game-grid > div,
+  body.ui-desktop-viewport-active #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #center-panel {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  body.ui-desktop-viewport-active #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #center-panel > [id^="tab-"],
+  body.ui-desktop-viewport-active #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #center-panel > #tab-combat {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* The log-tools tray is absolutely positioned inside the combat tab. */
+  body.ui-desktop-viewport-active #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #tab-combat {
+    position: relative;
+  }
+
+  body.ui-desktop-viewport-active #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #tab-combat > #combat-log {
+    flex: 0 0 clamp(150px, 22vh, 260px) !important;
+    height: clamp(150px, 22vh, 260px) !important;
+    min-height: 150px !important;
+    max-height: 260px !important;
+    overflow-y: auto !important;
+  }
+
+  #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #damage-meter {
+    display: block !important;
+    flex: 0 0 auto !important;
+  }
+  #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #afk-goal-status,
+  #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #combat-shortcut-hints {
+    display: none !important;
+  }
+
+  #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #desktop-log-tools-btn {
+    display: inline-flex;
+  }
+  #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #combat-log-filters {
+    display: none !important;
+  }
+  #screen-game[data-layout="desktop"]:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)).ui-log-tools-open #combat-log-filters {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 46px;
+    z-index: 20;
+    display: flex !important;
+    max-height: min(180px, 35vh);
+    padding: 8px !important;
+    overflow: auto !important;
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    box-shadow: 0 8px 24px rgba(0,0,0,.55);
+  }
+
+  #screen-game[data-layout="desktop"][data-compact-sidebars="true"] #game-grid > div:first-child,
+  #screen-game[data-layout="desktop"][data-compact-sidebars="true"] #game-grid > div:last-child {
+    gap: 6px !important;
+  }
+  #screen-game[data-layout="desktop"][data-compact-sidebars="true"] #game-grid > div:first-child > .panel > h3,
+  #screen-game[data-layout="desktop"][data-compact-sidebars="true"] #game-grid > div:last-child > .panel > h3 {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+  #screen-game[data-layout="desktop"][data-compact-sidebars="true"] #game-grid > div:first-child > .panel > :not(h3),
+  #screen-game[data-layout="desktop"][data-compact-sidebars="true"] #game-grid > div:last-child > .panel > :not(h3) {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .desktop-sidebar-panel > h3 {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .desktop-panel-toggle {
+    flex: 0 0 auto;
+    width: 22px;
+    min-height: 20px;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 3px;
+    color: inherit;
+    background: rgba(0,0,0,.22);
+    cursor: pointer;
+    font: inherit;
+    line-height: 18px;
+  }
+  .desktop-sidebar-panel.desktop-panel-collapsed > :not(h3) {
+    display: none !important;
+  }
+
+  /* Nested sticky navigation must sit below the sticky topbar. */
+  body.ui-desktop-viewport-active #screen-game.ui-sticky-tabs:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) {
+    --desktop-sticky-content-offset: 48px;
+  }
+  body.ui-desktop-viewport-active #screen-game.ui-sticky-tabs:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) #center-panel > .tab-bar,
+  body.ui-desktop-viewport-active #screen-game.ui-sticky-tabs:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) .popup-toolbar,
+  body.ui-desktop-viewport-active #screen-game.ui-sticky-tabs:is([data-view="fit"], [data-view="normal"]:not(.ui-full-height-panels)) .desktop-sidebar-panel > h3 {
+    top: var(--desktop-sticky-content-offset) !important;
+  }
+}
+
+/* Wrapped narrow topbars have variable height, so nested sticky rows become
+   normal document content instead of guessing an unsafe offset. */
+@media (max-width: 820px) {
+  #screen-game.ui-sticky-tabs .tab-bar,
+  #screen-game.ui-sticky-tabs .popup-toolbar,
+  #screen-game.ui-sticky-tabs .desktop-sidebar-panel > h3 {
+    position: static !important;
+    top: auto !important;
+  }
 }
 </style>
 </head>
@@ -7287,7 +7288,7 @@
     </div>
     <div
       id="game-grid">
-      <!-- Left: Character + Quests -->
+      <!-- Left: Character, Potions, Spells, Group, Shrine -->
       <div
         style="display:flex;flex-direction:column;gap:8px">
         <div
@@ -7430,6 +7431,10 @@
           <div
             style="font-size:10px;color:var(--text-secondary);margin:2px 0 6px"
             id="merc-role-disp" style="display:none"></div>
+        </div>
+
+        <div class="panel" id="left-potions-panel">
+          <h3>Potions</h3>
           <div
             class="stat-row">
             <span
@@ -7480,11 +7485,14 @@
               </button>
             </div>
           </div>
-          <div
-            style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+        </div>
+
+        <div class="panel" id="left-spells-panel">
+          <h3>Spells</h3>
+          <div style="padding-top:6px">
             <div
               style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-              <div style="font-size:11px;color:var(--text-secondary)">Spell Gems</div>
+              <div style="font-size:11px;color:var(--text-secondary)">Quick Cast</div>
               <button class="popup-btn" id="pbtn-spells" onclick="openPopup('spells')" title="Spellbook" style="padding:1px 7px;font-size:10px">🔮 Spells</button>
             </div>
 
@@ -7507,17 +7515,22 @@
                 style="flex:1;justify-content:center;padding:4px 6px;font-size:11px"
                 title="Meditate">🌙</button>
             </div>
+          </div>
+        </div>
 
-            <div id="compact-group-panel" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-                <div style="font-size:11px;color:var(--text-secondary)">Group</div>
-                <button class="popup-btn" id="pbtn-group" onclick="openPopup('group')" title="Group" style="padding:1px 7px;font-size:10px">👥 Group</button>
-              </div>
-              <div id="compact-group-list" style="display:flex;flex-direction:column;gap:4px"></div>
+        <div class="panel" id="left-group-panel">
+          <h3>Group</h3>
+          <div id="compact-group-panel" style="padding-top:6px">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:5px">
+              <button class="popup-btn" id="pbtn-group" onclick="openPopup('group')" title="Group" style="padding:1px 7px;font-size:10px">👥 Manage Group</button>
             </div>
+            <div id="compact-group-list" style="display:flex;flex-direction:column;gap:4px"></div>
+          </div>
+        </div>
 
-            <div
-              style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div class="panel" id="left-shrine-panel">
+          <h3>Shrine &amp; Effects</h3>
+          <div style="padding-top:6px">
               <div
                 style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px">
                 <div
@@ -7540,7 +7553,6 @@
                 id="status-effects"
                 style="display:flex;flex-wrap:wrap;gap:4px">
               </div>
-            </div>
           </div>
         </div>
       </div>
@@ -7817,8 +7829,7 @@
               Dungeon</button>
             <button
               class="btn"
-              onclick="advanceDungeonFloor()">Descend
-              One
+              onclick="advanceDungeonFloor()">Challenge
               Floor</button>
           </div>
           <div
@@ -7856,6 +7867,10 @@
             id="dungeon-mod-details"
             style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px;margin-bottom:8px;font-size:11px;color:var(--text-secondary)">
           </div>
+          <div
+            id="dungeon-rewards"
+            style="background:var(--bg-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);padding:8px;font-size:11px;color:var(--text-secondary)">
+          </div>
         </div>
 <div
           id="tab-quests"
@@ -7875,6 +7890,7 @@
             Tracks creatures you have defeated on this character. The codex is local save data and grows naturally as you hunt.
           </div>
           <div id="codex-summary-v1514" class="bag-meta"></div>
+          <div id="collection-journal-v168" style="margin:8px 0 12px"></div>
           <div id="codex-list-v1514" class="codex-grid-v1514"></div>
         </div>
 <div
@@ -8308,10 +8324,6 @@
               </div>
             </div>
           </div>
-          <div id="objective-hud-v1514" class="objective-hud-v1514" aria-live="polite">
-            <div class="objective-head"><span>Current Objectives</span><button class="popup-btn" onclick="openPopup('quests')">Open Quests</button></div>
-            <div id="objective-list-v1514" class="objective-list"></div>
-          </div>
           <div
             id="combat-log">
             <p
@@ -8491,6 +8503,7 @@
             <button id="pbtn-quests" class="btn" onclick="openPopup('quests')" title="Quests"><i class="ti ti-scroll"></i> Quests</button>
             <button id="pbtn-codex" class="btn" onclick="openPopup('codex')" title="Bestiary Codex"><i class="ti ti-book"></i> Codex</button>
             <button id="pbtn-dungeon" class="btn" onclick="openPopup('dungeon')" title="Dungeon"><i class="ti ti-stairs"></i> Dungeon</button>
+            <button id="desktop-log-tools-btn" class="btn" onclick="toggleDesktopLogTools()" title="Show combat log filters and tools"><i class="ti ti-adjustments"></i> Log Tools</button>
           </div>
         </div>
         
@@ -8931,21 +8944,16 @@
               onclick="openPopup('loadouts')"
               title="Combat Loadouts">🎛 Combat Loadouts</button>
           </div>
-          <div
-            style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">
-            Priority
-            queue
-            (drag to
-            reorder)
-          </div>
+          <div id="priority-queue-panel" class="autobattle-subpanel priority-queue-collapsed">
+            <button id="priority-queue-toggle" class="autobattle-subpanel-toggle" type="button" onclick="togglePriorityQueuePanel()" aria-expanded="false">
+              <span>Priority Queue</span><span id="priority-queue-chevron">▸</span>
+            </button>
+            <div id="priority-queue-content" class="autobattle-subpanel-content">
+              <div style="font-size:10px;color:var(--text-secondary);margin-bottom:8px">
+                Drag actions to reorder them. AFK goals choose zones automatically; class skills follow attack behavior.
+              </div>
 
-          <div
-            style="font-size:10px;color:var(--text-secondary);margin-bottom:8px">
-            AFK goals now choose zones automatically: Level Push hunts the highest unlocked zone, Gold Farm hunts the best unlocked gold zone, and Contract follows the pinned contract. Class skills are tied to attack behavior.
-          </div>
-
-          <div
-            id="action-queue">
+              <div id="action-queue">
 
             <div
               style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
@@ -9150,6 +9158,8 @@
                 mob</span>
             </div>
 
+              </div>
+            </div>
           </div>
         </div>
         <div
@@ -9191,6 +9201,13 @@
           <div
             style="font-size:11px;color:var(--text-secondary);margin-top:3px"
             id="corpse-disp">
+          </div>
+        </div>
+        <div class="panel" id="right-objectives-panel">
+          <h3>Current Objectives</h3>
+          <div id="objective-hud-v1514" class="objective-hud-v1514" aria-live="polite">
+            <div class="objective-head"><span>Tracked Progress</span><button class="popup-btn" onclick="openPopup('quests')">Open Quests</button></div>
+            <div id="objective-list-v1514" class="objective-list"></div>
           </div>
         </div>
       </div>
@@ -9649,16 +9666,17 @@
         try {
           if (rows.length) {
             const { error } = await sb.from('saves').upsert(rows, { onConflict: 'user_id,slot' });
-            if (error) console.warn('cloud save failed', error);
+            if (error) throw error;
           }
           if (deletes.length) {
-            await sb.from('saves').delete().eq('user_id', currentUser.id).in('slot', deletes);
+            const { error: deleteError } = await sb.from('saves').delete().eq('user_id', currentUser.id).in('slot', deletes);
+            if (deleteError) throw deleteError;
           }
           this.publishLeaderboard(); // keep public leaderboard summaries in sync (fire-and-forget)
           this.publishPvpSnapshots(); // keep arena opponent snapshots in sync
           this.refreshSharedLfg();   // keep any LFG-shared heroes' snapshots fresh
           this.maybeAutoVersion();   // periodically archive a full cloud snapshot for recovery
-        } catch (e) { console.warn('cloud sync error', e); }
+        } catch (e) { console.warn('cloud sync error', e); throw e; }
       },
 
       // ── Cloud Version History ───────────────────────────────
@@ -12533,6 +12551,90 @@
       return null;
     }
 
+    function ensureCollectionState(targetChar) {
+      if (!targetChar) return;
+      if (!targetChar.collection || typeof targetChar.collection !== 'object' || Array.isArray(targetChar.collection)) {
+        targetChar.collection = { items: {}, targetSet: '', pity: 0, claimedSets: [], runewordRewardClaimed: false, backfilled: false };
+      }
+      const c = targetChar.collection;
+      if (!c.items || typeof c.items !== 'object' || Array.isArray(c.items)) c.items = {};
+      if (!ITEM_SETS[c.targetSet]) c.targetSet = '';
+      c.pity = Math.max(0, Math.min(15, Math.floor(Number(c.pity || 0))));
+      if (!Array.isArray(c.claimedSets)) c.claimedSets = [];
+      c.claimedSets = Array.from(new Set(c.claimedSets.filter(name => !!ITEM_SETS[name])));
+      c.runewordRewardClaimed = !!c.runewordRewardClaimed;
+      if (!c.backfilled) {
+        const owned = (Array.isArray(targetChar.inventory) ? targetChar.inventory : []).concat(Object.values(targetChar.equipment || {}).filter(Boolean));
+        owned.forEach(item => {
+          const base = getItemBaseName(item);
+          if (base && ITEM_DATA[base]) c.items[base] = c.items[base] || { count: 1, firstSeen: Date.now(), lastSeen: Date.now() };
+        });
+        c.backfilled = true;
+      }
+      if (!Array.isArray(targetChar.discoveredRunewords)) targetChar.discoveredRunewords = [];
+    }
+
+    function recordCollectionItem(item) {
+      if (!char) return;
+      ensureCollectionState(char);
+      const base = getItemBaseName(item);
+      if (!base || !ITEM_DATA[base]) return;
+      const targetData = ITEM_SETS[char.collection.targetSet];
+      const wasMissingTarget = !!(targetData && targetData.pieces.includes(base) && !char.collection.items[base]);
+      const now = Date.now();
+      const rec = char.collection.items[base] || { count: 0, firstSeen: now, lastSeen: 0 };
+      rec.count = Math.max(0, Number(rec.count || 0)) + 1;
+      rec.lastSeen = now;
+      char.collection.items[base] = rec;
+      if (wasMissingTarget) char.collection.pity = 0;
+    }
+
+    function getMissingTargetSetPieces(targetChar = char) {
+      if (!targetChar) return [];
+      ensureCollectionState(targetChar);
+      const set = ITEM_SETS[targetChar.collection.targetSet];
+      if (!set) return [];
+      return set.pieces.filter(piece => !targetChar.collection.items[piece]);
+    }
+
+    function setCollectionTarget(setName) {
+      if (!char) return;
+      ensureCollectionState(char);
+      char.collection.targetSet = ITEM_SETS[setName] && char.collection.targetSet !== setName ? setName : '';
+      char.collection.pity = 0;
+      log(char.collection.targetSet ? ('Collection target set to ' + setName + '.') : 'Collection targeting cleared.', 'info');
+      renderCodexTab(); autoSave();
+    }
+
+    function claimSetCollectionReward(setName) {
+      if (!char || !ITEM_SETS[setName]) return;
+      ensureExtendedSystems(char);
+      if (char.collection.claimedSets.includes(setName)) return;
+      const set = ITEM_SETS[setName];
+      if (set.pieces.some(piece => !char.collection.items[piece])) { log('Discover every ' + setName + ' piece first.', 'info'); return; }
+      const marks = set.pieces.length * 4;
+      const gold = Math.max(1000, Math.floor(char.level * set.pieces.length * 100));
+      char.dungeon.marks += marks;
+      char.gold += gold;
+      char.collection.claimedSets.push(setName);
+      unlockCustomTitle(setName + ' Curator');
+      log('Collection complete: ' + setName + '! +' + marks + ' Dungeon Marks and +' + fmt(gold) + 'g.', 'loot');
+      renderAll(); renderCodexTab(); autoSave();
+    }
+
+    function claimRunewordCollectionReward() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const all = Object.keys(RUNEWORD_RECIPES);
+      const found = new Set(char.discoveredRunewords || []);
+      if (char.collection.runewordRewardClaimed || all.some(name => !found.has(name))) return;
+      char.collection.runewordRewardClaimed = true;
+      char.dungeon.marks += 25;
+      unlockCustomTitle('Runesage');
+      log('Runeword catalogue completed! +25 Dungeon Marks.', 'loot');
+      renderAll(); renderCodexTab(); autoSave();
+    }
+
     function getActiveSetBonusStats() {
       const result = { atk: 0, def: 0, procChance: 0, names: [] };
       if (!char || !char.equipment) return result;
@@ -13048,6 +13150,19 @@
       const zi = Math.max(0, Math.min(ZONES.length - 1, Number.isFinite(ziRaw) ? Math.floor(ziRaw) : 0));
       const zoneMinLvl = Number(ZONES[zi]?.minLvl || 1);
 
+      if (char && ['loot','loot_named','afk','mystic'].includes(source)) {
+        ensureCollectionState(char);
+        const missing = getMissingTargetSetPieces(char);
+        if (missing.length) {
+          const pity = Math.max(0, Number(char.collection.pity || 0));
+          if (pity >= 15 || Math.random() < Math.min(0.45, 0.08 + pity * 0.025)) {
+            char.collection.pity = 0;
+            return missing[Math.floor(Math.random() * missing.length)];
+          }
+          char.collection.pity = Math.min(15, pity + 1);
+        }
+      }
+
       // Five level-banded equipment tiers (v1.3.58). Each zone band leans on the
       // gear authored for its range, with a little spillover into the bands on
       // either side so loot feels smooth rather than snapping between tiers.
@@ -13457,12 +13572,27 @@
     };
 
     const DUNGEON_MODIFIERS = {
-      balanced: { label: 'Balanced', playerDamageMult: 1, mobDamageMult: 1, healMult: 1, manaMult: 1, xpMult: 1, goldMult: 1, lootMult: 1, eliteChanceBonus: 0 },
-      glass: { label: 'Glass Cannon', playerDamageMult: 1.22, mobDamageMult: 1.24, healMult: 1, manaMult: 1, xpMult: 1.18, goldMult: 1.18, lootMult: 1.08, eliteChanceBonus: 0.05 },
-      attrition: { label: 'Attrition', playerDamageMult: 1.04, mobDamageMult: 1.12, healMult: 0.78, manaMult: 0.85, xpMult: 1.28, goldMult: 1.2, lootMult: 1.12, eliteChanceBonus: 0.08 },
-      treasure: { label: 'Treasure Rush', playerDamageMult: 0.96, mobDamageMult: 0.94, healMult: 1, manaMult: 1, xpMult: 1.08, goldMult: 1.45, lootMult: 1.32, eliteChanceBonus: 0.03 },
-      elites: { label: 'Elite Gauntlet', playerDamageMult: 1.05, mobDamageMult: 1.14, healMult: 1, manaMult: 1, xpMult: 1.32, goldMult: 1.24, lootMult: 1.16, eliteChanceBonus: 0.2 }
+      balanced: { label: 'Balanced', desc: 'Standard risk and rewards.', playerDamageMult: 1, mobDamageMult: 1, healMult: 1, manaMult: 1, xpMult: 1, goldMult: 1, lootMult: 1, markMult: 1, eliteChanceBonus: 0 },
+      glass: { label: 'Glass Cannon', desc: 'Deal more damage, but enemies hit much harder.', playerDamageMult: 1.22, mobDamageMult: 1.24, healMult: 1, manaMult: 1, xpMult: 1.18, goldMult: 1.18, lootMult: 1.08, markMult: 1.15, eliteChanceBonus: 0.05 },
+      attrition: { label: 'Attrition', desc: 'Reduced recovery with strong XP and Mark rewards.', playerDamageMult: 1.04, mobDamageMult: 1.12, healMult: 0.78, manaMult: 0.85, xpMult: 1.28, goldMult: 1.2, lootMult: 1.12, markMult: 1.25, eliteChanceBonus: 0.08 },
+      treasure: { label: 'Treasure Rush', desc: 'Trade a little damage for much better gold and loot.', playerDamageMult: 0.96, mobDamageMult: 0.94, healMult: 1, manaMult: 1, xpMult: 1.08, goldMult: 1.45, lootMult: 1.32, markMult: 1.1, eliteChanceBonus: 0.03 },
+      elites: { label: 'Elite Gauntlet', desc: 'More elites, more danger, and the best Mark payout.', playerDamageMult: 1.05, mobDamageMult: 1.14, healMult: 1, manaMult: 1, xpMult: 1.32, goldMult: 1.24, lootMult: 1.16, markMult: 1.35, eliteChanceBonus: 0.2 }
     };
+
+    const DUNGEON_SEASON_AFFIXES = [
+      { id: 'bloodmoon', label: 'Blood Moon', title: 'Bloodbound Delver', desc: 'Enemies hit 18% harder; +25% XP and +15% Marks.', mobDamageMult: 1.18, xpMult: 1.25, markMult: 1.15 },
+      { id: 'gilded', label: 'Gilded Depths', title: 'Gilded Delver', desc: '-5% damage; +40% gold and +20% loot.', playerDamageMult: 0.95, goldMult: 1.4, lootMult: 1.2 },
+      { id: 'mana_drought', label: 'Mana Drought', title: 'Droughtwalker', desc: '-30% mana recovery; +15% XP and +20% Marks.', manaMult: 0.7, xpMult: 1.15, markMult: 1.2 },
+      { id: 'shattered', label: 'Shattered Floors', title: 'Glasswalker', desc: 'Both sides hit harder; +30% Marks.', playerDamageMult: 1.18, mobDamageMult: 1.25, markMult: 1.3 },
+      { id: 'cursed', label: 'Cursed Wells', title: 'Cursebreaker', desc: '-25% healing; +35% loot.', healMult: 0.75, lootMult: 1.35 },
+      { id: 'elite_tide', label: 'Elite Tide', title: 'Tidebreaker', desc: 'More elites; +20% XP and +20% Marks.', xpMult: 1.2, markMult: 1.2, eliteChanceBonus: 0.15 }
+    ];
+    const DUNGEON_SEASON_REWARDS = [
+      { floor: 5, label: 'Scout Cache' },
+      { floor: 15, label: 'Veteran Cache' },
+      { floor: 30, label: 'Affix Title' },
+      { floor: 50, label: 'Conqueror Cache' }
+    ];
 
     // Max floors to auto-descend by default to prevent runaway loops
     const DUNGEON_AUTO_DESCEND_MAX = 50;
@@ -13487,6 +13617,17 @@
       { id: 'gen_luck', name: "Fortune's Favor", desc: '+3% luck (loot &amp; magic find) per rank.', maxRank: 5, lootMultPerRank: 0.03 },
       { id: 'gen_hardiness', name: 'Hardiness', desc: '-2% incoming damage per rank.', maxRank: 5, mobDamageMultPerRank: -0.02 },
       { id: 'gen_focus', name: 'Inner Focus', desc: '+1 MP regen per rank.', maxRank: 5, mpRegenPerRank: 1 }
+    ];
+
+    // Permanent post-tree AA sinks. Costs rise forever while percentage gains
+    // follow diminishing curves, keeping every point useful without runaway
+    // multiplicative scaling. These ranks are deliberately not respeccable.
+    const AA_LEGACY_NODES = [
+      { id: 'might', name: 'Legacy of Might', desc: 'Permanent player damage. Diminishes toward +60%.', baseCost: 5 },
+      { id: 'guard', name: 'Legacy of the Guard', desc: 'Permanent incoming-damage reduction. Diminishes toward -35%.', baseCost: 5 },
+      { id: 'wellspring', name: 'Endless Wellspring', desc: 'Permanent +30 max HP and +18 max MP per rank.', baseCost: 4 },
+      { id: 'fortune', name: "Fortune's Echo", desc: 'Permanent monster/AFK gold and loot bonuses. Diminishes toward +50%.', baseCost: 6 },
+      { id: 'insight', name: "Sage's Legacy", desc: 'Permanent regular and AA experience bonus. Diminishes toward +40%.', baseCost: 6 }
     ];
 
     const AA_ARCHETYPE_NODES = {
@@ -13707,7 +13848,99 @@
     }
 
     function getDungeonModifierData(modifierId) {
-      return DUNGEON_MODIFIERS[modifierId] || DUNGEON_MODIFIERS.balanced;
+      const base = DUNGEON_MODIFIERS[modifierId] || DUNGEON_MODIFIERS.balanced;
+      if (typeof char === 'undefined' || !char || !char.dungeon || !char.dungeon.active) return base;
+      const season = getDungeonSeasonEffects(getDungeonSeasonKey());
+      return Object.assign({}, base, {
+        playerDamageMult: (base.playerDamageMult || 1) * season.playerDamageMult,
+        mobDamageMult: (base.mobDamageMult || 1) * season.mobDamageMult,
+        healMult: (base.healMult || 1) * season.healMult,
+        manaMult: (base.manaMult || 1) * season.manaMult,
+        xpMult: (base.xpMult || 1) * season.xpMult,
+        goldMult: (base.goldMult || 1) * season.goldMult,
+        lootMult: (base.lootMult || 1) * season.lootMult,
+        markMult: (base.markMult || 1) * season.markMult,
+        eliteChanceBonus: (base.eliteChanceBonus || 0) + season.eliteChanceBonus
+      });
+    }
+
+    function getDungeonSeasonKey(ts = Date.now()) {
+      return typeof utcWeekKey === 'function' ? utcWeekKey(ts) : new Date(ts).toISOString().slice(0, 10);
+    }
+
+    function dungeonSeasonHash(key) {
+      let h = 2166136261;
+      for (const ch of String(key || '')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+      return h >>> 0;
+    }
+
+    function getDungeonSeasonAffixes(key = getDungeonSeasonKey()) {
+      const first = dungeonSeasonHash(key) % DUNGEON_SEASON_AFFIXES.length;
+      const second = (first + 1 + (dungeonSeasonHash(key + ':second') % (DUNGEON_SEASON_AFFIXES.length - 1))) % DUNGEON_SEASON_AFFIXES.length;
+      return [DUNGEON_SEASON_AFFIXES[first], DUNGEON_SEASON_AFFIXES[second]];
+    }
+
+    function getDungeonSeasonEffects(key) {
+      const out = { playerDamageMult: 1, mobDamageMult: 1, healMult: 1, manaMult: 1, xpMult: 1, goldMult: 1, lootMult: 1, markMult: 1, eliteChanceBonus: 0 };
+      getDungeonSeasonAffixes(key).forEach(a => {
+        ['playerDamageMult','mobDamageMult','healMult','manaMult','xpMult','goldMult','lootMult','markMult'].forEach(k => { out[k] *= Number(a[k] || 1); });
+        out.eliteChanceBonus += Number(a.eliteChanceBonus || 0);
+      });
+      return out;
+    }
+
+    function ensureDungeonSeasonState(targetChar) {
+      if (!targetChar || !targetChar.dungeon) return;
+      const key = getDungeonSeasonKey();
+      if (!targetChar.dungeon.season || typeof targetChar.dungeon.season !== 'object' || targetChar.dungeon.season.key !== key) {
+        targetChar.dungeon.season = { key, bestFloor: 0, claimed: [] };
+      }
+      const s = targetChar.dungeon.season;
+      s.key = key;
+      s.bestFloor = Math.max(0, Math.floor(Number(s.bestFloor || 0)));
+      if (!Array.isArray(s.claimed)) s.claimed = [];
+      s.claimed = Array.from(new Set(s.claimed.map(Number).filter(Number.isFinite)));
+    }
+
+    function getAALegacyNode(nodeId) {
+      return AA_LEGACY_NODES.find(node => node.id === nodeId) || null;
+    }
+
+    function getAALegacyCost(nodeId, targetChar = char) {
+      const node = getAALegacyNode(nodeId);
+      if (!node) return Infinity;
+      const rank = Math.max(0, Math.floor(Number(targetChar && targetChar.aa && targetChar.aa.legacy && targetChar.aa.legacy[nodeId] || 0)));
+      return Math.max(1, node.baseCost + Math.floor(rank * 1.5) + Math.floor(rank * rank / 40));
+    }
+
+    function getAALegacyEffects(targetChar) {
+      const ranks = targetChar && targetChar.aa && targetChar.aa.legacy ? targetChar.aa.legacy : {};
+      const might = Math.max(0, Number(ranks.might || 0));
+      const guard = Math.max(0, Number(ranks.guard || 0));
+      const wellspring = Math.max(0, Number(ranks.wellspring || 0));
+      const fortune = Math.max(0, Number(ranks.fortune || 0));
+      const insight = Math.max(0, Number(ranks.insight || 0));
+      return {
+        damageBonus: 0.60 * (1 - Math.exp(-might / 75)),
+        damageReduction: 0.35 * (1 - Math.exp(-guard / 75)),
+        hpBonus: Math.floor(wellspring * 30),
+        mpBonus: Math.floor(wellspring * 18),
+        fortuneBonus: 0.50 * (1 - Math.exp(-fortune / 85)),
+        xpBonus: 0.40 * (1 - Math.exp(-insight / 90))
+      };
+    }
+
+    function getAALegacyEffectText(nodeId, targetChar = char, rankOffset = 0) {
+      if (!targetChar || !targetChar.aa) return '';
+      const copy = { aa: { legacy: Object.assign({}, targetChar.aa.legacy || {}) } };
+      copy.aa.legacy[nodeId] = Math.max(0, Number(copy.aa.legacy[nodeId] || 0) + rankOffset);
+      const fx = getAALegacyEffects(copy);
+      if (nodeId === 'might') return '+' + (fx.damageBonus * 100).toFixed(1) + '% physical and spell damage';
+      if (nodeId === 'guard') return '-' + (fx.damageReduction * 100).toFixed(1) + '% incoming damage';
+      if (nodeId === 'wellspring') return '+' + fmt(fx.hpBonus) + ' max HP · +' + fmt(fx.mpBonus) + ' max MP';
+      if (nodeId === 'fortune') return '+' + (fx.fortuneBonus * 100).toFixed(1) + '% monster/AFK gold and loot';
+      if (nodeId === 'insight') return '+' + (fx.xpBonus * 100).toFixed(1) + '% regular and AA XP';
+      return '';
     }
 
     function getLootFilterState(targetChar) {
@@ -14150,7 +14383,7 @@
     }
 
     function normalizeContractState(targetChar, contract) {
-      const fallback = generateEliteContract(targetChar.zone || 0, targetChar.contractTierPref || 'normal', 1, CONTRACT_CHAIN_TOTAL);
+      const fallback = generateEliteContract(targetChar.zone || 0, targetChar.contractTierPref || 'normal', 1, CONTRACT_CHAIN_TOTAL, targetChar);
       const c = Object.assign({}, (contract && typeof contract === 'object') ? contract : fallback);
       c.active = c.active !== false;
       c.tier = CONTRACT_TIERS[c.tier] ? c.tier : (targetChar.contractTierPref || 'normal');
@@ -14164,6 +14397,15 @@
       c.chainStep = Math.max(1, Math.floor(Number(c.chainStep || 1)));
       c.chainTotal = Math.max(2, Math.floor(Number(c.chainTotal || CONTRACT_CHAIN_TOTAL)));
       c.bossStep = !!c.bossStep || c.chainStep >= c.chainTotal;
+      const ownerLevel = Math.max(1, Math.floor(Number(targetChar.level || 1)));
+      const contractZone = ZONES[c.zone] || ZONES[0];
+      const contractZoneMax = Math.max(Number(contractZone.minLvl || 1), Number(contractZone.maxLvl || contractZone.minLvl || 1));
+      const savedContractLevel = Number(c.level);
+      c.level = Math.max(ownerLevel, Math.floor(Number.isFinite(savedContractLevel) ? savedContractLevel : contractZoneMax));
+      if (!c.complete && contractZoneMax < ownerLevel && (!Number.isFinite(savedContractLevel) || savedContractLevel < ownerLevel)) {
+        const replacementZone = pickContractZone(targetChar);
+        return generateEliteContract(replacementZone, c.tier, c.chainStep, c.chainTotal, targetChar);
+      }
       // Ensure the target actually belongs to this zone. Otherwise stale
       // contracts (saved before zone mob tables changed, or generated from a
       // fallback zone) keep pointing at mobs the player can never find here.
@@ -14226,6 +14468,19 @@
       autoSave();
     }
 
+    function toggleEquippedItemFlag(slot, flag) {
+      if (!char || !char.equipment || !char.equipment[slot]) return;
+      if (flag !== 'locked' && flag !== 'favorite') return;
+      const obj = toInventoryMetaEntry(char.equipment[slot]);
+      obj[flag] = !obj[flag];
+      if (!obj.locked) delete obj.locked;
+      if (!obj.favorite) delete obj.favorite;
+      char.equipment[slot] = obj;
+      log(getItemDisplayName(obj) + ': ' + flag + ' ' + (obj[flag] ? 'enabled' : 'disabled') + '.', 'info');
+      refreshInventoryKeepingMenu(slot);
+      autoSave();
+    }
+
     function setPrimaryContract(index) {
       if (!char) return;
       ensureExtendedSystems(char);
@@ -14256,18 +14511,26 @@
         if (!z || !Array.isArray(z.mobs) || !z.mobs.length) continue;
         const minLvl = Math.max(1, Math.floor(Number(z.minLvl || 1)));
         const maxLvl = Math.max(minLvl, Math.floor(Number(z.maxLvl || minLvl)));
-        // Only offer zones the player has actually unlocked (level >= minLvl).
-        if (minLvl <= lvl && maxLvl >= lvl - 8) out.push(i);
+        // Never offer a contract below the player. Slightly higher zones are
+        // allowed as aspirational contracts that become available on level-up.
+        if (maxLvl >= lvl && minLvl <= lvl + 8) out.push(i);
       }
       if (!out.length) {
         for (let i = 0; i < ZONES.length; i++) {
           const z = ZONES[i];
           if (!z || !Array.isArray(z.mobs) || !z.mobs.length) continue;
           const minLvl = Math.max(1, Math.floor(Number(z.minLvl || 1)));
-          if (minLvl <= lvl) out.push(i);
+          const maxLvl = Math.max(minLvl, Math.floor(Number(z.maxLvl || minLvl)));
+          if (maxLvl >= lvl) out.push(i);
         }
       }
-      if (!out.length) out.push(0);
+      if (!out.length) {
+        let highest = 0;
+        for (let i = 1; i < ZONES.length; i++) {
+          if (Number((ZONES[i] && ZONES[i].maxLvl) || 1) > Number((ZONES[highest] && ZONES[highest].maxLvl) || 1)) highest = i;
+        }
+        out.push(highest);
+      }
       return out.sort((a, b) => {
         const za = ZONES[a] || {};
         const zb = ZONES[b] || {};
@@ -14294,16 +14557,22 @@
       return { minLvl, maxLvl, midLvl, tierIndex: Math.min(20, Math.max(0, Math.floor((minLvl - 1) / 4))) };
     }
 
-    function generateEliteContract(targetZone = null, tier = null, chainStep = 1, chainTotal = CONTRACT_CHAIN_TOTAL) {
-      const rawZoneIdx = targetZone === null ? (char ? char.zone : 0) : targetZone;
+    function generateEliteContract(targetZone = null, tier = null, chainStep = 1, chainTotal = CONTRACT_CHAIN_TOTAL, targetChar = char) {
+      const owner = targetChar || char;
+      const rawZoneIdx = targetZone === null ? (owner ? owner.zone : 0) : targetZone;
       // Clamp to a real zone so the stored `zone` index always matches the
       // mob list we pick the target from.
-      const zoneIdx = Math.max(0, Math.min(ZONES.length - 1, Math.floor(Number(rawZoneIdx) || 0)));
+      let zoneIdx = Math.max(0, Math.min(ZONES.length - 1, Math.floor(Number(rawZoneIdx) || 0)));
+      const ownerLevel = Math.max(1, Math.floor(Number((owner && owner.level) || 1)));
+      const requestedZone = ZONES[zoneIdx] || ZONES[0];
+      const requestedMax = Math.max(Number(requestedZone.minLvl || 1), Number(requestedZone.maxLvl || requestedZone.minLvl || 1));
+      if (requestedMax < ownerLevel) zoneIdx = pickContractZone(owner);
       const zone = ZONES[zoneIdx] || ZONES[0];
-      const chosenTier = tier || (char && char.contractTierPref) || 'normal';
+      const chosenTier = tier || (owner && owner.contractTierPref) || 'normal';
       const tierData = getContractTierData(chosenTier);
-      const mastery = getContractMasteryState(char);
+      const mastery = getContractMasteryState(owner);
       const zoneScale = getContractZoneScale(zoneIdx);
+      const contractLevel = Math.max(ownerLevel, zoneScale.midLvl);
       const countReduction = Math.min(0.2, mastery.level * 0.03);
       const step = Math.max(1, Math.min(chainTotal, Math.floor(Number(chainStep || 1))));
       const total = Math.max(2, Math.floor(Number(chainTotal || CONTRACT_CHAIN_TOTAL)));
@@ -14311,12 +14580,13 @@
       const target = bossStep ? 'Named or Elite' : zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
       const count = bossStep ? 1 : Math.max(3, Math.floor((4 + zoneScale.tierIndex) * tierData.countMult * (1 + (step - 1) * 0.15) * (1 - countReduction)));
       const stepRewardMult = bossStep ? (1.9 + mastery.level * 0.04) : (1 + (step - 1) * 0.25);
-      const rewardXp = Math.floor((220 + zoneScale.midLvl * 45 + count * 25) * tierData.rewardMult * stepRewardMult);
-      const rewardGold = Math.floor((40 + zoneScale.midLvl * 7 + count * 8) * tierData.rewardMult * stepRewardMult);
+      const rewardXp = Math.floor((220 + contractLevel * 45 + count * 25) * tierData.rewardMult * stepRewardMult);
+      const rewardGold = Math.floor((40 + contractLevel * 7 + count * 8) * tierData.rewardMult * stepRewardMult);
       return {
         active: true,
         tier: chosenTier,
         zone: zoneIdx,
+        level: contractLevel,
         target,
         count,
         progress: 0,
@@ -14339,6 +14609,8 @@
       if (typeof ensureAuditState === 'function') ensureAuditState(targetChar);
       if (typeof ensureBestiaryCodexState === 'function') ensureBestiaryCodexState(targetChar);
       if (typeof ensureCraftingPinboardState === 'function') ensureCraftingPinboardState(targetChar);
+      if (typeof ensureCollectionState === 'function') ensureCollectionState(targetChar);
+      if (typeof ensureGuildRaidState === 'function') ensureGuildRaidState(targetChar);
       // D&D ability scores: backfill from class+level for saves made before
       // this system existed, and repair any missing/invalid individual scores.
       if (!targetChar.abilities || typeof targetChar.abilities !== 'object') {
@@ -14670,17 +14942,21 @@
       if (!Number.isFinite(Number(targetChar.huntStreak.zone))) targetChar.huntStreak.zone = null;
 
       if (!targetChar.dungeon || typeof targetChar.dungeon !== 'object') {
-        targetChar.dungeon = { active: false, floor: 1, best: 1, autoDescend: false, autoLeaveOnDeath: false, modifier: 'balanced' };
+        targetChar.dungeon = { active: false, floor: 1, best: 1, checkpoint: 1, marks: 0, bossesCleared: 0, autoDescend: false, autoLeaveOnDeath: false, modifier: 'balanced' };
       }
       targetChar.dungeon.active = !!targetChar.dungeon.active;
-      targetChar.dungeon.floor = Math.max(1, Number(targetChar.dungeon.floor || 1));
-      targetChar.dungeon.best = Math.max(targetChar.dungeon.floor, Number(targetChar.dungeon.best || 1));
+      targetChar.dungeon.floor = Math.max(1, Math.floor(Number(targetChar.dungeon.floor || 1)));
+      targetChar.dungeon.best = Math.max(targetChar.dungeon.floor, Math.floor(Number(targetChar.dungeon.best || 1)));
+      targetChar.dungeon.checkpoint = Math.max(1, Math.min(targetChar.dungeon.best, Math.floor(Number(targetChar.dungeon.checkpoint || 1))));
+      targetChar.dungeon.marks = Math.max(0, Math.floor(Number(targetChar.dungeon.marks || 0)));
+      targetChar.dungeon.bossesCleared = Math.max(0, Math.floor(Number(targetChar.dungeon.bossesCleared || 0)));
       if (!targetChar.dungeon.modifier || !DUNGEON_MODIFIERS[targetChar.dungeon.modifier]) {
         targetChar.dungeon.modifier = 'balanced';
       }
       targetChar.dungeon.autoDescend = !!targetChar.dungeon.autoDescend;
       targetChar.dungeon.autoLeaveOnDeath = !!targetChar.dungeon.autoLeaveOnDeath;
       targetChar.dungeon.autoDescendLimit = Number(targetChar.dungeon.autoDescendLimit ?? DUNGEON_AUTO_DESCEND_MAX);
+      ensureDungeonSeasonState(targetChar);
 
       if (!targetChar.aa || typeof targetChar.aa !== 'object') {
         targetChar.aa = { points: 0, spent: 0, nodes: {} };
@@ -14694,6 +14970,13 @@
       if (!targetChar.aa.nodes || typeof targetChar.aa.nodes !== 'object' || Array.isArray(targetChar.aa.nodes)) {
         targetChar.aa.nodes = {};
       }
+      if (!targetChar.aa.legacy || typeof targetChar.aa.legacy !== 'object' || Array.isArray(targetChar.aa.legacy)) {
+        targetChar.aa.legacy = {};
+      }
+      AA_LEGACY_NODES.forEach(node => {
+        targetChar.aa.legacy[node.id] = Math.max(0, Math.floor(Number(targetChar.aa.legacy[node.id] || 0)));
+      });
+      targetChar.aa.legacySpent = Math.max(0, Math.floor(Number(targetChar.aa.legacySpent || 0)));
       if (!targetChar.aa.presets || typeof targetChar.aa.presets !== 'object' || Array.isArray(targetChar.aa.presets)) {
         targetChar.aa.presets = { slot1: null, slot2: null };
       }
@@ -14723,7 +15006,7 @@
         const raw = Number(targetChar.aa.nodes[node.key] || 0);
         const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number.isFinite(raw) ? raw : 0)));
         cleanedAANodes[node.key] = rank;
-        spent += rank;
+        spent += rank * getAANodeCost(node);
       });
       targetChar.aa.nodes = cleanedAANodes;
       targetChar.aa.spent = spent;
@@ -14736,7 +15019,7 @@
       targetChar.aa.sim.nodes = cleanedSimNodes;
 
       const totalOwnedAA = targetChar.aa.points + targetChar.aa.spent;
-      const simSpent = aaNodes.reduce((sum, node) => sum + Number(targetChar.aa.sim.nodes[node.key] || 0), 0);
+      const simSpent = aaNodes.reduce((sum, node) => sum + Number(targetChar.aa.sim.nodes[node.key] || 0) * getAANodeCost(node), 0);
       if (!targetChar.aa.sim.active) {
         targetChar.aa.sim.points = targetChar.aa.points;
       } else {
@@ -14758,7 +15041,7 @@
           const raw = Number(preset.nodes[node.key] || 0);
           normalizedNodes[node.key] = Math.max(0, Math.min(node.maxRank, Math.floor(Number.isFinite(raw) ? raw : 0)));
         });
-        const spentRanks = aaNodes.reduce((sum, node) => sum + Number(normalizedNodes[node.key] || 0), 0);
+        const spentRanks = aaNodes.reduce((sum, node) => sum + Number(normalizedNodes[node.key] || 0) * getAANodeCost(node), 0);
         targetChar.aa.sim.presets[slot] = { cls: targetChar.cls, nodes: normalizedNodes, spent: spentRanks };
       });
 
@@ -14792,6 +15075,8 @@
         healMult: 1,
         manaMult: 1,
         lootMult: 1,
+        goldMult: 1,
+        xpMult: 1,
         mpRegenBonus: 0,
         hpBonus: 0,
         mpBonus: 0
@@ -14815,6 +15100,15 @@
         out.manaMult *= (1 + (node.manaMultPerRank || 0) * rank);
         out.lootMult *= (1 + (node.lootMultPerRank || 0) * rank);
       });
+      const legacy = getAALegacyEffects(targetChar);
+      out.playerDamageMult *= (1 + legacy.damageBonus);
+      out.spellPowerMult *= (1 + legacy.damageBonus);
+      out.mobDamageMult *= (1 - legacy.damageReduction);
+      out.lootMult *= (1 + legacy.fortuneBonus);
+      out.goldMult *= (1 + legacy.fortuneBonus);
+      out.xpMult *= (1 + legacy.xpBonus);
+      out.hpBonus += legacy.hpBonus;
+      out.mpBonus += legacy.mpBonus;
       return out;
     }
 
@@ -14829,6 +15123,9 @@
         hp += Math.floor((node.hpBonusPerRank || 0) * rank);
         mp += Math.floor((node.mpBonusPerRank || 0) * rank);
       });
+      const legacy = getAALegacyEffects(targetChar);
+      hp += legacy.hpBonus;
+      mp += legacy.mpBonus;
       return { hp, mp };
     }
 
@@ -14862,8 +15159,9 @@
       if (!char) return { totalXp: 0, regularXp: 0, aaXp: 0, aaPoints: 0 };
       ensureExtendedSystems(char);
       const prestige = getPrestigeModifiers(char);
+      const aa = getAACombatModifiers(char);
 
-      const rawTotal = Math.max(0, Math.floor(Number(rawXp || 0) * (prestige.xpMult || 1)));
+      const rawTotal = Math.max(0, Math.floor(Number(rawXp || 0) * (prestige.xpMult || 1) * (aa.xpMult || 1)));
       if (rawTotal <= 0) return { totalXp: 0, regularXp: 0, aaXp: 0, aaPoints: 0 };
 
       // classic fantasy-style group split: divide evenly among XP-eligible members
@@ -16473,6 +16771,8 @@
         healMult: 1,
         manaMult: 1,
         lootMult: 1,
+        goldMult: 1,
+        xpMult: 1,
         mpRegenBonus: 0,
         hpBonus: 0,
         mpBonus: 0
@@ -16496,6 +16796,15 @@
         out.manaMult *= (1 + (node.manaMultPerRank || 0) * rank);
         out.lootMult *= (1 + (node.lootMultPerRank || 0) * rank);
       });
+      const legacy = getAALegacyEffects(targetChar);
+      out.playerDamageMult *= (1 + legacy.damageBonus);
+      out.spellPowerMult *= (1 + legacy.damageBonus);
+      out.mobDamageMult *= (1 - legacy.damageReduction);
+      out.lootMult *= (1 + legacy.fortuneBonus);
+      out.goldMult *= (1 + legacy.fortuneBonus);
+      out.xpMult *= (1 + legacy.xpBonus);
+      out.hpBonus += legacy.hpBonus;
+      out.mpBonus += legacy.mpBonus;
       return out;
     }
 
@@ -16556,6 +16865,27 @@
       char.aa.spent += cost;
       reconcileAAVitals(char);
       log('AA upgraded: ' + node.name + ' (' + char.aa.nodes[node.key] + '/' + node.maxRank + ')' + (cost > 1 ? ' [-' + cost + ' pts]' : '') + '.', 'lvl');
+      renderAll();
+      renderAATab();
+      autoSave();
+    }
+
+    function spendAALegacyPoint(nodeId) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const node = getAALegacyNode(nodeId);
+      if (!node) { log('Unknown Legacy AA node.', 'info'); return; }
+      if (char.level < AA_UNLOCK_LEVEL) { log('Alternate Ascension is not unlocked yet.', 'info'); return; }
+      const cost = getAALegacyCost(nodeId, char);
+      if ((char.aa.points || 0) < cost) {
+        log(node.name + ' requires ' + cost + ' AA points.', 'info');
+        return;
+      }
+      char.aa.points -= cost;
+      char.aa.legacy[nodeId] = Math.max(0, Number(char.aa.legacy[nodeId] || 0)) + 1;
+      char.aa.legacySpent = Math.max(0, Number(char.aa.legacySpent || 0)) + cost;
+      reconcileAAVitals(char);
+      log('Legacy AA upgraded: ' + node.name + ' Rank ' + char.aa.legacy[nodeId] + ' [-' + cost + ' AA].', 'lvl');
       renderAll();
       renderAATab();
       autoSave();
@@ -16644,7 +16974,7 @@
       nodes.forEach(node => {
         const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number(sourceNodes[node.key] || 0))));
         snap[node.key] = rank;
-        spent += rank;
+        spent += rank * getAANodeCost(node);
       });
       char.aa.sim.presets[slotName] = { cls: char.cls, nodes: snap, spent };
       log('Saved simulator preset ' + slotName + '.', 'info');
@@ -16668,7 +16998,7 @@
       nodes.forEach(node => {
         const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number(preset.nodes[node.key] || 0))));
         normalized[node.key] = rank;
-        spent += rank;
+        spent += rank * getAANodeCost(node);
       });
 
       const totalOwned = Math.max(0, Number(char.aa.points || 0)) + Math.max(0, Number(char.aa.spent || 0));
@@ -16821,7 +17151,7 @@
         const raw = Number(preset.nodes[node.key] || 0);
         const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number.isFinite(raw) ? raw : 0)));
         target[node.key] = rank;
-        targetSpent += rank;
+        targetSpent += rank * getAANodeCost(node);
       });
 
       const totalOwned = Math.max(0, Number(char.aa.points || 0)) + Math.max(0, Number(char.aa.spent || 0));
@@ -16944,7 +17274,7 @@
         const raw = Number((l.aaNodes && l.aaNodes[node.key]) || 0);
         const rank = Math.max(0, Math.min(node.maxRank, Math.floor(Number.isFinite(raw) ? raw : 0)));
         target[node.key] = rank;
-        targetSpent += rank;
+        targetSpent += rank * getAANodeCost(node);
       });
       const totalOwned = Math.max(0, Number(char.aa.points || 0)) + Math.max(0, Number(char.aa.spent || 0));
       if (targetSpent <= totalOwned) {
@@ -18413,6 +18743,8 @@
       });
       if (!targetChar.achievements || typeof targetChar.achievements !== 'object') targetChar.achievements = {};
       if (typeof targetChar.activeTitle !== 'string') targetChar.activeTitle = '';
+      if (!Array.isArray(targetChar.unlockedTitles)) targetChar.unlockedTitles = [];
+      targetChar.unlockedTitles = Array.from(new Set(targetChar.unlockedTitles.map(t => String(t || '').trim()).filter(Boolean)));
     }
     function bumpStat(key, by) {
       if (!char) return;
@@ -18442,7 +18774,17 @@
     function getAvailableTitles() {
       if (!char) return [];
       ensureStatsState(char);
-      return ACHIEVEMENTS.filter(a => char.achievements[a.id] && a.title).map(a => a.title);
+      return Array.from(new Set(ACHIEVEMENTS.filter(a => char.achievements[a.id] && a.title).map(a => a.title).concat(char.unlockedTitles || [])));
+    }
+    function unlockCustomTitle(title) {
+      if (!char || !title) return false;
+      ensureStatsState(char);
+      title = String(title).trim().slice(0, 48);
+      if (!title || char.unlockedTitles.includes(title)) return false;
+      char.unlockedTitles.push(title);
+      if (!char.activeTitle) char.activeTitle = title;
+      log('Cosmetic title unlocked: ' + title + '!', 'lvl');
+      return true;
     }
     function setActiveTitle(title) {
       if (!char) return;
@@ -19010,12 +19352,16 @@
     function enterDungeon() {
       if (!char) return;
       ensureExtendedSystems(char);
+      if (char.dungeon.active) {
+        log('You are already in the Endless Dungeon.', 'info');
+        return;
+      }
       if (mob) {
         log('You cannot enter the dungeon during combat.', 'info');
         return;
       }
       char.dungeon.active = true;
-      char.dungeon.floor = Math.max(1, char.dungeon.floor || 1);
+      char.dungeon.floor = Math.max(1, char.dungeon.checkpoint || 1);
       mob = null;
       const mod = getDungeonModifierData(char.dungeon.modifier);
       log('You descend into the Endless Dungeon at floor ' + char.dungeon.floor + ' (' + mod.label + ').', 'info');
@@ -19032,9 +19378,9 @@
         return;
       }
       char.dungeon.active = false;
-      char.dungeon.floor = 1;
+      char.dungeon.floor = Math.max(1, char.dungeon.checkpoint || 1);
       mob = null;
-      log('You leave the Endless Dungeon.', 'info');
+      log('You leave the Endless Dungeon. Checkpoint saved at floor ' + char.dungeon.floor + '.', 'info');
       renderAll();
       renderDungeonTab();
       autoSave();
@@ -21356,6 +21702,66 @@ async function exportSlotsToFile(options = {}) {
       applyUxPreset(order[(cur + 1) % order.length]);
     }
 
+    function syncDesktopFitBodyState() {
+      const gameScreen = document.getElementById('screen-game');
+      const layout = gameScreen ? (gameScreen.dataset.layout || (gameScreen.classList.contains('ui-layout-desktop') ? 'desktop' : 'mobile')) : '';
+      const view = gameScreen ? (gameScreen.dataset.view || (gameScreen.classList.contains('ui-screen-fit') ? 'fit' : (gameScreen.classList.contains('ui-focus-mode') ? 'focus' : 'normal'))) : '';
+      const active = !!(gameScreen
+        && gameScreen.classList.contains('active')
+        && layout === 'desktop'
+        && (view === 'normal' || view === 'fit'));
+      const fullHeightActive = !!(active
+        && view === 'normal'
+        && gameScreen.classList.contains('ui-full-height-panels'));
+      document.body.classList.remove('ui-desktop-fit-active');
+      document.body.classList.toggle('ui-desktop-viewport-active', active);
+      document.body.classList.toggle('ui-desktop-full-height-active', fullHeightActive);
+    }
+
+    function toggleDesktopLogTools(force) {
+      const gameScreen = document.getElementById('screen-game');
+      if (!gameScreen) return false;
+      const open = typeof force === 'boolean'
+        ? force
+        : !gameScreen.classList.contains('ui-log-tools-open');
+      gameScreen.classList.toggle('ui-log-tools-open', open);
+      const button = document.getElementById('desktop-log-tools-btn');
+      if (button) {
+        button.classList.toggle('active', open);
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+      return false;
+    }
+
+    const PRIORITY_QUEUE_COLLAPSE_KEY = 'emberquest_priority_queue_collapsed_v168';
+    function setPriorityQueueCollapsed(collapsed, persist = true) {
+      const panel = document.getElementById('priority-queue-panel');
+      const button = document.getElementById('priority-queue-toggle');
+      const chevron = document.getElementById('priority-queue-chevron');
+      if (!panel) return false;
+      panel.classList.toggle('priority-queue-collapsed', !!collapsed);
+      if (button) button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      if (chevron) chevron.textContent = collapsed ? '▸' : '▾';
+      if (persist) {
+        try { localStorage.setItem(PRIORITY_QUEUE_COLLAPSE_KEY, collapsed ? '1' : '0'); } catch (_) {}
+      }
+      return false;
+    }
+
+    function togglePriorityQueuePanel() {
+      const panel = document.getElementById('priority-queue-panel');
+      return setPriorityQueueCollapsed(!(panel && panel.classList.contains('priority-queue-collapsed')));
+    }
+
+    function loadPriorityQueuePanelState() {
+      let collapsed = true;
+      try {
+        const saved = localStorage.getItem(PRIORITY_QUEUE_COLLAPSE_KEY);
+        if (saved !== null) collapsed = saved !== '0';
+      } catch (_) {}
+      setPriorityQueueCollapsed(collapsed, false);
+    }
+
     // ══════════════════════════════════════════════
     //  CHARACTER SELECT SCREEN
     // ══════════════════════════════════════════════
@@ -21368,6 +21774,7 @@ async function exportSlotsToFile(options = {}) {
       document.body.classList.toggle('game-active', inGame);
       document.body.classList.toggle('character-select-active', !inGame && id !== 'screen-login');
       if (inGame && typeof applyUiPreferences === 'function') applyUiPreferences(true);
+      syncDesktopFitBodyState();
     }
 
     function normalizeUiLayoutMode(mode) {
@@ -21381,7 +21788,9 @@ async function exportSlotsToFile(options = {}) {
         gameScreen.classList.toggle('ui-layout-mobile', uiLayoutMode === 'mobile');
         gameScreen.classList.toggle('ui-layout-mobile-v2', uiLayoutMode === 'mobile-v2');
         gameScreen.classList.toggle('ui-layout-desktop', uiLayoutMode === 'desktop');
+        gameScreen.dataset.layout = uiLayoutMode;
       }
+      syncDesktopFitBodyState();
 
       const btn = document.getElementById('layout-mode-btn');
       if (btn) {
@@ -21676,6 +22085,9 @@ async function exportSlotsToFile(options = {}) {
         gameScreen.classList.toggle('ui-wide-center', !!uiPrefs.wideCenter);
         gameScreen.classList.toggle('ui-screen-fit', !!uiPrefs.screenFit);
         const viewMode = getUiLayoutViewMode();
+        gameScreen.dataset.view = viewMode;
+        gameScreen.dataset.density = uiPrefs.density;
+        gameScreen.dataset.compactSidebars = uiPrefs.compactSidebars ? 'true' : 'false';
         gameScreen.classList.toggle('ui-normal-mode', viewMode === 'normal');
         gameScreen.classList.toggle('ui-fit-mode', viewMode === 'fit');
         gameScreen.classList.toggle('ui-focus-layout-mode', viewMode === 'focus');
@@ -21695,6 +22107,7 @@ async function exportSlotsToFile(options = {}) {
         gameScreen.classList.toggle('ui-ux-big-click', uiPrefs.uxMode === 'bigclick');
         gameScreen.classList.toggle('ui-ux-combat', uiPrefs.uxMode === 'combat');
       }
+      syncDesktopFitBodyState();
       const quickBar = document.getElementById('quick-ui-bar');
       if (quickBar) {
         quickBar.style.display = uiPrefs.quickUiBar ? 'flex' : 'none';
@@ -23964,6 +24377,28 @@ async function exportSlotsToFile(options = {}) {
     function renderMob() {
       const mc = document.getElementById('mob-card'), nm = document.getElementById('no-mob-msg');
       renderBattleScene();
+      const pack = mob ? getActiveMobPack() : [];
+      const packControlsEnabled = pack.length > 1;
+      let actions = document.getElementById('mob-pack-actions');
+      if (!actions && mc) {
+        actions = document.createElement('div');
+        actions.id = 'mob-pack-actions';
+        actions.className = 'mob-pack-actions';
+        mc.appendChild(actions);
+      }
+      if (actions) {
+        const disabled = packControlsEnabled ? '' : ' disabled aria-disabled="true"';
+        const status = packControlsEnabled
+          ? escapeHtmlSafe(getPackThreatLabel()) + ' · Click enemies or use target buttons'
+          : (pack.length ? 'Pack controls become available when multiple enemies engage.' : 'No active enemies.');
+        actions.style.display = 'flex';
+        actions.innerHTML =
+          '<button class="btn" onclick="cycleNextMobTarget()"' + disabled + '>Next Target</button>' +
+          '<button class="btn" onclick="selectMobTargetBy(\'weakest\')"' + disabled + '>Weakest</button>' +
+          '<button class="btn" onclick="selectMobTargetBy(\'strongest\')"' + disabled + '>Strongest</button>' +
+          '<button class="btn pack-sweep-btn" onclick="sweepMobPack()"' + disabled + '>Sweep Pack</button>' +
+          '<div class="pack-threat">' + status + '</div>';
+      }
       // Keep the mob card (and therefore the HP bar) mounted at all times so it
       // doesn't visibly disappear between fights. When there's no current
       // target, render a placeholder instead of hiding the card.
@@ -23971,13 +24406,11 @@ async function exportSlotsToFile(options = {}) {
       if (nm) nm.style.display = 'none';
       if (!mob) {
         document.getElementById('mob-name').textContent = 'No target';
-        document.getElementById('mob-level').textContent = '';
+        document.getElementById('mob-level').textContent = 'Level —';
         document.getElementById('mob-hp-bar').style.width = '0%';
         document.getElementById('mob-hp-disp').textContent = '0/0 HP';
         const badgeEmpty = document.getElementById('mob-badge');
         if (badgeEmpty) { badgeEmpty.textContent = ''; badgeEmpty.className = 'badge'; }
-        const actionsEmpty = document.getElementById('mob-pack-actions');
-        if (actionsEmpty) { actionsEmpty.style.display = 'none'; actionsEmpty.innerHTML = ''; }
         requestAnimationFrame(syncCombatLogSize);
         return;
       }
@@ -23986,26 +24419,7 @@ async function exportSlotsToFile(options = {}) {
       document.getElementById('mob-hp-bar').style.width = Math.max(0, mob.hp / mob.maxHp * 100) + '%';
       document.getElementById('mob-hp-disp').textContent = fmt(mob.hp) + '/' + fmt(mob.maxHp) + ' HP';
       const badge = document.getElementById('mob-badge');
-      const pack = getActiveMobPack();
       const packSuffix = pack.length > 1 ? (' · Pack ' + pack.length) : '';
-      const mcActionsId = 'mob-pack-actions';
-      let actions = document.getElementById(mcActionsId);
-      if (!actions && mc) {
-        actions = document.createElement('div');
-        actions.id = mcActionsId;
-        actions.className = 'mob-pack-actions';
-        mc.appendChild(actions);
-      }
-      if (actions) {
-        actions.style.display = pack.length > 1 ? 'flex' : 'none';
-        actions.innerHTML = pack.length > 1
-          ? '<button class="btn" onclick="cycleNextMobTarget()">Next Target</button>' +
-            '<button class="btn" onclick="selectMobTargetBy(\'weakest\')">Weakest</button>' +
-            '<button class="btn" onclick="selectMobTargetBy(\'strongest\')">Strongest</button>' +
-            '<button class="btn pack-sweep-btn" onclick="sweepMobPack()">Sweep Pack</button>' +
-            '<div class="pack-threat">' + escapeHtmlSafe(getPackThreatLabel()) + ' · Click enemies or use target buttons</div>'
-          : '';
-      }
       if (mob.named) {
         badge.textContent = 'Named' + (mob.namedMechanic ? (' · ' + mob.namedMechanic.name) : '') + packSuffix;
         badge.className = 'badge badge-rare';
@@ -24036,29 +24450,13 @@ async function exportSlotsToFile(options = {}) {
         logEl.style.boxSizing = '';
       }
 
-      // Fit mode: pin the center panel to the bottom of the viewport so the
-      // combat field + log fill the screen instead of overflowing and forcing a
-      // scroll. We measure the panel's real top offset rather than assuming a
-      // fixed topbar height (which varies with compact/sticky/wrapped topbars).
-      const gameScreen = document.getElementById('screen-game');
+      // Desktop Fit is a CSS-owned viewport shell. Clear legacy inline panel
+      // heights so the grid and its scroll regions can respond to the actual
+      // topbar and quick-bar heights without competing with !important rules.
       const centerPanel = document.getElementById('center-panel');
-      if (gameScreen && centerPanel) {
-        const fitActive = gameScreen.classList.contains('ui-screen-fit')
-          && gameScreen.classList.contains('ui-layout-desktop')
-          && !gameScreen.classList.contains('ui-focus-mode')
-          && !gameScreen.classList.contains('ui-full-height-panels');
-        if (fitActive) {
-          const top = centerPanel.getBoundingClientRect().top;
-          if (top > 0) {
-            const bottomGap = 12; // breathing room at the very bottom
-            const avail = Math.max(360, Math.floor(window.innerHeight - top - bottomGap));
-            centerPanel.style.height = avail + 'px';
-            centerPanel.style.maxHeight = avail + 'px';
-          }
-        } else {
-          centerPanel.style.height = '';
-          centerPanel.style.maxHeight = '';
-        }
+      if (centerPanel) {
+        centerPanel.style.height = '';
+        centerPanel.style.maxHeight = '';
       }
     }
 
@@ -24127,7 +24525,7 @@ async function exportSlotsToFile(options = {}) {
           contractTracker.innerHTML =
             '<div class="quest-name" style="margin:0">Contract Chain Tracker</div>' +
             '<div class="quest-prog" style="margin-top:4px">Step ' + step + '/' + total + ' · ' + getContractTierData(c.tier || 'normal').label + (c.bossStep ? ' · Boss Step' : '') + '</div>' +
-            '<div class="quest-prog">Objective: ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Ready to claim in Quests' : '') + '</div>' +
+            '<div class="quest-prog">Objective: Lv ' + Math.max(char.level, Number(c.level || char.level)) + ' ' + c.target + ' (' + c.progress + '/' + c.count + ')' + (c.complete ? ' — Ready to claim in Quests' : '') + '</div>' +
             '<div class="quest-prog">Zone: ' + zoneName + ' (' + zoneRange + ')' + (inZone ? ' · You are here' : '') + '</div>' +
             '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
             '<button class="btn" onclick="travelToContractZone()" ' + (inZone ? 'disabled' : '') + '>Quick Travel</button>' +
@@ -24348,10 +24746,10 @@ async function exportSlotsToFile(options = {}) {
         const hasRuneInBag = hasAnyRuneAvailable();
         const socketCost = socketable ? getSocketCost(item) : 0;
         const socketBtn = socketable && hasSocketRoom
-          ? `<button class="btn" onclick="addSocketToItem('${slot}')" ${locked ? 'disabled' : ''}>Add Socket (${socketCost}g)</button>`
+          ? `<button class="btn" onclick="addSocketToItem('${slot}')">Add Socket (${socketCost}g)</button>`
           : '';
         const insertRuneBtn = socketable && hasEmptySocket
-          ? `<button class="btn" onclick="insertRuneIntoItem('${slot}')" ${(locked || !hasRuneInBag) ? 'disabled' : ''}>Insert Rune</button>`
+          ? `<button class="btn" onclick="insertRuneIntoItem('${slot}')" ${!hasRuneInBag ? 'disabled' : ''}>Insert Rune</button>`
           : '';
         const destroyRuneBtn = socketable && hasFilledSocket
           ? `<button class="btn" onclick="destroyRuneFromItem('${slot}')" ${locked ? 'disabled' : ''}>Destroy Rune</button>`
@@ -24394,6 +24792,7 @@ async function exportSlotsToFile(options = {}) {
             popStats +
             '<button class="btn" onclick="compareEquippedSlot(\'' + slot + '\')">Compare Best Bag Item</button>' +
             '<button class="btn" onclick="unequipItem(\'' + slot + '\')">Unequip</button>' +
+            '<button class="btn" onclick="toggleEquippedItemFlag(\'' + slot + '\', \'locked\')">' + (locked ? '🔓 Unlock' : '🔒 Lock') + '</button>' +
             socketBtn + insertRuneBtn + destroyRuneBtn +
           '</div>';
 
@@ -25079,7 +25478,6 @@ async function exportSlotsToFile(options = {}) {
       html += `<div id="scratch-stats" style="font-size:11px;color:#d8cfa8;background:rgba(0,0,0,0.35);border:1px solid rgba(255,220,160,0.25);border-radius:8px;padding:6px 10px;margin-bottom:10px">${_casinoStatsHTML('scratch')}</div>`;
       SCRATCH_TICKETS.forEach(ticket => {
         const locked = false;
-        const canAfford = (char.gold || 0) >= ticket.cost;
         const rarityColorMap = { Common: '#aaa', Uncommon: '#4ade80', Rare: '#60a5fa', Epic: '#c084fc', Legendary: '#fb923c' };
         const rc = rarityColorMap[ticket.rarity] || '#aaa';
         html += `<div class="rpg-item-card" style="position:relative;overflow:hidden">
@@ -25094,8 +25492,8 @@ async function exportSlotsToFile(options = {}) {
           <div class="rpg-item-type">${ticket.desc}</div>
           <div class="rpg-item-bonus">Cost: ${ticket.cost.toLocaleString()}g</div>
           <div class="rpg-item-actions">
-            <button class="btn${canAfford ? ' active' : ''}" onclick="buyScratchTicket('${ticket.id}')" ${!canAfford ? 'disabled title="Not enough gold"' : ''}>
-              🎟 Buy & Scratch
+            <button class="btn active" onclick="buyScratchTicket('${ticket.id}')">
+              🎟 Open Ticket — Free
             </button>
           </div>
         </div>`;
@@ -25104,6 +25502,35 @@ async function exportSlotsToFile(options = {}) {
     }
 
     function buyScratchTicket(ticketId) {
+      if (!char) return;
+      const ticket = SCRATCH_TICKETS.find(t => t.id === ticketId);
+      if (!ticket) return;
+      showScratchPurchaseModal(ticket);
+    }
+
+    function showScratchPurchaseModal(ticket) {
+      const existing = document.getElementById('scratch-overlay');
+      if (existing) existing.remove();
+      const existingPreview = document.getElementById('scratch-purchase-overlay');
+      if (existingPreview) existingPreview.remove();
+      const canAfford = (char.gold || 0) >= ticket.cost;
+      const overlay = document.createElement('div');
+      overlay.id = 'scratch-purchase-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);';
+      overlay.innerHTML = `
+        <div style="background:var(--bg-primary);border:1.5px solid ${ticket.color};border-radius:16px;padding:20px;max-width:400px;width:95%;box-shadow:0 0 40px ${ticket.color}44;text-align:center">
+          <div style="font-size:38px">${ticket.emoji}</div>
+          <div style="font-size:16px;font-weight:700;color:${ticket.color};margin-top:4px">${ticket.name}</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin:8px 0 14px">Opening this preview is free. Gold is charged only when you buy and begin scratching.</div>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <button class="btn active" onclick="startScratchTicket('${ticket.id}')" ${canAfford ? '' : 'disabled title="Not enough gold"'}>Buy & Scratch — ${ticket.cost.toLocaleString()}g</button>
+            <button class="btn" onclick="closeScratchModal()">Close</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+
+    function startScratchTicket(ticketId) {
       if (!char) return;
       const ticket = SCRATCH_TICKETS.find(t => t.id === ticketId);
       if (!ticket) return;
@@ -25128,6 +25555,8 @@ async function exportSlotsToFile(options = {}) {
       // Build modal over the popup
       const existing = document.getElementById('scratch-overlay');
       if (existing) existing.remove();
+      const preview = document.getElementById('scratch-purchase-overlay');
+      if (preview) preview.remove();
 
       const overlay = document.createElement('div');
       overlay.id = 'scratch-overlay';
@@ -25302,6 +25731,8 @@ async function exportSlotsToFile(options = {}) {
     function closeScratchModal() {
       const overlay = document.getElementById('scratch-overlay');
       if (overlay) overlay.remove();
+      const preview = document.getElementById('scratch-purchase-overlay');
+      if (preview) preview.remove();
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -25560,12 +25991,10 @@ async function exportSlotsToFile(options = {}) {
 
     function renderSlotsLobby(container) {
       if (!char || !container) return;
-      const gold = char.gold || 0;
       let html = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:6px">Pick a machine and spin the 5-reel grid. Each spin bets across ' + SLOT_PAYLINES.length + ' paylines — land 3+ matching symbols left-to-right to win. Wilds substitute, and scatters trigger free spins!</div>';
       SLOT_MACHINES.forEach(m => {
         const locked = false;
         const totalBet = _slotTotalBet(m);
-        const canAfford = gold >= totalBet;
         // Top line win = best 5-of-a-kind paying symbol × line bet
         const topPay = Math.max(...m.symbols.map(s => (s.pays && s.pays['5']) || 0));
         const showcase = m.symbols.slice(0, 5).map(s => s.sym).join('');
@@ -25581,10 +26010,10 @@ async function exportSlotsToFile(options = {}) {
           <div class="rpg-item-type">${m.desc}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;font-size:20px;letter-spacing:2px">${showcase}</div>
           <div class="rpg-item-actions">
-            <button class="btn${canAfford ? ' active' : ''}"
+            <button class="btn active"
               onclick="openSlotMachine('${m.id}')"
-              ${!canAfford ? 'disabled title="Not enough gold"' : ''}>
-              🎰 Play — ${totalBet.toLocaleString()}g
+              title="Opening is free; each spin costs ${totalBet.toLocaleString()}g">
+              🎰 Open Machine — Free
             </button>
           </div>
         </div>`;
@@ -26126,11 +26555,9 @@ async function exportSlotsToFile(options = {}) {
     // Render the lobby: pick a board
     function renderPachinkoLobby(container) {
       if (!char) return;
-      const gold = char.gold || 0;
-      let html = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">Select a machine and keep dropping balls as long as you can afford it. Each drop costs the listed price!</div>';
+      let html = '<div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px">Opening a board is free. Gold is charged only when you drop one or more balls.</div>';
       PACHINKO_BOARDS.forEach(board => {
         const locked = false;
-        const canAfford = gold >= board.cost;
         html += `<div class="rpg-item-card" style="position:relative;overflow:hidden;border-color:${board.color}44">
           <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,${board.glowColor},transparent 70%);pointer-events:none"></div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
@@ -26145,10 +26572,10 @@ async function exportSlotsToFile(options = {}) {
             ${board.buckets.map(b=>`<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${b.color}22;color:${b.color};border:1px solid ${b.color}44;font-weight:700">${b.label}</span>`).join('')}
           </div>
           <div class="rpg-item-actions">
-            <button class="btn${canAfford ? ' active' : ''}"
+            <button class="btn active"
               onclick="launchPachinko('${board.id}')"
-              ${!canAfford ? 'disabled title="Not enough gold"' : ''}>
-              🎯 Play — ${board.cost.toLocaleString()}g
+              title="Opening is free; drops cost ${board.cost.toLocaleString()}g each">
+              🎯 Open Board — Free
             </button>
           </div>
         </div>`;
@@ -26160,12 +26587,7 @@ async function exportSlotsToFile(options = {}) {
       if (!char) return;
       const board = PACHINKO_BOARDS.find(b => b.id === boardId);
       if (!board) return;
-      if ((char.gold || 0) < board.cost) { log('Not enough gold for ' + board.name + '.', 'info'); return; }
-      char.gold -= board.cost;
       _pachinkoResetSession();
-      _pachinkoRecordSpend(board.cost);
-      renderShop();
-      autoSave();
       openPachinkoModal(board);
     }
 
@@ -26215,10 +26637,10 @@ async function exportSlotsToFile(options = {}) {
           </div>
           <div id="pachinko-result" style="font-size:14px;font-weight:700;color:${board.color};min-height:22px;text-align:center"></div>
           <div id="pachinko-stats" style="width:100%;font-size:11px;color:#d8cfa8;background:rgba(0,0,0,0.35);border:1px solid ${board.color}33;border-radius:8px;padding:6px 10px"></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn active" id="pachinko-drop-btn" onclick="pachinkoDrop()" style="background:${board.color};color:#000;font-weight:700">
-              🎯 Drop Ball — ${board.cost.toLocaleString()}g
-            </button>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+            ${[1, 10, 50, 100].map(count => `<button class="btn active pachinko-batch-btn" data-count="${count}" onclick="pachinkoDrop(${count})" style="background:${board.color};color:#000;font-weight:700">
+              Drop x${count} — ${(board.cost * count).toLocaleString()}g
+            </button>`).join('')}
           </div>
         </div>`;
 
@@ -26226,6 +26648,7 @@ async function exportSlotsToFile(options = {}) {
 
       // Init and draw the board
       initPachinkoCanvas(board);
+      _updateDropBtn(board);
       _updatePachinkoStatsDisplay();
       _syncPachinkoSoundBar();
     }
@@ -26295,11 +26718,15 @@ async function exportSlotsToFile(options = {}) {
     let _pState = null;   // simulation state (pegs, W, H, bucketW, etc.)
     let _pBalls = [];     // array of active ball objects
     let _pAnimFrame = null; // single shared animation frame
+    let _pBatchSeq = 0;
+    let _pBatches = new Map();
+    let _pCommitTimer = null;
     // Per-session win/loss tracking for the current Pachinko sitting.
     let _pSession = { won: 0, lost: 0, runesWon: 0, gearWon: 0 };
 
     function _pachinkoResetSession() {
       _pSession = { won: 0, lost: 0, runesWon: 0, gearWon: 0 };
+      _pBatches.clear();
     }
 
     // Record gold spent on a drop (a loss) — updates session + lifetime.
@@ -26439,7 +26866,7 @@ async function exportSlotsToFile(options = {}) {
         if (!_pState) return;
         const rect = canvas.getBoundingClientRect();
         const clickX = (e.clientX - rect.left) * (_pState.W / rect.width);
-        _spawnAndDropBall(board, clickX);
+        pachinkoDrop(1, clickX, board);
       };
 
       // Start the shared physics loop
@@ -26447,19 +26874,8 @@ async function exportSlotsToFile(options = {}) {
       _runPachinkoLoop();
     }
 
-    // Spawn a ball and immediately begin physics (deducts cost)
-    function _spawnAndDropBall(board, startX) {
-      if (!char || !_pState) return;
-      if ((char.gold || 0) < board.cost) {
-        const resultEl = document.getElementById('pachinko-result');
-        if (resultEl) { resultEl.textContent = 'Not enough gold!'; }
-        return;
-      }
-      char.gold -= board.cost;
-      _pachinkoRecordSpend(board.cost);
-      renderShop();
-      autoSave();
-
+    function _createPachinkoBall(board, startX, batchId) {
+      if (!char || !_pState) return false;
       const r = 9;
       const W = _pState.W;
       const x = startX !== undefined
@@ -26475,6 +26891,7 @@ async function exportSlotsToFile(options = {}) {
         landed: false,
         landedBucket: -1,
         awarded: false,
+        batchId,
       };
       _pBalls.push(ball);
       try { if (window.SFX) SFX.pachinkoDrop(); } catch (e) {}
@@ -26485,14 +26902,22 @@ async function exportSlotsToFile(options = {}) {
 
       // Update drop button label
       _updateDropBtn(board);
+      return true;
+    }
+
+    // Compatibility wrapper for old paths: all charging now happens once in pachinkoDrop().
+    function _spawnAndDropBall(board, startX, count = 1) {
+      return pachinkoDrop(count, startX, board);
     }
 
     function _updateDropBtn(board) {
-      const dropBtn = document.getElementById('pachinko-drop-btn');
-      if (!dropBtn || !char) return;
-      const canAfford = (char.gold || 0) >= board.cost;
-      dropBtn.disabled = !canAfford;
-      dropBtn.textContent = `🎯 Drop Ball — ${board.cost.toLocaleString()}g`;
+      if (!char) return;
+      document.querySelectorAll('.pachinko-batch-btn').forEach(btn => {
+        const count = Math.max(1, Number(btn.dataset.count || 1));
+        const total = board.cost * count;
+        btn.disabled = (char.gold || 0) < total;
+        btn.textContent = `Drop x${count} — ${total.toLocaleString()}g`;
+      });
     }
 
     // Shared physics + render loop for all active balls
@@ -26555,7 +26980,7 @@ async function exportSlotsToFile(options = {}) {
             ball.landedBucket = bucketIdx;
             if (!ball.awarded) {
               ball.awarded = true;
-              awardPachinkoPrize(s.board, bucketIdx);
+              awardPachinkoPrize(s.board, bucketIdx, ball);
             }
           }
         }
@@ -26704,10 +27129,33 @@ async function exportSlotsToFile(options = {}) {
       }
     }
 
-    // Legacy stub — kept so any old call paths don't crash
-    function pachinkoDrop() {
-      if (!_pState || !_pBoard) return;
-      _spawnAndDropBall(_pBoard);
+    function pachinkoDrop(count = 1, startX, boardOverride = null) {
+      const board = boardOverride || _pBoard;
+      if (!char || !_pState || !board) return false;
+      const allowed = [1, 10, 50, 100];
+      count = Math.floor(Number(count || 1));
+      if (!allowed.includes(count)) count = 1;
+      const totalCost = board.cost * count;
+      if ((char.gold || 0) < totalCost) {
+        const resultEl = document.getElementById('pachinko-result');
+        if (resultEl) resultEl.textContent = 'Not enough gold for x' + count + '.';
+        return false;
+      }
+
+      char.gold -= totalCost;
+      _pachinkoRecordSpend(totalCost);
+      const batchId = ++_pBatchSeq;
+      _pBatches.set(batchId, { count, remaining: count, gold: 0, runes: 0, gear: 0, cost: totalCost });
+      for (let i = 0; i < count; i++) {
+        const spreadX = startX === undefined ? undefined : startX + (Math.random() - 0.5) * Math.min(80, count * 2);
+        _createPachinkoBall(board, spreadX, batchId);
+      }
+      const resultEl = document.getElementById('pachinko-result');
+      if (resultEl) resultEl.textContent = 'Dropped x' + count + ' for ' + totalCost.toLocaleString() + ' gold.';
+      renderShop();
+      _updateDropBtn(board);
+      autoSave();
+      return true;
     }
 
     // DEAD CODE preserved below as reference — replaced by _runPachinkoLoop above
@@ -26718,10 +27166,12 @@ async function exportSlotsToFile(options = {}) {
     const _GRAVITY_UNUSED = 0.32;
     const _BOUNCE_UNUSED = 0.55;
 
-    function awardPachinkoPrize(board, bucketIdx) {
+    function awardPachinkoPrize(board, bucketIdx, ball = null) {
       if (!char) return;
       const bkt = board.buckets[bucketIdx];
       const resultEl = document.getElementById('pachinko-result');
+      const batch = ball && _pBatches.get(ball.batchId);
+      const individualLog = !batch || batch.count === 1;
 
       let resultText = '';
 
@@ -26729,15 +27179,17 @@ async function exportSlotsToFile(options = {}) {
         char.gold = (char.gold || 0) + bkt.value;
         try { if (window.SFX) SFX.pachinkoWin(); } catch (e) {}
         _pachinkoRecordWin(bkt.value, 0, 0);
+        if (batch) batch.gold += bkt.value;
         resultText = `🏆 Won ${bkt.value.toLocaleString()} gold!`;
-        log(`🔮 Pachinko (${board.name}): Won ${bkt.value.toLocaleString()}g!`, 'loot');
+        if (individualLog) log(`🔮 Pachinko (${board.name}): Won ${bkt.value.toLocaleString()}g!`, 'loot');
       } else if (bkt.type === 'rune') {
         if (!char.runes) char.runes = {};
         char.runes[bkt.value] = (char.runes[bkt.value] || 0) + 1;
         try { if (window.SFX) SFX.pachinkoWin(); } catch (e) {}
         _pachinkoRecordWin(0, 1, 0);
+        if (batch) batch.runes += 1;
         resultText = `🔷 Won a ${bkt.value} Rune!`;
-        log(`🔮 Pachinko (${board.name}): Won ${bkt.value} Rune!`, 'loot');
+        if (individualLog) log(`🔮 Pachinko (${board.name}): Won ${bkt.value} Rune!`, 'loot');
       } else if (bkt.type === 'gear') {
         const rarityMap = { epic: 'Epic', legendary: 'Legendary' };
         const rarity = rarityMap[bkt.value] || 'Rare';
@@ -26748,20 +27200,33 @@ async function exportSlotsToFile(options = {}) {
             // (auto-sell/keep/auto-equip) handles it exactly like a mob drop.
             processLootDrop(item, `🔮 Pachinko (${board.name})`);
             _pachinkoRecordWin(0, 0, 1);
+            if (batch) batch.gear += 1;
             resultText = `⚔️ Won ${rarity} gear: ${item.name || 'item'}!`;
           } else {
             const gv = bkt.value === 'legendary' ? 8000 : 2000;
             char.gold = (char.gold || 0) + gv;
             _pachinkoRecordWin(gv, 0, 0);
+            if (batch) batch.gold += gv;
             resultText = `⚔️ ${rarity} gear prize: ${gv.toLocaleString()}g`;
           }
         } else {
           const gv = bkt.value === 'legendary' ? 8000 : 2000;
           char.gold = (char.gold || 0) + gv;
           _pachinkoRecordWin(gv, 0, 0);
+          if (batch) batch.gold += gv;
           resultText = `⚔️ ${rarity} gear prize: ${gv.toLocaleString()}g`;
         }
-        log(`🔮 Pachinko (${board.name}): ${resultText}`, 'loot');
+        if (individualLog) log(`🔮 Pachinko (${board.name}): ${resultText}`, 'loot');
+      }
+
+      if (batch) {
+        batch.remaining = Math.max(0, batch.remaining - 1);
+        if (batch.remaining === 0) {
+          if (batch.count > 1) {
+            log('🔮 Pachinko (' + board.name + ') x' + batch.count + ' complete: ' + fmt(batch.gold) + ' gold, ' + batch.runes + ' rune' + (batch.runes === 1 ? '' : 's') + ', ' + batch.gear + ' gear.', 'loot');
+          }
+          _pBatches.delete(ball.batchId);
+        }
       }
 
       // Show last result (brief flash)
@@ -26772,9 +27237,13 @@ async function exportSlotsToFile(options = {}) {
       // Update drop button affordability
       _updateDropBtn(board);
 
-      renderShop();
-      renderAll();
-      autoSave();
+      if (_pCommitTimer) clearTimeout(_pCommitTimer);
+      _pCommitTimer = setTimeout(() => {
+        _pCommitTimer = null;
+        renderShop();
+        renderAll();
+        autoSave();
+      }, 120);
     }
 
     // Legacy compat — now just spawns a new ball
@@ -26788,11 +27257,17 @@ async function exportSlotsToFile(options = {}) {
     }
 
     function closePachinkoModal() {
+      if (_pBalls.some(ball => ball && !ball.landed)) {
+        const resultEl = document.getElementById('pachinko-result');
+        if (resultEl) resultEl.textContent = 'Wait for the active balls to land before closing.';
+        return;
+      }
       if (_pAnimFrame) cancelAnimationFrame(_pAnimFrame);
       _pAnimFrame = null;
       _pState = null;
       _pBoard = null;
       _pBalls = [];
+      _pBatches.clear();
       const overlay = document.getElementById('pachinko-overlay');
       if (overlay) overlay.remove();
     }
@@ -27279,8 +27754,8 @@ async function exportSlotsToFile(options = {}) {
       if (!dt) return;
       const mod = getDungeonModifierData(char.dungeon.modifier);
       const info = char.dungeon.active
-        ? ('Dungeon Active · Floor ' + char.dungeon.floor + ' · Best ' + char.dungeon.best + ' · Modifier: ' + mod.label)
-        : ('Dungeon Inactive · Best Floor ' + (char.dungeon.best || 1) + ' · Modifier: ' + mod.label);
+        ? ('Dungeon Active · Floor ' + char.dungeon.floor + ' · Checkpoint ' + char.dungeon.checkpoint + ' · Best ' + char.dungeon.best + ' · ' + char.dungeon.marks + ' Marks')
+        : ('Dungeon Inactive · Checkpoint ' + char.dungeon.checkpoint + ' · Best Floor ' + (char.dungeon.best || 1) + ' · ' + char.dungeon.marks + ' Marks');
       const sel = dt.querySelector('#dungeon-modifier-select');
       if (sel) {
         sel.innerHTML = '';
@@ -27295,8 +27770,36 @@ async function exportSlotsToFile(options = {}) {
       const modDetails = dt.querySelector('#dungeon-mod-details');
       if (modDetails) {
         modDetails.innerHTML = '<strong>' + mod.label + '</strong><div style="margin-top:6px">' + (mod.desc || '') + '</div>' +
-          '<div style="margin-top:6px">Loot x' + (mod.lootMult || 1) + ' · XP x' + (mod.xpMult || 1) + ' · Gold x' + (mod.goldMult || 1) + '</div>' +
+          '<div style="margin-top:6px">Loot x' + (mod.lootMult || 1) + ' · XP x' + (mod.xpMult || 1) + ' · Gold x' + (mod.goldMult || 1) + ' · Marks x' + (mod.markMult || 1) + '</div>' +
           '<div style="margin-top:8px">Auto-descend limit: <input id="dungeon-auto-limit" type="number" min="1" step="1" value="' + (char.dungeon.autoDescendLimit || DUNGEON_AUTO_DESCEND_MAX) + '" style="width:84px;margin-left:6px"> <button class="btn" onclick="setDungeonAutoDescendLimitFromUI()">Save</button></div>';
+      }
+
+      const rewards = dt.querySelector('#dungeon-rewards');
+      if (rewards) {
+        ensureDungeonSeasonState(char);
+        const nextBoss = Math.ceil(Math.max(1, char.dungeon.floor) / 5) * 5;
+        const season = char.dungeon.season;
+        const affixes = getDungeonSeasonAffixes(season.key);
+        const resetMs = Math.max(0, nextUtcWeekResetMs() - Date.now());
+        const resetText = Math.floor(resetMs / 86400000) + 'd ' + Math.floor((resetMs % 86400000) / 3600000) + 'h';
+        const milestones = DUNGEON_SEASON_REWARDS.map(r => {
+          const claimed = season.claimed.includes(r.floor);
+          const ready = season.bestFloor >= r.floor && !claimed;
+          return '<button class="btn' + (ready ? ' active' : '') + '" onclick="claimDungeonSeasonReward(' + r.floor + ')"' + (ready ? '' : ' disabled') + '>F' + r.floor + ' ' + r.label + (claimed ? ' ✓' : '') + '</button>';
+        }).join('');
+        const ladder = getDungeonSeasonAccountLadder().map((row, i) => '<div style="display:flex;justify-content:space-between;gap:8px"><span>#' + (i + 1) + ' ' + escapeHtmlSafe(row.name) + ' <span style="opacity:.65">' + escapeHtmlSafe(row.cls) + '</span></span><strong>F' + row.floor + '</strong></div>').join('');
+        rewards.innerHTML = '<strong>Weekly Dungeon Season — ' + season.key + '</strong>' +
+          '<div style="margin-top:4px">Best floor: <strong>' + season.bestFloor + '</strong> · Resets in ' + resetText + '</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;margin-top:7px">' + affixes.map(a => '<div style="padding:6px;border:1px solid var(--border);border-radius:6px"><strong>' + a.label + '</strong><div style="opacity:.75;margin-top:2px">' + a.desc + '</div></div>').join('') + '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px">' + milestones + '</div>' +
+          '<div style="margin-top:8px;padding-top:7px;border-top:1px solid var(--border)"><strong>Account Season Ladder</strong>' + (ladder || '<div>No season attempts yet.</div>') + '</div>' +
+          '<div style="margin-top:9px;padding-top:7px;border-top:1px solid var(--border)"><strong>Dungeon Rewards</strong></div>' +
+          '<div style="margin-top:6px">Every floor awards Dungeon Marks. Every fifth floor grants a checkpoint, bonus gold, and guaranteed Rare-or-better gear.</div>' +
+          '<div style="margin-top:6px">Next boss cache: floor ' + nextBoss + ' · Bosses defeated: ' + char.dungeon.bossesCleared + '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' +
+            '<button class="btn" onclick="redeemDungeonMarks(\'gear\')"' + (char.dungeon.marks < 12 ? ' disabled' : '') + '>Gear Cache — 12 Marks</button>' +
+            '<button class="btn" onclick="redeemDungeonMarks(\'rune\')"' + (char.dungeon.marks < 8 ? ' disabled' : '') + '>Rune Cache — 8 Marks</button>' +
+          '</div>';
       }
 
       const autoDesc = dt.querySelector('#dungeon-auto-descend');
@@ -27309,9 +27812,119 @@ async function exportSlotsToFile(options = {}) {
       if (!char) return;
       ensureExtendedSystems(char);
       if (!char.dungeon.active) { log('You are not in the dungeon.', 'info'); return; }
-      char.dungeon.floor = Math.max(1, (char.dungeon.floor || 1) + 1);
-      char.dungeon.best = Math.max(char.dungeon.best || 1, char.dungeon.floor);
-      log('You descend to floor ' + char.dungeon.floor + '.', 'info');
+      if (mob) { log('Finish the current encounter first.', 'info'); return; }
+      log('You challenge dungeon floor ' + char.dungeon.floor + '.', 'info');
+      spawnMob();
+      renderAll(); renderDungeonTab(); autoSave();
+    }
+
+    function getDungeonRuneZoneIndex() {
+      let best = 0;
+      for (let i = 0; i < ZONES.length; i++) {
+        if (Number((ZONES[i] && ZONES[i].minLvl) || 1) <= Math.max(1, Number(char && char.level || 1))) {
+          if (Number(ZONES[i].minLvl || 1) >= Number((ZONES[best] && ZONES[best].minLvl) || 1)) best = i;
+        }
+      }
+      return best;
+    }
+
+    function rollGuaranteedDungeonRune() {
+      const zoneIdx = getDungeonRuneZoneIndex();
+      for (let i = 0; i < 40; i++) {
+        const rune = rollRuneDrop(zoneIdx, true, 'loot');
+        if (rune) return rune;
+      }
+      return 'Rune: El';
+    }
+
+    function awardDungeonFloorRewards(clearedFloor) {
+      if (!char || !char.dungeon) return;
+      const floor = Math.max(1, Math.floor(Number(clearedFloor || 1)));
+      ensureDungeonSeasonState(char);
+      char.dungeon.season.bestFloor = Math.max(char.dungeon.season.bestFloor || 0, floor);
+      const mod = getDungeonModifierData(char.dungeon.modifier);
+      const bossFloor = floor % 5 === 0;
+      const baseMarks = 1 + Math.floor(floor / 10) + (bossFloor ? 4 : 0);
+      const marks = Math.max(1, Math.floor(baseMarks * (mod.markMult || 1)));
+      char.dungeon.marks += marks;
+      log('Dungeon floor ' + floor + ' cleared. +' + marks + ' Dungeon Mark' + (marks === 1 ? '' : 's') + '.', 'loot');
+
+      if (!bossFloor) return;
+      char.dungeon.checkpoint = Math.max(char.dungeon.checkpoint || 1, floor + 1);
+      char.dungeon.bossesCleared = Math.max(0, Number(char.dungeon.bossesCleared || 0)) + 1;
+      char.dungeonsCleared = Math.max(0, Number(char.dungeonsCleared || 0)) + 1;
+      const cacheGold = Math.floor((Math.max(1, char.level) * 35 + floor * 55) * (mod.goldMult || 1));
+      char.gold += cacheGold;
+      bumpStat('goldEarned', cacheGold);
+      const rarity = floor >= 50 ? 'Legendary' : (floor >= 20 ? 'Epic' : 'Rare');
+      const item = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: Math.max(char.level, char.level + Math.floor(floor / 10)) });
+      if (item) processLootDrop(item, 'Dungeon boss cache');
+      log('Checkpoint unlocked: floor ' + (floor + 1) + '. Boss cache: ' + fmt(cacheGold) + ' gold and guaranteed ' + rarity + ' gear.', 'lvl');
+    }
+
+    function getDungeonSeasonAccountLadder() {
+      const key = getDungeonSeasonKey();
+      const rows = [];
+      for (let i = 0; i < slots.length; i++) {
+        const c = (i === activeSlot && char) ? char : slots[i];
+        if (!c || !c.dungeon) continue;
+        ensureDungeonSeasonState(c);
+        rows.push({ slot: i, name: c.name || ('Slot ' + (i + 1)), cls: c.cls || '', floor: c.dungeon.season.key === key ? Number(c.dungeon.season.bestFloor || 0) : 0 });
+      }
+      return rows.sort((a, b) => b.floor - a.floor || a.name.localeCompare(b.name));
+    }
+
+    function claimDungeonSeasonReward(floor) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      floor = Math.floor(Number(floor || 0));
+      const reward = DUNGEON_SEASON_REWARDS.find(r => r.floor === floor);
+      const season = char.dungeon.season;
+      if (!reward || season.claimed.includes(floor)) return;
+      if (season.bestFloor < floor) { log('Reach season floor ' + floor + ' first.', 'info'); return; }
+
+      if (floor === 5) {
+        const gold = Math.max(500, Math.floor(char.level * 100));
+        char.gold += gold;
+        char.dungeon.marks += 5;
+        log('Season Scout Cache: +' + fmt(gold) + 'g and +5 Dungeon Marks.', 'loot');
+      } else if (floor === 15) {
+        char.dungeon.marks += 10;
+        const item = rollItemVariant(null, 'drop', { forceRarity: 'Rare', forceLevel: char.level });
+        if (item) processLootDrop(item, 'Season Veteran Cache');
+        log('Season Veteran Cache: +10 Dungeon Marks and Rare gear.', 'loot');
+      } else if (floor === 30) {
+        const title = getDungeonSeasonAffixes(season.key)[0].title;
+        unlockCustomTitle(title);
+      } else if (floor === 50) {
+        char.dungeon.marks += 25;
+        const item = rollItemVariant(null, 'drop', { forceRarity: 'Legendary', forceLevel: char.level });
+        if (item) processLootDrop(item, 'Season Conqueror Cache');
+        unlockCustomTitle('Conqueror of ' + season.key);
+        log('Season Conqueror Cache: +25 Dungeon Marks and Legendary gear.', 'loot');
+      }
+      season.claimed.push(floor);
+      renderAll(); renderDungeonTab(); autoSave();
+    }
+
+    function redeemDungeonMarks(kind) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const isGear = kind === 'gear';
+      const cost = isGear ? 12 : 8;
+      if (char.dungeon.marks < cost) { log('You need ' + cost + ' Dungeon Marks.', 'info'); return; }
+      char.dungeon.marks -= cost;
+      if (isGear) {
+        const rarity = char.dungeon.best >= 50 ? 'Legendary' : (char.dungeon.best >= 20 ? 'Epic' : 'Rare');
+        const item = rollItemVariant(null, 'drop', { forceRarity: rarity, forceLevel: char.level });
+        if (item) processLootDrop(item, 'Dungeon Mark cache');
+        log('Redeemed 12 Dungeon Marks for a ' + rarity + ' gear cache.', 'loot');
+      } else {
+        const rune = rollGuaranteedDungeonRune();
+        if (!Array.isArray(char.runeStash)) char.runeStash = [];
+        char.runeStash.push(rune);
+        log('Redeemed 8 Dungeon Marks for ' + rune + '.', 'loot');
+      }
       renderAll(); renderDungeonTab(); autoSave();
     }
 
@@ -27467,7 +28080,7 @@ async function exportSlotsToFile(options = {}) {
               '</span>' +
               '<span class="quest-prog">Step ' + chainStep + '/' + chainTotal + ' · ' + tierLabel + (c.bossStep ? ' · Boss' : '') + '</span>' +
             '</div>' +
-            '<div class="quest-prog" style="margin-top:4px">📍 ' + zoneName + ' <span style="opacity:.6">(' + zoneRange + ')</span> · Hunt <strong>' + c.target + '</strong></div>' +
+            '<div class="quest-prog" style="margin-top:4px">📍 ' + zoneName + ' <span style="opacity:.6">(' + zoneRange + ')</span> · Hunt <strong>Lv ' + Math.max(char.level, Number(c.level || char.level)) + ' ' + c.target + '</strong></div>' +
             _questBar(c.progress, c.count, ready) +
             '<div class="quest-prog" style="margin-top:2px">Reward: <strong>' + Number(c.rewardXp).toLocaleString() + ' XP · ' + Number(c.rewardGold).toLocaleString() + 'g</strong></div>' +
             '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' +
@@ -27628,8 +28241,9 @@ async function exportSlotsToFile(options = {}) {
       const allocPct = Math.max(0, Math.min(100, Math.floor(Number((char.aa && char.aa.xpAllocPct) || 0))));
       const aaXpProgress = Math.max(0, Math.floor(Number((char.aa && char.aa.xpProgress) || 0)));
       const aaXpToNext = Math.max(0, AA_XP_PER_POINT - aaXpProgress);
+      const legacyRanks = AA_LEGACY_NODES.reduce((sum, node) => sum + Math.max(0, Number(char.aa.legacy[node.id] || 0)), 0);
       let aaHtml = '<div class="quest-name">Alternate Ascension</div>' +
-        '<div class="quest-prog">Class: ' + char.cls + ' · ' + (simActive ? 'Simulator Points: ' : 'Unspent Points: ') + fmt(aaPoints) + ' · Unlocks at level ' + AA_UNLOCK_LEVEL + '+</div>';
+        '<div class="quest-prog">Class: ' + char.cls + ' · ' + (simActive ? 'Simulator Points: ' : 'Unspent Points: ') + fmt(aaPoints) + ' · Legacy Ranks: ' + fmt(legacyRanks) + ' · Unlocks at level ' + AA_UNLOCK_LEVEL + '+</div>';
 
       // ── Class Specialization (PHASE 3) ──
       const specChoices = getClassSpecChoices(char.cls);
@@ -27681,6 +28295,22 @@ async function exportSlotsToFile(options = {}) {
       if (!aaUnlocked) {
         aaHtml += '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">AA is locked until level ' + AA_UNLOCK_LEVEL + '. Your allocation is saved now and activates automatically at unlock.</div>';
       }
+
+      aaHtml += '<div style="margin-top:10px;padding:8px;border:1px solid rgba(186,117,23,.6);border-radius:8px;background:rgba(186,117,23,.08)">' +
+        '<div class="quest-name" style="margin:0">Legacy AA — Endless Progression</div>' +
+        '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary);margin-top:3px">Permanent ranks with escalating costs and diminishing percentage gains. Legacy AA is not refunded by respecs or changed by presets. Total invested: ' + fmt(char.aa.legacySpent || 0) + ' AA.</div>';
+      AA_LEGACY_NODES.forEach(node => {
+        const rank = Math.max(0, Number(char.aa.legacy[node.id] || 0));
+        const cost = getAALegacyCost(node.id, char);
+        const canBuy = aaUnlocked && !simActive && aaPoints >= cost;
+        aaHtml += '<div style="margin-top:7px;padding:7px;border:1px solid var(--border);border-radius:8px;background:var(--bg-secondary)">' +
+          '<div class="quest-prog" style="margin:0"><strong>' + node.name + '</strong> · Rank ' + fmt(rank) + '</div>' +
+          '<div class="quest-prog" style="font-size:10px;color:var(--text-secondary)">' + node.desc + '</div>' +
+          '<div class="quest-prog" style="font-size:10px">Current: ' + getAALegacyEffectText(node.id, char) + ' · Next: ' + getAALegacyEffectText(node.id, char, 1) + '</div>' +
+          '<div style="margin-top:4px"><button class="btn" onclick="spendAALegacyPoint(\'' + node.id + '\')" ' + (canBuy ? '' : 'disabled') + '>Invest ' + fmt(cost) + ' AA</button></div>' +
+          '</div>';
+      });
+      aaHtml += '</div>';
 
       aaHtml += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
         '<button class="btn" onclick="respecAA()">Respec (' + fmt(aaRespecCost) + 'g)</button>' +
@@ -27954,6 +28584,7 @@ async function exportSlotsToFile(options = {}) {
       if (char.dungeon) {
         char.dungeon.active = false;
         char.dungeon.floor = 1;
+        char.dungeon.checkpoint = 1;
       }
       if (char.spellCooldowns && typeof char.spellCooldowns === 'object') {
         char.spellCooldowns = {};
@@ -28685,9 +29316,14 @@ async function exportSlotsToFile(options = {}) {
       const mobName = inDungeon
         ? (dungeonBoss ? ('Floor ' + floor + ' Sentinel') : DUNGEON_MOBS[Math.floor(Math.random() * DUNGEON_MOBS.length)])
         : (hasForcedTarget ? zoneTarget : (named ? namedPool[Math.floor(Math.random() * namedPool.length)] : zone.mobs[Math.floor(Math.random() * zone.mobs.length)]));
+      const activeContract = !inDungeon ? getPrimaryContract(char) : null;
+      const contractLevelFloor = activeContract && activeContract.active && !activeContract.complete && activeContract.zone === char.zone &&
+        (activeContract.bossStep || activeContract.target === mobName)
+        ? Math.max(char.level, Number(activeContract.level || char.level))
+        : 0;
       const lvl = inDungeon
         ? Math.max(1, char.level + Math.floor(floor / 2))
-        : (typeof getZoneMobLevel === 'function' ? getZoneMobLevel(zone, char.level) : Math.max(1, char.level + Math.floor(Math.random() * 3) - 1));
+        : Math.max(contractLevelFloor, (typeof getZoneMobLevel === 'function' ? getZoneMobLevel(zone, char.level) : Math.max(1, char.level + Math.floor(Math.random() * 3) - 1)));
       const elite = options.forceNormal ? false : (inDungeon ? (dungeonBoss || Math.random() < (0.2 + (dungeonMod.eliteChanceBonus || 0))) : (Math.random() < 0.1));
       const namedMult = named ? 2.4 : 1;
       const rawHp = (80 + lvl * 38) * (elite ? 2.4 : 1) * namedMult * (options.packMember ? 0.82 : 1);
@@ -29331,6 +29967,7 @@ async function exportSlotsToFile(options = {}) {
       const prestige = getPrestigeModifiers(char);
       const inDungeon = !!char.dungeon.active;
       const floor = char.dungeon.floor || 1;
+      const dungeonEncounterCleared = !inDungeon || !Array.isArray(mobPack) || mobPack.filter(m => m && m !== defeatedMob && m.hp > 0).length === 0;
       const dungeonMod = inDungeon ? getDungeonModifierData(char.dungeon.modifier) : getDungeonModifierData('balanced');
       const namedMult = mob.named ? 2.5 : 1;
       const namedGoldMult = mob.named ? 1.85 : 1;
@@ -29339,7 +29976,7 @@ async function exportSlotsToFile(options = {}) {
       const lowLevelGoldMult = getLowLevelGoldMultiplier(char.level);
       const zoneProgressGoldMult = getZoneProgressGoldMultiplier(char.zone);
       const xp = Math.floor((20 + mob.level * 15) * zone.xpMult * (mob.elite ? 3 : 1) * namedMult * (mob.boss ? PHASE4.bossXpMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreXpBonus) : 1) * (event.xpMult || 1) * dungeonMult * (dungeonMod.xpMult || 1) * (1 + (getEquippedRunewordEffects(char).xpFind || 0)));
-      const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (mob.boss ? PHASE4.bossGoldMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreGoldBonus) : 1) * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * lowLevelGoldMult * zoneProgressGoldMult * (typeof getPetModifiers === 'function' ? (getPetModifiers(char).goldMult || 1) : 1) * GOLD_DROP_MULT * (1 + (getEquippedRunewordEffects(char).goldFind || 0)) * (1 + (getAbilityModifiers(char).goldBonus || 0)));
+      const gold = Math.floor((Math.random() * 5 + mob.level * 2) * zone.goldMult * eliteGoldMult * namedGoldMult * (mob.boss ? PHASE4.bossGoldMult : 1) * (char.hardcore ? (1 + PHASE4.hardcoreGoldBonus) : 1) * (event.goldMult || 1) * dungeonMult * (dungeonMod.goldMult || 1) * prestige.goldMult * (aa.goldMult || 1) * lowLevelGoldMult * zoneProgressGoldMult * (typeof getPetModifiers === 'function' ? (getPetModifiers(char).goldMult || 1) : 1) * GOLD_DROP_MULT * (1 + (getEquippedRunewordEffects(char).goldFind || 0)) * (1 + (getAbilityModifiers(char).goldBonus || 0)));
       const killXp = awardExperience(xp, 'combat');
       // Gold split: if enabled, divide equally among all grouped characters.
       const _groupIndices = getGroupMemberSlotIndices ? getGroupMemberSlotIndices() : [];
@@ -29395,7 +30032,7 @@ async function exportSlotsToFile(options = {}) {
       ], 'loot');
 
       const contract = getPrimaryContract(char);
-      const contractMatch = contract && contract.active && !contract.complete && contract.zone === char.zone && (
+      const contractMatch = !inDungeon && contract && contract.active && !contract.complete && contract.zone === char.zone && (
         (contract.bossStep ? (mob.named || mob.elite) : (mob.baseName === contract.target))
       );
       if (contractMatch) {
@@ -29470,7 +30107,9 @@ async function exportSlotsToFile(options = {}) {
       if (wasBoss && typeof onBossKilled === 'function') onBossKilled();
       checkAchievements();
 
-      if (inDungeon) {
+      let dungeonAutoSpawned = false;
+      if (inDungeon && dungeonEncounterCleared) {
+        awardDungeonFloorRewards(floor);
         char.dungeon.floor += 1;
         char.dungeon.best = Math.max(char.dungeon.best || 1, char.dungeon.floor);
         log('Dungeon floor cleared. Next floor: ' + char.dungeon.floor + '.', 'info');
@@ -29480,6 +30119,7 @@ async function exportSlotsToFile(options = {}) {
           if (nextFloor <= limit) {
             log('Auto-descending to floor ' + nextFloor + '.', 'info');
             spawnMob();
+            dungeonAutoSpawned = !!mob;
           } else {
             log('Auto-descend halted: reached configured limit of ' + limit + '.', 'info');
             // disable to avoid repeated halting logs
@@ -29496,7 +30136,7 @@ async function exportSlotsToFile(options = {}) {
       // continue fighting the next enemy before ending the encounter.
       if (Array.isArray(mobPack) && mobPack.length) {
         mobPack = mobPack.filter(m => m && m !== defeatedMob && m.hp > 0);
-        if (mobPack.length > 0 && !(char.dungeon && char.dungeon.active && char.dungeon.autoDescend)) {
+        if (mobPack.length > 0 && !dungeonAutoSpawned) {
           mob = mobPack[0];
           log([
             { text: mob.name, cls: 'combat-log-mob' },
@@ -29508,7 +30148,7 @@ async function exportSlotsToFile(options = {}) {
       }
 
       // If we auto-descended to the next floor, spawnMob() already set `mob`; avoid clearing it.
-      if (!(char.dungeon && char.dungeon.active && char.dungeon.autoDescend)) {
+      if (!dungeonAutoSpawned) {
         mob = null;
         mobPack = [];
       }
@@ -29627,8 +30267,8 @@ async function exportSlotsToFile(options = {}) {
       // If configured to auto-leave the dungeon on death, disable dungeon state
       if (char.dungeon && char.dungeon.active && char.dungeon.autoLeaveOnDeath) {
         char.dungeon.active = false;
-        char.dungeon.floor = 1;
-        log('Dungeon exited due to death (auto-leave).', 'info');
+        char.dungeon.floor = Math.max(1, char.dungeon.checkpoint || 1);
+        log('Dungeon exited due to death. Returned to checkpoint floor ' + char.dungeon.floor + '.', 'info');
       }
 
       renderAll();
@@ -29872,6 +30512,7 @@ async function exportSlotsToFile(options = {}) {
 
     function processLootDrop(item, sourceLabel = 'Looted') {
       if (!char) return;
+      recordCollectionItem(item);
 
       // Audio: rarity-scaled loot chime (plays regardless of filter outcome
       // so the player always hears what dropped).
@@ -30602,10 +31243,6 @@ async function exportSlotsToFile(options = {}) {
       const targetInfo = getGearTarget(target);
       if (!targetInfo) return;
       const entry = targetInfo.entry;
-      if (isItemLocked(entry)) {
-        log('Item is locked. Unlock it before socket changes.', 'info');
-        return;
-      }
       const data = getItemData(entry);
       if (!data) {
         log('Only gear can receive sockets.', 'info');
@@ -30654,10 +31291,6 @@ async function exportSlotsToFile(options = {}) {
       const targetInfo = getGearTarget(target);
       if (!targetInfo) return;
       const entry = targetInfo.entry;
-      if (isItemLocked(entry)) {
-        log('Item is locked. Unlock it before socket changes.', 'info');
-        return;
-      }
       const data = getItemData(entry);
       if (!data) {
         log('Only gear can be socketed with runes.', 'info');
@@ -30751,12 +31384,6 @@ async function exportSlotsToFile(options = {}) {
       const pre = getGearTarget(target);
       if (!pre) { closeRuneInsertModal(); return; }
       const originalEntry = pre.entry;
-
-      if (isItemLocked(originalEntry)) {
-        log('Item is locked. Unlock it before socket changes.', 'info');
-        closeRuneInsertModal();
-        return;
-      }
       const quality = getItemQuality(originalEntry);
       if (quality === 'Runeword') {
         log('That item cannot accept more runes.', 'info');
@@ -31007,8 +31634,8 @@ async function exportSlotsToFile(options = {}) {
       ensureExtendedSystems(char);
       if (char.dungeon.active) {
         char.dungeon.active = false;
-        char.dungeon.floor = 1;
-        log('You leave the Endless Dungeon to travel.', 'info');
+        char.dungeon.floor = Math.max(1, char.dungeon.checkpoint || 1);
+        log('You leave the Endless Dungeon to travel. Checkpoint saved at floor ' + char.dungeon.floor + '.', 'info');
       }
       char.zone = i; mob = null;
       log('Traveled to ' + ZONES[i].name + '.', 'info');
@@ -31571,7 +32198,7 @@ async function exportSlotsToFile(options = {}) {
       if (!ZONES[targetZone] || targetZone === char.zone || !isZoneUnlockedForAfk(char, targetZone)) return false;
       if (char.dungeon && char.dungeon.active) {
         char.dungeon.active = false;
-        char.dungeon.floor = 1;
+        char.dungeon.floor = Math.max(1, char.dungeon.checkpoint || 1);
         if (!silent) log('AFK goal left the Endless Dungeon to hunt in normal zones.', 'info');
       }
       char.zone = targetZone;
@@ -31833,6 +32460,7 @@ async function exportSlotsToFile(options = {}) {
         : char.zone;
       if (simZoneIdx !== char.zone) char.zone = simZoneIdx;
       const zone = ZONES[simZoneIdx];
+      const aa = getAACombatModifiers(char);
 
       for (let i = 0; i < fights; i++) {
         let mobName = zone.mobs[Math.floor(Math.random() * zone.mobs.length)];
@@ -31845,7 +32473,7 @@ async function exportSlotsToFile(options = {}) {
         const elite = Math.random() < ((goal === 'contract' && contract && contract.bossStep) ? 0.28 : 0.1);
 
         const xp = Math.floor((20 + lvl * 15) * zone.xpMult * (elite ? 3 : 1) * (1 + (getEquippedRunewordEffects(char).xpFind || 0)));
-        const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1) * getLowLevelGoldMultiplier(char.level) * GOLD_DROP_MULT * (1 + (getEquippedRunewordEffects(char).goldFind || 0)) * (1 + (getAbilityModifiers(char).goldBonus || 0)));
+        const gold = Math.floor((Math.random() * 8 + lvl * 3) * zone.goldMult * (elite ? 2 : 1) * (aa.goldMult || 1) * getLowLevelGoldMultiplier(char.level) * GOLD_DROP_MULT * (1 + (getEquippedRunewordEffects(char).goldFind || 0)) * (1 + (getAbilityModifiers(char).goldBonus || 0)));
         totalXp += xp;
         totalGold += gold;
 
@@ -31873,9 +32501,10 @@ async function exportSlotsToFile(options = {}) {
           }
         }
 
-        if (Math.random() < 0.4) {
+        if (Math.random() < Math.min(0.95, 0.4 * (aa.lootMult || 1))) {
           const lootBase = Math.random() < 0.05 ? zone.rare : pickWeightedLootBase(simZoneIdx, 'afk');
           const loot = rollItemVariant(lootBase, 'afk', { forceLevel: lvl });
+          recordCollectionItem(loot);
           if (shouldAutoSellLootItem(loot)) {
             const value = getItemSellValue(loot);
             totalGold += value;
@@ -32470,7 +33099,7 @@ async function exportSlotsToFile(options = {}) {
       const def = Math.max(0, Math.floor(Number(c.def || 0)));
       const maxHp = Math.max(0, Math.floor(Number(c.maxHp || 0)));
       const maxMp = Math.max(0, Math.floor(Number(c.maxMp || 0)));
-      const aaSpent = Math.max(0, Math.floor(Number((c.aa && c.aa.spent) || 0)));
+      const aaSpent = Math.max(0, Math.floor(Number((c.aa && c.aa.spent) || 0))) + Math.max(0, Math.floor(Number((c.aa && c.aa.legacySpent) || 0)));
       const gold = Math.max(0, Math.floor(Number(c.gold || 0)));
       const stats = c.stats && typeof c.stats === 'object' ? c.stats : {};
       const kills = Math.max(0, Math.floor(Number(stats.kills || 0)));
@@ -35143,6 +35772,7 @@ async function exportSlotsToFile(options = {}) {
       if (POPUP_PANEL_IDS.has(tab)) { openPopup(tab); return; }
       const mainTabs = ['combat', 'zone', 'inv', 'shop', 'casino', 'chat'];
       if (!mainTabs.includes(tab)) tab = 'combat';
+      if (tab !== 'combat' && typeof toggleDesktopLogTools === 'function') toggleDesktopLogTools(false);
       try { sessionStorage.setItem('EQ_lastTab', tab); } catch(e) {}
       mainTabs.forEach(t => {
         const panel = document.getElementById('tab-' + t);
@@ -35473,11 +36103,45 @@ async function exportSlotsToFile(options = {}) {
       if (deadMob.namedMechanic && deadMob.namedMechanic.name) entry.mechanic = deadMob.namedMechanic.name;
       char.codex.mobs[key] = entry;
     }
+    function renderCollectionJournal() {
+      const host = document.getElementById('collection-journal-v168');
+      if (!host || !char) return;
+      ensureCollectionState(char);
+      const setEntries = Object.entries(ITEM_SETS);
+      const discoveredPieces = new Set(Object.keys(char.collection.items || {}));
+      const totalPieces = new Set(setEntries.flatMap(([, set]) => set.pieces)).size;
+      const foundPieces = Array.from(new Set(setEntries.flatMap(([, set]) => set.pieces))).filter(piece => discoveredPieces.has(piece)).length;
+      const runewords = Object.keys(RUNEWORD_RECIPES);
+      const foundRunewords = new Set(char.discoveredRunewords || []);
+      const rwComplete = runewords.length > 0 && runewords.every(name => foundRunewords.has(name));
+      const targetMissing = getMissingTargetSetPieces(char);
+
+      const setsHtml = setEntries.map(([name, set]) => {
+        const jsName = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const found = set.pieces.filter(piece => discoveredPieces.has(piece)).length;
+        const complete = found === set.pieces.length;
+        const claimed = char.collection.claimedSets.includes(name);
+        const targeted = char.collection.targetSet === name;
+        const pieces = set.pieces.map(piece => '<span class="codex-pill-v1514" style="opacity:' + (discoveredPieces.has(piece) ? '1' : '.45') + '">' + (discoveredPieces.has(piece) ? '✓ ' : '? ') + escapeHtmlSafe(piece) + '</span>').join('');
+        return '<div class="codex-card-v1514"><div class="codex-name">' + escapeHtmlSafe(name) + ' <span style="font-size:10px;opacity:.7">' + found + '/' + set.pieces.length + '</span></div>' +
+          '<div class="codex-tags">' + pieces + '</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px">' +
+          '<button class="btn' + (targeted ? ' active' : '') + '" onclick="setCollectionTarget(\'' + jsName + '\')"' + (complete ? ' disabled' : '') + '>' + (targeted ? 'Targeted · Pity ' + char.collection.pity + '/15' : 'Target Missing Pieces') + '</button>' +
+          '<button class="btn' + (complete && !claimed ? ' active' : '') + '" onclick="claimSetCollectionReward(\'' + jsName + '\')"' + (complete && !claimed ? '' : ' disabled') + '>' + (claimed ? 'Reward Claimed ✓' : 'Claim Completion') + '</button></div></div>';
+      }).join('');
+
+      host.innerHTML = '<div class="quest-name" style="margin-bottom:6px">Collection Journal</div>' +
+        '<div class="bag-meta">Set pieces ' + foundPieces + '/' + totalPieces + ' · Runewords ' + foundRunewords.size + '/' + runewords.length + (char.collection.targetSet ? ' · Target: ' + escapeHtmlSafe(char.collection.targetSet) + ' (' + targetMissing.length + ' missing, pity ' + char.collection.pity + '/15)' : '') + '</div>' +
+        '<div class="codex-grid-v1514" style="margin-top:7px">' + setsHtml + '</div>' +
+        '<div class="codex-card-v1514" style="margin-top:8px"><div class="codex-name">Runeword Catalogue</div><div class="codex-tags">' + runewords.map(name => '<span class="codex-pill-v1514" style="opacity:' + (foundRunewords.has(name) ? '1' : '.4') + '">' + (foundRunewords.has(name) ? '✓ ' : '? ') + escapeHtmlSafe(name) + '</span>').join('') + '</div>' +
+        '<div style="margin-top:7px"><button class="btn' + (rwComplete && !char.collection.runewordRewardClaimed ? ' active' : '') + '" onclick="claimRunewordCollectionReward()"' + (rwComplete && !char.collection.runewordRewardClaimed ? '' : ' disabled') + '>' + (char.collection.runewordRewardClaimed ? 'Catalogue Reward Claimed ✓' : 'Claim Catalogue Reward') + '</button></div></div>';
+    }
+
     function renderCodexTab() {
       const list = document.getElementById('codex-list-v1514');
       const summary = document.getElementById('codex-summary-v1514');
       if (!list || !summary || !char) return;
       ensureBestiaryCodexState(char);
+      renderCollectionJournal();
       const entries = Object.values(char.codex.mobs || {}).sort((a, b) => (b.kills || 0) - (a.kills || 0) || String(a.name).localeCompare(String(b.name)));
       const totalKills = entries.reduce((s, e) => s + (Number(e.kills) || 0), 0);
       summary.textContent = entries.length ? (entries.length + ' creature entries · ' + fmt(totalKills) + ' tracked kills') : 'No creatures recorded yet. Defeat mobs to fill the codex.';
@@ -36756,6 +37420,62 @@ async function exportSlotsToFile(options = {}) {
       { id: 'bosses',  kind: 'boss',  target: 100,   reward: 75000,  name: 'Boss Slayers',       desc: 'Bring down 100 bosses.' },
       { id: 'named',   kind: 'named', target: 250,   reward: 50000,  name: 'Trophy Wall',        desc: 'Hunt 250 named foes.' }
     ];
+    const GUILD_RAID_PERSONAL_TIERS = [
+      { strikes: 1, label: 'Scout', desc: 'Gold cache' },
+      { strikes: 3, label: 'Vanguard', desc: 'XP + Dungeon Marks' },
+      { strikes: 5, label: 'Slayer', desc: 'Epic gear + title' }
+    ];
+    function ensureGuildRaidState(targetChar) {
+      if (!targetChar) return;
+      const week = getDungeonSeasonKey();
+      if (!targetChar.guildRaid || typeof targetChar.guildRaid !== 'object' || targetChar.guildRaid.week !== week) {
+        targetChar.guildRaid = { week, strikes: 0, damage: 0, claimed: [], victoryClaimed: false };
+      }
+      const r = targetChar.guildRaid;
+      r.strikes = Math.max(0, Math.floor(Number(r.strikes || 0)));
+      r.damage = Math.max(0, Math.floor(Number(r.damage || 0)));
+      if (!Array.isArray(r.claimed)) r.claimed = [];
+      r.claimed = Array.from(new Set(r.claimed.map(Number).filter(Number.isFinite)));
+      r.victoryClaimed = !!r.victoryClaimed;
+    }
+    function getGuildRaidPhase(hp, total) {
+      const pct = Math.max(0, Math.min(1, Number(hp || 0) / Math.max(1, Number(total || 1))));
+      if (pct > 0.66) return { id: 1, label: 'Phase I — Awakening', mult: 1, desc: 'The raid boss is gathering power.' };
+      if (pct > 0.33) return { id: 2, label: 'Phase II — Enraged', mult: 1.2, desc: 'Weak points open: strikes deal 20% more damage.' };
+      return { id: 3, label: 'Phase III — Last Stand', mult: 1.45, desc: 'Finish it: strikes deal 45% more damage.' };
+    }
+    function claimGuildRaidTier(index) {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      const tier = GUILD_RAID_PERSONAL_TIERS[index];
+      const raid = char.guildRaid;
+      if (!tier || raid.claimed.includes(index) || raid.strikes < tier.strikes) return;
+      if (index === 0) {
+        const gold = Math.max(1000, Math.floor(char.level * 120));
+        char.gold += gold; log('Guild Raid Scout reward: +' + fmt(gold) + 'g.', 'loot');
+      } else if (index === 1) {
+        const xp = Math.max(1000, Math.floor(char.level * 500));
+        char.dungeon.marks += 8; awardExperience(xp, 'guild raid');
+        if (typeof checkLevelUp === 'function') checkLevelUp();
+        log('Guild Raid Vanguard reward: +' + fmt(xp) + ' XP and +8 Dungeon Marks.', 'loot');
+      } else {
+        const item = rollItemVariant(null, 'drop', { forceRarity: 'Epic', forceLevel: char.level });
+        if (item) processLootDrop(item, 'Guild Raid Slayer Cache');
+        unlockCustomTitle('Raid Vanguard');
+      }
+      raid.claimed.push(index);
+      renderAll(); renderGuildTab(); autoSave();
+    }
+    function claimGuildRaidVictory() {
+      if (!char) return;
+      ensureExtendedSystems(char);
+      if (char.guildRaid.victoryClaimed || char.guildRaid.strikes < 1) return;
+      char.guildRaid.victoryClaimed = true;
+      char.dungeon.marks += 15;
+      unlockCustomTitle('Worldbreaker');
+      log('Guild raid victory reward: +15 Dungeon Marks and the Worldbreaker title.', 'loot');
+      renderAll(); renderGuildTab(); autoSave();
+    }
     function guildQuestById(id) { return GUILD_QUESTS.find(q => q.id === id) || null; }
     const GUILD_QUEST_KIND_LABEL = { kills: 'kills', elite: 'elites', boss: 'bosses', named: 'named foes' };
 
@@ -38809,7 +39529,21 @@ async function exportSlotsToFile(options = {}) {
               if (!row) raidEl.textContent = 'No active raid boss yet.';
               else {
                 const hp = Number(row.hp_remaining || 0), total = Math.max(1, Number(row.hp_total || 1));
-                raidEl.innerHTML = '<strong>' + escapeHtmlSafe(row.boss_name || 'Raid Boss') + '</strong><div class="v16-progress"><span style="width:' + Math.max(0,Math.min(100,Math.floor((1-hp/total)*100))) + '%"></span></div><div>' + fmt(hp) + ' / ' + fmt(total) + ' HP remaining</div><button class="btn" style="margin-top:6px" onclick="V16.strikeRaidBoss(\'' + escapeHtmlSafe(row.id) + '\')">Strike the boss</button>';
+                const phase = getGuildRaidPhase(hp, total);
+                ensureGuildRaidState(char);
+                const personal = char.guildRaid;
+                const tiers = GUILD_RAID_PERSONAL_TIERS.map((t, i) => {
+                  const claimed = personal.claimed.includes(i), ready = personal.strikes >= t.strikes && !claimed;
+                  return '<button class="btn' + (ready ? ' active' : '') + '" onclick="claimGuildRaidTier(' + i + ')"' + (ready ? '' : ' disabled') + '>' + t.strikes + ' strike' + (t.strikes === 1 ? '' : 's') + ': ' + t.label + (claimed ? ' ✓' : '') + '</button>';
+                }).join('');
+                raidEl.innerHTML = '<strong>' + escapeHtmlSafe(row.boss_name || 'Raid Boss') + '</strong>' +
+                  '<div style="font-size:11px;color:var(--text-secondary);margin-top:2px"><strong>' + phase.label + '</strong> · ' + phase.desc + '</div>' +
+                  '<div class="v16-progress"><span style="width:' + Math.max(0,Math.min(100,Math.floor((1-hp/total)*100))) + '%"></span></div>' +
+                  '<div>' + fmt(hp) + ' / ' + fmt(total) + ' HP remaining</div>' +
+                  '<div style="font-size:11px;margin-top:5px">Your week: ' + personal.strikes + ' strikes · ' + fmt(personal.damage) + ' damage</div>' +
+                  '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">' + tiers + '</div>' +
+                  (hp > 0 ? '<button class="btn active" style="margin-top:6px" onclick="V16.strikeRaidBoss(\'' + escapeHtmlSafe(row.id) + '\')">Strike the boss (x' + phase.mult.toFixed(2) + ' phase damage)</button>' :
+                    '<button class="btn active" style="margin-top:6px" onclick="claimGuildRaidVictory()"' + (personal.strikes > 0 && !personal.victoryClaimed ? '' : ' disabled') + '>' + (personal.victoryClaimed ? 'Victory Reward Claimed ✓' : 'Claim Victory Cosmetic') + '</button>');
               }
             }
             const achEl = document.getElementById('v16-guild-achievements');
@@ -38827,11 +39561,20 @@ async function exportSlotsToFile(options = {}) {
         async strikeRaidBoss(id) {
           if (!sb || !id) return;
           try {
+            let phase = { mult: 1, label: 'Phase I' };
+            try {
+              const { data: boss } = await sb.from('guild_raid_bosses').select('hp_remaining,hp_total').eq('id', id).maybeSingle();
+              if (boss) phase = getGuildRaidPhase(boss.hp_remaining, boss.hp_total);
+            } catch (_) { /* phase-one fallback */ }
             const weaponDps = Math.max(1, Number((char && (char.atk || char.level)) || 1));
-            const damage = Math.max(1, Math.min(250000, Math.floor(Number(char && char.level || 1) * weaponDps)));
+            const damage = Math.max(1, Math.min(500000, Math.floor(Number(char && char.level || 1) * weaponDps * phase.mult)));
             const { error } = await sb.rpc('strike_guild_raid_boss', { p_boss_id: id, p_damage: damage });
             if (error) throw error;
-            showToast('You strike the raid boss for ' + fmt(damage) + ' damage.', 'success');
+            ensureExtendedSystems(char);
+            char.guildRaid.strikes += 1;
+            char.guildRaid.damage += damage;
+            autoSave();
+            showToast(phase.label + ': you strike for ' + fmt(damage) + ' damage.', 'success');
             if (typeof renderGuildTab === 'function') renderGuildTab();
           } catch (e) {
             console.warn('raid strike failed', e);
@@ -38858,6 +39601,9 @@ async function exportSlotsToFile(options = {}) {
         _characterSavesUnavailable: false,
         _cloudConflictOpen: false,
         _cloudSyncInFlight: false,
+        _cloudLoadUncertain: false,
+        _syncPending: false,
+        _pendingSyncOptions: null,
         _lastSyncOptions: null,
         async _fetchCharacterSaveRows() {
           if (!sb || !currentUser || this._characterSavesUnavailable) return [];
@@ -38866,7 +39612,9 @@ async function exportSlotsToFile(options = {}) {
               .select('slot_id,save_blob,updated_at')
               .eq('user_id', currentUser.id);
             if (error) {
-              if (error.code === '42P01' || (error.message && /character_saves/i.test(error.message))) {
+              const missingTable = error.code === '42P01' || error.code === 'PGRST205' ||
+                (error.message && /(could not find.*character_saves|relation .*character_saves.*does not exist|schema cache)/i.test(error.message));
+              if (missingTable) {
                 this._characterSavesUnavailable = true;
                 return [];
               }
@@ -38876,7 +39624,7 @@ async function exportSlotsToFile(options = {}) {
           } catch (e) {
             console.warn('character_saves load failed; falling back to legacy saves', e);
             if (window.setSaveIndicator) setSaveIndicator('failed', e.message || e);
-            return [];
+            throw e;
           }
         },
         async _fetchLegacySaveRows() {
@@ -39027,10 +39775,26 @@ async function exportSlotsToFile(options = {}) {
         },
         async pushAll(options = {}) {
           if (!sb || !currentUser) return;
-          if (this._cloudSyncInFlight && !(options && options.critical)) return;
+          if (this._cloudSyncInFlight) {
+            this._syncPending = true;
+            this._pendingSyncOptions = Object.assign({}, this._pendingSyncOptions || {}, options || {});
+            return;
+          }
           this._cloudSyncInFlight = true;
+          let syncFailed = false;
           if (window.setSaveIndicator) setSaveIndicator('saving');
           try {
+            // A failed or timed-out login pull is not evidence that the cloud is
+            // empty. Confirm that state before allowing a local save to replace it.
+            if (this._cloudLoadUncertain && !options.overwrite) {
+              const remoteSlots = await this.fetchAllSlots();
+              this._cloudLoadUncertain = false;
+              if (Array.isArray(remoteSlots) && remoteSlots.some(Boolean)) {
+                this._showCloudConflictToast();
+                if (window.setSaveIndicator) setSaveIndicator('failed', 'Cloud save must be reloaded or explicitly overwritten.');
+                return;
+              }
+            }
             if (!options.overwrite && await this._hasRemoteConflict()) {
               this._showCloudConflictToast();
               if (window.setSaveIndicator) setSaveIndicator('failed', 'Remote save is newer.');
@@ -39088,7 +39852,8 @@ async function exportSlotsToFile(options = {}) {
               try { await sb.from('character_save_history').insert(historyRows); } catch (e) { if (!(e && e.code === '42P01')) console.warn('save history insert failed', e); }
             }
             if (deletes.length) {
-              await sb.from('character_saves').delete().eq('user_id', currentUser.id).in('slot_id', deletes);
+              const { error: deleteError } = await sb.from('character_saves').delete().eq('user_id', currentUser.id).in('slot_id', deletes);
+              if (deleteError) throw deleteError;
             }
             this.lastCloudPullAt = Date.now();
             this.publishLeaderboard();
@@ -39097,14 +39862,22 @@ async function exportSlotsToFile(options = {}) {
             this.maybeAutoVersion && this.maybeAutoVersion();
             if (window.setSaveIndicator) setSaveIndicator('saved');
           } catch (e) {
+            syncFailed = true;
             console.warn('cloud sync error', e);
             if (window.setSaveIndicator) setSaveIndicator('failed', e.message || e);
-            clearTimeout(this.syncTimer);
-            this.syncTimer = setTimeout(() => this.pushAll(options), 12000);
+            this._syncPending = true;
+            this._pendingSyncOptions = Object.assign({}, options || {}, this._pendingSyncOptions || {});
           } finally {
             this._cloudSyncInFlight = false;
             clearTimeout(this.syncMaxTimer);
             this.syncMaxTimer = null;
+            if (this._syncPending) {
+              const pendingOptions = Object.assign({}, this._pendingSyncOptions || {});
+              this._syncPending = false;
+              this._pendingSyncOptions = null;
+              clearTimeout(this.syncTimer);
+              this.syncTimer = setTimeout(() => this.pushAll(pendingOptions), syncFailed ? 12000 : 0);
+            }
           }
         },
         async publishLeaderboard() {
@@ -39164,6 +39937,7 @@ async function exportSlotsToFile(options = {}) {
           ]);
           let loadedSlots = new Array(MAX_SLOTS).fill(null);
           let usedFallback = false;
+          let cloudLoadFailed = false;
 
           try {
             await withTimeout(this.refreshAdminFlag(), 5000, 'admin check');
@@ -39175,8 +39949,11 @@ async function exportSlotsToFile(options = {}) {
 
           try {
             loadedSlots = await withTimeout(this.fetchAllSlots(), 9000, 'cloud save load');
+            this._cloudLoadUncertain = false;
           } catch (e) {
             usedFallback = true;
+            cloudLoadFailed = true;
+            this._cloudLoadUncertain = true;
             console.warn('cloud save load failed during login; using local cache', e);
           }
 
@@ -39185,14 +39962,19 @@ async function exportSlotsToFile(options = {}) {
           const cloudHasAny = Array.isArray(loadedSlots) && loadedSlots.some(Boolean);
           const localHasAny = Array.isArray(localSlots) && localSlots.some(Boolean);
 
-          if (!cloudHasAny && localHasAny) {
+          if (!cloudLoadFailed && !cloudHasAny && localHasAny) {
             slots = localSlots.slice();
             while (slots.length < MAX_SLOTS) slots.push(null);
             // Do not await this. Saving/migrating cloud rows is useful, but it must
             // not keep the player on the login screen.
             try { this.pushAll({ reason: 'login_local_fallback' }); } catch (e) { console.warn('login fallback push failed', e); }
-          } else {
+          } else if (!cloudLoadFailed) {
             slots = Array.isArray(loadedSlots) ? loadedSlots.slice() : [];
+            while (slots.length < MAX_SLOTS) slots.push(null);
+          } else {
+            // The cloud state is unknown, so keep the local cache available but
+            // do not upload it until pushAll has completed a successful pull.
+            slots = Array.isArray(localSlots) ? localSlots.slice() : [];
             while (slots.length < MAX_SLOTS) slots.push(null);
           }
 
@@ -39319,6 +40101,61 @@ async function exportSlotsToFile(options = {}) {
         };
       }
 
+      const DESKTOP_PANEL_STATE_KEY = 'emberquest_desktop_panel_state_v168';
+      function setupDesktopSidebarCollapsibles() {
+        const grid = document.getElementById('game-grid');
+        if (!grid) return;
+        let state = {};
+        try {
+          const parsed = JSON.parse(localStorage.getItem(DESKTOP_PANEL_STATE_KEY) || '{}');
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) state = parsed;
+        } catch (_) {}
+
+        const columns = [
+          { element: grid.firstElementChild, side: 'left' },
+          { element: grid.lastElementChild, side: 'right' }
+        ];
+        columns.forEach(({ element, side }) => {
+          if (!element || element.id === 'center-panel') return;
+          const panels = Array.from(element.children).filter(el => el.classList && el.classList.contains('panel'));
+          panels.forEach((panel, index) => {
+            const heading = Array.from(panel.children).find(el => el.tagName === 'H3');
+            if (!heading) return;
+            panel.classList.add('desktop-sidebar-panel');
+            const label = String(heading.textContent || ('Panel ' + (index + 1))).replace(/\s+/g, ' ').trim();
+            const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || String(index);
+            const key = side + ':' + (panel.id || slug);
+            const defaultCollapsed = index > 0 && panel.id !== 'right-objectives-panel';
+            const collapsed = Object.prototype.hasOwnProperty.call(state, key) ? !!state[key] : defaultCollapsed;
+            panel.classList.toggle('desktop-panel-collapsed', collapsed);
+
+            let button = heading.querySelector('.desktop-panel-toggle');
+            if (!button) {
+              button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'desktop-panel-toggle';
+              heading.appendChild(button);
+            }
+            const syncButton = () => {
+              const isCollapsed = panel.classList.contains('desktop-panel-collapsed');
+              button.textContent = isCollapsed ? '▸' : '▾';
+              button.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+              button.setAttribute('aria-label', (isCollapsed ? 'Expand ' : 'Collapse ') + label);
+              button.title = (isCollapsed ? 'Expand ' : 'Collapse ') + label;
+            };
+            button.onclick = event => {
+              event.preventDefault();
+              event.stopPropagation();
+              panel.classList.toggle('desktop-panel-collapsed');
+              state[key] = panel.classList.contains('desktop-panel-collapsed');
+              try { localStorage.setItem(DESKTOP_PANEL_STATE_KEY, JSON.stringify(state)); } catch (_) {}
+              syncButton();
+            };
+            syncButton();
+          });
+        });
+      }
+
       window.addEventListener('pagehide', () => { try { Cloud.flushSync({ reason:'pagehide', critical:true }); } catch(e) {} });
       window.addEventListener('beforeunload', () => { try { Cloud.flushSync({ reason:'beforeunload', critical:true }); } catch(e) {} });
       document.addEventListener('visibilitychange', () => {
@@ -39327,6 +40164,8 @@ async function exportSlotsToFile(options = {}) {
         }
       });
       document.addEventListener('DOMContentLoaded', () => {
+        setupDesktopSidebarCollapsibles();
+        loadPriorityQueuePanelState();
         V16.loadNews(true);
         V16.syncGuildChatVisibility();
       });
